@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Dashboard KPI/KPA UAM - RMSP</title>
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIINfQd+g9FQXHyzyTAFi+lyLwN2Bja9fM="
+      crossorigin=""
+    />
+    <link rel="stylesheet" href="assets/dashboard.css?v=0.1.5" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">RMSP / corredor aereo urbano</p>
+        <h1>KPI/KPA Dashboard</h1>
+      </div>
+      <div class="source-panel">
+        <span id="source-log">STATELOG</span>
+        <label class="upload-button" for="log-upload">Carregar STATELOG</label>
+        <input id="log-upload" type="file" accept=".log,.csv,.txt" />
+      </div>
+    </header>
+
+    <main>
+      <section class="metric-grid" aria-label="Indicadores principais">
+        <article class="metric">
+          <span>Aeronaves</span>
+          <strong id="metric-aircraft">-</strong>
+          <small id="metric-records">- registros</small>
+        </article>
+        <article class="metric">
+          <span>Pico simultaneo</span>
+          <strong id="metric-peak">-</strong>
+          <small id="metric-duration">- min</small>
+        </article>
+        <article class="metric">
+          <span>Tempo medio</span>
+          <strong id="metric-flight-time">-</strong>
+          <small>min por aeronave</small>
+        </article>
+        <article class="metric">
+          <span>Distancia media</span>
+          <strong id="metric-distance">-</strong>
+          <small>NM por aeronave</small>
+        </article>
+        <article class="metric">
+          <span>Baixa altitude</span>
+          <strong id="metric-low-altitude">-</strong>
+          <small id="metric-low-altitude-threshold">-</small>
+        </article>
+        <article class="metric danger">
+          <span>Eventos LoWC</span>
+          <strong id="metric-lowc">-</strong>
+          <small id="metric-lowc-threshold">-</small>
+        </article>
+      </section>
+
+      <section class="workspace">
+        <aside class="side-panel">
+          <div class="panel-section">
+            <h2>Camadas</h2>
+            <label><input type="checkbox" id="layer-tracks" checked /> Rotas</label>
+            <label><input type="checkbox" id="layer-heat" /> Densidade</label>
+            <label><input type="checkbox" id="layer-conflicts" checked /> LoWC</label>
+            <button class="panel-button" id="fit-map" type="button">Reenquadrar mapa</button>
+          </div>
+          <div class="panel-section">
+            <h2>KPA</h2>
+            <dl class="kpa-list">
+              <div>
+                <dt>Eficiencia de rota</dt>
+                <dd id="kpa-route-efficiency">-</dd>
+              </div>
+              <div>
+                <dt>Altitude mediana</dt>
+                <dd id="kpa-altitude">-</dd>
+              </div>
+              <div>
+                <dt>Amostragem LoWC</dt>
+                <dd id="kpa-safety-sample">-</dd>
+              </div>
+            </dl>
+          </div>
+        </aside>
+
+        <section class="map-stage" aria-label="Mapa georreferenciado">
+          <div id="map"></div>
+          <div class="map-info" aria-live="polite">
+            <strong id="map-info-title">Mapa operacional</strong>
+            <span id="map-info-text">Rotas, densidade e eventos LoWC georreferenciados.</span>
+            <div class="map-legend">
+              <span><i class="legend-swatch legend-route"></i>Rotas</span>
+              <span><i class="legend-swatch legend-heat"></i>Densidade</span>
+              <span><i class="legend-swatch legend-lowc"></i>LoWC</span>
+            </div>
+          </div>
+        </section>
+      </section>
+
+      <section class="charts" aria-label="Graficos">
+        <article class="chart-card">
+          <h2>Aeronaves simultaneas</h2>
+          <img id="chart-active" alt="Serie temporal de aeronaves simultaneas" />
+          <canvas id="canvas-active" hidden></canvas>
+        </article>
+        <article class="chart-card">
+          <h2>Separacao horizontal</h2>
+          <img id="chart-separation" alt="Histograma de separacao horizontal" />
+          <canvas id="canvas-separation" hidden></canvas>
+        </article>
+        <article class="chart-card">
+          <h2>Altitude</h2>
+          <img id="chart-altitude" alt="Histograma de altitude" />
+          <canvas id="canvas-altitude" hidden></canvas>
+        </article>
+        <article class="chart-card">
+          <h2>Distancia por aeronave</h2>
+          <img id="chart-distance" alt="Histograma de distancia por aeronave" />
+          <canvas id="canvas-distance" hidden></canvas>
+        </article>
+      </section>
+    </main>
+
+    <script
+      src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+      crossorigin=""
+    ></script>
+    <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+    <script src="assets/data_bundle.js?v=0.1.5"></script>
+    <script src="assets/dashboard.js?v=0.1.5"></script>
+  </body>
+</html>
