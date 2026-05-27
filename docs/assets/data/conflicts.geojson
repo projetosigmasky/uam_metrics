@@ -1,0 +1,56 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "simt": 50000.0,
+        "id_a": "PPJBB",
+        "id_b": "PTYKK",
+        "dist_h_m": 268.4662392792808,
+        "dist_v_m": 0.8001000000000431
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.633681425000006,
+          -23.510032885
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "simt": 60800.0,
+        "id_a": "PREVU",
+        "id_b": "PRMSO",
+        "dist_h_m": 256.0724674269796,
+        "dist_v_m": 20.116800000000012
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.685038715000005,
+          -23.589368370000003
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "simt": 60810.0,
+        "id_a": "PREVU",
+        "id_b": "PRMSO",
+        "dist_h_m": 386.07774515560783,
+        "dist_v_m": 20.116800000000012
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.688774769999995,
+          -23.58729579
+        ]
+      }
+    }
+  ]
+}

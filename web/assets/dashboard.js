@@ -7,6 +7,10 @@ const state = {
   overlayLayers: {},
   lastTracks: null,
   lastConflicts: null,
+  runs: [],
+  comparison: null,
+  currentModel: null,
+  activeRunIndex: 0,
 };
 
 const colors = ["#1d4ed8", "#047857", "#be123c", "#6d28d9", "#b45309", "#0e7490", "#c2410c"];
@@ -107,17 +111,25 @@ function bindLayerControls() {
   document.getElementById("fit-map").addEventListener("click", () => {
     fitMapToOperationalArea(state.lastTracks, state.lastConflicts);
   });
+  document.getElementById("run-select").addEventListener("change", (event) => {
+    state.activeRunIndex = Number(event.target.value);
+    renderSelectedRun(false);
+  });
 }
 
 function bindUpload() {
   document.getElementById("log-upload").addEventListener("change", async (event) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
+    const files = Array.from(event.target.files || []);
+    if (!files.length) return;
 
-    const text = await file.text();
-    const parsed = parseStateLog(text);
-    const model = buildClientModel(parsed, file.name);
-    renderDashboard({ ...model, uploaded: true });
+    const runs = [];
+    for (const [index, file] of files.entries()) {
+      const text = await file.text();
+      const parsed = parseStateLog(text);
+      const model = buildClientModel(parsed, file.name);
+      runs.push({ id: `upload_${index + 1}`, name: file.name, ...model });
+    }
+    renderDashboard(buildMultiRunModel(runs, true));
   });
 }
 
@@ -132,9 +144,73 @@ function toggleLayer(layerName, event) {
 }
 
 function renderDashboard(model) {
-  renderMetrics(model.dashboard);
-  renderCharts(model.dashboard, model.timeline, model.uploaded);
-  renderMapLayers(model.tracks, model.conflicts, model.heatmap);
+  const normalized = normalizeModel(model);
+  state.currentModel = normalized;
+  state.runs = normalized.runs;
+  state.comparison = normalized.comparison;
+  state.activeRunIndex = Math.min(state.activeRunIndex, state.runs.length - 1);
+
+  renderMetrics(normalized.dashboard);
+  renderComparison(normalized);
+  renderSelectedRun(normalized.uploaded);
+}
+
+function normalizeModel(model) {
+  if (model.runs?.length) {
+    return model;
+  }
+
+  const singleRun = {
+    id: "run_1",
+    name: model.dashboard.source_log,
+    dashboard: model.dashboard,
+    tracks: model.tracks,
+    conflicts: model.conflicts,
+    heatmap: model.heatmap,
+    timeline: model.timeline,
+  };
+  return buildMultiRunModel([singleRun], model.uploaded);
+}
+
+function renderSelectedRun(uploaded) {
+  const run = state.runs[state.activeRunIndex] || state.runs[0];
+  if (!run) return;
+  renderCharts(run.dashboard, run.timeline, uploaded ?? state.currentModel?.uploaded);
+  renderMapLayers(run.tracks, run.conflicts, run.heatmap);
+}
+
+function renderComparison(model) {
+  const select = document.getElementById("run-select");
+  select.innerHTML = model.runs
+    .map((run, index) => `<option value="${index}">${escapeHtml(run.name)}</option>`)
+    .join("");
+  select.value = String(state.activeRunIndex);
+
+  const runCount = model.runs.length;
+  setText(
+    "comparison-summary",
+    runCount > 1
+      ? `${formatNumber(runCount)} logs processados. Os cards superiores mostram a media das metricas; o mapa e os graficos mostram o cenario selecionado.`
+      : "Um log processado. Adicione mais STATELOGs para comparar cenarios e calcular medias."
+  );
+
+  const rows = model.comparison?.rows || [];
+  document.getElementById("comparison-table-body").innerHTML = rows
+    .map(
+      (row) => `
+        <tr class="${row.is_average ? "average-row" : ""}">
+          <td title="${escapeHtml(row.name)}">${escapeHtml(row.name)}</td>
+          <td>${formatNumber(row.aircraft, 1)}</td>
+          <td>${formatNumber(row.peak, 1)}</td>
+          <td>${formatNumber(row.duration_min, 1)} min</td>
+          <td>${formatNumber(row.flight_time_min, 1)} min</td>
+          <td>${formatNumber(row.distance_nm, 1)} NM</td>
+          <td>${formatNumber(row.route_efficiency_pct, 1)}%</td>
+          <td>${formatNumber(row.low_altitude_pct, 1)}%</td>
+          <td>${formatNumber(row.lowc_events, 1)}</td>
+        </tr>`
+    )
+    .join("");
 }
 
 function renderMetrics(dashboard) {
@@ -540,6 +616,89 @@ function buildClientModel(rows, fileName) {
       })),
     },
     heatmap: sampleRows(rows, 10).map((row) => [row.lat, row.lon, 0.65]),
+  };
+}
+
+function buildMultiRunModel(runs, uploaded) {
+  const dashboards = runs.map((run) => run.dashboard);
+  const dashboard = dashboards.length > 1 ? averageDashboard(dashboards) : dashboards[0];
+  const comparison = buildComparison(runs, dashboard);
+  return {
+    dashboard,
+    tracks: runs[0].tracks,
+    conflicts: runs[0].conflicts,
+    heatmap: runs[0].heatmap,
+    timeline: runs[0].timeline,
+    runs,
+    comparison,
+    uploaded,
+  };
+}
+
+function averageDashboard(dashboards) {
+  if (dashboards.length === 1) return dashboards[0];
+
+  return {
+    source_log: `Media de ${dashboards.length} STATELOGs`,
+    summary: {
+      records: dashboards.reduce((sum, item) => sum + item.summary.records, 0),
+      aircraft_count: average(dashboards.map((item) => item.summary.aircraft_count)),
+      sim_start_s: average(dashboards.map((item) => item.summary.sim_start_s)),
+      sim_end_s: average(dashboards.map((item) => item.summary.sim_end_s)),
+      duration_min: average(dashboards.map((item) => item.summary.duration_min)),
+      mean_simultaneous_aircraft: average(dashboards.map((item) => item.summary.mean_simultaneous_aircraft)),
+      peak_simultaneous_aircraft: average(dashboards.map((item) => item.summary.peak_simultaneous_aircraft)),
+      bounds: {
+        min_lat: Math.min(...dashboards.map((item) => item.summary.bounds.min_lat)),
+        max_lat: Math.max(...dashboards.map((item) => item.summary.bounds.max_lat)),
+        min_lon: Math.min(...dashboards.map((item) => item.summary.bounds.min_lon)),
+        max_lon: Math.max(...dashboards.map((item) => item.summary.bounds.max_lon)),
+      },
+    },
+    efficiency: {
+      mean_flight_time_min: average(dashboards.map((item) => item.efficiency.mean_flight_time_min)),
+      median_flight_time_min: average(dashboards.map((item) => item.efficiency.median_flight_time_min)),
+      mean_distance_nm: average(dashboards.map((item) => item.efficiency.mean_distance_nm)),
+      median_distance_nm: average(dashboards.map((item) => item.efficiency.median_distance_nm)),
+      mean_route_efficiency_pct: average(dashboards.map((item) => item.efficiency.mean_route_efficiency_pct)),
+    },
+    environment: {
+      low_altitude_threshold_ft: dashboards[0].environment.low_altitude_threshold_ft,
+      low_altitude_threshold_m: dashboards[0].environment.low_altitude_threshold_m,
+      low_altitude_share_pct: average(dashboards.map((item) => item.environment.low_altitude_share_pct)),
+      mean_altitude_m: average(dashboards.map((item) => item.environment.mean_altitude_m)),
+      median_altitude_m: average(dashboards.map((item) => item.environment.median_altitude_m)),
+    },
+    safety: {
+      lowc_events: average(dashboards.map((item) => item.safety.lowc_events)),
+      lowc_horizontal_m: dashboards[0].safety.lowc_horizontal_m,
+      lowc_vertical_m: dashboards[0].safety.lowc_vertical_m,
+      sample_seconds: dashboards[0].safety.sample_seconds,
+      separation_samples: dashboards.reduce((sum, item) => sum + item.safety.separation_samples, 0),
+    },
+    charts: dashboards[0].charts || {},
+  };
+}
+
+function buildComparison(runs, dashboard) {
+  const rows = runs.map((run) => comparisonRow(run.name, run.dashboard, false));
+  rows.push(comparisonRow("Media", dashboard, true));
+  return { run_count: runs.length, rows };
+}
+
+function comparisonRow(name, dashboard, isAverage) {
+  return {
+    name,
+    records: dashboard.summary.records,
+    aircraft: dashboard.summary.aircraft_count,
+    peak: dashboard.summary.peak_simultaneous_aircraft,
+    duration_min: dashboard.summary.duration_min,
+    flight_time_min: dashboard.efficiency.mean_flight_time_min,
+    distance_nm: dashboard.efficiency.mean_distance_nm,
+    route_efficiency_pct: dashboard.efficiency.mean_route_efficiency_pct,
+    low_altitude_pct: dashboard.environment.low_altitude_share_pct,
+    lowc_events: dashboard.safety.lowc_events,
+    is_average: isAverage,
   };
 }
 

@@ -442,6 +442,89 @@ input[type="checkbox"] {
   line-height: 1.35;
 }
 
+.comparison-panel {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+  display: grid;
+  gap: 14px;
+  overflow: hidden;
+  padding: 16px;
+}
+
+.comparison-header {
+  align-items: center;
+  display: flex;
+  gap: 16px;
+  justify-content: space-between;
+}
+
+.comparison-header h2 {
+  margin-bottom: 0;
+}
+
+.comparison-header label {
+  align-items: center;
+  display: flex;
+  gap: 10px;
+}
+
+.comparison-header label span,
+.comparison-summary {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 650;
+}
+
+#run-select {
+  background: #ffffff;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  color: var(--ink);
+  font: inherit;
+  min-width: min(460px, 48vw);
+  padding: 9px 12px;
+}
+
+.table-wrap {
+  overflow-x: auto;
+}
+
+.comparison-table {
+  border-collapse: collapse;
+  font-size: 13px;
+  min-width: 980px;
+  width: 100%;
+}
+
+.comparison-table th,
+.comparison-table td {
+  border-bottom: 1px solid var(--line);
+  padding: 10px 9px;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.comparison-table th:first-child,
+.comparison-table td:first-child {
+  max-width: 340px;
+  overflow: hidden;
+  text-align: left;
+  text-overflow: ellipsis;
+}
+
+.comparison-table th {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 760;
+}
+
+.comparison-table tr.average-row {
+  background: #f8fafc;
+  font-weight: 760;
+}
+
 .map-legend {
   display: flex;
   flex-wrap: wrap;
@@ -534,6 +617,16 @@ input[type="checkbox"] {
   .charts,
   .side-panel {
     grid-template-columns: 1fr;
+  }
+
+  .comparison-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .comparison-header label,
+  #run-select {
+    width: 100%;
   }
 
   .workspace,

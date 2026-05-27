@@ -10,7 +10,7 @@
       integrity="sha256-p4NxAoJBhIINfQd+g9FQXHyzyTAFi+lyLwN2Bja9fM="
       crossorigin=""
     />
-    <link rel="stylesheet" href="assets/dashboard.css?v=0.1.5" />
+    <link rel="stylesheet" href="assets/dashboard.css?v=0.2.0" />
   </head>
   <body>
     <header class="topbar">
@@ -20,8 +20,8 @@
       </div>
       <div class="source-panel">
         <span id="source-log">STATELOG</span>
-        <label class="upload-button" for="log-upload">Carregar STATELOG</label>
-        <input id="log-upload" type="file" accept=".log,.csv,.txt" />
+        <label class="upload-button" for="log-upload">Carregar STATELOGs</label>
+        <input id="log-upload" type="file" accept=".log,.csv,.txt" multiple />
       </div>
     </header>
 
@@ -101,6 +101,38 @@
         </section>
       </section>
 
+      <section class="comparison-panel" aria-label="Comparacao entre STATELOGs">
+        <div class="comparison-header">
+          <div>
+            <p class="eyebrow">Comparacao</p>
+            <h2>Cenarios processados</h2>
+          </div>
+          <label>
+            <span>Cenario no mapa</span>
+            <select id="run-select"></select>
+          </label>
+        </div>
+        <div id="comparison-summary" class="comparison-summary">-</div>
+        <div class="table-wrap">
+          <table class="comparison-table">
+            <thead>
+              <tr>
+                <th>Log</th>
+                <th>Aeronaves</th>
+                <th>Pico</th>
+                <th>Duracao</th>
+                <th>Tempo medio</th>
+                <th>Distancia</th>
+                <th>Ef. rota</th>
+                <th>Baixa alt.</th>
+                <th>LoWC</th>
+              </tr>
+            </thead>
+            <tbody id="comparison-table-body"></tbody>
+          </table>
+        </div>
+      </section>
+
       <section class="charts" aria-label="Graficos">
         <article class="chart-card">
           <h2>Aeronaves simultaneas</h2>
@@ -131,7 +163,7 @@
       crossorigin=""
     ></script>
     <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
-    <script src="assets/data_bundle.js?v=0.1.5"></script>
-    <script src="assets/dashboard.js?v=0.1.5"></script>
+    <script src="assets/data_bundle.js?v=0.2.0"></script>
+    <script src="assets/dashboard.js?v=0.2.0"></script>
   </body>
 </html>

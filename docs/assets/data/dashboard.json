@@ -1,0 +1,49 @@
+{
+  "source_log": "Media de 5 STATELOGs",
+  "map_center": [
+    -23.5505,
+    -46.6333
+  ],
+  "summary": {
+    "records": 240590,
+    "aircraft_count": 59.8,
+    "sim_start_s": 15300.2,
+    "sim_end_s": 86593.4,
+    "duration_min": 1188.22,
+    "mean_simultaneous_aircraft": 1.5142361168092258,
+    "peak_simultaneous_aircraft": 4.2,
+    "bounds": {
+      "min_lat": -23.71958806,
+      "max_lat": -23.24833997,
+      "min_lon": -46.91936146,
+      "max_lon": -46.128611
+    }
+  },
+  "efficiency": {
+    "mean_flight_time_min": 105.34032755745322,
+    "median_flight_time_min": 11.91,
+    "mean_distance_nm": 14.992484718225125,
+    "median_distance_nm": 12.93584581752484,
+    "mean_route_efficiency_pct": 66.33880385901902
+  },
+  "environment": {
+    "low_altitude_threshold_ft": 1500.0,
+    "low_altitude_threshold_m": 457.20000000000005,
+    "low_altitude_share_pct": 0.0,
+    "mean_altitude_m": 946.2968473040088,
+    "median_altitude_m": 975.1366851999999
+  },
+  "safety": {
+    "lowc_events": 1.0,
+    "lowc_horizontal_m": 500.0,
+    "lowc_vertical_m": 30.0,
+    "sample_seconds": 10,
+    "separation_samples": 8594
+  },
+  "charts": {
+    "active_aircraft": "assets/charts/01_STATELOG_1_maior_movimento_20260527_134549_mvp_20260527_14-03-34_active_aircraft.png",
+    "separation_histogram": "assets/charts/01_STATELOG_1_maior_movimento_20260527_134549_mvp_20260527_14-03-34_separation_histogram.png",
+    "altitude_histogram": "assets/charts/01_STATELOG_1_maior_movimento_20260527_134549_mvp_20260527_14-03-34_altitude_histogram.png",
+    "distance_histogram": "assets/charts/01_STATELOG_1_maior_movimento_20260527_134549_mvp_20260527_14-03-34_distance_histogram.png"
+  }
+}

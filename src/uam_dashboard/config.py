@@ -14,8 +14,9 @@ SAO_PAULO_CENTER = [-23.5505, -46.6333]
 class DashboardConfig:
     """Analysis settings used by the static dashboard generator."""
 
-    log_path: Path
+    log_paths: tuple[Path, ...]
     output_dir: Path = Path("docs")
+    data_dir: Path = Path("data")
     low_altitude_ft: float = 1500.0
     lowc_horizontal_m: float = 500.0
     lowc_vertical_m: float = 30.0
