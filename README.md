@@ -2,9 +2,9 @@
 
 Dashboard estatico para analisar logs `STATELOG` do BlueSky em cenarios de corredor aereo urbano na RMSP.
 
-O projeto gera uma pasta `docs/` pronta para GitHub Pages, com mapas Leaflet, camadas georreferenciadas, graficos PNG e uma tabela comparativa quando houver mais de um log.
+Este repositorio implementa, em codigo, metricas de seguranca e eficiencia descritas no estudo `Projeto_SIGMA_Sky_Produto_3_Versao_0.pdf`. A saida principal e a pasta `docs/`, pronta para GitHub Pages.
 
-## 1. Organizacao Dos Logs
+## 1. Preparar Os Logs
 
 Coloque os arquivos `STATELOG*.log` em:
 
@@ -12,14 +12,20 @@ Coloque os arquivos `STATELOG*.log` em:
 data/
 ```
 
-A pasta `data/` esta no `.gitignore`, entao os logs ficam fora do versionamento.
+A pasta `data/` fica fora do Git pelo `.gitignore`, entao os logs brutos nao entram no GitHub.
 
 Exemplo:
 
 ```text
 data/
-  STATELOG_1_maior_movimento_20260527_134549_mvp_20260527_14-03-34.log
-  STATELOG_2_maior_movimento_20260527_134756_mvp_20260527_14-16-21.log
+  STATELOG_1_maior_movimento.log
+  STATELOG_2_maior_movimento.log
+```
+
+O formato esperado pelo parser e:
+
+```text
+simt,id,lat,lon,distflown,alt,cas,tas,gs
 ```
 
 ## 2. Gerar O Dashboard
@@ -42,129 +48,125 @@ Para escolher outra pasta de entrada:
 .\.venv\Scripts\python.exe generate_dashboard.py --data-dir logs_brutos
 ```
 
-## 3. Saida Gerada
+## 3. Parametros E Hiperparametros
+
+Os parametros principais ficam em `src/uam_dashboard/config.py`:
+
+```python
+low_altitude_ft = 1500.0
+low_altitude_reference_mode = "origin_agl_proxy"
+low_altitude_reference_samples = 5
+flight_instance_gap_seconds = 300.0
+flight_instance_reset_distance_m = 250.0
+flight_instance_jump_m = 5000.0
+lowc_horizontal_m = 500.0
+lowc_vertical_m = 30.0
+nmac_horizontal_m = 150.0
+nmac_vertical_m = 30.0
+mac_probability_bands = (0.001, 0.01, 0.05)
+conflict_sample_seconds = 10
+same_altitude_band_m = 150.0
+track_sample_stride = 20
+heatmap_sample_stride = 10
+ROUTE_REFERENCE_MIN_M = 1000.0
+```
+
+Alguns parametros podem ser alterados pela linha de comando:
+
+```powershell
+.\.venv\Scripts\python.exe generate_dashboard.py --lowc-horizontal-m 600 --lowc-vertical-m 40 --nmac-horizontal-m 150
+```
+
+O parametro `low_altitude_ft` e configuravel. Por padrao, o valor `1500 ft` nao e aplicado sobre altitude absoluta MSL; ele e aplicado como proxy AGL:
+
+```text
+altitude_relativa_m = alt_m - altitude_origem_m
+baixa_altitude = altitude_relativa_m < low_altitude_ft * 0.3048
+```
+
+A `altitude_origem_m` e estimada pela mediana das primeiras amostras de cada instancia de voo. Uma nova instancia pode ser detectada quando o mesmo `id` reaparece apos um intervalo grande, quando `distflown` reinicia, ou quando ha salto geografico relevante.
+
+## 4. Saida Gerada
 
 O gerador publica em `docs/`:
 
 - `docs/index.html`: dashboard principal.
 - `docs/assets/data_bundle.js`: pacote de dados usado pela pagina.
 - `docs/assets/data/dashboard.json`: metricas agregadas ou medias.
-- `docs/assets/data/comparison.json`: linhas da tabela comparativa.
+- `docs/assets/data/comparison.json`: tabela comparativa.
 - `docs/assets/data/runs/*.json`: dados por log processado.
 - `docs/assets/data/tracks.geojson`: rotas do primeiro log, para compatibilidade.
-- `docs/assets/data/conflicts.geojson`: eventos LoWC do primeiro log.
+- `docs/assets/data/conflicts.geojson`: eventos LoWC/NMAC do primeiro log.
 - `docs/assets/data/heatmap_points.json`: pontos de densidade do primeiro log.
 - `docs/assets/charts/*.png`: graficos estaticos por log.
 
-## 4. Como A Comparacao Funciona
+## 5. Responsabilidades Dos Modulos
+
+| Arquivo | Responsabilidade |
+|---|---|
+| `generate_dashboard.py` | Orquestra leitura, metricas, graficos, JSON/GeoJSON e copia `web/` para `docs/`. |
+| `src/uam_dashboard/config.py` | Centraliza colunas, unidades, limiares LoWC/NMAC, amostragem e bandas MAC. |
+| `src/uam_dashboard/log_parser.py` | Le o `STATELOG`, converte campos numericos e ordena os registros. |
+| `src/uam_dashboard/metrics.py` | Implementa formulas de seguranca, eficiencia, exposicao e severidade. |
+| `src/uam_dashboard/metric_catalog.py` | Mantem a rastreabilidade entre metrica, formula, PDF, codigo e status. |
+| `src/uam_dashboard/exports.py` | Converte rotas e eventos para GeoJSON e series para JSON. |
+| `src/uam_dashboard/plots.py` | Gera PNGs de aeronaves simultaneas, separacao, altitude, distancia e severidade. |
+| `web/index.html` | Estrutura estatica da pagina. |
+| `web/assets/dashboard.js` | Renderiza mapa, comparacao, metricas e preview local de uploads. |
+| `web/assets/dashboard.css` | Layout visual e regras criticas do Leaflet. |
+
+## 6. Rastreabilidade Das Formulas
+
+| Metrica | Formula implementada | Referencia no PDF | Codigo |
+|---|---|---|---|
+| LoWC | `Sh(t) < Smin_h and Sv(t) < Smin_v` | Secao 4.2.1, Eq. 4.1 | `metrics.py::detect_lowc_events` |
+| Baixa altitude AGL proxy | `(alt_m - alt_origem_m) < low_altitude_ft * 0.3048` | Baixa altitude aparece como dimensao de analise; limiar e configuravel | `metrics.py::environment_metrics` |
+| LoWC por hora de voo | `N_lowc / sum(H_f)` | Secao 3.3, Eq. 3.2 | `metrics.py::_safety_summary` |
+| LoWC por 100 operacoes | `N_lowc / N_voos * 100` | Secao 3.3 | `metrics.py::_safety_summary` |
+| LoWC por 1000 km | `N_lowc / km_voados * 1000` | Secao 3.3 | `metrics.py::_safety_summary` |
+| Severidade | `sev_ij = min_t(Sh/Smin_h, Sv/Smin_v)` | Secao 4.2.3, Eq. 4.5 | `metrics.py::_summarize_lowc_event` |
+| Tempo abaixo do limiar | `amostras consecutivas em LoWC * conflict_sample_seconds` | Secao 4.2.3 | `metrics.py::_summarize_lowc_event` |
+| NMAC | `Sh(t) < S_NMAC_h and Sv(t) < S_NMAC_v` | Secao 4.2.2 | `metrics.py::_safety_summary` |
+| MAC esperado | `E[MAC] = N_NMAC * P(MAC\|NMAC)` | Secao 4.2.2, Eq. 4.2-4.4 | `metrics.py::_safety_summary` |
+| Tempo medio de voo | `mean(max(simt_f) - min(simt_f))` | Secao 4.3.4 | `metrics.py::efficiency_metrics` |
+| Distancia media | `mean(max(distflown_f))` | Secao 4.3.4 | `metrics.py::efficiency_metrics` |
+| Eficiencia horizontal | `d_gc / d_real * 100` | Secoes 4.1 e 4.3.6 | `metrics.py::efficiency_metrics` |
+| Extensao de rota | `(d_real / d_gc - 1) * 100`, apenas quando `d_gc >= 1000 m` | Secao 4.3.6 | `metrics.py::efficiency_metrics` |
+
+O dashboard tambem exporta esta matriz por meio de `metric_catalog.py` e mostra a tabela na propria pagina.
+
+## 7. Metricas Ainda Indisponiveis
+
+O `STATELOG` atual nao contem todos os campos minimos citados no PDF. Por isso, as metricas abaixo ficam documentadas como indisponiveis ate que novos dados sejam fornecidos:
+
+- atraso em solo: requer `S_f`, `R_f` e/ou `D_f`;
+- atraso em voo: requer tempo nominal `T_f`;
+- atraso total e pontualidade: requer horarios planejados, autorizados e reais;
+- conformidade com trajetoria planejada: requer rota planejada ou `dplan_f`;
+- tempo ate conflito: requer tempo de deteccao `tdet`;
+- carga de deconfliction: requer comandos de velocidade, proa ou altitude;
+- razao de risco entre cenarios: requer pareamento explicito entre baseline e mitigacao.
+
+## 8. Comparacao Entre Logs
 
 Quando ha dois ou mais logs:
 
-- os cards superiores mostram a media das metricas principais;
+- os cards superiores mostram medias das metricas principais;
 - a tabela `Cenarios processados` mostra cada log e uma linha `Media`;
-- o seletor `Cenario no mapa` troca o mapa e os graficos para o log escolhido;
-- o botao `Carregar STATELOGs` permite comparar arquivos localmente no navegador como preview.
+- o seletor `Cenario no mapa` troca mapa e graficos para o log escolhido;
+- o botao `Carregar STATELOGs` permite comparar arquivos localmente no navegador.
 
-As medias incluem aeronaves, pico simultaneo, duracao, tempo medio, distancia media, eficiencia de rota, baixa altitude e eventos LoWC.
+As medias incluem aeronaves, pico simultaneo, duracao, tempo medio, distancia media, eficiencia, extensao de rota, baixa altitude, LoWC, NMAC, taxas normalizadas e severidade.
 
-## 5. Responsabilidades Dos Modulos
+## 9. Testes
 
-### `generate_dashboard.py`
-
-Orquestra o processo inteiro:
-
-1. encontra logs em `data/` ou usa os caminhos passados na linha de comando;
-2. chama o parser;
-3. calcula metricas;
-4. gera graficos;
-5. exporta JSON/GeoJSON;
-6. monta o bundle usado pela pagina;
-7. copia `web/` para `docs/`.
-
-### `src/uam_dashboard/config.py`
-
-Centraliza constantes e parametros:
-
-- colunas do `STATELOG`;
-- conversoes de unidade;
-- thresholds LoWC;
-- altitude critica;
-- amostragem de conflitos;
-- amostragem de rotas e heatmap.
-
-### `src/uam_dashboard/log_parser.py`
-
-Le o arquivo de log, aplica nomes de colunas, converte campos numericos e ordena os registros.
-
-### `src/uam_dashboard/metrics.py`
-
-Contem as formulas principais:
-
-- distancia Haversine;
-- resumo do cenario;
-- eficiencia operacional;
-- eficiencia de rota;
-- impacto ambiental por baixa altitude;
-- serie temporal de aeronaves simultaneas;
-- deteccao de LoWC.
-
-### `src/uam_dashboard/exports.py`
-
-Converte DataFrames em estruturas para a interface:
-
-- rotas em GeoJSON;
-- conflitos em GeoJSON;
-- pontos de heatmap;
-- timeline.
-
-### `src/uam_dashboard/plots.py`
-
-Gera os graficos PNG:
-
-- aeronaves simultaneas;
-- distribuicao de separacao horizontal;
-- distribuicao de altitude;
-- distancia por aeronave.
-
-### `web/index.html`
-
-Define a estrutura da pagina: cards de KPI, seletor de cenario, mapa, tabela comparativa e graficos.
-
-### `web/assets/dashboard.js`
-
-Renderiza a aplicacao no navegador:
-
-- carrega o bundle;
-- alterna cenarios;
-- desenha camadas do mapa;
-- monta a tabela comparativa;
-- faz preview local de uploads multiplos.
-
-### `web/assets/dashboard.css`
-
-Controla layout, visual do dashboard e CSS critico do Leaflet.
-
-## 6. Parametros Mais Importantes
-
-Os principais parametros oficiais estao em `src/uam_dashboard/config.py`:
-
-```python
-low_altitude_ft = 1500.0
-lowc_horizontal_m = 500.0
-lowc_vertical_m = 30.0
-conflict_sample_seconds = 10
-same_altitude_band_m = 150.0
-track_sample_stride = 20
-heatmap_sample_stride = 10
-```
-
-Alguns podem ser alterados pela linha de comando:
+Rode os testes unitarios com:
 
 ```powershell
-.\.venv\Scripts\python.exe generate_dashboard.py --lowc-horizontal-m 600 --lowc-vertical-m 40
+.\.venv\Scripts\python.exe -m unittest discover -s tests
 ```
 
-## 7. Publicacao No GitHub Pages
+## 10. Publicacao No GitHub Pages
 
 Configure o GitHub Pages para publicar a pasta:
 
@@ -172,4 +174,4 @@ Configure o GitHub Pages para publicar a pasta:
 docs/
 ```
 
-Os logs ficam em `data/`, ignorados pelo Git, e o site final fica em `docs/`.
+Depois de gerar novamente o dashboard, faca commit dos arquivos de `docs/` e envie para o GitHub. Os logs brutos continuam apenas em `data/`.

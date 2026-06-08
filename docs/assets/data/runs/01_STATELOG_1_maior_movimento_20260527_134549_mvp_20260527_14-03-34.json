@@ -25,30 +25,211 @@
     "efficiency": {
       "mean_flight_time_min": 106.27263374485597,
       "median_flight_time_min": 19.083333333333332,
+      "p95_flight_time_min": 463.55,
       "mean_distance_nm": 17.10224656703744,
       "median_distance_nm": 14.971301087699784,
-      "mean_route_efficiency_pct": 62.32028739313932
+      "p95_distance_nm": 29.369247943331533,
+      "total_distance_km": 2565.5422120144203,
+      "total_flight_hours": 143.46805555555557,
+      "mean_great_circle_distance_nm": 9.920137519751083,
+      "mean_route_efficiency_pct": 62.32028739313932,
+      "mean_route_extension_pct": 92.06864861071728,
+      "route_extension_sample_count": 76,
+      "route_proxy_excluded_count": 5,
+      "route_reference_min_m": 1000.0
     },
     "environment": {
       "low_altitude_threshold_ft": 1500.0,
       "low_altitude_threshold_m": 457.20000000000005,
-      "low_altitude_share_pct": 0.0,
+      "low_altitude_reference_mode": "origin_agl_proxy",
+      "low_altitude_reference_samples": 5,
+      "flight_instance_gap_seconds": 300.0,
+      "flight_instance_reset_distance_m": 250.0,
+      "flight_instance_jump_m": 5000.0,
+      "low_altitude_share_pct": 99.55468179854935,
       "mean_altitude_m": 945.0957999350939,
-      "median_altitude_m": 974.573476
+      "median_altitude_m": 974.573476,
+      "mean_altitude_agl_proxy_m": 172.72889565020927,
+      "median_altitude_agl_proxy_m": 191.4144,
+      "mean_origin_altitude_m": 774.2604695652174,
+      "median_origin_altitude_m": 750.1128,
+      "flight_instance_count": 138
     },
     "safety": {
-      "lowc_events": 3,
+      "lowc_events": 2,
+      "nmac_events": 0,
       "lowc_horizontal_m": 500.0,
       "lowc_vertical_m": 30.0,
+      "nmac_horizontal_m": 150.0,
+      "nmac_vertical_m": 30.0,
       "sample_seconds": 10,
-      "separation_samples": 3319
+      "same_altitude_band_m": 150.0,
+      "separation_samples": 3319,
+      "lowc_per_100_operations": 2.4691358024691357,
+      "lowc_per_flight_hour": 0.0139403854903821,
+      "lowc_per_1000_km": 0.7795623048547051,
+      "nmac_per_100_operations": 0.0,
+      "nmac_per_flight_hour": 0.0,
+      "nmac_per_1000_km": 0.0,
+      "monitored_pair_samples": 3319,
+      "min_severity_ratio": 0.026670000000001436,
+      "p05_severity_ratio": 0.050943746742699324,
+      "median_severity_ratio": 0.2694074674269803,
+      "p95_severity_ratio": 0.4878711881112613,
+      "total_time_below_threshold_s": 30.0,
+      "mean_time_below_threshold_s": 15.0,
+      "max_time_below_threshold_s": 20.0,
+      "mac_probability_low": 0.001,
+      "mac_probability_nominal": 0.01,
+      "mac_probability_high": 0.05,
+      "expected_mac_low": 0.0,
+      "expected_mac_nominal": 0.0,
+      "expected_mac_high": 0.0
     },
     "charts": {
       "active_aircraft": "assets/charts/01_STATELOG_1_maior_movimento_20260527_134549_mvp_20260527_14-03-34_active_aircraft.png",
       "separation_histogram": "assets/charts/01_STATELOG_1_maior_movimento_20260527_134549_mvp_20260527_14-03-34_separation_histogram.png",
       "altitude_histogram": "assets/charts/01_STATELOG_1_maior_movimento_20260527_134549_mvp_20260527_14-03-34_altitude_histogram.png",
-      "distance_histogram": "assets/charts/01_STATELOG_1_maior_movimento_20260527_134549_mvp_20260527_14-03-34_distance_histogram.png"
-    }
+      "distance_histogram": "assets/charts/01_STATELOG_1_maior_movimento_20260527_134549_mvp_20260527_14-03-34_distance_histogram.png",
+      "severity_histogram": "assets/charts/01_STATELOG_1_maior_movimento_20260527_134549_mvp_20260527_14-03-34_severity_histogram.png"
+    },
+    "metric_catalog": [
+      {
+        "id": "low_altitude_share_pct",
+        "name": "Baixa altitude AGL proxy",
+        "formula": "(alt_m - alt_origem_m) < low_altitude_ft * 0.3048",
+        "pdf_reference": "Produto 3, menciona baixa altitude como dimensao de analise; limiar e parametro configuravel",
+        "code_reference": "src/uam_dashboard/metrics.py::environment_metrics",
+        "status": "implemented_configurable_proxy",
+        "data_required": "simt, id, lat, lon, distflown, alt"
+      },
+      {
+        "id": "lowc_events",
+        "name": "Loss of Well Clear",
+        "formula": "Sh(t) < Smin_h and Sv(t) < Smin_v",
+        "pdf_reference": "Produto 3, secao 4.2.1, Eq. 4.1",
+        "code_reference": "src/uam_dashboard/metrics.py::detect_lowc_events",
+        "status": "implemented",
+        "data_required": "simt, id, lat, lon, alt"
+      },
+      {
+        "id": "lowc_per_flight_hour",
+        "name": "Taxa LoWC por hora de voo",
+        "formula": "N_lowc / sum(H_f)",
+        "pdf_reference": "Produto 3, secao 3.3, Eq. 3.2",
+        "code_reference": "src/uam_dashboard/metrics.py::_safety_summary",
+        "status": "implemented",
+        "data_required": "duracao observada por aeronave"
+      },
+      {
+        "id": "lowc_per_100_operations",
+        "name": "Taxa LoWC por 100 operacoes",
+        "formula": "N_lowc / N_voos * 100",
+        "pdf_reference": "Produto 3, secao 3.3",
+        "code_reference": "src/uam_dashboard/metrics.py::_safety_summary",
+        "status": "implemented",
+        "data_required": "id da aeronave"
+      },
+      {
+        "id": "lowc_per_1000_km",
+        "name": "Taxa LoWC por 1000 km",
+        "formula": "N_lowc / km_voados * 1000",
+        "pdf_reference": "Produto 3, secao 3.3",
+        "code_reference": "src/uam_dashboard/metrics.py::_safety_summary",
+        "status": "implemented",
+        "data_required": "distflown"
+      },
+      {
+        "id": "severity_ratio",
+        "name": "Severidade de conflito",
+        "formula": "sev_ij = min_t(Sh/Smin_h, Sv/Smin_v)",
+        "pdf_reference": "Produto 3, secao 4.2.3, Eq. 4.5",
+        "code_reference": "src/uam_dashboard/metrics.py::_summarize_lowc_event",
+        "status": "implemented",
+        "data_required": "simt, lat, lon, alt"
+      },
+      {
+        "id": "time_below_threshold",
+        "name": "Tempo abaixo do limiar",
+        "formula": "amostras consecutivas em LoWC * passo de amostragem",
+        "pdf_reference": "Produto 3, secao 4.2.3",
+        "code_reference": "src/uam_dashboard/metrics.py::_summarize_lowc_event",
+        "status": "implemented_as_sampled_estimate",
+        "data_required": "simt regular ou amostragem configurada"
+      },
+      {
+        "id": "nmac_events",
+        "name": "Near Mid-Air Collision",
+        "formula": "Sh(t) < S_NMAC_h and Sv(t) < S_NMAC_v",
+        "pdf_reference": "Produto 3, secao 4.2.2",
+        "code_reference": "src/uam_dashboard/metrics.py::_safety_summary",
+        "status": "implemented_configurable_threshold",
+        "data_required": "simt, lat, lon, alt"
+      },
+      {
+        "id": "expected_mac",
+        "name": "MAC esperado",
+        "formula": "E[MAC] = N_NMAC * P(MAC|NMAC)",
+        "pdf_reference": "Produto 3, secao 4.2.2, Eq. 4.2-4.4",
+        "code_reference": "src/uam_dashboard/metrics.py::_safety_summary",
+        "status": "implemented_as_sensitivity_band",
+        "data_required": "NMAC e bandas configuradas"
+      },
+      {
+        "id": "mean_flight_time_min",
+        "name": "Tempo medio de voo",
+        "formula": "mean(max(simt_f) - min(simt_f))",
+        "pdf_reference": "Produto 3, secao 4.3.4",
+        "code_reference": "src/uam_dashboard/metrics.py::efficiency_metrics",
+        "status": "implemented_observed_proxy",
+        "data_required": "simt, id"
+      },
+      {
+        "id": "mean_distance_nm",
+        "name": "Distancia media executada",
+        "formula": "mean(max(distflown_f))",
+        "pdf_reference": "Produto 3, secao 4.3.4",
+        "code_reference": "src/uam_dashboard/metrics.py::efficiency_metrics",
+        "status": "implemented",
+        "data_required": "distflown, id"
+      },
+      {
+        "id": "mean_route_efficiency_pct",
+        "name": "Eficiencia horizontal",
+        "formula": "d_gc / d_real * 100",
+        "pdf_reference": "Produto 3, secoes 4.1 e 4.3.6",
+        "code_reference": "src/uam_dashboard/metrics.py::efficiency_metrics",
+        "status": "implemented_great_circle_proxy",
+        "data_required": "lat/lon inicial e final, distflown"
+      },
+      {
+        "id": "mean_route_extension_pct",
+        "name": "Extensao de rota",
+        "formula": "(d_real / d_gc - 1) * 100, only when d_gc >= 1000 m",
+        "pdf_reference": "Produto 3, secao 4.3.6",
+        "code_reference": "src/uam_dashboard/metrics.py::efficiency_metrics",
+        "status": "implemented_great_circle_proxy",
+        "data_required": "lat/lon inicial e final, distflown"
+      },
+      {
+        "id": "delay_metrics",
+        "name": "Atrasos e pontualidade",
+        "formula": "dependem de S_f, R_f, D_f, A_f e T_f",
+        "pdf_reference": "Produto 3, secoes 4.3.1-4.3.3",
+        "code_reference": "pendente de campos no log",
+        "status": "unavailable_with_current_statelog",
+        "data_required": "horarios planejados, autorizados e reais"
+      },
+      {
+        "id": "trajectory_conformity",
+        "name": "Conformidade de trajetoria",
+        "formula": "comparacao entre rota planejada e trajetoria executada",
+        "pdf_reference": "Produto 3, secao 4.3.5",
+        "code_reference": "pendente de rota planejada",
+        "status": "unavailable_with_current_statelog",
+        "data_required": "geometria planejada ou dplan_f"
+      }
+    ]
   },
   "tracks": {
     "type": "FeatureCollection",
@@ -18338,10 +18519,15 @@
         "type": "Feature",
         "properties": {
           "simt": 50000.0,
+          "start_simt": 50000.0,
+          "end_simt": 50000.0,
+          "duration_s": 10.0,
           "id_a": "PPJBB",
           "id_b": "PTYKK",
           "dist_h_m": 268.4662392792808,
-          "dist_v_m": 0.8001000000000431
+          "dist_v_m": 0.8001000000000431,
+          "severity_ratio": 0.026670000000001436,
+          "is_nmac": false
         },
         "geometry": {
           "type": "Point",
@@ -18355,33 +18541,21 @@
         "type": "Feature",
         "properties": {
           "simt": 60800.0,
+          "start_simt": 60800.0,
+          "end_simt": 60810.0,
+          "duration_s": 20.0,
           "id_a": "PREVU",
           "id_b": "PRMSO",
           "dist_h_m": 256.0724674269796,
-          "dist_v_m": 20.116800000000012
+          "dist_v_m": 20.116800000000012,
+          "severity_ratio": 0.5121449348539592,
+          "is_nmac": false
         },
         "geometry": {
           "type": "Point",
           "coordinates": [
             -46.685038715000005,
             -23.589368370000003
-          ]
-        }
-      },
-      {
-        "type": "Feature",
-        "properties": {
-          "simt": 60810.0,
-          "id_a": "PREVU",
-          "id_b": "PRMSO",
-          "dist_h_m": 386.07774515560783,
-          "dist_v_m": 20.116800000000012
-        },
-        "geometry": {
-          "type": "Point",
-          "coordinates": [
-            -46.688774769999995,
-            -23.58729579
           ]
         }
       }

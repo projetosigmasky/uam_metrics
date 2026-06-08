@@ -17,6 +17,20 @@ const colors = ["#1d4ed8", "#047857", "#be123c", "#6d28d9", "#b45309", "#0e7490"
 
 const metersPerNm = 1852;
 const feetToMeters = 0.3048;
+const lowAltitudeFt = 1500;
+const lowAltitudeReferenceMode = "origin_agl_proxy";
+const lowAltitudeReferenceSamples = 5;
+const flightInstanceGapSeconds = 300;
+const flightInstanceResetDistanceM = 250;
+const flightInstanceJumpM = 5000;
+const lowcHorizontalM = 500;
+const lowcVerticalM = 30;
+const nmacHorizontalM = 150;
+const nmacVerticalM = 30;
+const conflictSampleSeconds = 10;
+const sameAltitudeBandM = 150;
+const macProbabilityBands = [0.001, 0.01, 0.05];
+const routeReferenceMinM = 1000;
 
 document.addEventListener("DOMContentLoaded", () => {
   initMap();
@@ -84,14 +98,14 @@ function initMap() {
   const conflictPane = state.map.createPane("conflictPane");
   conflictPane.style.zIndex = 560;
 
-  const osm = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-    attribution: "&copy; OpenStreetMap",
-    maxZoom: 19,
+  const positron = L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", {
+    attribution: "&copy; OpenStreetMap &copy; CARTO",
+    maxZoom: 20,
     updateWhenIdle: true,
     keepBuffer: 4,
   }).addTo(state.map);
 
-  const positron = L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", {
+  const voyager = L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", {
     attribution: "&copy; OpenStreetMap &copy; CARTO",
     maxZoom: 20,
     updateWhenIdle: true,
@@ -99,8 +113,8 @@ function initMap() {
   });
 
   state.baseLayers = {
-    OpenStreetMap: osm,
     "Base clara": positron,
+    "Base detalhada": voyager,
   };
 }
 
@@ -152,6 +166,7 @@ function renderDashboard(model) {
 
   renderMetrics(normalized.dashboard);
   renderComparison(normalized);
+  renderTraceability(normalized.metric_catalog || normalized.dashboard.metric_catalog || []);
   renderSelectedRun(normalized.uploaded);
 }
 
@@ -206,8 +221,12 @@ function renderComparison(model) {
           <td>${formatNumber(row.flight_time_min, 1)} min</td>
           <td>${formatNumber(row.distance_nm, 1)} NM</td>
           <td>${formatNumber(row.route_efficiency_pct, 1)}%</td>
+          <td>${formatNumber(row.route_extension_pct, 1)}%</td>
           <td>${formatNumber(row.low_altitude_pct, 1)}%</td>
           <td>${formatNumber(row.lowc_events, 1)}</td>
+          <td>${formatNumber(row.nmac_events, 1)}</td>
+          <td>${formatNumber(row.lowc_per_flight_hour, 2)}</td>
+          <td>${formatNumber(row.min_severity_ratio, 2)}</td>
         </tr>`
     )
     .join("");
@@ -227,11 +246,21 @@ function renderMetrics(dashboard) {
   setText("metric-flight-time", formatNumber(efficiency.mean_flight_time_min, 1));
   setText("metric-distance", formatNumber(efficiency.mean_distance_nm, 1));
   setText("metric-low-altitude", `${formatNumber(environment.low_altitude_share_pct, 1)}%`);
-  setText("metric-low-altitude-threshold", `< ${formatNumber(environment.low_altitude_threshold_ft, 0)} ft`);
+  setText(
+    "metric-low-altitude-threshold",
+    `< ${formatNumber(environment.low_altitude_threshold_ft, 0)} ft acima da origem`
+  );
   setText("metric-lowc", formatNumber(safety.lowc_events));
   setText("metric-lowc-threshold", `${formatNumber(safety.lowc_horizontal_m, 0)} m x ${formatNumber(safety.lowc_vertical_m, 0)} m`);
+  setText("metric-nmac", formatNumber(safety.nmac_events));
+  setText("metric-nmac-threshold", `${formatNumber(safety.nmac_horizontal_m, 0)} m x ${formatNumber(safety.nmac_vertical_m, 0)} m`);
+  setText("metric-lowc-rate", formatNumber(safety.lowc_per_flight_hour, 2));
   setText("kpa-route-efficiency", `${formatNumber(efficiency.mean_route_efficiency_pct, 1)}%`);
-  setText("kpa-altitude", `${formatNumber(environment.median_altitude_m, 0)} m`);
+  setText("kpa-route-extension", `${formatNumber(efficiency.mean_route_extension_pct, 1)}%`);
+  setText("kpa-altitude", `${formatNumber(environment.median_altitude_agl_proxy_m, 0)} m`);
+  setText("kpa-origin-altitude", `${formatNumber(environment.median_origin_altitude_m, 0)} m`);
+  setText("kpa-severity", formatNumber(safety.min_severity_ratio, 2));
+  setText("kpa-time-below", `${formatNumber(safety.total_time_below_threshold_s, 0)} s`);
   setText("kpa-safety-sample", `${formatNumber(safety.sample_seconds, 0)} s`);
 }
 
@@ -241,6 +270,7 @@ function renderCharts(dashboard, timeline, uploaded) {
     showImageChart("chart-separation", "canvas-separation", dashboard.charts.separation_histogram);
     showImageChart("chart-altitude", "canvas-altitude", dashboard.charts.altitude_histogram);
     showImageChart("chart-distance", "canvas-distance", dashboard.charts.distance_histogram);
+    showImageChart("chart-severity", "canvas-severity", dashboard.charts.severity_histogram);
     return;
   }
 
@@ -248,6 +278,7 @@ function renderCharts(dashboard, timeline, uploaded) {
   showCanvasChart("chart-separation", "canvas-separation", dashboard._client.separationSamples, "#dc2626");
   showCanvasChart("chart-altitude", "canvas-altitude", dashboard._client.altitudes, "#0f766e");
   showCanvasChart("chart-distance", "canvas-distance", dashboard._client.distancesNm, "#7c3aed");
+  showCanvasChart("chart-severity", "canvas-severity", dashboard._client.severities, "#be123c");
 }
 
 function showImageChart(imageId, canvasId, src) {
@@ -326,10 +357,12 @@ function renderMapLayers(tracks, conflicts, heatmap) {
         sticky: true,
       });
       layer.bindPopup(
-        `<strong>Evento LoWC</strong><br>` +
+        `<strong>${p.is_nmac ? "Evento NMAC" : "Evento LoWC"}</strong><br>` +
           `${escapeHtml(p.id_a)} / ${escapeHtml(p.id_b)}<br>` +
           `${formatNumber(p.dist_h_m, 1)} m horizontal<br>` +
           `${formatNumber(p.dist_v_m, 1)} m vertical<br>` +
+          `Severidade ${formatNumber(p.severity_ratio, 2)}<br>` +
+          `Duracao ${formatNumber(p.duration_s, 0)} s<br>` +
           `t = ${formatNumber(p.simt, 0)} s`
       );
     },
@@ -515,7 +548,10 @@ function buildClientModel(rows, fileName) {
 
   const durations = [];
   const distancesNm = [];
+  const distancesKm = [];
   const routeEfficiencies = [];
+  const routeExtensions = [];
+  const greatCircleDistancesNm = [];
   const features = [];
   let minLat = Infinity;
   let maxLat = -Infinity;
@@ -529,9 +565,15 @@ function buildClientModel(rows, fileName) {
     const distanceM = Math.max(...group.map((row) => row.distflown));
     const distanceNm = distanceM / metersPerNm;
     distancesNm.push(distanceNm);
+    distancesKm.push(distanceM / 1000);
     durations.push((last.simt - first.simt) / 60);
+    const straightM = haversineM(first.lat, first.lon, last.lat, last.lon);
+    greatCircleDistancesNm.push(straightM / metersPerNm);
     if (distanceM > 0) {
-      routeEfficiencies.push((haversineM(first.lat, first.lon, last.lat, last.lon) / distanceM) * 100);
+      routeEfficiencies.push((straightM / distanceM) * 100);
+    }
+    if (straightM >= routeReferenceMinM && distanceM > 0) {
+      routeExtensions.push((distanceM / straightM - 1) * 100);
     }
 
     const sampled = sampleRows(group, 20);
@@ -559,9 +601,14 @@ function buildClientModel(rows, fileName) {
     maxLon = Math.max(maxLon, row.lon);
   }
 
-  const lowAltitudeFt = 1500;
   const lowAltitudeM = lowAltitudeFt * feetToMeters;
-  const lowc = detectClientLowc(byTime, 500, 30, 10);
+  const annotatedAltitudeRows = annotateFlightInstances(rows, byId);
+  const originAltitudes = [...groupBy(annotatedAltitudeRows, (row) => row.flight_instance).values()].map(
+    (group) => group[0].origin_alt_m
+  );
+  const totalFlightHours = durations.reduce((sum, value) => sum + value, 0) / 60;
+  const totalDistanceKm = distancesKm.reduce((sum, value) => sum + value, 0);
+  const lowc = detectClientLowc(byTime, byId.size, totalFlightHours, totalDistanceKm);
 
   const dashboard = {
     source_log: `${fileName} (preview local)`,
@@ -578,28 +625,47 @@ function buildClientModel(rows, fileName) {
     efficiency: {
       mean_flight_time_min: average(durations),
       median_flight_time_min: median(durations),
+      p95_flight_time_min: percentile(durations, 0.95),
       mean_distance_nm: average(distancesNm),
       median_distance_nm: median(distancesNm),
+      p95_distance_nm: percentile(distancesNm, 0.95),
+      total_distance_km: totalDistanceKm,
+      total_flight_hours: totalFlightHours,
+      mean_great_circle_distance_nm: average(greatCircleDistancesNm),
       mean_route_efficiency_pct: average(routeEfficiencies),
+      mean_route_extension_pct: average(routeExtensions),
+      route_extension_sample_count: routeExtensions.length,
+      route_proxy_excluded_count: distancesNm.length - routeExtensions.length,
+      route_reference_min_m: routeReferenceMinM,
     },
     environment: {
       low_altitude_threshold_ft: lowAltitudeFt,
       low_altitude_threshold_m: lowAltitudeM,
-      low_altitude_share_pct: (rows.filter((row) => row.alt < lowAltitudeM).length / rows.length) * 100,
+      low_altitude_reference_mode: lowAltitudeReferenceMode,
+      low_altitude_reference_samples: lowAltitudeReferenceSamples,
+      flight_instance_gap_seconds: flightInstanceGapSeconds,
+      flight_instance_reset_distance_m: flightInstanceResetDistanceM,
+      flight_instance_jump_m: flightInstanceJumpM,
+      low_altitude_share_pct:
+        (annotatedAltitudeRows.filter((row) => row.alt_agl_proxy_m < lowAltitudeM).length /
+          annotatedAltitudeRows.length) *
+        100,
       mean_altitude_m: average(rows.map((row) => row.alt)),
       median_altitude_m: median(rows.map((row) => row.alt)),
+      mean_altitude_agl_proxy_m: average(annotatedAltitudeRows.map((row) => row.alt_agl_proxy_m)),
+      median_altitude_agl_proxy_m: median(annotatedAltitudeRows.map((row) => row.alt_agl_proxy_m)),
+      mean_origin_altitude_m: average(originAltitudes),
+      median_origin_altitude_m: median(originAltitudes),
+      flight_instance_count: originAltitudes.length,
     },
     safety: {
-      lowc_events: lowc.events.length,
-      lowc_horizontal_m: 500,
-      lowc_vertical_m: 30,
-      sample_seconds: 10,
-      separation_samples: lowc.separationSamples.length,
+      ...lowc.safety,
     },
     _client: {
       altitudes: rows.map((row) => row.alt),
       distancesNm,
       separationSamples: lowc.separationSamples,
+      severities: lowc.events.map((event) => event.severity_ratio),
     },
   };
 
@@ -631,6 +697,7 @@ function buildMultiRunModel(runs, uploaded) {
     timeline: runs[0].timeline,
     runs,
     comparison,
+    metric_catalog: dashboard.metric_catalog || runs[0].dashboard.metric_catalog || [],
     uploaded,
   };
 }
@@ -658,23 +725,75 @@ function averageDashboard(dashboards) {
     efficiency: {
       mean_flight_time_min: average(dashboards.map((item) => item.efficiency.mean_flight_time_min)),
       median_flight_time_min: average(dashboards.map((item) => item.efficiency.median_flight_time_min)),
+      p95_flight_time_min: average(dashboards.map((item) => item.efficiency.p95_flight_time_min)),
       mean_distance_nm: average(dashboards.map((item) => item.efficiency.mean_distance_nm)),
       median_distance_nm: average(dashboards.map((item) => item.efficiency.median_distance_nm)),
+      p95_distance_nm: average(dashboards.map((item) => item.efficiency.p95_distance_nm)),
+      total_distance_km: dashboards.reduce((sum, item) => sum + item.efficiency.total_distance_km, 0),
+      total_flight_hours: dashboards.reduce((sum, item) => sum + item.efficiency.total_flight_hours, 0),
+      mean_great_circle_distance_nm: average(dashboards.map((item) => item.efficiency.mean_great_circle_distance_nm)),
       mean_route_efficiency_pct: average(dashboards.map((item) => item.efficiency.mean_route_efficiency_pct)),
+      mean_route_extension_pct: average(dashboards.map((item) => item.efficiency.mean_route_extension_pct)),
+      route_extension_sample_count: dashboards.reduce(
+        (sum, item) => sum + item.efficiency.route_extension_sample_count,
+        0
+      ),
+      route_proxy_excluded_count: dashboards.reduce(
+        (sum, item) => sum + item.efficiency.route_proxy_excluded_count,
+        0
+      ),
+      route_reference_min_m: dashboards[0].efficiency.route_reference_min_m,
     },
     environment: {
       low_altitude_threshold_ft: dashboards[0].environment.low_altitude_threshold_ft,
       low_altitude_threshold_m: dashboards[0].environment.low_altitude_threshold_m,
+      low_altitude_reference_mode: dashboards[0].environment.low_altitude_reference_mode,
+      low_altitude_reference_samples: dashboards[0].environment.low_altitude_reference_samples,
+      flight_instance_gap_seconds: dashboards[0].environment.flight_instance_gap_seconds,
+      flight_instance_reset_distance_m: dashboards[0].environment.flight_instance_reset_distance_m,
+      flight_instance_jump_m: dashboards[0].environment.flight_instance_jump_m,
       low_altitude_share_pct: average(dashboards.map((item) => item.environment.low_altitude_share_pct)),
       mean_altitude_m: average(dashboards.map((item) => item.environment.mean_altitude_m)),
       median_altitude_m: average(dashboards.map((item) => item.environment.median_altitude_m)),
+      mean_altitude_agl_proxy_m: average(dashboards.map((item) => item.environment.mean_altitude_agl_proxy_m)),
+      median_altitude_agl_proxy_m: average(dashboards.map((item) => item.environment.median_altitude_agl_proxy_m)),
+      mean_origin_altitude_m: average(dashboards.map((item) => item.environment.mean_origin_altitude_m)),
+      median_origin_altitude_m: average(dashboards.map((item) => item.environment.median_origin_altitude_m)),
+      flight_instance_count: average(dashboards.map((item) => item.environment.flight_instance_count)),
     },
     safety: {
       lowc_events: average(dashboards.map((item) => item.safety.lowc_events)),
+      nmac_events: average(dashboards.map((item) => item.safety.nmac_events)),
       lowc_horizontal_m: dashboards[0].safety.lowc_horizontal_m,
       lowc_vertical_m: dashboards[0].safety.lowc_vertical_m,
+      nmac_horizontal_m: dashboards[0].safety.nmac_horizontal_m,
+      nmac_vertical_m: dashboards[0].safety.nmac_vertical_m,
       sample_seconds: dashboards[0].safety.sample_seconds,
+      same_altitude_band_m: dashboards[0].safety.same_altitude_band_m,
       separation_samples: dashboards.reduce((sum, item) => sum + item.safety.separation_samples, 0),
+      lowc_per_100_operations: average(dashboards.map((item) => item.safety.lowc_per_100_operations)),
+      lowc_per_flight_hour: average(dashboards.map((item) => item.safety.lowc_per_flight_hour)),
+      lowc_per_1000_km: average(dashboards.map((item) => item.safety.lowc_per_1000_km)),
+      nmac_per_100_operations: average(dashboards.map((item) => item.safety.nmac_per_100_operations)),
+      nmac_per_flight_hour: average(dashboards.map((item) => item.safety.nmac_per_flight_hour)),
+      nmac_per_1000_km: average(dashboards.map((item) => item.safety.nmac_per_1000_km)),
+      monitored_pair_samples: dashboards.reduce((sum, item) => sum + item.safety.monitored_pair_samples, 0),
+      min_severity_ratio: Math.min(...dashboards.map((item) => item.safety.min_severity_ratio)),
+      p05_severity_ratio: average(dashboards.map((item) => item.safety.p05_severity_ratio)),
+      median_severity_ratio: average(dashboards.map((item) => item.safety.median_severity_ratio)),
+      p95_severity_ratio: average(dashboards.map((item) => item.safety.p95_severity_ratio)),
+      total_time_below_threshold_s: dashboards.reduce(
+        (sum, item) => sum + item.safety.total_time_below_threshold_s,
+        0
+      ),
+      mean_time_below_threshold_s: average(dashboards.map((item) => item.safety.mean_time_below_threshold_s)),
+      max_time_below_threshold_s: Math.max(...dashboards.map((item) => item.safety.max_time_below_threshold_s)),
+      mac_probability_low: dashboards[0].safety.mac_probability_low,
+      mac_probability_nominal: dashboards[0].safety.mac_probability_nominal,
+      mac_probability_high: dashboards[0].safety.mac_probability_high,
+      expected_mac_low: average(dashboards.map((item) => item.safety.expected_mac_low)),
+      expected_mac_nominal: average(dashboards.map((item) => item.safety.expected_mac_nominal)),
+      expected_mac_high: average(dashboards.map((item) => item.safety.expected_mac_high)),
     },
     charts: dashboards[0].charts || {},
   };
@@ -696,29 +815,69 @@ function comparisonRow(name, dashboard, isAverage) {
     flight_time_min: dashboard.efficiency.mean_flight_time_min,
     distance_nm: dashboard.efficiency.mean_distance_nm,
     route_efficiency_pct: dashboard.efficiency.mean_route_efficiency_pct,
+    route_extension_pct: dashboard.efficiency.mean_route_extension_pct,
     low_altitude_pct: dashboard.environment.low_altitude_share_pct,
     lowc_events: dashboard.safety.lowc_events,
+    nmac_events: dashboard.safety.nmac_events,
+    lowc_per_flight_hour: dashboard.safety.lowc_per_flight_hour,
+    min_severity_ratio: dashboard.safety.min_severity_ratio,
     is_average: isAverage,
   };
 }
 
-function detectClientLowc(byTime, horizontalM, verticalM, sampleSeconds) {
-  const events = [];
+function annotateFlightInstances(rows, byId) {
+  const annotated = [];
+  for (const [id, group] of byId.entries()) {
+    group.sort((a, b) => a.simt - b.simt);
+    let instanceNumber = 0;
+    let previous = null;
+    const localRows = [];
+
+    for (const row of group) {
+      if (previous) {
+        const timeGap = row.simt - previous.simt;
+        const distanceReset = row.distflown + flightInstanceResetDistanceM < previous.distflown;
+        const jumpM = haversineM(previous.lat, previous.lon, row.lat, row.lon);
+        if (timeGap > flightInstanceGapSeconds || distanceReset || jumpM > flightInstanceJumpM) {
+          instanceNumber += 1;
+        }
+      }
+
+      const annotatedRow = { ...row, flight_instance: `${id}#${instanceNumber}` };
+      localRows.push(annotatedRow);
+      previous = row;
+    }
+
+    for (const groupRows of groupBy(localRows, (row) => row.flight_instance).values()) {
+      const originAltitude = median(groupRows.slice(0, lowAltitudeReferenceSamples).map((row) => row.alt));
+      for (const row of groupRows) {
+        row.origin_alt_m = originAltitude;
+        row.alt_agl_proxy_m = row.alt - originAltitude;
+        annotated.push(row);
+      }
+    }
+  }
+
+  return annotated.sort((a, b) => a.simt - b.simt || a.id.localeCompare(b.id));
+}
+
+function detectClientLowc(byTime, aircraftCount, totalFlightHours, totalDistanceKm) {
+  const samples = [];
   const separationSamples = [];
   for (const [simtText, group] of byTime.entries()) {
     const simt = Number(simtText);
-    if (simt % sampleSeconds !== 0 || group.length < 2) continue;
+    if (simt % conflictSampleSeconds !== 0 || group.length < 2) continue;
 
     for (let i = 0; i < group.length; i += 1) {
       for (let j = i + 1; j < group.length; j += 1) {
         const a = group[i];
         const b = group[j];
         const distV = Math.abs(a.alt - b.alt);
-        if (distV >= 150) continue;
+        if (distV >= sameAltitudeBandM) continue;
         const distH = haversineM(a.lat, a.lon, b.lat, b.lon);
         separationSamples.push(distH);
-        if (distH < horizontalM && distV < verticalM) {
-          events.push({
+        if (distH < lowcHorizontalM && distV < lowcVerticalM) {
+          samples.push({
             simt,
             id_a: a.id,
             id_b: b.id,
@@ -726,12 +885,104 @@ function detectClientLowc(byTime, horizontalM, verticalM, sampleSeconds) {
             lon: (a.lon + b.lon) / 2,
             dist_h_m: distH,
             dist_v_m: distV,
+            severity_ratio: Math.min(distH / lowcHorizontalM, distV / lowcVerticalM),
+            is_nmac: distH < nmacHorizontalM && distV < nmacVerticalM,
           });
         }
       }
     }
   }
-  return { events, separationSamples };
+  const events = collapseClientLowcSamples(samples);
+  return {
+    events,
+    separationSamples,
+    safety: clientSafetySummary(events, separationSamples.length, aircraftCount, totalFlightHours, totalDistanceKm),
+  };
+}
+
+function collapseClientLowcSamples(samples) {
+  const grouped = groupBy(samples, (sample) => [sample.id_a, sample.id_b].sort().join("::"));
+  const events = [];
+  for (const group of grouped.values()) {
+    group.sort((a, b) => a.simt - b.simt);
+    let current = [];
+    for (const sample of group) {
+      if (current.length && sample.simt - current[current.length - 1].simt > conflictSampleSeconds * 1.5) {
+        events.push(summarizeClientLowcEvent(current));
+        current = [];
+      }
+      current.push(sample);
+    }
+    if (current.length) events.push(summarizeClientLowcEvent(current));
+  }
+  return events.sort((a, b) => a.simt - b.simt);
+}
+
+function summarizeClientLowcEvent(samples) {
+  const mostSevere = samples.reduce((best, item) => (item.severity_ratio < best.severity_ratio ? item : best));
+  return {
+    ...mostSevere,
+    start_simt: samples[0].simt,
+    end_simt: samples[samples.length - 1].simt,
+    duration_s: samples.length * conflictSampleSeconds,
+    sample_count: samples.length,
+    is_nmac: samples.some((sample) => sample.is_nmac),
+  };
+}
+
+function clientSafetySummary(events, pairSampleCount, aircraftCount, totalFlightHours, totalDistanceKm) {
+  const lowcCount = events.length;
+  const nmacCount = events.filter((event) => event.is_nmac).length;
+  const severities = events.map((event) => event.severity_ratio);
+  const durations = events.map((event) => event.duration_s);
+  return {
+    lowc_events: lowcCount,
+    nmac_events: nmacCount,
+    lowc_horizontal_m: lowcHorizontalM,
+    lowc_vertical_m: lowcVerticalM,
+    nmac_horizontal_m: nmacHorizontalM,
+    nmac_vertical_m: nmacVerticalM,
+    sample_seconds: conflictSampleSeconds,
+    same_altitude_band_m: sameAltitudeBandM,
+    separation_samples: pairSampleCount,
+    lowc_per_100_operations: safeRate(lowcCount, aircraftCount, 100),
+    lowc_per_flight_hour: safeRate(lowcCount, totalFlightHours),
+    lowc_per_1000_km: safeRate(lowcCount, totalDistanceKm, 1000),
+    nmac_per_100_operations: safeRate(nmacCount, aircraftCount, 100),
+    nmac_per_flight_hour: safeRate(nmacCount, totalFlightHours),
+    nmac_per_1000_km: safeRate(nmacCount, totalDistanceKm, 1000),
+    monitored_pair_samples: pairSampleCount,
+    min_severity_ratio: severities.length ? Math.min(...severities) : 0,
+    p05_severity_ratio: percentile(severities, 0.05),
+    median_severity_ratio: median(severities),
+    p95_severity_ratio: percentile(severities, 0.95),
+    total_time_below_threshold_s: durations.reduce((sum, value) => sum + value, 0),
+    mean_time_below_threshold_s: average(durations),
+    max_time_below_threshold_s: durations.length ? Math.max(...durations) : 0,
+    mac_probability_low: macProbabilityBands[0],
+    mac_probability_nominal: macProbabilityBands[1],
+    mac_probability_high: macProbabilityBands[2],
+    expected_mac_low: nmacCount * macProbabilityBands[0],
+    expected_mac_nominal: nmacCount * macProbabilityBands[1],
+    expected_mac_high: nmacCount * macProbabilityBands[2],
+  };
+}
+
+function renderTraceability(catalog) {
+  const body = document.getElementById("traceability-table-body");
+  if (!body) return;
+  body.innerHTML = (catalog || [])
+    .map(
+      (metric) => `
+        <tr>
+          <td>${escapeHtml(metric.name)}</td>
+          <td>${escapeHtml(metric.formula)}</td>
+          <td>${escapeHtml(metric.pdf_reference)}</td>
+          <td>${escapeHtml(metric.code_reference)}</td>
+          <td>${escapeHtml(metric.status)}</td>
+        </tr>`
+    )
+    .join("");
 }
 
 function drawHistogram(canvas, values, color) {
@@ -836,6 +1087,20 @@ function median(values) {
   if (!clean.length) return 0;
   const middle = Math.floor(clean.length / 2);
   return clean.length % 2 ? clean[middle] : (clean[middle - 1] + clean[middle]) / 2;
+}
+
+function percentile(values, q) {
+  const clean = values.filter(Number.isFinite).sort((a, b) => a - b);
+  if (!clean.length) return 0;
+  const position = (clean.length - 1) * q;
+  const lower = Math.floor(position);
+  const upper = Math.ceil(position);
+  if (lower === upper) return clean[lower];
+  return clean[lower] + (clean[upper] - clean[lower]) * (position - lower);
+}
+
+function safeRate(numerator, denominator, scale = 1) {
+  return denominator > 0 ? (numerator / denominator) * scale : 0;
 }
 
 function formatNumber(value, digits = 0) {

@@ -297,7 +297,7 @@ main {
 .metric-grid {
   display: grid;
   gap: 12px;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
 .metric,
@@ -442,7 +442,8 @@ input[type="checkbox"] {
   line-height: 1.35;
 }
 
-.comparison-panel {
+.comparison-panel,
+.traceability-panel {
   background: var(--panel);
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -494,8 +495,12 @@ input[type="checkbox"] {
 .comparison-table {
   border-collapse: collapse;
   font-size: 13px;
-  min-width: 980px;
+  min-width: 1180px;
   width: 100%;
+}
+
+.traceability-table {
+  min-width: 1080px;
 }
 
 .comparison-table th,
@@ -512,6 +517,16 @@ input[type="checkbox"] {
   overflow: hidden;
   text-align: left;
   text-overflow: ellipsis;
+}
+
+.traceability-table th,
+.traceability-table td {
+  text-align: left;
+  white-space: normal;
+}
+
+.traceability-table td {
+  vertical-align: top;
 }
 
 .comparison-table th {
@@ -585,7 +600,7 @@ input[type="checkbox"] {
 
 @media (max-width: 1120px) {
   .metric-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .workspace {

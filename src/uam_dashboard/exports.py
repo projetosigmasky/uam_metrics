@@ -52,10 +52,15 @@ def conflicts_geojson(events: pd.DataFrame) -> dict[str, Any]:
                 "type": "Feature",
                 "properties": {
                     "simt": float(row.simt),
+                    "start_simt": float(row.start_simt),
+                    "end_simt": float(row.end_simt),
+                    "duration_s": float(row.duration_s),
                     "id_a": str(row.id_a),
                     "id_b": str(row.id_b),
                     "dist_h_m": float(row.dist_h_m),
                     "dist_v_m": float(row.dist_v_m),
+                    "severity_ratio": float(row.severity_ratio),
+                    "is_nmac": bool(row.is_nmac),
                 },
                 "geometry": {
                     "type": "Point",
