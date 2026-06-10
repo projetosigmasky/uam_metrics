@@ -5,7 +5,7 @@ from typing import Any
 import numpy as np
 import pandas as pd
 
-from .config import FEET_TO_METERS, METERS_PER_NM
+from .config import METERS_PER_NM
 
 
 def haversine_m(lat1: Any, lon1: Any, lat2: Any, lon2: Any) -> Any:
@@ -89,12 +89,10 @@ def flight_instance_frame(
     gap_seconds: float,
     reset_distance_m: float,
     jump_m: float,
-    reference_samples: int,
 ) -> pd.DataFrame:
-    """Return rows annotated with flight instances and origin altitude references."""
+    """Return rows annotated with inferred flight instances."""
 
     annotated_groups: list[pd.DataFrame] = []
-    reference_samples = max(1, int(reference_samples))
 
     for aircraft_id, group in df.sort_values(["id", "simt"]).groupby("id", sort=True):
         group = group.copy()
@@ -119,65 +117,7 @@ def flight_instance_frame(
     if not annotated_groups:
         return df.copy()
 
-    annotated = pd.concat(annotated_groups, ignore_index=True).sort_values(["simt", "id"]).reset_index(drop=True)
-    origin_altitudes = (
-        annotated.groupby("flight_instance", sort=True)
-        .head(reference_samples)
-        .groupby("flight_instance")["alt"]
-        .median()
-    )
-    annotated["origin_alt_m"] = annotated["flight_instance"].map(origin_altitudes)
-    annotated["alt_agl_proxy_m"] = annotated["alt"] - annotated["origin_alt_m"]
-    return annotated
-
-
-def environment_metrics(
-    df: pd.DataFrame,
-    low_altitude_ft: float,
-    reference_mode: str = "origin_agl_proxy",
-    reference_samples: int = 5,
-    instance_gap_seconds: float = 300.0,
-    instance_reset_distance_m: float = 250.0,
-    instance_jump_m: float = 5000.0,
-) -> dict[str, Any]:
-    threshold_m = low_altitude_ft * FEET_TO_METERS
-    reference_mode = reference_mode or "origin_agl_proxy"
-
-    if reference_mode == "msl":
-        annotated = df.copy()
-        annotated["flight_instance"] = annotated["id"]
-        annotated["origin_alt_m"] = 0.0
-        annotated["alt_agl_proxy_m"] = annotated["alt"]
-        altitude_for_low_share = annotated["alt"]
-    else:
-        annotated = flight_instance_frame(
-            df,
-            gap_seconds=instance_gap_seconds,
-            reset_distance_m=instance_reset_distance_m,
-            jump_m=instance_jump_m,
-            reference_samples=reference_samples,
-        )
-        altitude_for_low_share = annotated["alt_agl_proxy_m"]
-
-    low_altitude_share = float((altitude_for_low_share < threshold_m).mean() * 100.0) if len(annotated) else 0.0
-    origin_altitudes = annotated.groupby("flight_instance")["origin_alt_m"].first() if len(annotated) else pd.Series(dtype=float)
-    return {
-        "low_altitude_threshold_ft": float(low_altitude_ft),
-        "low_altitude_threshold_m": float(threshold_m),
-        "low_altitude_reference_mode": reference_mode,
-        "low_altitude_reference_samples": int(reference_samples),
-        "flight_instance_gap_seconds": float(instance_gap_seconds),
-        "flight_instance_reset_distance_m": float(instance_reset_distance_m),
-        "flight_instance_jump_m": float(instance_jump_m),
-        "low_altitude_share_pct": low_altitude_share,
-        "mean_altitude_m": float(df["alt"].mean()),
-        "median_altitude_m": float(df["alt"].median()),
-        "mean_altitude_agl_proxy_m": float(annotated["alt_agl_proxy_m"].mean()) if len(annotated) else 0.0,
-        "median_altitude_agl_proxy_m": float(annotated["alt_agl_proxy_m"].median()) if len(annotated) else 0.0,
-        "mean_origin_altitude_m": float(origin_altitudes.mean()) if len(origin_altitudes) else 0.0,
-        "median_origin_altitude_m": float(origin_altitudes.median()) if len(origin_altitudes) else 0.0,
-        "flight_instance_count": int(annotated["flight_instance"].nunique()) if len(annotated) else 0,
-    }
+    return pd.concat(annotated_groups, ignore_index=True).sort_values(["simt", "id"]).reset_index(drop=True)
 
 
 def active_aircraft_series(df: pd.DataFrame) -> pd.DataFrame:

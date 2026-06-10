@@ -277,23 +277,6 @@ main {
   white-space: nowrap;
 }
 
-#log-upload {
-  height: 1px;
-  opacity: 0;
-  position: absolute;
-  width: 1px;
-}
-
-.upload-button {
-  background: var(--ink);
-  border-radius: 7px;
-  color: #ffffff;
-  cursor: pointer;
-  font-size: 13px;
-  font-weight: 700;
-  padding: 10px 13px;
-}
-
 .metric-grid {
   display: grid;
   gap: 12px;
@@ -614,16 +597,11 @@ input[type="checkbox"] {
   padding: 16px;
 }
 
-.chart-card img,
-.chart-card canvas {
+.chart-card img {
   aspect-ratio: 2.5 / 1;
   display: block;
   height: auto;
   width: 100%;
-}
-
-.chart-card [hidden] {
-  display: none;
 }
 
 .leaflet-popup-content {

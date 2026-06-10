@@ -76,7 +76,6 @@ def tracks_geojson(
     instance_gap_seconds: float,
     instance_reset_distance_m: float,
     instance_jump_m: float,
-    reference_samples: int,
     shape_points: int,
     cluster_distance_m: float,
     endpoint_tolerance_m: float,
@@ -88,7 +87,6 @@ def tracks_geojson(
         gap_seconds=instance_gap_seconds,
         reset_distance_m=instance_reset_distance_m,
         jump_m=instance_jump_m,
-        reference_samples=reference_samples,
     )
     instances: list[dict[str, Any]] = []
 
@@ -193,10 +191,3 @@ def conflicts_geojson(events: pd.DataFrame) -> dict[str, Any]:
 def heatmap_points(df: pd.DataFrame, sample_stride: int) -> list[list[float]]:
     sampled = df.iloc[:: max(1, sample_stride)]
     return [[float(row.lat), float(row.lon), 0.28] for row in sampled.itertuples(index=False)]
-
-
-def timeline_records(series: pd.DataFrame) -> list[dict[str, float]]:
-    return [
-        {"simt": float(row.simt), "hour": float(row.hour), "aircraft": int(row.aircraft)}
-        for row in series.itertuples(index=False)
-    ]

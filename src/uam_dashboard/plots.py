@@ -64,7 +64,7 @@ def plot_separation_histogram(
 
 def plot_altitude_histogram(
     df: pd.DataFrame,
-    threshold_m: float,
+    threshold_m: float | None,
     output_path: Path,
     altitude_column: str = "alt",
     title: str = "Distribuicao de altitude",
@@ -73,11 +73,13 @@ def plot_altitude_histogram(
     _set_style()
     fig, ax = plt.subplots(figsize=(10.5, 4.2))
     ax.hist(df[altitude_column], bins=48, color="#0f766e", alpha=0.82)
-    ax.axvline(threshold_m, color="#b45309", linestyle="--", linewidth=1.8, label=f"{threshold_m:.0f} m")
+    if threshold_m is not None:
+        ax.axvline(threshold_m, color="#b45309", linestyle="--", linewidth=1.8, label=f"{threshold_m:.0f} m")
     ax.set_title(title)
     ax.set_xlabel(xlabel)
     ax.set_ylabel("Registros")
-    ax.legend(loc="upper right")
+    if threshold_m is not None:
+        ax.legend(loc="upper right")
     ax.grid(True, axis="y", linestyle="--", alpha=0.25)
     fig.tight_layout()
     fig.savefig(output_path, dpi=180)

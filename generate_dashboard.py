@@ -8,15 +8,13 @@ from pathlib import Path
 from typing import Any
 
 from src.uam_dashboard.config import DashboardConfig, SAO_PAULO_CENTER
-from src.uam_dashboard.exports import conflicts_geojson, heatmap_points, timeline_records, tracks_geojson
+from src.uam_dashboard.exports import conflicts_geojson, heatmap_points, tracks_geojson
 from src.uam_dashboard.log_parser import load_state_log
 from src.uam_dashboard.metrics import (
     active_aircraft_series,
     build_summary,
     detect_lowc_events,
     efficiency_metrics,
-    environment_metrics,
-    flight_instance_frame,
 )
 from src.uam_dashboard.metric_catalog import metric_catalog_payload
 from src.uam_dashboard.plots import (
@@ -106,31 +104,6 @@ def average_dashboard(run_dashboards: list[dict[str, Any]]) -> dict[str, Any]:
                 [d["efficiency"]["mean_route_efficiency_pct"] for d in run_dashboards]
             ),
         },
-        "environment": {
-            "low_altitude_threshold_ft": run_dashboards[0]["environment"]["low_altitude_threshold_ft"],
-            "low_altitude_threshold_m": run_dashboards[0]["environment"]["low_altitude_threshold_m"],
-            "low_altitude_reference_mode": run_dashboards[0]["environment"]["low_altitude_reference_mode"],
-            "low_altitude_reference_samples": run_dashboards[0]["environment"]["low_altitude_reference_samples"],
-            "flight_instance_gap_seconds": run_dashboards[0]["environment"]["flight_instance_gap_seconds"],
-            "flight_instance_reset_distance_m": run_dashboards[0]["environment"][
-                "flight_instance_reset_distance_m"
-            ],
-            "flight_instance_jump_m": run_dashboards[0]["environment"]["flight_instance_jump_m"],
-            "low_altitude_share_pct": mean([d["environment"]["low_altitude_share_pct"] for d in run_dashboards]),
-            "mean_altitude_m": mean([d["environment"]["mean_altitude_m"] for d in run_dashboards]),
-            "median_altitude_m": mean([d["environment"]["median_altitude_m"] for d in run_dashboards]),
-            "mean_altitude_agl_proxy_m": mean(
-                [d["environment"]["mean_altitude_agl_proxy_m"] for d in run_dashboards]
-            ),
-            "median_altitude_agl_proxy_m": mean(
-                [d["environment"]["median_altitude_agl_proxy_m"] for d in run_dashboards]
-            ),
-            "mean_origin_altitude_m": mean([d["environment"]["mean_origin_altitude_m"] for d in run_dashboards]),
-            "median_origin_altitude_m": mean(
-                [d["environment"]["median_origin_altitude_m"] for d in run_dashboards]
-            ),
-            "flight_instance_count": mean([d["environment"]["flight_instance_count"] for d in run_dashboards]),
-        },
         "safety": {
             "lowc_events": mean([d["safety"]["lowc_events"] for d in run_dashboards]),
             "nmac_events": mean([d["safety"]["nmac_events"] for d in run_dashboards]),
@@ -187,7 +160,6 @@ def comparison_payload(runs: list[dict[str, Any]], average: dict[str, Any]) -> d
                 "flight_time_min": d["efficiency"]["mean_flight_time_min"],
                 "distance_nm": d["efficiency"]["mean_distance_nm"],
                 "route_efficiency_pct": d["efficiency"]["mean_route_efficiency_pct"],
-                "low_altitude_pct": d["environment"]["low_altitude_share_pct"],
                 "lowc_events": d["safety"]["lowc_events"],
                 "nmac_events": d["safety"]["nmac_events"],
                 "lowc_per_flight_hour": d["safety"]["lowc_per_flight_hour"],
@@ -205,7 +177,6 @@ def comparison_payload(runs: list[dict[str, Any]], average: dict[str, Any]) -> d
             "flight_time_min": average["efficiency"]["mean_flight_time_min"],
             "distance_nm": average["efficiency"]["mean_distance_nm"],
             "route_efficiency_pct": average["efficiency"]["mean_route_efficiency_pct"],
-            "low_altitude_pct": average["environment"]["low_altitude_share_pct"],
             "lowc_events": average["safety"]["lowc_events"],
             "nmac_events": average["safety"]["nmac_events"],
             "lowc_per_flight_hour": average["safety"]["lowc_per_flight_hour"],
@@ -224,15 +195,6 @@ def analyze_log(log_path: Path, config: DashboardConfig, charts_dir: Path, run_i
     print("Computing metrics and sampled LoWC events...")
     series = active_aircraft_series(df)
     efficiency = efficiency_metrics(df)
-    environment = environment_metrics(
-        df,
-        config.low_altitude_ft,
-        reference_mode=config.low_altitude_reference_mode,
-        reference_samples=config.low_altitude_reference_samples,
-        instance_gap_seconds=config.flight_instance_gap_seconds,
-        instance_reset_distance_m=config.flight_instance_reset_distance_m,
-        instance_jump_m=config.flight_instance_jump_m,
-    )
     lowc_events, separation_samples, safety = detect_lowc_events(
         df,
         horizontal_threshold_m=config.lowc_horizontal_m,
@@ -246,21 +208,6 @@ def analyze_log(log_path: Path, config: DashboardConfig, charts_dir: Path, run_i
         total_distance_km=efficiency["total_distance_km"],
         mac_probability_bands=config.mac_probability_bands,
     )
-    altitude_plot_df = df
-    altitude_plot_column = "alt"
-    altitude_plot_title = "Distribuicao de altitude"
-    altitude_plot_xlabel = "Altitude MSL (m)"
-    if config.low_altitude_reference_mode == "origin_agl_proxy":
-        altitude_plot_df = flight_instance_frame(
-            df,
-            gap_seconds=config.flight_instance_gap_seconds,
-            reset_distance_m=config.flight_instance_reset_distance_m,
-            jump_m=config.flight_instance_jump_m,
-            reference_samples=config.low_altitude_reference_samples,
-        )
-        altitude_plot_column = "alt_agl_proxy_m"
-        altitude_plot_title = "Distribuicao de altitude relativa"
-        altitude_plot_xlabel = "Altitude acima da origem (m)"
 
     print("Rendering chart images...")
     chart_paths = {
@@ -277,12 +224,11 @@ def analyze_log(log_path: Path, config: DashboardConfig, charts_dir: Path, run_i
         charts_dir / Path(chart_paths["separation_histogram"]).name,
     )
     plot_altitude_histogram(
-        altitude_plot_df,
-        config.low_altitude_ft * 0.3048,
+        df,
+        None,
         charts_dir / Path(chart_paths["altitude_histogram"]).name,
-        altitude_column=altitude_plot_column,
-        title=altitude_plot_title,
-        xlabel=altitude_plot_xlabel,
+        title="Distribuicao de altitude",
+        xlabel="Altitude MSL (m)",
     )
     plot_route_distance_histogram(df, charts_dir / Path(chart_paths["distance_histogram"]).name)
     plot_severity_histogram(lowc_events, charts_dir / Path(chart_paths["severity_histogram"]).name)
@@ -293,7 +239,6 @@ def analyze_log(log_path: Path, config: DashboardConfig, charts_dir: Path, run_i
         "map_center": SAO_PAULO_CENTER,
         "summary": summary,
         "efficiency": efficiency,
-        "environment": environment,
         "safety": safety,
         "charts": chart_paths,
         "metric_catalog": metric_catalog_payload(),
@@ -309,14 +254,12 @@ def analyze_log(log_path: Path, config: DashboardConfig, charts_dir: Path, run_i
             instance_gap_seconds=config.flight_instance_gap_seconds,
             instance_reset_distance_m=config.flight_instance_reset_distance_m,
             instance_jump_m=config.flight_instance_jump_m,
-            reference_samples=config.low_altitude_reference_samples,
             shape_points=config.trajectory_shape_points,
             cluster_distance_m=config.trajectory_cluster_distance_m,
             endpoint_tolerance_m=config.trajectory_endpoint_tolerance_m,
         ),
         "conflicts": conflicts_geojson(lowc_events),
         "heatmap": heatmap_points(df, config.heatmap_sample_stride),
-        "timeline": timeline_records(series),
     }
 
 
@@ -341,7 +284,6 @@ def build_dashboard(config: DashboardConfig) -> None:
     write_json(data_dir / "tracks.geojson", primary["tracks"])
     write_json(data_dir / "conflicts.geojson", primary["conflicts"])
     write_json(data_dir / "heatmap_points.json", primary["heatmap"])
-    write_json(data_dir / "timeline.json", primary["timeline"])
     runs_dir = data_dir / "runs"
     for run in runs:
         write_json(runs_dir / f"{run['id']}.json", run)
@@ -353,7 +295,6 @@ def build_dashboard(config: DashboardConfig) -> None:
             "tracks": primary["tracks"],
             "conflicts": primary["conflicts"],
             "heatmap": primary["heatmap"],
-            "timeline": primary["timeline"],
             "runs": runs,
             "comparison": comparison,
             "metric_catalog": metric_catalog_payload(),
@@ -368,9 +309,6 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("logs", nargs="*", default=None, help="One or more STATELOG files.")
     parser.add_argument("--output", default="docs", help="Output folder for GitHub Pages.")
     parser.add_argument("--data-dir", default="data", help="Folder searched when no log is passed.")
-    parser.add_argument("--low-altitude-ft", type=float, default=1500.0)
-    parser.add_argument("--low-altitude-reference-mode", choices=["origin_agl_proxy", "msl"], default="origin_agl_proxy")
-    parser.add_argument("--low-altitude-reference-samples", type=int, default=5)
     parser.add_argument("--flight-instance-gap-seconds", type=float, default=300.0)
     parser.add_argument("--flight-instance-reset-distance-m", type=float, default=250.0)
     parser.add_argument("--flight-instance-jump-m", type=float, default=5000.0)
@@ -402,9 +340,6 @@ def main() -> None:
         log_paths=log_paths,
         output_dir=Path(args.output),
         data_dir=data_dir,
-        low_altitude_ft=args.low_altitude_ft,
-        low_altitude_reference_mode=args.low_altitude_reference_mode,
-        low_altitude_reference_samples=args.low_altitude_reference_samples,
         flight_instance_gap_seconds=args.flight_instance_gap_seconds,
         flight_instance_reset_distance_m=args.flight_instance_reset_distance_m,
         flight_instance_jump_m=args.flight_instance_jump_m,

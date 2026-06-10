@@ -5,7 +5,7 @@ import unittest
 import pandas as pd
 
 from src.uam_dashboard.exports import tracks_geojson
-from src.uam_dashboard.metrics import detect_lowc_events, efficiency_metrics, environment_metrics
+from src.uam_dashboard.metrics import detect_lowc_events, efficiency_metrics
 
 
 class MetricsTest(unittest.TestCase):
@@ -59,22 +59,6 @@ class MetricsTest(unittest.TestCase):
         self.assertAlmostEqual(safety["total_time_below_threshold_s"], 30.0)
         self.assertAlmostEqual(safety["expected_mac_nominal"], 0.01)
 
-    def test_low_altitude_uses_origin_agl_proxy(self) -> None:
-        df = pd.DataFrame(
-            [
-                {"simt": 0, "id": "A", "lat": -23.55, "lon": -46.63, "distflown": 0, "alt": 750},
-                {"simt": 1, "id": "A", "lat": -23.55, "lon": -46.62, "distflown": 50, "alt": 780},
-                {"simt": 2, "id": "A", "lat": -23.55, "lon": -46.61, "distflown": 100, "alt": 1300},
-            ]
-        )
-
-        metrics = environment_metrics(df, low_altitude_ft=1500, reference_samples=1)
-
-        self.assertEqual(metrics["low_altitude_reference_mode"], "origin_agl_proxy")
-        self.assertAlmostEqual(metrics["median_origin_altitude_m"], 750)
-        self.assertAlmostEqual(metrics["low_altitude_threshold_m"], 457.2)
-        self.assertAlmostEqual(metrics["low_altitude_share_pct"], (2 / 3) * 100)
-
     def test_similar_trajectories_share_frequency_group(self) -> None:
         rows = []
         for aircraft_id, lat_offset, lon_offset in (("A", 0.0, 0.0), ("B", 0.001, 0.001), ("C", 0.08, 0.08)):
@@ -97,7 +81,6 @@ class MetricsTest(unittest.TestCase):
             instance_gap_seconds=300,
             instance_reset_distance_m=250,
             instance_jump_m=5000,
-            reference_samples=1,
             shape_points=8,
             cluster_distance_m=1200,
             endpoint_tolerance_m=2500,

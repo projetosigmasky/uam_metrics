@@ -31,23 +31,6 @@
     "mean_great_circle_distance_nm": 9.063055985571172,
     "mean_route_efficiency_pct": 66.33880385901902
   },
-  "environment": {
-    "low_altitude_threshold_ft": 1500.0,
-    "low_altitude_threshold_m": 457.20000000000005,
-    "low_altitude_reference_mode": "origin_agl_proxy",
-    "low_altitude_reference_samples": 5,
-    "flight_instance_gap_seconds": 300.0,
-    "flight_instance_reset_distance_m": 250.0,
-    "flight_instance_jump_m": 5000.0,
-    "low_altitude_share_pct": 99.91093635970988,
-    "mean_altitude_m": 946.2968473040088,
-    "median_altitude_m": 975.1366851999999,
-    "mean_altitude_agl_proxy_m": 167.2052637036399,
-    "median_altitude_agl_proxy_m": 185.50128,
-    "mean_origin_altitude_m": 779.4979246016519,
-    "median_origin_altitude_m": 777.60576,
-    "flight_instance_count": 105.0
-  },
   "safety": {
     "lowc_events": 0.8,
     "nmac_events": 0.0,
@@ -95,15 +78,6 @@
       "code_reference": "src/uam_dashboard/exports.py::tracks_geojson",
       "status": "implemented_configurable_clustering",
       "data_required": "simt, id, lat, lon, distflown"
-    },
-    {
-      "id": "low_altitude_share_pct",
-      "name": "Baixa altitude AGL proxy",
-      "formula": "(alt_m - alt_origem_m) < low_altitude_ft * 0.3048",
-      "pdf_reference": "Produto 3, menciona baixa altitude como dimensao de analise; limiar e parametro configuravel",
-      "code_reference": "src/uam_dashboard/metrics.py::environment_metrics",
-      "status": "implemented_configurable_proxy",
-      "data_required": "simt, id, lat, lon, distflown, alt"
     },
     {
       "id": "lowc_events",

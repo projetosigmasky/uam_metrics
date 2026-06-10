@@ -14,15 +14,6 @@ METRIC_CATALOG: list[dict[str, Any]] = [
         "data_required": "simt, id, lat, lon, distflown",
     },
     {
-        "id": "low_altitude_share_pct",
-        "name": "Baixa altitude AGL proxy",
-        "formula": "(alt_m - alt_origem_m) < low_altitude_ft * 0.3048",
-        "pdf_reference": "Produto 3, menciona baixa altitude como dimensao de analise; limiar e parametro configuravel",
-        "code_reference": "src/uam_dashboard/metrics.py::environment_metrics",
-        "status": "implemented_configurable_proxy",
-        "data_required": "simt, id, lat, lon, distflown, alt",
-    },
-    {
         "id": "lowc_events",
         "name": "Loss of Well Clear",
         "formula": "Sh(t) < Smin_h and Sv(t) < Smin_v",

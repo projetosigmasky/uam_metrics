@@ -53,9 +53,6 @@ Para escolher outra pasta de entrada:
 Os parametros principais ficam em `src/uam_dashboard/config.py`:
 
 ```python
-low_altitude_ft = 1500.0
-low_altitude_reference_mode = "origin_agl_proxy"
-low_altitude_reference_samples = 5
 flight_instance_gap_seconds = 300.0
 flight_instance_reset_distance_m = 250.0
 flight_instance_jump_m = 5000.0
@@ -78,15 +75,6 @@ Alguns parametros podem ser alterados pela linha de comando:
 ```powershell
 .\.venv\Scripts\python.exe generate_dashboard.py --lowc-horizontal-m 600 --lowc-vertical-m 40 --nmac-horizontal-m 150
 ```
-
-O parametro `low_altitude_ft` e configuravel. Por padrao, o valor `1500 ft` nao e aplicado sobre altitude absoluta MSL; ele e aplicado como proxy AGL:
-
-```text
-altitude_relativa_m = alt_m - altitude_origem_m
-baixa_altitude = altitude_relativa_m < low_altitude_ft * 0.3048
-```
-
-A `altitude_origem_m` e estimada pela mediana das primeiras amostras de cada instancia de voo. Uma nova instancia pode ser detectada quando o mesmo `id` reaparece apos um intervalo grande, quando `distflown` reinicia, ou quando ha salto geografico relevante.
 
 ## 4. Saida Gerada
 
@@ -114,7 +102,7 @@ O gerador publica em `docs/`:
 | `src/uam_dashboard/exports.py` | Agrupa trajetorias semelhantes e converte trajetorias/eventos para GeoJSON. |
 | `src/uam_dashboard/plots.py` | Gera PNGs de aeronaves simultaneas, separacao, altitude, distancia e severidade. |
 | `web/index.html` | Estrutura estatica da pagina. |
-| `web/assets/dashboard.js` | Renderiza mapa, comparacao, metricas e preview local de uploads. |
+| `web/assets/dashboard.js` | Renderiza os dados, mapas, comparacoes e metricas previamente processados pelo Python. |
 | `web/assets/dashboard.css` | Layout visual e regras criticas do Leaflet. |
 
 ## 6. Rastreabilidade Das Formulas
@@ -123,7 +111,6 @@ O gerador publica em `docs/`:
 |---|---|---|---|
 | Frequencia de trajetorias | Contagem de instancias com origem, destino e forma dentro das tolerancias configuradas | Secoes 3.2 e 6, apoio visual a volume/utilizacao | `exports.py::tracks_geojson` |
 | LoWC | `Sh(t) < Smin_h and Sv(t) < Smin_v` | Secao 4.2.1, Eq. 4.1 | `metrics.py::detect_lowc_events` |
-| Baixa altitude AGL proxy | `(alt_m - alt_origem_m) < low_altitude_ft * 0.3048` | Baixa altitude aparece como dimensao de analise; limiar e configuravel | `metrics.py::environment_metrics` |
 | LoWC por hora de voo | `N_lowc / sum(H_f)` | Secao 3.3, Eq. 3.2 | `metrics.py::_safety_summary` |
 | LoWC por 100 operacoes | `N_lowc / N_voos * 100` | Secao 3.3 | `metrics.py::_safety_summary` |
 | LoWC por 1000 km | `N_lowc / km_voados * 1000` | Secao 3.3 | `metrics.py::_safety_summary` |
@@ -156,9 +143,10 @@ Quando ha dois ou mais logs:
 - os cards superiores mostram medias das metricas principais;
 - a tabela `Cenarios processados` mostra cada log e uma linha `Media`;
 - o seletor `Cenario no mapa` troca mapa e graficos para o log escolhido;
-- o botao `Carregar STATELOGs` permite comparar arquivos localmente no navegador.
 
-As medias incluem aeronaves, pico simultaneo, duracao, tempo medio, distancia media, eficiencia, baixa altitude, LoWC, NMAC, taxas normalizadas e severidade.
+As medias incluem aeronaves, pico simultaneo, duracao, tempo medio, distancia media, eficiencia, LoWC, NMAC, taxas normalizadas e severidade.
+
+Todo processamento dos `STATELOGs` acontece em Python durante a execucao de `generate_dashboard.py`. O JavaScript da pagina apenas apresenta os arquivos gerados.
 
 ## 9. Como As Trajetorias Sao Agrupadas
 

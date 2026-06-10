@@ -6,7 +6,6 @@ from pathlib import Path
 
 LOG_COLUMNS = ["simt", "id", "lat", "lon", "distflown", "alt", "cas", "tas", "gs"]
 METERS_PER_NM = 1852.0
-FEET_TO_METERS = 0.3048
 SAO_PAULO_CENTER = [-23.5505, -46.6333]
 
 
@@ -17,9 +16,6 @@ class DashboardConfig:
     log_paths: tuple[Path, ...]
     output_dir: Path = Path("docs")
     data_dir: Path = Path("data")
-    low_altitude_ft: float = 1500.0
-    low_altitude_reference_mode: str = "origin_agl_proxy"
-    low_altitude_reference_samples: int = 5
     flight_instance_gap_seconds: float = 300.0
     flight_instance_reset_distance_m: float = 250.0
     flight_instance_jump_m: float = 5000.0

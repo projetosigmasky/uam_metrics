@@ -10,7 +10,7 @@
       integrity="sha256-p4NxAoJBhIINfQd+g9FQXHyzyTAFi+lyLwN2Bja9fM="
       crossorigin=""
     />
-    <link rel="stylesheet" href="assets/dashboard.css?v=0.2.4" />
+    <link rel="stylesheet" href="assets/dashboard.css?v=0.2.5" />
   </head>
   <body>
     <header class="topbar">
@@ -20,8 +20,6 @@
       </div>
       <div class="source-panel">
         <span id="source-log">STATELOG</span>
-        <label class="upload-button" for="log-upload">Carregar STATELOGs</label>
-        <input id="log-upload" type="file" accept=".log,.csv,.txt" multiple />
       </div>
     </header>
 
@@ -46,11 +44,6 @@
           <span>Distancia media</span>
           <strong id="metric-distance">-</strong>
           <small>NM por aeronave</small>
-        </article>
-        <article class="metric">
-          <span>Baixa altitude AGL</span>
-          <strong id="metric-low-altitude">-</strong>
-          <small id="metric-low-altitude-threshold">-</small>
         </article>
         <article class="metric danger">
           <span>Eventos LoWC</span>
@@ -93,14 +86,6 @@
               <div>
                 <dt>Eficiencia de rota</dt>
                 <dd id="kpa-route-efficiency">-</dd>
-              </div>
-              <div>
-                <dt>Alt. relativa mediana</dt>
-                <dd id="kpa-altitude">-</dd>
-              </div>
-              <div>
-                <dt>Referencia origem</dt>
-                <dd id="kpa-origin-altitude">-</dd>
               </div>
               <div>
                 <dt>Severidade minima</dt>
@@ -157,7 +142,6 @@
                 <th>Tempo medio</th>
                 <th>Distancia</th>
                 <th>Ef. rota</th>
-                <th>Baixa alt.</th>
                 <th>LoWC</th>
                 <th>NMAC</th>
                 <th>LoWC/h</th>
@@ -173,27 +157,22 @@
         <article class="chart-card">
           <h2>Aeronaves simultaneas</h2>
           <img id="chart-active" alt="Serie temporal de aeronaves simultaneas" />
-          <canvas id="canvas-active" hidden></canvas>
         </article>
         <article class="chart-card">
           <h2>Separacao horizontal</h2>
           <img id="chart-separation" alt="Histograma de separacao horizontal" />
-          <canvas id="canvas-separation" hidden></canvas>
         </article>
         <article class="chart-card">
           <h2>Altitude</h2>
           <img id="chart-altitude" alt="Histograma de altitude" />
-          <canvas id="canvas-altitude" hidden></canvas>
         </article>
         <article class="chart-card">
           <h2>Distancia por aeronave</h2>
           <img id="chart-distance" alt="Histograma de distancia por aeronave" />
-          <canvas id="canvas-distance" hidden></canvas>
         </article>
         <article class="chart-card">
           <h2>Severidade LoWC</h2>
           <img id="chart-severity" alt="Histograma de severidade LoWC" />
-          <canvas id="canvas-severity" hidden></canvas>
         </article>
       </section>
 
@@ -225,7 +204,7 @@
       crossorigin=""
     ></script>
     <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
-    <script src="assets/data_bundle.js?v=0.2.4"></script>
-    <script src="assets/dashboard.js?v=0.2.4"></script>
+    <script src="assets/data_bundle.js?v=0.2.5"></script>
+    <script src="assets/dashboard.js?v=0.2.5"></script>
   </body>
 </html>
