@@ -67,8 +67,10 @@ mac_probability_bands = (0.001, 0.01, 0.05)
 conflict_sample_seconds = 10
 same_altitude_band_m = 150.0
 track_sample_stride = 20
+trajectory_shape_points = 12
+trajectory_cluster_distance_m = 1200.0
+trajectory_endpoint_tolerance_m = 2500.0
 heatmap_sample_stride = 10
-ROUTE_REFERENCE_MIN_M = 1000.0
 ```
 
 Alguns parametros podem ser alterados pela linha de comando:
@@ -95,7 +97,7 @@ O gerador publica em `docs/`:
 - `docs/assets/data/dashboard.json`: metricas agregadas ou medias.
 - `docs/assets/data/comparison.json`: tabela comparativa.
 - `docs/assets/data/runs/*.json`: dados por log processado.
-- `docs/assets/data/tracks.geojson`: rotas do primeiro log, para compatibilidade.
+- `docs/assets/data/tracks.geojson`: trajetorias executadas do primeiro log, com grupos e frequencias.
 - `docs/assets/data/conflicts.geojson`: eventos LoWC/NMAC do primeiro log.
 - `docs/assets/data/heatmap_points.json`: pontos de densidade do primeiro log.
 - `docs/assets/charts/*.png`: graficos estaticos por log.
@@ -109,7 +111,7 @@ O gerador publica em `docs/`:
 | `src/uam_dashboard/log_parser.py` | Le o `STATELOG`, converte campos numericos e ordena os registros. |
 | `src/uam_dashboard/metrics.py` | Implementa formulas de seguranca, eficiencia, exposicao e severidade. |
 | `src/uam_dashboard/metric_catalog.py` | Mantem a rastreabilidade entre metrica, formula, PDF, codigo e status. |
-| `src/uam_dashboard/exports.py` | Converte rotas e eventos para GeoJSON e series para JSON. |
+| `src/uam_dashboard/exports.py` | Agrupa trajetorias semelhantes e converte trajetorias/eventos para GeoJSON. |
 | `src/uam_dashboard/plots.py` | Gera PNGs de aeronaves simultaneas, separacao, altitude, distancia e severidade. |
 | `web/index.html` | Estrutura estatica da pagina. |
 | `web/assets/dashboard.js` | Renderiza mapa, comparacao, metricas e preview local de uploads. |
@@ -119,6 +121,7 @@ O gerador publica em `docs/`:
 
 | Metrica | Formula implementada | Referencia no PDF | Codigo |
 |---|---|---|---|
+| Frequencia de trajetorias | Contagem de instancias com origem, destino e forma dentro das tolerancias configuradas | Secoes 3.2 e 6, apoio visual a volume/utilizacao | `exports.py::tracks_geojson` |
 | LoWC | `Sh(t) < Smin_h and Sv(t) < Smin_v` | Secao 4.2.1, Eq. 4.1 | `metrics.py::detect_lowc_events` |
 | Baixa altitude AGL proxy | `(alt_m - alt_origem_m) < low_altitude_ft * 0.3048` | Baixa altitude aparece como dimensao de analise; limiar e configuravel | `metrics.py::environment_metrics` |
 | LoWC por hora de voo | `N_lowc / sum(H_f)` | Secao 3.3, Eq. 3.2 | `metrics.py::_safety_summary` |
@@ -131,7 +134,6 @@ O gerador publica em `docs/`:
 | Tempo medio de voo | `mean(max(simt_f) - min(simt_f))` | Secao 4.3.4 | `metrics.py::efficiency_metrics` |
 | Distancia media | `mean(max(distflown_f))` | Secao 4.3.4 | `metrics.py::efficiency_metrics` |
 | Eficiencia horizontal | `d_gc / d_real * 100` | Secoes 4.1 e 4.3.6 | `metrics.py::efficiency_metrics` |
-| Extensao de rota | `(d_real / d_gc - 1) * 100`, apenas quando `d_gc >= 1000 m` | Secao 4.3.6 | `metrics.py::efficiency_metrics` |
 
 O dashboard tambem exporta esta matriz por meio de `metric_catalog.py` e mostra a tabela na propria pagina.
 
@@ -156,9 +158,27 @@ Quando ha dois ou mais logs:
 - o seletor `Cenario no mapa` troca mapa e graficos para o log escolhido;
 - o botao `Carregar STATELOGs` permite comparar arquivos localmente no navegador.
 
-As medias incluem aeronaves, pico simultaneo, duracao, tempo medio, distancia media, eficiencia, extensao de rota, baixa altitude, LoWC, NMAC, taxas normalizadas e severidade.
+As medias incluem aeronaves, pico simultaneo, duracao, tempo medio, distancia media, eficiencia, baixa altitude, LoWC, NMAC, taxas normalizadas e severidade.
 
-## 9. Testes
+## 9. Como As Trajetorias Sao Agrupadas
+
+O `STATELOG` contem a trajetoria efetivamente executada, nao a REH planejada. O processamento:
+
+1. separa possiveis instancias de voo do mesmo `id` por intervalo de tempo, reinicio de `distflown` ou salto geografico;
+2. representa cada instancia por pontos igualmente espacados pela distancia percorrida;
+3. compara origem, destino e distancia media entre os pontos das formas;
+4. agrupa instancias dentro das tolerancias configuradas;
+5. usa a quantidade de instancias no grupo como frequencia/volume.
+
+As cores do mapa representam volume relativo ao grupo mais frequente:
+
+- azul: menor volume;
+- amarelo: volume intermediario;
+- vermelho: maior volume.
+
+Esse agrupamento e uma aproximacao configuravel baseada nas trajetorias observadas. Ele nao identifica formalmente uma REH.
+
+## 10. Testes
 
 Rode os testes unitarios com:
 
@@ -166,7 +186,7 @@ Rode os testes unitarios com:
 .\.venv\Scripts\python.exe -m unittest discover -s tests
 ```
 
-## 10. Publicacao No GitHub Pages
+## 11. Publicacao No GitHub Pages
 
 Configure o GitHub Pages para publicar a pasta:
 

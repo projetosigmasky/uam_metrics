@@ -5,6 +5,15 @@ from typing import Any
 
 METRIC_CATALOG: list[dict[str, Any]] = [
     {
+        "id": "trajectory_frequency",
+        "name": "Frequencia de trajetorias semelhantes",
+        "formula": "contagem de instancias com origem, destino e distancia media entre formas dentro das tolerancias",
+        "pdf_reference": "Produto 3, secoes 3.2 e 6; apoio visual a volume e utilizacao",
+        "code_reference": "src/uam_dashboard/exports.py::tracks_geojson",
+        "status": "implemented_configurable_clustering",
+        "data_required": "simt, id, lat, lon, distflown",
+    },
+    {
         "id": "low_altitude_share_pct",
         "name": "Baixa altitude AGL proxy",
         "formula": "(alt_m - alt_origem_m) < low_altitude_ft * 0.3048",
@@ -108,15 +117,6 @@ METRIC_CATALOG: list[dict[str, Any]] = [
         "name": "Eficiencia horizontal",
         "formula": "d_gc / d_real * 100",
         "pdf_reference": "Produto 3, secoes 4.1 e 4.3.6",
-        "code_reference": "src/uam_dashboard/metrics.py::efficiency_metrics",
-        "status": "implemented_great_circle_proxy",
-        "data_required": "lat/lon inicial e final, distflown",
-    },
-    {
-        "id": "mean_route_extension_pct",
-        "name": "Extensao de rota",
-        "formula": "(d_real / d_gc - 1) * 100, only when d_gc >= 1000 m",
-        "pdf_reference": "Produto 3, secao 4.3.6",
         "code_reference": "src/uam_dashboard/metrics.py::efficiency_metrics",
         "status": "implemented_great_circle_proxy",
         "data_required": "lat/lon inicial e final, distflown",

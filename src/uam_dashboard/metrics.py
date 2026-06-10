@@ -5,7 +5,7 @@ from typing import Any
 import numpy as np
 import pandas as pd
 
-from .config import FEET_TO_METERS, METERS_PER_NM, ROUTE_REFERENCE_MIN_M
+from .config import FEET_TO_METERS, METERS_PER_NM
 
 
 def haversine_m(lat1: Any, lon1: Any, lat2: Any, lon2: Any) -> Any:
@@ -56,9 +56,7 @@ def efficiency_metrics(df: pd.DataFrame) -> dict[str, Any]:
     distances_m = grouped["distflown"].max()
 
     route_efficiencies = []
-    route_extensions = []
     great_circle_distances_m = []
-    route_proxy_excluded_count = 0
     for _, group in grouped:
         first = group.iloc[0]
         last = group.iloc[-1]
@@ -67,10 +65,6 @@ def efficiency_metrics(df: pd.DataFrame) -> dict[str, Any]:
         great_circle_distances_m.append(float(straight_m))
         if flown_m > 0:
             route_efficiencies.append(float(straight_m / flown_m))
-        if straight_m >= ROUTE_REFERENCE_MIN_M and flown_m > 0:
-            route_extensions.append(float((flown_m / straight_m - 1.0) * 100.0))
-        elif flown_m > 0:
-            route_proxy_excluded_count += 1
 
     return {
         "mean_flight_time_min": float(durations_s.mean() / 60.0),
@@ -87,10 +81,6 @@ def efficiency_metrics(df: pd.DataFrame) -> dict[str, Any]:
         "mean_route_efficiency_pct": float(np.mean(route_efficiencies) * 100.0)
         if route_efficiencies
         else 0.0,
-        "mean_route_extension_pct": float(np.mean(route_extensions)) if route_extensions else 0.0,
-        "route_extension_sample_count": int(len(route_extensions)),
-        "route_proxy_excluded_count": int(route_proxy_excluded_count),
-        "route_reference_min_m": float(ROUTE_REFERENCE_MIN_M),
     }
 
 

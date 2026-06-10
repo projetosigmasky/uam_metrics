@@ -11,9 +11,8 @@ const state = {
   comparison: null,
   currentModel: null,
   activeRunIndex: 0,
+  trajectoryVolumeFilter: "all",
 };
-
-const colors = ["#1d4ed8", "#047857", "#be123c", "#6d28d9", "#b45309", "#0e7490", "#c2410c"];
 
 const metersPerNm = 1852;
 const feetToMeters = 0.3048;
@@ -30,7 +29,6 @@ const nmacVerticalM = 30;
 const conflictSampleSeconds = 10;
 const sameAltitudeBandM = 150;
 const macProbabilityBands = [0.001, 0.01, 0.05];
-const routeReferenceMinM = 1000;
 
 document.addEventListener("DOMContentLoaded", () => {
   initMap();
@@ -122,6 +120,11 @@ function bindLayerControls() {
   document.getElementById("layer-tracks").addEventListener("change", (event) => toggleLayer("tracksLayer", event));
   document.getElementById("layer-heat").addEventListener("change", (event) => toggleLayer("heatLayer", event));
   document.getElementById("layer-conflicts").addEventListener("change", (event) => toggleLayer("conflictLayer", event));
+  document.getElementById("trajectory-volume-filter").addEventListener("change", (event) => {
+    state.trajectoryVolumeFilter = event.target.value;
+    const run = state.runs[state.activeRunIndex] || state.runs[0];
+    if (run) renderMapLayers(run.tracks, run.conflicts, run.heatmap);
+  });
   document.getElementById("fit-map").addEventListener("click", () => {
     fitMapToOperationalArea(state.lastTracks, state.lastConflicts);
   });
@@ -221,7 +224,6 @@ function renderComparison(model) {
           <td>${formatNumber(row.flight_time_min, 1)} min</td>
           <td>${formatNumber(row.distance_nm, 1)} NM</td>
           <td>${formatNumber(row.route_efficiency_pct, 1)}%</td>
-          <td>${formatNumber(row.route_extension_pct, 1)}%</td>
           <td>${formatNumber(row.low_altitude_pct, 1)}%</td>
           <td>${formatNumber(row.lowc_events, 1)}</td>
           <td>${formatNumber(row.nmac_events, 1)}</td>
@@ -256,7 +258,6 @@ function renderMetrics(dashboard) {
   setText("metric-nmac-threshold", `${formatNumber(safety.nmac_horizontal_m, 0)} m x ${formatNumber(safety.nmac_vertical_m, 0)} m`);
   setText("metric-lowc-rate", formatNumber(safety.lowc_per_flight_hour, 2));
   setText("kpa-route-efficiency", `${formatNumber(efficiency.mean_route_efficiency_pct, 1)}%`);
-  setText("kpa-route-extension", `${formatNumber(efficiency.mean_route_extension_pct, 1)}%`);
   setText("kpa-altitude", `${formatNumber(environment.median_altitude_agl_proxy_m, 0)} m`);
   setText("kpa-origin-altitude", `${formatNumber(environment.median_origin_altitude_m, 0)} m`);
   setText("kpa-severity", formatNumber(safety.min_severity_ratio, 2));
@@ -300,11 +301,12 @@ function showCanvasChart(imageId, canvasId, values, color) {
 function renderMapLayers(tracks, conflicts, heatmap) {
   state.lastTracks = tracks;
   state.lastConflicts = conflicts;
+  const visibleTracks = filterTracksByVolume(tracks, state.trajectoryVolumeFilter);
   clearLayer("tracksLayer");
   clearLayer("heatLayer");
   clearLayer("conflictLayer");
 
-  const routeHalo = L.geoJSON(tracks, {
+  const routeHalo = L.geoJSON(visibleTracks, {
     interactive: false,
     pane: "routePane",
     style: () => ({
@@ -316,22 +318,24 @@ function renderMapLayers(tracks, conflicts, heatmap) {
     }),
   });
 
-  const routeLines = L.geoJSON(tracks, {
+  const routeLines = L.geoJSON(visibleTracks, {
     pane: "routePane",
     style: (feature) => ({
-      color: colorForId(feature.properties.id),
+      color: colorForVolume(feature.properties.volume_ratio),
       opacity: 1,
-      weight: 4,
+      weight: 3 + feature.properties.volume_ratio * 3,
       lineCap: "round",
       lineJoin: "round",
     }),
     onEachFeature: (feature, layer) => {
       const p = feature.properties;
-      layer.bindTooltip(`${escapeHtml(p.id)} - ${formatNumber(p.distance_nm, 1)} NM`, {
+      layer.bindTooltip(`${escapeHtml(p.trajectory_group)} - ${formatNumber(p.frequency)} ocorrencias`, {
         sticky: true,
       });
       layer.bindPopup(
-        `<strong>Aeronave ${escapeHtml(p.id)}</strong><br>` +
+        `<strong>Trajetoria ${escapeHtml(p.trajectory_group)}</strong><br>` +
+          `Aeronave ${escapeHtml(p.id)} / ${escapeHtml(p.flight_instance)}<br>` +
+          `${formatNumber(p.frequency)} instancias semelhantes<br>` +
           `${formatNumber(p.distance_nm, 1)} NM voadas<br>` +
           `${formatNumber(p.duration_min, 1)} min de voo<br>` +
           `Altitude ${formatNumber(p.min_alt_m, 0)}-${formatNumber(p.max_alt_m, 0)} m`
@@ -383,16 +387,16 @@ function renderMapLayers(tracks, conflicts, heatmap) {
   });
   state.conflictLayer = L.layerGroup([conflictPulse, conflictMarkers]);
 
-  const airportMarkers = buildEndpointLayer(tracks);
+  const airportMarkers = buildEndpointLayer(visibleTracks);
   state.tracksLayer.addLayer(airportMarkers);
 
   if (L.heatLayer) {
     state.heatLayer = L.heatLayer(heatmap, {
       pane: "heatPane",
-      radius: 18,
-      blur: 22,
-      minOpacity: 0.28,
-      maxZoom: 12,
+      radius: 9,
+      blur: 10,
+      minOpacity: 0.08,
+      maxZoom: 14,
       gradient: {
         0.15: "#2dd4bf",
         0.45: "#2563eb",
@@ -406,7 +410,7 @@ function renderMapLayers(tracks, conflicts, heatmap) {
         L.circleMarker([point[0], point[1]], {
           radius: 3,
           stroke: false,
-          fillOpacity: 0.32,
+          fillOpacity: 0.16,
           fillColor: "#2563eb",
         })
       )
@@ -417,8 +421,8 @@ function renderMapLayers(tracks, conflicts, heatmap) {
   applyCheckedLayer("layer-tracks", state.tracksLayer);
   applyCheckedLayer("layer-conflicts", state.conflictLayer);
 
-  fitMapToOperationalArea(tracks, conflicts);
-  updateMapInfo(tracks, conflicts, heatmap);
+  fitMapToOperationalArea(visibleTracks, conflicts);
+  updateMapInfo(tracks, visibleTracks, conflicts, heatmap);
 }
 
 function buildEndpointLayer(tracks) {
@@ -491,15 +495,27 @@ function fitMapToOperationalArea(tracks, conflicts) {
   });
 }
 
-function updateMapInfo(tracks, conflicts, heatmap) {
-  const aircraft = tracks.features?.length || 0;
+function updateMapInfo(tracks, visibleTracks, conflicts, heatmap) {
+  const trajectories = tracks.features?.length || 0;
+  const visible = visibleTracks.features?.length || 0;
+  const groups = tracks.properties?.trajectory_group_count || new Set(
+    (tracks.features || []).map((feature) => feature.properties.trajectory_group)
+  ).size;
   const lowc = conflicts.features?.length || 0;
   const density = heatmap.length || 0;
   setText("map-info-title", "Mapa operacional");
   setText(
     "map-info-text",
-    `${formatNumber(aircraft)} rotas amostradas, ${formatNumber(density)} pontos de densidade e ${formatNumber(lowc)} eventos LoWC. Clique nas linhas ou pontos para detalhes.`
+    `${formatNumber(visible)} de ${formatNumber(trajectories)} trajetorias visiveis, agrupadas em ${formatNumber(groups)} padroes; ${formatNumber(density)} pontos de densidade e ${formatNumber(lowc)} eventos LoWC.`
   );
+}
+
+function filterTracksByVolume(tracks, filter) {
+  if (!tracks || filter === "all") return tracks;
+  return {
+    ...tracks,
+    features: (tracks.features || []).filter((feature) => feature.properties.volume_class === filter),
+  };
 }
 
 function clearLayer(layerName) {
@@ -550,7 +566,6 @@ function buildClientModel(rows, fileName) {
   const distancesNm = [];
   const distancesKm = [];
   const routeEfficiencies = [];
-  const routeExtensions = [];
   const greatCircleDistancesNm = [];
   const features = [];
   let minLat = Infinity;
@@ -572,15 +587,13 @@ function buildClientModel(rows, fileName) {
     if (distanceM > 0) {
       routeEfficiencies.push((straightM / distanceM) * 100);
     }
-    if (straightM >= routeReferenceMinM && distanceM > 0) {
-      routeExtensions.push((distanceM / straightM - 1) * 100);
-    }
 
     const sampled = sampleRows(group, 20);
     features.push({
       type: "Feature",
       properties: {
         id,
+        flight_instance: `${id}#0`,
         samples: group.length,
         distance_nm: distanceNm,
         duration_min: (last.simt - first.simt) / 60,
@@ -602,6 +615,7 @@ function buildClientModel(rows, fileName) {
   }
 
   const lowAltitudeM = lowAltitudeFt * feetToMeters;
+  annotateTrajectoryFrequencies(features);
   const annotatedAltitudeRows = annotateFlightInstances(rows, byId);
   const originAltitudes = [...groupBy(annotatedAltitudeRows, (row) => row.flight_instance).values()].map(
     (group) => group[0].origin_alt_m
@@ -633,10 +647,6 @@ function buildClientModel(rows, fileName) {
       total_flight_hours: totalFlightHours,
       mean_great_circle_distance_nm: average(greatCircleDistancesNm),
       mean_route_efficiency_pct: average(routeEfficiencies),
-      mean_route_extension_pct: average(routeExtensions),
-      route_extension_sample_count: routeExtensions.length,
-      route_proxy_excluded_count: distancesNm.length - routeExtensions.length,
-      route_reference_min_m: routeReferenceMinM,
     },
     environment: {
       low_altitude_threshold_ft: lowAltitudeFt,
@@ -672,7 +682,7 @@ function buildClientModel(rows, fileName) {
   return {
     dashboard,
     timeline: activeCounts.sort((a, b) => a.simt - b.simt),
-    tracks: { type: "FeatureCollection", features },
+    tracks: trajectoryFeatureCollection(features),
     conflicts: {
       type: "FeatureCollection",
       features: lowc.events.map((event) => ({
@@ -681,7 +691,7 @@ function buildClientModel(rows, fileName) {
         geometry: { type: "Point", coordinates: [event.lon, event.lat] },
       })),
     },
-    heatmap: sampleRows(rows, 10).map((row) => [row.lat, row.lon, 0.65]),
+    heatmap: sampleRows(rows, 10).map((row) => [row.lat, row.lon, 0.28]),
   };
 }
 
@@ -733,16 +743,6 @@ function averageDashboard(dashboards) {
       total_flight_hours: dashboards.reduce((sum, item) => sum + item.efficiency.total_flight_hours, 0),
       mean_great_circle_distance_nm: average(dashboards.map((item) => item.efficiency.mean_great_circle_distance_nm)),
       mean_route_efficiency_pct: average(dashboards.map((item) => item.efficiency.mean_route_efficiency_pct)),
-      mean_route_extension_pct: average(dashboards.map((item) => item.efficiency.mean_route_extension_pct)),
-      route_extension_sample_count: dashboards.reduce(
-        (sum, item) => sum + item.efficiency.route_extension_sample_count,
-        0
-      ),
-      route_proxy_excluded_count: dashboards.reduce(
-        (sum, item) => sum + item.efficiency.route_proxy_excluded_count,
-        0
-      ),
-      route_reference_min_m: dashboards[0].efficiency.route_reference_min_m,
     },
     environment: {
       low_altitude_threshold_ft: dashboards[0].environment.low_altitude_threshold_ft,
@@ -815,7 +815,6 @@ function comparisonRow(name, dashboard, isAverage) {
     flight_time_min: dashboard.efficiency.mean_flight_time_min,
     distance_nm: dashboard.efficiency.mean_distance_nm,
     route_efficiency_pct: dashboard.efficiency.mean_route_efficiency_pct,
-    route_extension_pct: dashboard.efficiency.mean_route_extension_pct,
     low_altitude_pct: dashboard.environment.low_altitude_share_pct,
     lowc_events: dashboard.safety.lowc_events,
     nmac_events: dashboard.safety.nmac_events,
@@ -823,6 +822,99 @@ function comparisonRow(name, dashboard, isAverage) {
     min_severity_ratio: dashboard.safety.min_severity_ratio,
     is_average: isAverage,
   };
+}
+
+function annotateTrajectoryFrequencies(features) {
+  const clusters = [];
+  for (const feature of features) {
+    const signature = trajectorySignature(feature.geometry.coordinates, 12);
+    let cluster = clusters.find((candidate) => {
+      const representative = candidate.signature;
+      const startDistance = haversineM(signature[0][1], signature[0][0], representative[0][1], representative[0][0]);
+      const endDistance = haversineM(
+        signature[signature.length - 1][1],
+        signature[signature.length - 1][0],
+        representative[representative.length - 1][1],
+        representative[representative.length - 1][0]
+      );
+      return startDistance <= 2500 && endDistance <= 2500 && meanTrajectoryDistance(signature, representative) <= 1200;
+    });
+
+    if (!cluster) {
+      cluster = { signature, features: [] };
+      clusters.push(cluster);
+    }
+    cluster.features.push(feature);
+  }
+
+  const maxFrequency = Math.max(1, ...clusters.map((cluster) => cluster.features.length));
+  clusters.forEach((cluster, index) => {
+    const frequency = cluster.features.length;
+    const volumeRatio = frequency / maxFrequency;
+    const volumeClass = volumeRatio >= 0.67 ? "high" : volumeRatio >= 0.34 ? "medium" : "low";
+    cluster.features.forEach((feature) => {
+      Object.assign(feature.properties, {
+        trajectory_group: `T${String(index + 1).padStart(3, "0")}`,
+        frequency,
+        volume_ratio: volumeRatio,
+        volume_class: volumeClass,
+      });
+    });
+  });
+  features.sort((left, right) => left.properties.frequency - right.properties.frequency);
+}
+
+function trajectoryFeatureCollection(features) {
+  const groups = new Set(features.map((feature) => feature.properties.trajectory_group));
+  return {
+    type: "FeatureCollection",
+    properties: {
+      trajectory_count: features.length,
+      trajectory_group_count: groups.size,
+      max_frequency: Math.max(1, ...features.map((feature) => feature.properties.frequency)),
+      cluster_distance_m: 1200,
+      endpoint_tolerance_m: 2500,
+      shape_points: 12,
+    },
+    features,
+  };
+}
+
+function trajectorySignature(coordinates, pointCount) {
+  if (coordinates.length <= 1) return new Array(pointCount).fill(coordinates[0]);
+  const cumulative = [0];
+  for (let index = 1; index < coordinates.length; index += 1) {
+    const previous = coordinates[index - 1];
+    const current = coordinates[index];
+    cumulative.push(
+      cumulative[index - 1] + haversineM(previous[1], previous[0], current[1], current[0])
+    );
+  }
+  const totalDistance = cumulative[cumulative.length - 1];
+  if (totalDistance <= 0) return new Array(pointCount).fill(coordinates[0]);
+
+  return Array.from({ length: pointCount }, (_item, index) => {
+    const targetDistance = (index / (pointCount - 1)) * totalDistance;
+    let upper = cumulative.findIndex((distance) => distance >= targetDistance);
+    if (upper < 0) upper = cumulative.length - 1;
+    const lower = Math.max(0, upper - 1);
+    const span = cumulative[upper] - cumulative[lower] || 1;
+    const ratio = (targetDistance - cumulative[lower]) / span;
+    const left = coordinates[lower];
+    const right = coordinates[upper];
+    return [
+      left[0] + (right[0] - left[0]) * ratio,
+      left[1] + (right[1] - left[1]) * ratio,
+    ];
+  });
+}
+
+function meanTrajectoryDistance(left, right) {
+  return average(
+    left.map((coordinate, index) =>
+      haversineM(coordinate[1], coordinate[0], right[index][1], right[index][0])
+    )
+  );
 }
 
 function annotateFlightInstances(rows, byId) {
@@ -1059,12 +1151,11 @@ function groupBy(rows, getKey) {
   return map;
 }
 
-function colorForId(id) {
-  let hash = 0;
-  for (let i = 0; i < id.length; i += 1) {
-    hash = (hash * 31 + id.charCodeAt(i)) >>> 0;
-  }
-  return colors[hash % colors.length];
+function colorForVolume(volumeRatio) {
+  const ratio = Math.max(0, Math.min(1, Number(volumeRatio) || 0));
+  if (ratio >= 0.67) return "#dc2626";
+  if (ratio >= 0.34) return "#f59e0b";
+  return "#0ea5e9";
 }
 
 function haversineM(lat1, lon1, lat2, lon2) {

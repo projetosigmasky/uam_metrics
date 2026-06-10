@@ -105,16 +105,6 @@ def average_dashboard(run_dashboards: list[dict[str, Any]]) -> dict[str, Any]:
             "mean_route_efficiency_pct": mean(
                 [d["efficiency"]["mean_route_efficiency_pct"] for d in run_dashboards]
             ),
-            "mean_route_extension_pct": mean(
-                [d["efficiency"]["mean_route_extension_pct"] for d in run_dashboards]
-            ),
-            "route_extension_sample_count": int(
-                sum(d["efficiency"]["route_extension_sample_count"] for d in run_dashboards)
-            ),
-            "route_proxy_excluded_count": int(
-                sum(d["efficiency"]["route_proxy_excluded_count"] for d in run_dashboards)
-            ),
-            "route_reference_min_m": run_dashboards[0]["efficiency"]["route_reference_min_m"],
         },
         "environment": {
             "low_altitude_threshold_ft": run_dashboards[0]["environment"]["low_altitude_threshold_ft"],
@@ -197,7 +187,6 @@ def comparison_payload(runs: list[dict[str, Any]], average: dict[str, Any]) -> d
                 "flight_time_min": d["efficiency"]["mean_flight_time_min"],
                 "distance_nm": d["efficiency"]["mean_distance_nm"],
                 "route_efficiency_pct": d["efficiency"]["mean_route_efficiency_pct"],
-                "route_extension_pct": d["efficiency"]["mean_route_extension_pct"],
                 "low_altitude_pct": d["environment"]["low_altitude_share_pct"],
                 "lowc_events": d["safety"]["lowc_events"],
                 "nmac_events": d["safety"]["nmac_events"],
@@ -216,7 +205,6 @@ def comparison_payload(runs: list[dict[str, Any]], average: dict[str, Any]) -> d
             "flight_time_min": average["efficiency"]["mean_flight_time_min"],
             "distance_nm": average["efficiency"]["mean_distance_nm"],
             "route_efficiency_pct": average["efficiency"]["mean_route_efficiency_pct"],
-            "route_extension_pct": average["efficiency"]["mean_route_extension_pct"],
             "low_altitude_pct": average["environment"]["low_altitude_share_pct"],
             "lowc_events": average["safety"]["lowc_events"],
             "nmac_events": average["safety"]["nmac_events"],
@@ -315,7 +303,17 @@ def analyze_log(log_path: Path, config: DashboardConfig, charts_dir: Path, run_i
         "id": chart_prefix,
         "name": log_path.name,
         "dashboard": dashboard,
-        "tracks": tracks_geojson(df, config.track_sample_stride),
+        "tracks": tracks_geojson(
+            df,
+            config.track_sample_stride,
+            instance_gap_seconds=config.flight_instance_gap_seconds,
+            instance_reset_distance_m=config.flight_instance_reset_distance_m,
+            instance_jump_m=config.flight_instance_jump_m,
+            reference_samples=config.low_altitude_reference_samples,
+            shape_points=config.trajectory_shape_points,
+            cluster_distance_m=config.trajectory_cluster_distance_m,
+            endpoint_tolerance_m=config.trajectory_endpoint_tolerance_m,
+        ),
         "conflicts": conflicts_geojson(lowc_events),
         "heatmap": heatmap_points(df, config.heatmap_sample_stride),
         "timeline": timeline_records(series),
@@ -381,6 +379,9 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--nmac-horizontal-m", type=float, default=150.0)
     parser.add_argument("--nmac-vertical-m", type=float, default=30.0)
     parser.add_argument("--conflict-sample-seconds", type=int, default=10)
+    parser.add_argument("--trajectory-shape-points", type=int, default=12)
+    parser.add_argument("--trajectory-cluster-distance-m", type=float, default=1200.0)
+    parser.add_argument("--trajectory-endpoint-tolerance-m", type=float, default=2500.0)
     return parser.parse_args()
 
 
@@ -412,6 +413,9 @@ def main() -> None:
         nmac_horizontal_m=args.nmac_horizontal_m,
         nmac_vertical_m=args.nmac_vertical_m,
         conflict_sample_seconds=args.conflict_sample_seconds,
+        trajectory_shape_points=args.trajectory_shape_points,
+        trajectory_cluster_distance_m=args.trajectory_cluster_distance_m,
+        trajectory_endpoint_tolerance_m=args.trajectory_endpoint_tolerance_m,
     )
     build_dashboard(config)
 

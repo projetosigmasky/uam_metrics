@@ -10,7 +10,7 @@
       integrity="sha256-p4NxAoJBhIINfQd+g9FQXHyzyTAFi+lyLwN2Bja9fM="
       crossorigin=""
     />
-    <link rel="stylesheet" href="assets/dashboard.css?v=0.2.2" />
+    <link rel="stylesheet" href="assets/dashboard.css?v=0.2.4" />
   </head>
   <body>
     <header class="topbar">
@@ -73,21 +73,26 @@
         <aside class="side-panel">
           <div class="panel-section">
             <h2>Camadas</h2>
-            <label><input type="checkbox" id="layer-tracks" checked /> Rotas</label>
+            <label><input type="checkbox" id="layer-tracks" checked /> Trajetorias</label>
+            <label class="stacked-control">
+              <span>Volume das trajetorias</span>
+              <select id="trajectory-volume-filter">
+                <option value="all">Todas</option>
+                <option value="high">Maior volume</option>
+                <option value="medium">Volume intermediario</option>
+                <option value="low">Menor volume</option>
+              </select>
+            </label>
             <label><input type="checkbox" id="layer-heat" /> Densidade</label>
             <label><input type="checkbox" id="layer-conflicts" checked /> LoWC</label>
             <button class="panel-button" id="fit-map" type="button">Reenquadrar mapa</button>
           </div>
           <div class="panel-section">
-            <h2>KPA</h2>
+            <h2>Detalhamento</h2>
             <dl class="kpa-list">
               <div>
                 <dt>Eficiencia de rota</dt>
                 <dd id="kpa-route-efficiency">-</dd>
-              </div>
-              <div>
-                <dt>Extensao de rota</dt>
-                <dd id="kpa-route-extension">-</dd>
               </div>
               <div>
                 <dt>Alt. relativa mediana</dt>
@@ -117,9 +122,11 @@
           <div id="map"></div>
           <div class="map-info" aria-live="polite">
             <strong id="map-info-title">Mapa operacional</strong>
-            <span id="map-info-text">Rotas, densidade e eventos LoWC georreferenciados.</span>
+            <span id="map-info-text">Trajetorias, densidade e eventos LoWC georreferenciados.</span>
             <div class="map-legend">
-              <span><i class="legend-swatch legend-route"></i>Rotas</span>
+              <span><i class="legend-swatch legend-volume-low"></i>Menor volume</span>
+              <span><i class="legend-swatch legend-volume-medium"></i>Volume intermediario</span>
+              <span><i class="legend-swatch legend-volume-high"></i>Maior volume</span>
               <span><i class="legend-swatch legend-heat"></i>Densidade</span>
               <span><i class="legend-swatch legend-lowc"></i>LoWC</span>
             </div>
@@ -150,7 +157,6 @@
                 <th>Tempo medio</th>
                 <th>Distancia</th>
                 <th>Ef. rota</th>
-                <th>Ext. rota</th>
                 <th>Baixa alt.</th>
                 <th>LoWC</th>
                 <th>NMAC</th>
@@ -219,7 +225,7 @@
       crossorigin=""
     ></script>
     <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
-    <script src="assets/data_bundle.js?v=0.2.2"></script>
-    <script src="assets/dashboard.js?v=0.2.2"></script>
+    <script src="assets/data_bundle.js?v=0.2.4"></script>
+    <script src="assets/dashboard.js?v=0.2.4"></script>
   </body>
 </html>

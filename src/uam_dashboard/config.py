@@ -8,7 +8,6 @@ LOG_COLUMNS = ["simt", "id", "lat", "lon", "distflown", "alt", "cas", "tas", "gs
 METERS_PER_NM = 1852.0
 FEET_TO_METERS = 0.3048
 SAO_PAULO_CENTER = [-23.5505, -46.6333]
-ROUTE_REFERENCE_MIN_M = 1000.0
 
 
 @dataclass(frozen=True)
@@ -32,4 +31,7 @@ class DashboardConfig:
     conflict_sample_seconds: int = 10
     same_altitude_band_m: float = 150.0
     track_sample_stride: int = 20
+    trajectory_shape_points: int = 12
+    trajectory_cluster_distance_m: float = 1200.0
+    trajectory_endpoint_tolerance_m: float = 2500.0
     heatmap_sample_stride: int = 10

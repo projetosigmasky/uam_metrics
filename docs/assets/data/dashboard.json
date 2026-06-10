@@ -29,11 +29,7 @@
     "total_distance_km": 8397.958775916151,
     "total_flight_hours": 526.0175,
     "mean_great_circle_distance_nm": 9.063055985571172,
-    "mean_route_efficiency_pct": 66.33880385901902,
-    "mean_route_extension_pct": 110.4444701055969,
-    "route_extension_sample_count": 283,
-    "route_proxy_excluded_count": 16,
-    "route_reference_min_m": 1000.0
+    "mean_route_efficiency_pct": 66.33880385901902
   },
   "environment": {
     "low_altitude_threshold_ft": 1500.0,
@@ -91,6 +87,15 @@
     "severity_histogram": "assets/charts/01_STATELOG_1_maior_movimento_20260527_134549_mvp_20260527_14-03-34_severity_histogram.png"
   },
   "metric_catalog": [
+    {
+      "id": "trajectory_frequency",
+      "name": "Frequencia de trajetorias semelhantes",
+      "formula": "contagem de instancias com origem, destino e distancia media entre formas dentro das tolerancias",
+      "pdf_reference": "Produto 3, secoes 3.2 e 6; apoio visual a volume e utilizacao",
+      "code_reference": "src/uam_dashboard/exports.py::tracks_geojson",
+      "status": "implemented_configurable_clustering",
+      "data_required": "simt, id, lat, lon, distflown"
+    },
     {
       "id": "low_altitude_share_pct",
       "name": "Baixa altitude AGL proxy",
@@ -195,15 +200,6 @@
       "name": "Eficiencia horizontal",
       "formula": "d_gc / d_real * 100",
       "pdf_reference": "Produto 3, secoes 4.1 e 4.3.6",
-      "code_reference": "src/uam_dashboard/metrics.py::efficiency_metrics",
-      "status": "implemented_great_circle_proxy",
-      "data_required": "lat/lon inicial e final, distflown"
-    },
-    {
-      "id": "mean_route_extension_pct",
-      "name": "Extensao de rota",
-      "formula": "(d_real / d_gc - 1) * 100, only when d_gc >= 1000 m",
-      "pdf_reference": "Produto 3, secao 4.3.6",
       "code_reference": "src/uam_dashboard/metrics.py::efficiency_metrics",
       "status": "implemented_great_circle_proxy",
       "data_required": "lat/lon inicial e final, distflown"
