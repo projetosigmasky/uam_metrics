@@ -79,6 +79,7 @@ def tracks_geojson(
     shape_points: int,
     cluster_distance_m: float,
     endpoint_tolerance_m: float,
+    conformity_by_instance: dict[str, dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     features: list[dict[str, Any]] = []
     stride = max(1, sample_stride)
@@ -122,6 +123,7 @@ def tracks_geojson(
         for instance_index in cluster:
             instance = instances[instance_index]
             group = instance["group"]
+            conformity = (conformity_by_instance or {}).get(instance["flight_instance"], {})
             features.append(
                 {
                     "type": "Feature",
@@ -137,6 +139,7 @@ def tracks_geojson(
                         "duration_min": float((group["simt"].max() - group["simt"].min()) / 60.0),
                         "min_alt_m": float(group["alt"].min()),
                         "max_alt_m": float(group["alt"].max()),
+                        **conformity,
                     },
                     "geometry": {"type": "LineString", "coordinates": instance["coordinates"]},
                 }
@@ -175,7 +178,10 @@ def conflicts_geojson(events: pd.DataFrame) -> dict[str, Any]:
                     "id_b": str(row.id_b),
                     "dist_h_m": float(row.dist_h_m),
                     "dist_v_m": float(row.dist_v_m),
+                    "horizontal_ratio": float(row.horizontal_ratio),
+                    "vertical_ratio": float(row.vertical_ratio),
                     "severity_ratio": float(row.severity_ratio),
+                    "severity_dimension": str(row.severity_dimension),
                     "is_nmac": bool(row.is_nmac),
                 },
                 "geometry": {
@@ -186,6 +192,43 @@ def conflicts_geojson(events: pd.DataFrame) -> dict[str, Any]:
         )
 
     return {"type": "FeatureCollection", "features": features}
+
+
+def planned_routes_geojson(
+    planned_flights: list[dict[str, Any]],
+    conformity_by_instance: dict[str, dict[str, Any]],
+    tolerance_m: float,
+) -> dict[str, Any]:
+    features = []
+    conformity_by_planned = {
+        values["planned_flight_instance"]: values
+        for values in conformity_by_instance.values()
+        if "planned_flight_instance" in values
+    }
+    for flight in planned_flights:
+        conformity = conformity_by_planned.get(flight["flight_instance"], {})
+        features.append(
+            {
+                "type": "Feature",
+                "properties": {
+                    "id": flight["aircraft_id"],
+                    "flight_instance": flight["flight_instance"],
+                    "start_time": flight["start_time"],
+                    "scenario": flight["scenario"],
+                    "waypoint_count": len(flight["coordinates"]),
+                    **conformity,
+                },
+                "geometry": {"type": "LineString", "coordinates": flight["coordinates"]},
+            }
+        )
+    return {
+        "type": "FeatureCollection",
+        "properties": {
+            "planned_instance_count": len(features),
+            "conformity_tolerance_m": float(tolerance_m),
+        },
+        "features": features,
+    }
 
 
 def heatmap_points(df: pd.DataFrame, sample_stride: int) -> list[list[float]]:

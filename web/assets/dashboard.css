@@ -462,6 +462,7 @@ input[type="checkbox"] {
 .comparison-header {
   align-items: center;
   display: flex;
+  flex-wrap: wrap;
   gap: 16px;
   justify-content: space-between;
 }
@@ -483,7 +484,8 @@ input[type="checkbox"] {
   font-weight: 650;
 }
 
-#run-select {
+#run-select,
+#day-select {
   background: #ffffff;
   border: 1px solid var(--line);
   border-radius: 7px;
@@ -534,6 +536,15 @@ input[type="checkbox"] {
   vertical-align: top;
 }
 
+.traceability-table .traceability-group-row td {
+  background: #eef2f7;
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0;
+  text-align: left;
+}
+
 .comparison-table th {
   color: var(--muted);
   font-size: 12px;
@@ -543,6 +554,10 @@ input[type="checkbox"] {
 .comparison-table tr.average-row {
   background: #f8fafc;
   font-weight: 760;
+}
+
+.comparison-table tr.mvp-row {
+  background: #f0fdfa;
 }
 
 .map-legend {
@@ -578,6 +593,10 @@ input[type="checkbox"] {
   background: #dc2626;
 }
 
+.legend-planned {
+  background: repeating-linear-gradient(90deg, #111827 0 6px, transparent 6px 10px);
+}
+
 .legend-heat {
   background: linear-gradient(90deg, #2dd4bf, #2563eb, #f59e0b, #dc2626);
 }
@@ -590,6 +609,30 @@ input[type="checkbox"] {
   display: grid;
   gap: 18px;
   grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.chart-section {
+  border-top: 3px solid var(--line);
+  display: grid;
+  gap: 12px;
+  padding-top: 16px;
+}
+
+.safety-section {
+  border-top-color: #dc2626;
+}
+
+.efficiency-section {
+  border-top-color: #0f766e;
+}
+
+.context-section {
+  border-top-color: #64748b;
+}
+
+.section-heading h2 {
+  font-size: 18px;
+  margin-bottom: 0;
 }
 
 .chart-card {
@@ -652,6 +695,7 @@ input[type="checkbox"] {
   }
 
   .comparison-header label,
+  #day-select,
   #run-select {
     width: 100%;
   }

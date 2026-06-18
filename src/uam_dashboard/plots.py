@@ -124,3 +124,46 @@ def plot_severity_histogram(events: pd.DataFrame, output_path: Path) -> None:
     fig.tight_layout()
     fig.savefig(output_path, dpi=180)
     plt.close(fig)
+
+
+def plot_lowc_dimensions(events: pd.DataFrame, output_path: Path) -> None:
+    _set_style()
+    fig, ax = plt.subplots(figsize=(10.5, 4.2))
+    labels = ["Horizontal dominante", "Vertical dominante", "Equilibrada"]
+    dimensions = ["horizontal", "vertical", "both"]
+    counts = [
+        int((events["severity_dimension"] == dimension).sum()) if not events.empty else 0
+        for dimension in dimensions
+    ]
+    bars = ax.bar(labels, counts, color=["#2563eb", "#f59e0b", "#64748b"], alpha=0.86)
+    ax.bar_label(bars, padding=4)
+    ax.set_title("Dimensao dominante da severidade LoWC")
+    ax.set_ylabel("Eventos")
+    ax.set_ylim(0, max(counts + [1]) * 1.25)
+    ax.grid(True, axis="y", linestyle="--", alpha=0.25)
+    fig.tight_layout()
+    fig.savefig(output_path, dpi=180)
+    plt.close(fig)
+
+
+def plot_trajectory_conformity(conformity_by_instance: dict[str, dict], output_path: Path) -> None:
+    _set_style()
+    fig, ax = plt.subplots(figsize=(10.5, 4.2))
+    values = [
+        item["trajectory_conformity_ratio"] * 100.0
+        for item in conformity_by_instance.values()
+        if "trajectory_conformity_ratio" in item
+    ]
+    if values:
+        ax.hist(values, bins=min(32, max(8, int(np.sqrt(len(values))))), color="#0f766e", alpha=0.82)
+    else:
+        ax.text(0.5, 0.5, "Sem trajetorias planejadas associadas", ha="center", va="center", transform=ax.transAxes)
+    ax.axvline(0.0, color="#111827", linestyle="--", linewidth=1.8, label="Distancia planejada")
+    ax.set_title("Conformidade da trajetoria executada")
+    ax.set_xlabel("Distancia adicional em relacao ao plano (%)")
+    ax.set_ylabel("Voos")
+    ax.legend(loc="upper right")
+    ax.grid(True, axis="y", linestyle="--", alpha=0.25)
+    fig.tight_layout()
+    fig.savefig(output_path, dpi=180)
+    plt.close(fig)

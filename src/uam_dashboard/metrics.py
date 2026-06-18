@@ -50,21 +50,30 @@ def _safe_rate(numerator: float, denominator: float, scale: float = 1.0) -> floa
     return float((numerator / denominator) * scale) if denominator > 0 else 0.0
 
 
-def efficiency_metrics(df: pd.DataFrame) -> dict[str, Any]:
-    grouped = df.groupby("id", sort=True)
+def efficiency_metrics(
+    df: pd.DataFrame,
+    gap_seconds: float = 300.0,
+    reset_distance_m: float = 250.0,
+    jump_m: float = 5000.0,
+) -> dict[str, Any]:
+    annotated = flight_instance_frame(df, gap_seconds, reset_distance_m, jump_m)
+    grouped = annotated.groupby("flight_instance", sort=True)
     durations_s = grouped["simt"].max() - grouped["simt"].min()
-    distances_m = grouped["distflown"].max()
+    distances_m = grouped["distflown"].max() - grouped["distflown"].min()
 
     route_efficiencies = []
+    horizontal_inefficiencies = []
     great_circle_distances_m = []
     for _, group in grouped:
         first = group.iloc[0]
         last = group.iloc[-1]
         straight_m = haversine_m(first["lat"], first["lon"], last["lat"], last["lon"])
-        flown_m = float(group["distflown"].max())
+        flown_m = float(group["distflown"].max() - group["distflown"].min())
         great_circle_distances_m.append(float(straight_m))
         if flown_m > 0:
             route_efficiencies.append(float(straight_m / flown_m))
+        if straight_m > 0:
+            horizontal_inefficiencies.append(float((flown_m - straight_m) / straight_m))
 
     return {
         "mean_flight_time_min": float(durations_s.mean() / 60.0),
@@ -81,6 +90,10 @@ def efficiency_metrics(df: pd.DataFrame) -> dict[str, Any]:
         "mean_route_efficiency_pct": float(np.mean(route_efficiencies) * 100.0)
         if route_efficiencies
         else 0.0,
+        "mean_horizontal_inefficiency_pct": float(np.mean(horizontal_inefficiencies) * 100.0)
+        if horizontal_inefficiencies
+        else 0.0,
+        "flight_instances": int(len(durations_s)),
     }
 
 
@@ -118,6 +131,163 @@ def flight_instance_frame(
         return df.copy()
 
     return pd.concat(annotated_groups, ignore_index=True).sort_values(["simt", "id"]).reset_index(drop=True)
+
+
+def trajectory_conformity(
+    df: pd.DataFrame,
+    planned_flights: list[dict[str, Any]],
+    tolerance_m: float,
+    gap_seconds: float,
+    reset_distance_m: float,
+    jump_m: float,
+) -> tuple[dict[str, Any], dict[str, dict[str, Any]]]:
+    """Compare executed samples with the closest point of their planned polyline."""
+
+    annotated = flight_instance_frame(df, gap_seconds, reset_distance_m, jump_m)
+    by_instance: dict[str, dict[str, Any]] = {}
+    unused_planned = set(range(len(planned_flights)))
+    all_deviations: list[float] = []
+    conformity_ratios: list[float] = []
+    additional_distances_m: list[float] = []
+    planned_horizontal_inefficiencies: list[float] = []
+    executed_horizontal_inefficiencies: list[float] = []
+    conforming_samples = 0
+    matched_instances = 0
+
+    for flight_instance, group in annotated.groupby("flight_instance", sort=True):
+        aircraft_id = str(group["id"].iloc[0])
+        start_simt = float(group["simt"].min())
+        candidates = [
+            index
+            for index in unused_planned
+            if planned_flights[index]["aircraft_id"] == aircraft_id
+        ]
+        if not candidates:
+            continue
+        planned_index = min(
+            candidates,
+            key=lambda index: abs(float(planned_flights[index]["start_simt"]) - start_simt),
+        )
+        planned = planned_flights[planned_index]
+        unused_planned.remove(planned_index)
+        planned_coordinates = np.asarray(
+            [[coord[1], coord[0]] for coord in planned["coordinates"]],
+            dtype=float,
+        )
+        deviations = _point_to_polyline_distances_m(
+            group[["lat", "lon"]].to_numpy(dtype=float),
+            planned_coordinates,
+        )
+        if not len(deviations):
+            continue
+
+        matched_instances += 1
+        all_deviations.extend(deviations.tolist())
+        inside = int(np.sum(deviations <= tolerance_m))
+        conforming_samples += inside
+        planned_distance_m = _polyline_distance_m(planned_coordinates)
+        executed_distance_m = float(group["distflown"].max() - group["distflown"].min())
+        additional_distance_m = executed_distance_m - planned_distance_m
+        conformity_ratio = _safe_rate(additional_distance_m, planned_distance_m)
+        first = group.iloc[0]
+        last = group.iloc[-1]
+        great_circle_distance_m = float(haversine_m(first["lat"], first["lon"], last["lat"], last["lon"]))
+        planned_hfe = _safe_rate(planned_distance_m - great_circle_distance_m, great_circle_distance_m)
+        executed_hfe = _safe_rate(executed_distance_m - great_circle_distance_m, great_circle_distance_m)
+        conformity_ratios.append(conformity_ratio)
+        additional_distances_m.append(additional_distance_m)
+        planned_horizontal_inefficiencies.append(planned_hfe)
+        executed_horizontal_inefficiencies.append(executed_hfe)
+        by_instance[str(flight_instance)] = {
+            "planned_flight_instance": planned["flight_instance"],
+            "planned_start_time": planned["start_time"],
+            "start_time_delta_s": abs(float(planned["start_simt"]) - start_simt),
+            "spatial_adherence_pct": float(inside / len(deviations) * 100.0),
+            "mean_deviation_m": float(np.mean(deviations)),
+            "p95_deviation_m": _percentile(deviations.tolist(), 0.95),
+            "max_deviation_m": float(np.max(deviations)),
+            "planned_distance_m": float(planned_distance_m),
+            "executed_distance_m": float(executed_distance_m),
+            "additional_distance_m": float(additional_distance_m),
+            "trajectory_conformity_ratio": float(conformity_ratio),
+            "planned_horizontal_inefficiency_ratio": float(planned_hfe),
+            "executed_horizontal_inefficiency_ratio": float(executed_hfe),
+            "executed_samples": int(len(deviations)),
+        }
+
+    total_samples = len(all_deviations)
+    summary = {
+        "available": bool(total_samples),
+        "tolerance_m": float(tolerance_m),
+        "planned_instances": int(len(planned_flights)),
+        "matched_instances": int(matched_instances),
+        "spatial_adherence_pct": _safe_rate(conforming_samples, total_samples, 100.0),
+        "mean_deviation_m": float(np.mean(all_deviations)) if all_deviations else 0.0,
+        "p95_deviation_m": _percentile(all_deviations, 0.95),
+        "max_deviation_m": max(all_deviations) if all_deviations else 0.0,
+        "mean_trajectory_conformity_ratio": float(np.mean(conformity_ratios))
+        if conformity_ratios
+        else 0.0,
+        "median_trajectory_conformity_ratio": float(np.median(conformity_ratios))
+        if conformity_ratios
+        else 0.0,
+        "p95_trajectory_conformity_ratio": _percentile(conformity_ratios, 0.95),
+        "mean_additional_distance_m": float(np.mean(additional_distances_m))
+        if additional_distances_m
+        else 0.0,
+        "total_additional_distance_m": float(np.sum(additional_distances_m))
+        if additional_distances_m
+        else 0.0,
+        "mean_planned_horizontal_inefficiency_ratio": float(np.mean(planned_horizontal_inefficiencies))
+        if planned_horizontal_inefficiencies
+        else 0.0,
+        "mean_executed_horizontal_inefficiency_ratio": float(np.mean(executed_horizontal_inefficiencies))
+        if executed_horizontal_inefficiencies
+        else 0.0,
+        "executed_samples": int(total_samples),
+    }
+    return summary, by_instance
+
+
+def _polyline_distance_m(polyline: np.ndarray) -> float:
+    if len(polyline) < 2:
+        return 0.0
+    return float(
+        np.sum(
+            haversine_m(
+                polyline[:-1, 0],
+                polyline[:-1, 1],
+                polyline[1:, 0],
+                polyline[1:, 1],
+            )
+        )
+    )
+
+
+def _point_to_polyline_distances_m(points: np.ndarray, polyline: np.ndarray) -> np.ndarray:
+    if len(points) == 0 or len(polyline) < 2:
+        return np.asarray([], dtype=float)
+
+    reference_lat = float(np.mean(polyline[:, 0]))
+    meters_per_degree_lat = 111_320.0
+    meters_per_degree_lon = meters_per_degree_lat * np.cos(np.radians(reference_lat))
+    points_xy = np.column_stack((points[:, 1] * meters_per_degree_lon, points[:, 0] * meters_per_degree_lat))
+    line_xy = np.column_stack(
+        (polyline[:, 1] * meters_per_degree_lon, polyline[:, 0] * meters_per_degree_lat)
+    )
+
+    minimum = np.full(len(points_xy), np.inf)
+    for start, end in zip(line_xy[:-1], line_xy[1:]):
+        segment = end - start
+        length_squared = float(np.dot(segment, segment))
+        if length_squared <= 0:
+            distances = np.linalg.norm(points_xy - start, axis=1)
+        else:
+            projection = np.clip(((points_xy - start) @ segment) / length_squared, 0.0, 1.0)
+            closest = start + projection[:, None] * segment
+            distances = np.linalg.norm(points_xy - closest, axis=1)
+        minimum = np.minimum(minimum, distances)
+    return minimum
 
 
 def active_aircraft_series(df: pd.DataFrame) -> pd.DataFrame:
@@ -174,9 +344,15 @@ def detect_lowc_events(
             & (same_band["dist_v_m"] < vertical_threshold_m)
         ]
         for _, row in lowc.iterrows():
-            severity_ratio = min(
-                _safe_rate(float(row["dist_h_m"]), horizontal_threshold_m),
-                _safe_rate(float(row["dist_v_m"]), vertical_threshold_m),
+            horizontal_ratio = _safe_rate(float(row["dist_h_m"]), horizontal_threshold_m)
+            vertical_ratio = _safe_rate(float(row["dist_v_m"]), vertical_threshold_m)
+            severity_ratio = min(horizontal_ratio, vertical_ratio)
+            severity_dimension = (
+                "horizontal"
+                if horizontal_ratio < vertical_ratio
+                else "vertical"
+                if vertical_ratio < horizontal_ratio
+                else "both"
             )
             pair_samples.append(
                 {
@@ -187,7 +363,10 @@ def detect_lowc_events(
                     "lon": float((row["lon_a"] + row["lon_b"]) / 2),
                     "dist_h_m": float(row["dist_h_m"]),
                     "dist_v_m": float(row["dist_v_m"]),
+                    "horizontal_ratio": float(horizontal_ratio),
+                    "vertical_ratio": float(vertical_ratio),
                     "severity_ratio": float(severity_ratio),
+                    "severity_dimension": severity_dimension,
                     "is_nmac": bool(
                         row["dist_h_m"] < nmac_horizontal_threshold_m
                         and row["dist_v_m"] < nmac_vertical_threshold_m
@@ -255,7 +434,10 @@ def _summarize_lowc_event(samples: list[dict[str, Any]], sample_seconds: int) ->
         "lon": float(most_severe["lon"]),
         "dist_h_m": float(most_severe["dist_h_m"]),
         "dist_v_m": float(most_severe["dist_v_m"]),
+        "horizontal_ratio": float(most_severe["horizontal_ratio"]),
+        "vertical_ratio": float(most_severe["vertical_ratio"]),
         "severity_ratio": float(most_severe["severity_ratio"]),
+        "severity_dimension": most_severe["severity_dimension"],
         "is_nmac": bool(any(sample["is_nmac"] for sample in samples)),
     }
 
@@ -278,11 +460,17 @@ def _safety_summary(
     nmac_count = sum(1 for event in events if event["is_nmac"])
     severities = [event["severity_ratio"] for event in events]
     durations = [event["duration_s"] for event in events]
+    horizontal_events = sum(1 for event in events if event["severity_dimension"] == "horizontal")
+    vertical_events = sum(1 for event in events if event["severity_dimension"] == "vertical")
+    balanced_events = sum(1 for event in events if event["severity_dimension"] == "both")
     mac_low, mac_nominal, mac_high = mac_probability_bands
 
     return {
         "lowc_events": int(lowc_count),
         "nmac_events": int(nmac_count),
+        "horizontal_dominant_events": int(horizontal_events),
+        "vertical_dominant_events": int(vertical_events),
+        "balanced_severity_events": int(balanced_events),
         "lowc_horizontal_m": float(horizontal_threshold_m),
         "lowc_vertical_m": float(vertical_threshold_m),
         "nmac_horizontal_m": float(nmac_horizontal_threshold_m),

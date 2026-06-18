@@ -5,7 +5,9 @@ import unittest
 import pandas as pd
 
 from src.uam_dashboard.exports import tracks_geojson
-from src.uam_dashboard.metrics import detect_lowc_events, efficiency_metrics
+from src.uam_dashboard.experiment import experiment_metadata
+from src.uam_dashboard.metrics import detect_lowc_events, efficiency_metrics, trajectory_conformity
+from src.uam_dashboard.scenario_parser import ground_delay_metrics
 
 
 class MetricsTest(unittest.TestCase):
@@ -58,6 +60,8 @@ class MetricsTest(unittest.TestCase):
         self.assertAlmostEqual(safety["lowc_per_100_operations"], 50.0)
         self.assertAlmostEqual(safety["total_time_below_threshold_s"], 30.0)
         self.assertAlmostEqual(safety["expected_mac_nominal"], 0.01)
+        self.assertEqual(safety["balanced_severity_events"], 1)
+        self.assertEqual(events.iloc[0]["severity_dimension"], "both")
 
     def test_similar_trajectories_share_frequency_group(self) -> None:
         rows = []
@@ -89,6 +93,53 @@ class MetricsTest(unittest.TestCase):
         frequencies = sorted(feature["properties"]["frequency"] for feature in geojson["features"])
         self.assertEqual(frequencies, [1, 2, 2])
         self.assertEqual(geojson["properties"]["trajectory_group_count"], 2)
+
+    def test_trajectory_conformity_uses_distance_to_planned_polyline(self) -> None:
+        df = pd.DataFrame(
+            [
+                {"simt": 0, "id": "A", "lat": -23.55, "lon": -46.63, "distflown": 0, "alt": 800},
+                {"simt": 1, "id": "A", "lat": -23.55, "lon": -46.62, "distflown": 1000, "alt": 800},
+                {"simt": 2, "id": "A", "lat": -23.55, "lon": -46.61, "distflown": 2000, "alt": 800},
+            ]
+        )
+        planned = [
+            {
+                "flight_instance": "A#0",
+                "aircraft_id": "A",
+                "start_time": "00:00:00.00",
+                "start_simt": 0.0,
+                "coordinates": [[-46.63, -23.55], [-46.61, -23.55]],
+            }
+        ]
+
+        summary, by_instance = trajectory_conformity(df, planned, 50, 300, 250, 5000)
+
+        self.assertAlmostEqual(summary["spatial_adherence_pct"], 100.0)
+        self.assertLess(abs(summary["mean_trajectory_conformity_ratio"]), 0.03)
+        self.assertAlmostEqual(by_instance["A#0"]["mean_deviation_m"], 0.0, places=4)
+
+    def test_experiment_metadata_classifies_four_variants(self) -> None:
+        metadata = experiment_metadata("bimtra_top2_2025_02_28_disturbed_seed42_mvp.log")
+
+        self.assertEqual(metadata["day_key"], "top2_2025-02-28")
+        self.assertEqual(metadata["variant_key"], "disturbed_mvp")
+        self.assertTrue(metadata["disturbed"])
+        self.assertTrue(metadata["mvp_enabled"])
+
+    def test_ground_delay_uses_nominal_scenario_as_requested_schedule(self) -> None:
+        nominal = [
+            {"flight_instance": "A#0", "start_simt": 100.0},
+            {"flight_instance": "B#0", "start_simt": 200.0},
+        ]
+        disturbed = [
+            {"flight_instance": "A#0", "start_simt": 130.0},
+            {"flight_instance": "B#0", "start_simt": 290.0},
+        ]
+
+        metrics = ground_delay_metrics(disturbed, nominal)
+
+        self.assertAlmostEqual(metrics["mean_ground_delay_s"], 60.0)
+        self.assertAlmostEqual(metrics["max_ground_delay_s"], 90.0)
 
 
 if __name__ == "__main__":

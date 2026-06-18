@@ -4,44 +4,25 @@
     {
       "type": "Feature",
       "properties": {
-        "simt": 50000.0,
-        "start_simt": 50000.0,
-        "end_simt": 50000.0,
-        "duration_s": 10.0,
-        "id_a": "PPJBB",
-        "id_b": "PTYKK",
-        "dist_h_m": 268.4662392792808,
-        "dist_v_m": 0.8001000000000431,
-        "severity_ratio": 0.026670000000001436,
-        "is_nmac": false
+        "simt": 72190.0,
+        "start_simt": 72190.0,
+        "end_simt": 72210.0,
+        "duration_s": 30.0,
+        "id_a": "PRURG_003",
+        "id_b": "PSHAH_006",
+        "dist_h_m": 41.28306627932142,
+        "dist_v_m": 0.0,
+        "horizontal_ratio": 0.08256613255864284,
+        "vertical_ratio": 0.0,
+        "severity_ratio": 0.0,
+        "severity_dimension": "vertical",
+        "is_nmac": true
       },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -46.633681425000006,
-          -23.510032885
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "simt": 60800.0,
-        "start_simt": 60800.0,
-        "end_simt": 60810.0,
-        "duration_s": 20.0,
-        "id_a": "PREVU",
-        "id_b": "PRMSO",
-        "dist_h_m": 256.0724674269796,
-        "dist_v_m": 20.116800000000012,
-        "severity_ratio": 0.5121449348539592,
-        "is_nmac": false
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -46.685038715000005,
-          -23.589368370000003
+          -46.633081065,
+          -23.5091701
         ]
       }
     }

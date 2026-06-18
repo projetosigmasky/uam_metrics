@@ -6,21 +6,19 @@ Este repositorio implementa, em codigo, metricas de seguranca e eficiencia descr
 
 ## 1. Preparar Os Logs
 
-Coloque os arquivos `STATELOG*.log` em:
+Coloque os arquivos de entrada em:
 
 ```text
 data/
+  logs/
+    bimtra_top1_2025_11_09_mvp.log
+    bimtra_top1_2025_11_09_off.log
+  scenarios/
+    bimtra_top1_2025_11_09_mvp.scn
+    bimtra_top1_2025_11_09_off.scn
 ```
 
 A pasta `data/` fica fora do Git pelo `.gitignore`, entao os logs brutos nao entram no GitHub.
-
-Exemplo:
-
-```text
-data/
-  STATELOG_1_maior_movimento.log
-  STATELOG_2_maior_movimento.log
-```
 
 O formato esperado pelo parser e:
 
@@ -30,7 +28,7 @@ simt,id,lat,lon,distflown,alt,cas,tas,gs
 
 ## 2. Gerar O Dashboard
 
-Para processar todos os logs em `data/`:
+Para processar todos os logs em `data/logs/`:
 
 ```powershell
 .\.venv\Scripts\python.exe generate_dashboard.py
@@ -39,7 +37,7 @@ Para processar todos os logs em `data/`:
 Para processar logs especificos:
 
 ```powershell
-.\.venv\Scripts\python.exe generate_dashboard.py .\data\STATELOG_1.log .\data\STATELOG_2.log
+.\.venv\Scripts\python.exe generate_dashboard.py .\data\logs\bimtra_top1_2025_11_09_mvp.log
 ```
 
 Para escolher outra pasta de entrada:
@@ -67,6 +65,7 @@ track_sample_stride = 20
 trajectory_shape_points = 12
 trajectory_cluster_distance_m = 1200.0
 trajectory_endpoint_tolerance_m = 2500.0
+conformity_tolerance_m = 250.0
 heatmap_sample_stride = 10
 ```
 
@@ -74,6 +73,7 @@ Alguns parametros podem ser alterados pela linha de comando:
 
 ```powershell
 .\.venv\Scripts\python.exe generate_dashboard.py --lowc-horizontal-m 600 --lowc-vertical-m 40 --nmac-horizontal-m 150
+.\.venv\Scripts\python.exe generate_dashboard.py --conformity-tolerance-m 250
 ```
 
 ## 4. Saida Gerada
@@ -86,6 +86,7 @@ O gerador publica em `docs/`:
 - `docs/assets/data/comparison.json`: tabela comparativa.
 - `docs/assets/data/runs/*.json`: dados por log processado.
 - `docs/assets/data/tracks.geojson`: trajetorias executadas do primeiro log, com grupos e frequencias.
+- `docs/assets/data/planned_routes.geojson`: trajetorias planejadas extraidas dos cenarios BlueSky.
 - `docs/assets/data/conflicts.geojson`: eventos LoWC/NMAC do primeiro log.
 - `docs/assets/data/heatmap_points.json`: pontos de densidade do primeiro log.
 - `docs/assets/charts/*.png`: graficos estaticos por log.
@@ -97,9 +98,11 @@ O gerador publica em `docs/`:
 | `generate_dashboard.py` | Orquestra leitura, metricas, graficos, JSON/GeoJSON e copia `web/` para `docs/`. |
 | `src/uam_dashboard/config.py` | Centraliza colunas, unidades, limiares LoWC/NMAC, amostragem e bandas MAC. |
 | `src/uam_dashboard/log_parser.py` | Le o `STATELOG`, converte campos numericos e ordena os registros. |
+| `src/uam_dashboard/experiment.py` | Classifica automaticamente dia, MVP, distúrbio e variante pela nomenclatura. |
+| `src/uam_dashboard/scenario_parser.py` | Extrai origens e waypoints planejados dos arquivos BlueSky `.scn`. |
 | `src/uam_dashboard/metrics.py` | Implementa formulas de seguranca, eficiencia, exposicao e severidade. |
 | `src/uam_dashboard/metric_catalog.py` | Mantem a rastreabilidade entre metrica, formula, PDF, codigo e status. |
-| `src/uam_dashboard/exports.py` | Agrupa trajetorias semelhantes e converte trajetorias/eventos para GeoJSON. |
+| `src/uam_dashboard/exports.py` | Agrupa trajetorias semelhantes e converte trajetorias planejadas, executadas e eventos para GeoJSON. |
 | `src/uam_dashboard/plots.py` | Gera PNGs de aeronaves simultaneas, separacao, altitude, distancia e severidade. |
 | `web/index.html` | Estrutura estatica da pagina. |
 | `web/assets/dashboard.js` | Renderiza os dados, mapas, comparacoes e metricas previamente processados pelo Python. |
@@ -115,12 +118,17 @@ O gerador publica em `docs/`:
 | LoWC por 100 operacoes | `N_lowc / N_voos * 100` | Secao 3.3 | `metrics.py::_safety_summary` |
 | LoWC por 1000 km | `N_lowc / km_voados * 1000` | Secao 3.3 | `metrics.py::_safety_summary` |
 | Severidade | `sev_ij = min_t(Sh/Smin_h, Sv/Smin_v)` | Secao 4.2.3, Eq. 4.5 | `metrics.py::_summarize_lowc_event` |
+| Dimensao dominante da severidade | `argmin(Sh/Smin_h, Sv/Smin_v)` | Diagnostico derivado da Eq. 4.5 | `metrics.py::detect_lowc_events` |
 | Tempo abaixo do limiar | `amostras consecutivas em LoWC * conflict_sample_seconds` | Secao 4.2.3 | `metrics.py::_summarize_lowc_event` |
 | NMAC | `Sh(t) < S_NMAC_h and Sv(t) < S_NMAC_v` | Secao 4.2.2 | `metrics.py::_safety_summary` |
 | MAC esperado | `E[MAC] = N_NMAC * P(MAC\|NMAC)` | Secao 4.2.2, Eq. 4.2-4.4 | `metrics.py::_safety_summary` |
 | Tempo medio de voo | `mean(max(simt_f) - min(simt_f))` | Secao 4.3.4 | `metrics.py::efficiency_metrics` |
 | Distancia media | `mean(max(distflown_f))` | Secao 4.3.4 | `metrics.py::efficiency_metrics` |
-| Eficiencia horizontal | `d_gc / d_real * 100` | Secoes 4.1 e 4.3.6 | `metrics.py::efficiency_metrics` |
+| Ineficiencia horizontal executada | `(d_real - d_gc) / d_gc * 100` | Secao 4.3.6, Eq. 4.19 | `metrics.py::efficiency_metrics` |
+| Conformidade de trajetoria | `TC_f = (d_real - d_plan) / d_plan`; `ED_f = d_real - d_plan` | Secao 4.3.5, Eq. 4.16-4.17 | `metrics.py::trajectory_conformity` |
+| Aderencia espacial a REH | Percentual de amostras dentro da tolerancia configurada | Diagnostico complementar | `metrics.py::trajectory_conformity` |
+| Atraso em solo | `GD_f = max(0, R_f - S_f)` | Secao 4.3.1, Eq. 4.10 | `scenario_parser.py::ground_delay_metrics` |
+| Razao de risco | `RR = lambda_MVP / lambda_OFF` | Secao 4.2.5, Eq. 4.7 | `generate_dashboard.py::comparison_payload` |
 
 O dashboard tambem exporta esta matriz por meio de `metric_catalog.py` e mostra a tabela na propria pagina.
 
@@ -128,23 +136,19 @@ O dashboard tambem exporta esta matriz por meio de `metric_catalog.py` e mostra 
 
 O `STATELOG` atual nao contem todos os campos minimos citados no PDF. Por isso, as metricas abaixo ficam documentadas como indisponiveis ate que novos dados sejam fornecidos:
 
-- atraso em solo: requer `S_f`, `R_f` e/ou `D_f`;
 - atraso em voo: requer tempo nominal `T_f`;
 - atraso total e pontualidade: requer horarios planejados, autorizados e reais;
-- conformidade com trajetoria planejada: requer rota planejada ou `dplan_f`;
 - tempo ate conflito: requer tempo de deteccao `tdet`;
 - carga de deconfliction: requer comandos de velocidade, proa ou altitude;
-- razao de risco entre cenarios: requer pareamento explicito entre baseline e mitigacao.
 
 ## 8. Comparacao Entre Logs
 
-Quando ha dois ou mais logs:
+Os nomes `bimtra_topN_DATA_[disturbed_seedX_]mvp|off.log` sao classificados automaticamente.
+Para cada dia, o dashboard compara MVP ligado/desligado, com e sem disturbios.
 
-- os cards superiores mostram medias das metricas principais;
-- a tabela `Cenarios processados` mostra cada log e uma linha `Media`;
-- o seletor `Cenario no mapa` troca mapa e graficos para o log escolhido;
-
-As medias incluem aeronaves, pico simultaneo, duracao, tempo medio, distancia media, eficiencia, LoWC, NMAC, taxas normalizadas e severidade.
+A tabela diaria apresenta metricas de seguranca e eficiencia, diferencas contra o cenario OFF
+pareado e a razao de risco da Eq. 4.7. Os seletores `Dia comparado` e `Cenario no mapa` controlam
+a tabela, os cards, o mapa e os graficos exibidos.
 
 Todo processamento dos `STATELOGs` acontece em Python durante a execucao de `generate_dashboard.py`. O JavaScript da pagina apenas apresenta os arquivos gerados.
 
@@ -166,7 +170,30 @@ As cores do mapa representam volume relativo ao grupo mais frequente:
 
 Esse agrupamento e uma aproximacao configuravel baseada nas trajetorias observadas. Ele nao identifica formalmente uma REH.
 
-## 10. Testes
+## 10. REH Planejada E Conformidade
+
+Coloque os arquivos BlueSky `.scn` em `data/scenarios/`. O gerador associa automaticamente cada
+log ao cenario de mesmo nome-base.
+
+A camada `REH planejada` conecta a origem e os waypoints definidos por `CRE`, `ADDWPT` e `DEFWPT`.
+A conformidade formal segue as Eq. 4.16-4.17 do PDF, comparando distancia executada e planejada.
+Separadamente, a aderencia espacial informa o percentual de amostras executadas cuja menor
+distancia horizontal ate a REH e menor ou igual a `conformity_tolerance_m`.
+
+As instancias planejadas e executadas sao associadas por matricula e horario de criacao mais
+proximo. Isso evita deslocar a sequencia quando uma matricula e reutilizada e alguma instanciacao
+planejada nao aparece no `STATELOG`.
+
+## 11. Diagnostico Da Severidade LoWC
+
+Todo LoWC exige simultaneamente `Sh < Smin_h` e `Sv < Smin_v`. O grafico de dimensao dominante nao
+separa LoWC em violacoes isoladas; ele mostra qual componente normalizado foi mais critico:
+`argmin(Sh/Smin_h, Sv/Smin_v)`.
+
+Um evento pode ter severidade proxima de zero sem ser NMAC. Isso acontece quando uma dimensao,
+por exemplo a vertical, chega perto de zero, mas a horizontal permanece acima do limiar NMAC.
+
+## 12. Testes
 
 Rode os testes unitarios com:
 
@@ -174,7 +201,7 @@ Rode os testes unitarios com:
 .\.venv\Scripts\python.exe -m unittest discover -s tests
 ```
 
-## 11. Publicacao No GitHub Pages
+## 13. Publicacao No GitHub Pages
 
 Configure o GitHub Pages para publicar a pasta:
 

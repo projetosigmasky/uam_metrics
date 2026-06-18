@@ -1,6 +1,7 @@
 const state = {
   map: null,
   tracksLayer: null,
+  plannedLayer: null,
   heatLayer: null,
   conflictLayer: null,
   baseLayers: {},
@@ -10,6 +11,7 @@ const state = {
   runs: [],
   comparison: null,
   activeRunIndex: 0,
+  activeDayKey: null,
   trajectoryVolumeFilter: "all",
 };
 
@@ -25,15 +27,16 @@ async function loadStaticDashboard() {
     return;
   }
 
-  const [dashboard, tracks, conflicts, heatmap, comparison] = await Promise.all([
+  const [dashboard, tracks, plannedRoutes, conflicts, heatmap, comparison] = await Promise.all([
     fetchJson("assets/data/dashboard.json"),
     fetchJson("assets/data/tracks.geojson"),
+    fetchJson("assets/data/planned_routes.geojson"),
     fetchJson("assets/data/conflicts.geojson"),
     fetchJson("assets/data/heatmap_points.json"),
     fetchJson("assets/data/comparison.json"),
   ]);
 
-  renderDashboard({ dashboard, tracks, conflicts, heatmap, comparison });
+  renderDashboard({ dashboard, tracks, planned_routes: plannedRoutes, conflicts, heatmap, comparison });
 }
 
 async function fetchJson(path) {
@@ -90,12 +93,13 @@ function initMap() {
 
 function bindLayerControls() {
   document.getElementById("layer-tracks").addEventListener("change", (event) => toggleLayer("tracksLayer", event));
+  document.getElementById("layer-planned").addEventListener("change", (event) => toggleLayer("plannedLayer", event));
   document.getElementById("layer-heat").addEventListener("change", (event) => toggleLayer("heatLayer", event));
   document.getElementById("layer-conflicts").addEventListener("change", (event) => toggleLayer("conflictLayer", event));
   document.getElementById("trajectory-volume-filter").addEventListener("change", (event) => {
     state.trajectoryVolumeFilter = event.target.value;
     const run = state.runs[state.activeRunIndex] || state.runs[0];
-    if (run) renderMapLayers(run.tracks, run.conflicts, run.heatmap);
+    if (run) renderMapLayers(run.tracks, run.planned_routes, run.conflicts, run.heatmap);
   });
   document.getElementById("fit-map").addEventListener("click", () => {
     fitMapToOperationalArea(state.lastTracks, state.lastConflicts);
@@ -103,6 +107,11 @@ function bindLayerControls() {
   document.getElementById("run-select").addEventListener("change", (event) => {
     state.activeRunIndex = Number(event.target.value);
     renderSelectedRun();
+  });
+  document.getElementById("day-select").addEventListener("change", (event) => {
+    state.activeDayKey = event.target.value;
+    renderDayComparison();
+    populateRunSelect();
   });
 }
 
@@ -122,7 +131,6 @@ function renderDashboard(model) {
   state.comparison = normalized.comparison;
   state.activeRunIndex = Math.min(state.activeRunIndex, state.runs.length - 1);
 
-  renderMetrics(normalized.dashboard);
   renderComparison(normalized);
   renderTraceability(normalized.metric_catalog || normalized.dashboard.metric_catalog || []);
   renderSelectedRun();
@@ -138,6 +146,7 @@ function normalizeModel(model) {
     name: model.dashboard.source_log,
     dashboard: model.dashboard,
     tracks: model.tracks,
+    planned_routes: model.planned_routes,
     conflicts: model.conflicts,
     heatmap: model.heatmap,
   };
@@ -151,40 +160,60 @@ function normalizeModel(model) {
 function renderSelectedRun() {
   const run = state.runs[state.activeRunIndex] || state.runs[0];
   if (!run) return;
+  renderMetrics(run.dashboard);
   renderCharts(run.dashboard);
-  renderMapLayers(run.tracks, run.conflicts, run.heatmap);
+  renderMapLayers(run.tracks, run.planned_routes, run.conflicts, run.heatmap);
 }
 
 function renderComparison(model) {
-  const select = document.getElementById("run-select");
-  select.innerHTML = model.runs
-    .map((run, index) => `<option value="${index}">${escapeHtml(run.name)}</option>`)
+  const days = model.comparison?.days || [];
+  state.activeDayKey = state.activeDayKey || days[0]?.day_key || null;
+  const daySelect = document.getElementById("day-select");
+  daySelect.innerHTML = days
+    .map((day) => `<option value="${escapeHtml(day.day_key)}">${escapeHtml(day.day_label)}</option>`)
     .join("");
-  select.value = String(state.activeRunIndex);
-
-  const runCount = model.runs.length;
+  daySelect.value = state.activeDayKey || "";
+  populateRunSelect();
   setText(
     "comparison-summary",
-    runCount > 1
-      ? `${formatNumber(runCount)} logs processados. Os cards superiores mostram a media das metricas; o mapa e os graficos mostram o cenario selecionado.`
-      : "Um log processado. Adicione mais STATELOGs para comparar cenarios e calcular medias."
+    `${formatNumber(model.runs.length)} simulacoes organizadas em ${formatNumber(days.length)} dias. A tabela compara as quatro variantes do dia selecionado; cards, mapa e graficos mostram a variante escolhida.`
   );
+  renderDayComparison();
+}
 
-  const rows = model.comparison?.rows || [];
+function populateRunSelect() {
+  const select = document.getElementById("run-select");
+  const day = state.comparison?.days?.find((item) => item.day_key === state.activeDayKey);
+  const rows = day?.rows || state.runs.map((run, index) => ({ run_index: index, variant_label: run.name }));
+  if (!rows.some((row) => row.run_index === state.activeRunIndex)) {
+    state.activeRunIndex = rows[0]?.run_index ?? 0;
+  }
+  select.innerHTML = rows
+    .map((row) => `<option value="${row.run_index}">${escapeHtml(row.variant_label)}</option>`)
+    .join("");
+  select.value = String(state.activeRunIndex);
+  renderSelectedRun();
+}
+
+function renderDayComparison() {
+  const day = state.comparison?.days?.find((item) => item.day_key === state.activeDayKey);
+  const rows = day?.rows || [];
   document.getElementById("comparison-table-body").innerHTML = rows
     .map(
       (row) => `
-        <tr class="${row.is_average ? "average-row" : ""}">
-          <td title="${escapeHtml(row.name)}">${escapeHtml(row.name)}</td>
-          <td>${formatNumber(row.aircraft, 1)}</td>
-          <td>${formatNumber(row.peak, 1)}</td>
-          <td>${formatNumber(row.duration_min, 1)} min</td>
+        <tr class="${row.mvp_enabled ? "mvp-row" : ""}">
+          <td title="${escapeHtml(row.name)}">${escapeHtml(row.variant_label)}</td>
+          <td>${formatOptionalDuration(row.ground_delay_s)}</td>
           <td>${formatNumber(row.flight_time_min, 1)} min</td>
+          <td>${formatSigned(row.flight_time_delta_vs_off_min, 1, " min")}</td>
           <td>${formatNumber(row.distance_nm, 1)} NM</td>
-          <td>${formatNumber(row.route_efficiency_pct, 1)}%</td>
+          <td>${formatSigned(row.distance_delta_vs_off_nm, 2, " NM")}</td>
+          <td>${formatOptionalPercent(row.trajectory_conformity_pct)}</td>
+          <td>${formatOptionalPercent(row.spatial_adherence_pct)}</td>
           <td>${formatNumber(row.lowc_events, 1)}</td>
-          <td>${formatNumber(row.nmac_events, 1)}</td>
           <td>${formatNumber(row.lowc_per_flight_hour, 2)}</td>
+          <td>${formatOptionalRatio(row.risk_ratio_vs_off)}</td>
+          <td>${formatNumber(row.nmac_events, 1)}</td>
           <td>${formatNumber(row.min_severity_ratio, 2)}</td>
         </tr>`
     )
@@ -208,7 +237,25 @@ function renderMetrics(dashboard) {
   setText("metric-nmac", formatNumber(safety.nmac_events));
   setText("metric-nmac-threshold", `${formatNumber(safety.nmac_horizontal_m, 0)} m x ${formatNumber(safety.nmac_vertical_m, 0)} m`);
   setText("metric-lowc-rate", formatNumber(safety.lowc_per_flight_hour, 2));
-  setText("kpa-route-efficiency", `${formatNumber(efficiency.mean_route_efficiency_pct, 1)}%`);
+  setText("kpa-route-efficiency", `${formatNumber(efficiency.mean_horizontal_inefficiency_pct, 1)}%`);
+  setText(
+    "kpa-conformity",
+    efficiency.trajectory_conformity?.available
+      ? `${formatNumber(efficiency.trajectory_conformity.mean_trajectory_conformity_ratio * 100, 1)}%`
+      : "Sem SCN"
+  );
+  setText(
+    "kpa-spatial-adherence",
+    efficiency.trajectory_conformity?.available
+      ? `${formatNumber(efficiency.trajectory_conformity.spatial_adherence_pct, 1)}%`
+      : "Sem SCN"
+  );
+  setText(
+    "kpa-ground-delay",
+    efficiency.ground_delay?.available
+      ? `${formatNumber(efficiency.ground_delay.mean_ground_delay_s, 0)} s`
+      : "Sem pareamento"
+  );
   setText("kpa-severity", formatNumber(safety.min_severity_ratio, 2));
   setText("kpa-time-below", `${formatNumber(safety.total_time_below_threshold_s, 0)} s`);
   setText("kpa-safety-sample", `${formatNumber(safety.sample_seconds, 0)} s`);
@@ -220,6 +267,8 @@ function renderCharts(dashboard) {
   showImageChart("chart-altitude", dashboard.charts.altitude_histogram);
   showImageChart("chart-distance", dashboard.charts.distance_histogram);
   showImageChart("chart-severity", dashboard.charts.severity_histogram);
+  showImageChart("chart-lowc-dimensions", dashboard.charts.lowc_dimensions);
+  showImageChart("chart-conformity", dashboard.charts.trajectory_conformity);
 }
 
 function showImageChart(imageId, src) {
@@ -227,11 +276,12 @@ function showImageChart(imageId, src) {
   image.src = src;
 }
 
-function renderMapLayers(tracks, conflicts, heatmap) {
+function renderMapLayers(tracks, plannedRoutes, conflicts, heatmap) {
   state.lastTracks = tracks;
   state.lastConflicts = conflicts;
   const visibleTracks = filterTracksByVolume(tracks, state.trajectoryVolumeFilter);
   clearLayer("tracksLayer");
+  clearLayer("plannedLayer");
   clearLayer("heatLayer");
   clearLayer("conflictLayer");
 
@@ -267,12 +317,43 @@ function renderMapLayers(tracks, conflicts, heatmap) {
           `${formatNumber(p.frequency)} instancias semelhantes<br>` +
           `${formatNumber(p.distance_nm, 1)} NM voadas<br>` +
           `${formatNumber(p.duration_min, 1)} min de voo<br>` +
-          `Altitude ${formatNumber(p.min_alt_m, 0)}-${formatNumber(p.max_alt_m, 0)} m`
+          `Altitude ${formatNumber(p.min_alt_m, 0)}-${formatNumber(p.max_alt_m, 0)} m` +
+          (Number.isFinite(Number(p.trajectory_conformity_ratio))
+            ? `<br>Conformidade por distancia ${formatNumber(p.trajectory_conformity_ratio * 100, 1)}%<br>` +
+              `Aderencia espacial ${formatNumber(p.spatial_adherence_pct, 1)}%<br>` +
+              `Desvio medio da REH ${formatNumber(p.mean_deviation_m, 1)} m`
+            : "")
       );
     },
   });
 
   state.tracksLayer = L.layerGroup([routeHalo, routeLines]);
+
+  state.plannedLayer = L.geoJSON(plannedRoutes, {
+    pane: "routePane",
+    style: {
+      color: "#111827",
+      opacity: 0.82,
+      weight: 2.5,
+      dashArray: "8 7",
+      lineCap: "round",
+    },
+    onEachFeature: (feature, layer) => {
+      const p = feature.properties;
+      const conformity = Number.isFinite(Number(p.spatial_adherence_pct))
+        ? `${formatNumber(p.spatial_adherence_pct, 1)}% das amostras dentro de ${formatNumber(plannedRoutes.properties.conformity_tolerance_m, 0)} m`
+        : "Sem trajetoria executada associada";
+      layer.bindTooltip(`REH planejada ${escapeHtml(p.flight_instance)}`, { sticky: true });
+      layer.bindPopup(
+        `<strong>REH planejada</strong><br>` +
+          `${escapeHtml(p.flight_instance)} / ${formatNumber(p.waypoint_count)} waypoints<br>` +
+          `${conformity}<br>` +
+          (Number.isFinite(Number(p.mean_deviation_m))
+            ? `Desvio medio ${formatNumber(p.mean_deviation_m, 1)} m<br>P95 ${formatNumber(p.p95_deviation_m, 1)} m`
+            : "")
+      );
+    },
+  });
 
   const conflictMarkers = L.geoJSON(conflicts, {
     pane: "conflictPane",
@@ -295,6 +376,9 @@ function renderMapLayers(tracks, conflicts, heatmap) {
           `${formatNumber(p.dist_h_m, 1)} m horizontal<br>` +
           `${formatNumber(p.dist_v_m, 1)} m vertical<br>` +
           `Severidade ${formatNumber(p.severity_ratio, 2)}<br>` +
+          `Razao horizontal ${formatNumber(p.horizontal_ratio, 3)}<br>` +
+          `Razao vertical ${formatNumber(p.vertical_ratio, 3)}<br>` +
+          `Dimensao dominante: ${severityDimensionLabel(p.severity_dimension)}<br>` +
           `Duracao ${formatNumber(p.duration_s, 0)} s<br>` +
           `t = ${formatNumber(p.simt, 0)} s`
       );
@@ -348,10 +432,11 @@ function renderMapLayers(tracks, conflicts, heatmap) {
 
   applyCheckedLayer("layer-heat", state.heatLayer);
   applyCheckedLayer("layer-tracks", state.tracksLayer);
+  applyCheckedLayer("layer-planned", state.plannedLayer);
   applyCheckedLayer("layer-conflicts", state.conflictLayer);
 
   fitMapToOperationalArea(visibleTracks, conflicts);
-  updateMapInfo(tracks, visibleTracks, conflicts, heatmap);
+  updateMapInfo(tracks, visibleTracks, plannedRoutes, conflicts, heatmap);
 }
 
 function buildEndpointLayer(tracks) {
@@ -424,18 +509,19 @@ function fitMapToOperationalArea(tracks, conflicts) {
   });
 }
 
-function updateMapInfo(tracks, visibleTracks, conflicts, heatmap) {
+function updateMapInfo(tracks, visibleTracks, plannedRoutes, conflicts, heatmap) {
   const trajectories = tracks.features?.length || 0;
   const visible = visibleTracks.features?.length || 0;
   const groups = tracks.properties?.trajectory_group_count || new Set(
     (tracks.features || []).map((feature) => feature.properties.trajectory_group)
   ).size;
   const lowc = conflicts.features?.length || 0;
+  const planned = plannedRoutes?.features?.length || 0;
   const density = heatmap.length || 0;
   setText("map-info-title", "Mapa operacional");
   setText(
     "map-info-text",
-    `${formatNumber(visible)} de ${formatNumber(trajectories)} trajetorias visiveis, agrupadas em ${formatNumber(groups)} padroes; ${formatNumber(density)} pontos de densidade e ${formatNumber(lowc)} eventos LoWC.`
+    `${formatNumber(visible)} de ${formatNumber(trajectories)} trajetorias executadas visiveis, ${formatNumber(planned)} trajetorias REH planejadas; ${formatNumber(density)} pontos de densidade e ${formatNumber(lowc)} eventos LoWC.`
   );
 }
 
@@ -464,9 +550,16 @@ function applyCheckedLayer(controlId, layer) {
 function renderTraceability(catalog) {
   const body = document.getElementById("traceability-table-body");
   if (!body) return;
-  body.innerHTML = (catalog || [])
+  const groups = groupTraceability(catalog || []);
+  body.innerHTML = groups
     .map(
-      (metric) => `
+      (group) => `
+        <tr class="traceability-group-row">
+          <td colspan="5">${escapeHtml(group.label)}</td>
+        </tr>
+        ${group.items
+          .map(
+            (metric) => `
         <tr>
           <td>${escapeHtml(metric.name)}</td>
           <td>${escapeHtml(metric.formula)}</td>
@@ -474,8 +567,39 @@ function renderTraceability(catalog) {
           <td>${escapeHtml(metric.code_reference)}</td>
           <td>${escapeHtml(metric.status)}</td>
         </tr>`
+          )
+          .join("")}`
     )
     .join("");
+}
+
+function groupTraceability(catalog) {
+  const order = ["Seguranca", "Eficiencia", "Trajetorias e mapa", "Indisponiveis"];
+  const labels = {
+    Seguranca: "Metricas de seguranca",
+    Eficiencia: "Metricas de eficiencia",
+    "Trajetorias e mapa": "Trajetorias, mapa e diagnosticos espaciais",
+    Indisponiveis: "Metricas ainda indisponiveis",
+  };
+  const groups = Object.fromEntries(order.map((key) => [key, []]));
+  for (const metric of catalog) {
+    groups[inferMetricCategory(metric)].push(metric);
+  }
+  return order
+    .filter((key) => groups[key].length)
+    .map((key) => ({ label: labels[key], items: groups[key] }));
+}
+
+function inferMetricCategory(metric) {
+  const id = metric.id || "";
+  if (metric.status?.startsWith("unavailable")) return "Indisponiveis";
+  if (id.includes("lowc") || id.includes("nmac") || id.includes("severity") || id.includes("mac") || id.includes("risk")) {
+    return "Seguranca";
+  }
+  if (id.includes("time") || id.includes("distance") || id.includes("efficiency") || id.includes("delay") || id.includes("conformity")) {
+    return "Eficiencia";
+  }
+  return "Trajetorias e mapa";
 }
 
 function colorForVolume(volumeRatio) {
@@ -491,6 +615,36 @@ function formatNumber(value, digits = 0) {
     maximumFractionDigits: digits,
     minimumFractionDigits: digits,
   });
+}
+
+function formatOptionalPercent(value) {
+  return value !== null && value !== undefined && Number.isFinite(Number(value))
+    ? `${formatNumber(value, 1)}%`
+    : "-";
+}
+
+function formatOptionalDuration(value) {
+  return value !== null && value !== undefined && Number.isFinite(Number(value))
+    ? `${formatNumber(value, 0)} s`
+    : "-";
+}
+
+function formatOptionalRatio(value) {
+  return value !== null && value !== undefined && Number.isFinite(Number(value))
+    ? formatNumber(value, 2)
+    : "-";
+}
+
+function formatSigned(value, digits, suffix = "") {
+  if (value === null || value === undefined || !Number.isFinite(Number(value))) return "-";
+  const number = Number(value);
+  return `${number > 0 ? "+" : ""}${formatNumber(number, digits)}${suffix}`;
+}
+
+function severityDimensionLabel(value) {
+  if (value === "horizontal") return "horizontal";
+  if (value === "vertical") return "vertical";
+  return "equilibrada";
 }
 
 function setText(id, value) {
