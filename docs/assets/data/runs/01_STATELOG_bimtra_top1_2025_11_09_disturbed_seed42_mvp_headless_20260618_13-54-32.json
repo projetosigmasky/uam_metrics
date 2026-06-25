@@ -71,7 +71,7 @@
         "planned_instances": 177,
         "matched_instances": 177,
         "spatial_adherence_pct": 91.4856788268722,
-        "mean_deviation_m": 85.34270369481102,
+        "mean_deviation_m": 85.34270369481104,
         "p95_deviation_m": 377.84592676242806,
         "max_deviation_m": 3634.2305724179873,
         "mean_trajectory_conformity_ratio": -0.03152869203244549,
