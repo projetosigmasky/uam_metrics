@@ -299,17 +299,17 @@ def active_aircraft_series(df: pd.DataFrame) -> pd.DataFrame:
 def detect_lowc_events(
     df: pd.DataFrame,
     horizontal_threshold_m: float,
-    vertical_threshold_m: float,
     nmac_horizontal_threshold_m: float,
-    nmac_vertical_threshold_m: float,
     sample_seconds: int,
-    same_altitude_band_m: float,
     aircraft_count: int,
     total_flight_hours: float,
     total_distance_km: float,
-    mac_probability_bands: tuple[float, float, float],
+    mac_beta: float,
+    mac_probability_given_nmac: float,
+    tls_target_per_flight_hour: float,
+    tls_epsilon: float,
 ) -> tuple[pd.DataFrame, list[float], dict[str, Any]]:
-    """Detect sampled Loss of Well Clear events and compute safety rates."""
+    """Detect sampled horizontal Loss of Well Clear events and compute safety rates."""
 
     if sample_seconds <= 0:
         sample_seconds = 1
@@ -333,27 +333,11 @@ def detect_lowc_events(
             pairs["lat_b"].to_numpy(),
             pairs["lon_b"].to_numpy(),
         )
-        pairs["dist_v_m"] = np.abs(pairs["alt_a"].to_numpy() - pairs["alt_b"].to_numpy())
+        separation_samples.extend(pairs["dist_h_m"].tolist())
 
-        same_band = pairs[pairs["dist_v_m"] < same_altitude_band_m]
-        if not same_band.empty:
-            separation_samples.extend(same_band["dist_h_m"].tolist())
-
-        lowc = same_band[
-            (same_band["dist_h_m"] < horizontal_threshold_m)
-            & (same_band["dist_v_m"] < vertical_threshold_m)
-        ]
+        lowc = pairs[pairs["dist_h_m"] < horizontal_threshold_m]
         for _, row in lowc.iterrows():
             horizontal_ratio = _safe_rate(float(row["dist_h_m"]), horizontal_threshold_m)
-            vertical_ratio = _safe_rate(float(row["dist_v_m"]), vertical_threshold_m)
-            severity_ratio = min(horizontal_ratio, vertical_ratio)
-            severity_dimension = (
-                "horizontal"
-                if horizontal_ratio < vertical_ratio
-                else "vertical"
-                if vertical_ratio < horizontal_ratio
-                else "both"
-            )
             pair_samples.append(
                 {
                     "simt": float(simt),
@@ -362,15 +346,9 @@ def detect_lowc_events(
                     "lat": float((row["lat_a"] + row["lat_b"]) / 2),
                     "lon": float((row["lon_a"] + row["lon_b"]) / 2),
                     "dist_h_m": float(row["dist_h_m"]),
-                    "dist_v_m": float(row["dist_v_m"]),
                     "horizontal_ratio": float(horizontal_ratio),
-                    "vertical_ratio": float(vertical_ratio),
-                    "severity_ratio": float(severity_ratio),
-                    "severity_dimension": severity_dimension,
-                    "is_nmac": bool(
-                        row["dist_h_m"] < nmac_horizontal_threshold_m
-                        and row["dist_v_m"] < nmac_vertical_threshold_m
-                    ),
+                    "severity_ratio": float(horizontal_ratio),
+                    "is_nmac": bool(row["dist_h_m"] < nmac_horizontal_threshold_m),
                 }
             )
 
@@ -382,12 +360,12 @@ def detect_lowc_events(
         total_flight_hours=total_flight_hours,
         total_distance_km=total_distance_km,
         horizontal_threshold_m=horizontal_threshold_m,
-        vertical_threshold_m=vertical_threshold_m,
         nmac_horizontal_threshold_m=nmac_horizontal_threshold_m,
-        nmac_vertical_threshold_m=nmac_vertical_threshold_m,
         sample_seconds=sample_seconds,
-        same_altitude_band_m=same_altitude_band_m,
-        mac_probability_bands=mac_probability_bands,
+        mac_beta=mac_beta,
+        mac_probability_given_nmac=mac_probability_given_nmac,
+        tls_target_per_flight_hour=tls_target_per_flight_hour,
+        tls_epsilon=tls_epsilon,
     )
     return pd.DataFrame(events), separation_samples, safety
 
@@ -433,11 +411,8 @@ def _summarize_lowc_event(samples: list[dict[str, Any]], sample_seconds: int) ->
         "lat": float(most_severe["lat"]),
         "lon": float(most_severe["lon"]),
         "dist_h_m": float(most_severe["dist_h_m"]),
-        "dist_v_m": float(most_severe["dist_v_m"]),
         "horizontal_ratio": float(most_severe["horizontal_ratio"]),
-        "vertical_ratio": float(most_severe["vertical_ratio"]),
         "severity_ratio": float(most_severe["severity_ratio"]),
-        "severity_dimension": most_severe["severity_dimension"],
         "is_nmac": bool(any(sample["is_nmac"] for sample in samples)),
     }
 
@@ -449,34 +424,27 @@ def _safety_summary(
     total_flight_hours: float,
     total_distance_km: float,
     horizontal_threshold_m: float,
-    vertical_threshold_m: float,
     nmac_horizontal_threshold_m: float,
-    nmac_vertical_threshold_m: float,
     sample_seconds: int,
-    same_altitude_band_m: float,
-    mac_probability_bands: tuple[float, float, float],
+    mac_beta: float,
+    mac_probability_given_nmac: float,
+    tls_target_per_flight_hour: float,
+    tls_epsilon: float,
 ) -> dict[str, Any]:
     lowc_count = len(events)
     nmac_count = sum(1 for event in events if event["is_nmac"])
     severities = [event["severity_ratio"] for event in events]
     durations = [event["duration_s"] for event in events]
-    horizontal_events = sum(1 for event in events if event["severity_dimension"] == "horizontal")
-    vertical_events = sum(1 for event in events if event["severity_dimension"] == "vertical")
-    balanced_events = sum(1 for event in events if event["severity_dimension"] == "both")
-    mac_low, mac_nominal, mac_high = mac_probability_bands
+    expected_mac = float(nmac_count * mac_beta * mac_probability_given_nmac)
+    expected_mac_rate_per_flight_hour = _safe_rate(expected_mac, total_flight_hours)
+    tls_margin = float(tls_target_per_flight_hour / (expected_mac_rate_per_flight_hour + tls_epsilon))
 
     return {
         "lowc_events": int(lowc_count),
         "nmac_events": int(nmac_count),
-        "horizontal_dominant_events": int(horizontal_events),
-        "vertical_dominant_events": int(vertical_events),
-        "balanced_severity_events": int(balanced_events),
         "lowc_horizontal_m": float(horizontal_threshold_m),
-        "lowc_vertical_m": float(vertical_threshold_m),
         "nmac_horizontal_m": float(nmac_horizontal_threshold_m),
-        "nmac_vertical_m": float(nmac_vertical_threshold_m),
         "sample_seconds": int(sample_seconds),
-        "same_altitude_band_m": float(same_altitude_band_m),
         "separation_samples": int(pair_sample_count),
         "lowc_per_100_operations": _safe_rate(lowc_count, aircraft_count, 100.0),
         "lowc_per_flight_hour": _safe_rate(lowc_count, total_flight_hours),
@@ -492,10 +460,13 @@ def _safety_summary(
         "total_time_below_threshold_s": float(sum(durations)),
         "mean_time_below_threshold_s": float(np.mean(durations)) if durations else 0.0,
         "max_time_below_threshold_s": max(durations) if durations else 0.0,
-        "mac_probability_low": float(mac_low),
-        "mac_probability_nominal": float(mac_nominal),
-        "mac_probability_high": float(mac_high),
-        "expected_mac_low": float(nmac_count * mac_low),
-        "expected_mac_nominal": float(nmac_count * mac_nominal),
-        "expected_mac_high": float(nmac_count * mac_high),
+        "mac_beta": float(mac_beta),
+        "mac_probability_given_nmac": float(mac_probability_given_nmac),
+        "expected_mac": expected_mac,
+        "expected_mac_rate_per_flight_hour": expected_mac_rate_per_flight_hour,
+        "expected_mac_per_100k_flight_hours": _safe_rate(expected_mac, total_flight_hours, 100000.0),
+        "tls_target_per_flight_hour": float(tls_target_per_flight_hour),
+        "tls_epsilon": float(tls_epsilon),
+        "tls_margin": tls_margin,
+        "tls_compliant": bool(expected_mac_rate_per_flight_hour <= tls_target_per_flight_hour),
     }

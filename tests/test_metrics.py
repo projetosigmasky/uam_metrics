@@ -42,15 +42,15 @@ class MetricsTest(unittest.TestCase):
         events, separation_samples, safety = detect_lowc_events(
             df,
             horizontal_threshold_m=500,
-            vertical_threshold_m=30,
             nmac_horizontal_threshold_m=150,
-            nmac_vertical_threshold_m=30,
             sample_seconds=10,
-            same_altitude_band_m=150,
             aircraft_count=2,
             total_flight_hours=40 / 3600,
             total_distance_km=0.4,
-            mac_probability_bands=(0.001, 0.01, 0.05),
+            mac_beta=5.038e-3,
+            mac_probability_given_nmac=0.005,
+            tls_target_per_flight_hour=9.4e-6,
+            tls_epsilon=1e-15,
         )
 
         self.assertEqual(len(separation_samples), 3)
@@ -59,9 +59,15 @@ class MetricsTest(unittest.TestCase):
         self.assertEqual(safety["nmac_events"], 1)
         self.assertAlmostEqual(safety["lowc_per_100_operations"], 50.0)
         self.assertAlmostEqual(safety["total_time_below_threshold_s"], 30.0)
-        self.assertAlmostEqual(safety["expected_mac_nominal"], 0.01)
-        self.assertEqual(safety["balanced_severity_events"], 1)
-        self.assertEqual(events.iloc[0]["severity_dimension"], "both")
+        self.assertAlmostEqual(safety["expected_mac"], 5.038e-3 * 0.005)
+        self.assertAlmostEqual(
+            safety["expected_mac_per_100k_flight_hours"],
+            (5.038e-3 * 0.005) / (40 / 3600) * 100000,
+        )
+        expected_rate = (5.038e-3 * 0.005) / (40 / 3600)
+        self.assertAlmostEqual(safety["tls_margin"], 9.4e-6 / (expected_rate + 1e-15))
+        self.assertFalse(safety["tls_compliant"])
+        self.assertAlmostEqual(events.iloc[0]["severity_ratio"], 0.0)
 
     def test_similar_trajectories_share_frequency_group(self) -> None:
         rows = []

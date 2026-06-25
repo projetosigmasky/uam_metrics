@@ -87,7 +87,7 @@ def ground_delay_metrics(
     planned_flights: list[dict[str, Any]],
     nominal_flights: list[dict[str, Any]] | None,
 ) -> dict[str, Any]:
-    """Return Eq. 4.10 ground-delay metrics using the nominal SCN as requested schedule."""
+    """Return ground-delay metrics using the nominal SCN as requested schedule."""
 
     if not nominal_flights:
         return {"available": False}

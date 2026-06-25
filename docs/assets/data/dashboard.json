@@ -37,7 +37,7 @@
       "planned_instances": 708,
       "matched_instances": 708,
       "spatial_adherence_pct": 92.6721696382563,
-      "mean_deviation_m": 73.16110623641474,
+      "mean_deviation_m": 73.16110623641472,
       "p95_deviation_m": 335.0852125981945,
       "max_deviation_m": 4323.115159403422,
       "mean_trajectory_conformity_ratio": -0.03454664834993274,
@@ -59,38 +59,35 @@
     }
   },
   "safety": {
-    "lowc_events": 5.0,
-    "nmac_events": 1.25,
-    "horizontal_dominant_events": 0.25,
-    "vertical_dominant_events": 4.75,
-    "balanced_severity_events": 0.0,
+    "lowc_events": 7.75,
+    "nmac_events": 1.5,
     "lowc_horizontal_m": 500.0,
-    "lowc_vertical_m": 30.0,
     "nmac_horizontal_m": 150.0,
-    "nmac_vertical_m": 30.0,
     "sample_seconds": 10,
-    "same_altitude_band_m": 150.0,
-    "separation_samples": 16812,
-    "lowc_per_100_operations": 2.824858757062147,
-    "lowc_per_flight_hour": 0.29674074427161684,
-    "lowc_per_1000_km": 1.3978627630806153,
-    "nmac_per_100_operations": 0.7062146892655368,
-    "nmac_per_flight_hour": 0.0741080716900673,
-    "nmac_per_1000_km": 0.3489724292504521,
-    "monitored_pair_samples": 16812,
-    "min_severity_ratio": 0.0,
-    "p05_severity_ratio": 0.0,
-    "median_severity_ratio": 0.058420000000000034,
-    "p95_severity_ratio": 0.2259343991666665,
-    "total_time_below_threshold_s": 510.0,
-    "mean_time_below_threshold_s": 21.891025641025642,
+    "separation_samples": 20347,
+    "lowc_per_100_operations": 4.378531073446328,
+    "lowc_per_flight_hour": 0.45932395726851855,
+    "lowc_per_1000_km": 2.16345499114709,
+    "nmac_per_100_operations": 0.847457627118644,
+    "nmac_per_flight_hour": 0.0889502498621706,
+    "nmac_per_1000_km": 0.4188984515057963,
+    "monitored_pair_samples": 20347,
+    "min_severity_ratio": 0.08256613255864284,
+    "p05_severity_ratio": 0.2837160863277082,
+    "median_severity_ratio": 0.5819673564924466,
+    "p95_severity_ratio": 0.888223448503927,
+    "total_time_below_threshold_s": 720.0,
+    "mean_time_below_threshold_s": 19.947916666666668,
     "max_time_below_threshold_s": 100.0,
-    "mac_probability_low": 0.001,
-    "mac_probability_nominal": 0.01,
-    "mac_probability_high": 0.05,
-    "expected_mac_low": 0.00125,
-    "expected_mac_nominal": 0.0125,
-    "expected_mac_high": 0.0625
+    "mac_beta": 0.005038,
+    "mac_probability_given_nmac": 0.005,
+    "expected_mac": 3.7785000000000005e-05,
+    "expected_mac_rate_per_flight_hour": 2.2406567940280776e-06,
+    "expected_mac_per_100k_flight_hours": 0.22406567940280775,
+    "tls_target_per_flight_hour": 9.4e-06,
+    "tls_epsilon": 1e-15,
+    "tls_margin": 2350000003.5465736,
+    "tls_compliant": true
   },
   "charts": {
     "active_aircraft": "assets/charts/01_STATELOG_bimtra_top1_2025_11_09_disturbed_seed42_mvp_headless_20260618_13-54-32_active_aircraft.png",
@@ -98,7 +95,6 @@
     "altitude_histogram": "assets/charts/01_STATELOG_bimtra_top1_2025_11_09_disturbed_seed42_mvp_headless_20260618_13-54-32_altitude_histogram.png",
     "distance_histogram": "assets/charts/01_STATELOG_bimtra_top1_2025_11_09_disturbed_seed42_mvp_headless_20260618_13-54-32_distance_histogram.png",
     "severity_histogram": "assets/charts/01_STATELOG_bimtra_top1_2025_11_09_disturbed_seed42_mvp_headless_20260618_13-54-32_severity_histogram.png",
-    "lowc_dimensions": "assets/charts/01_STATELOG_bimtra_top1_2025_11_09_disturbed_seed42_mvp_headless_20260618_13-54-32_lowc_dimensions.png",
     "trajectory_conformity": "assets/charts/01_STATELOG_bimtra_top1_2025_11_09_disturbed_seed42_mvp_headless_20260618_13-54-32_trajectory_conformity.png"
   },
   "metric_catalog": [
@@ -114,11 +110,11 @@
     {
       "id": "lowc_events",
       "name": "Loss of Well Clear",
-      "formula": "Sh(t) < Smin_h and Sv(t) < Smin_v",
-      "pdf_reference": "Produto 3, secao 4.2.1, Eq. 4.1",
+      "formula": "Sh(t) < Smin_h",
+      "pdf_reference": "Produto 3 v1, criterio simplificado para separacao horizontal",
       "code_reference": "src/uam_dashboard/metrics.py::detect_lowc_events",
-      "status": "implemented",
-      "data_required": "simt, id, lat, lon, alt"
+      "status": "implemented_horizontal_only",
+      "data_required": "simt, id, lat, lon"
     },
     {
       "id": "lowc_per_flight_hour",
@@ -150,20 +146,11 @@
     {
       "id": "severity_ratio",
       "name": "Severidade de conflito",
-      "formula": "sev_ij = min_t(Sh/Smin_h, Sv/Smin_v)",
-      "pdf_reference": "Produto 3, secao 4.2.3, Eq. 4.5",
+      "formula": "sev_ij = min_t(Sh/Smin_h)",
+      "pdf_reference": "Produto 3 v1, severidade aplicada ao criterio horizontal simplificado",
       "code_reference": "src/uam_dashboard/metrics.py::_summarize_lowc_event",
-      "status": "implemented",
-      "data_required": "simt, lat, lon, alt"
-    },
-    {
-      "id": "severity_dimension",
-      "name": "Dimensao dominante da severidade",
-      "formula": "argmin(Sh/Smin_h, Sv/Smin_v)",
-      "pdf_reference": "Derivada da severidade da Eq. 4.5 para diagnostico",
-      "code_reference": "src/uam_dashboard/metrics.py::detect_lowc_events",
-      "status": "implemented_diagnostic_classification",
-      "data_required": "separacoes horizontal e vertical normalizadas"
+      "status": "implemented_horizontal_only",
+      "data_required": "simt, lat, lon"
     },
     {
       "id": "time_below_threshold",
@@ -177,20 +164,29 @@
     {
       "id": "nmac_events",
       "name": "Near Mid-Air Collision",
-      "formula": "Sh(t) < S_NMAC_h and Sv(t) < S_NMAC_v",
-      "pdf_reference": "Produto 3, secao 4.2.2",
+      "formula": "Sh(t) < S_NMAC_h",
+      "pdf_reference": "Produto 3 v1, criterio simplificado para separacao horizontal",
       "code_reference": "src/uam_dashboard/metrics.py::_safety_summary",
-      "status": "implemented_configurable_threshold",
-      "data_required": "simt, lat, lon, alt"
+      "status": "implemented_configurable_horizontal_threshold",
+      "data_required": "simt, lat, lon"
     },
     {
       "id": "expected_mac",
       "name": "MAC esperado",
-      "formula": "E[MAC] = N_NMAC * P(MAC|NMAC)",
-      "pdf_reference": "Produto 3, secao 4.2.2, Eq. 4.2-4.4",
+      "formula": "MAC = 5.038e-3 * 0.005 * N_NMAC; MAC_100k = MAC / H_voo * 100000",
+      "pdf_reference": "Produto 3 v1, seguranca; MAC estimado a partir de N_NMAC, beta e P(MAC|NMAC)",
       "code_reference": "src/uam_dashboard/metrics.py::_safety_summary",
-      "status": "implemented_as_sensitivity_band",
-      "data_required": "NMAC e bandas configuradas"
+      "status": "implemented_deterministic",
+      "data_required": "NMAC horizontal e horas totais de voo"
+    },
+    {
+      "id": "tls_margin",
+      "name": "Margem em relacao ao TLS",
+      "formula": "M_TLS = TLS / (lambda_MAC_obs + epsilon)",
+      "pdf_reference": "Produto 3 v1, Eq. 4.12",
+      "code_reference": "src/uam_dashboard/metrics.py::_safety_summary",
+      "status": "implemented_configurable_tls",
+      "data_required": "MAC estimado, horas totais de voo, TLS e epsilon"
     },
     {
       "id": "mean_flight_time_min",
@@ -223,7 +219,7 @@
       "id": "delay_metrics",
       "name": "Atraso em solo",
       "formula": "GD_f = max(0, R_f - S_f)",
-      "pdf_reference": "Produto 3, secao 4.3.1, Eq. 4.10",
+      "pdf_reference": "Produto 3, secao 4.3.1",
       "code_reference": "src/uam_dashboard/scenario_parser.py::ground_delay_metrics",
       "status": "implemented_by_paired_nominal_and_disturbed_scenarios",
       "data_required": "horarios de criacao nos SCNs nominal e perturbado"
@@ -249,11 +245,11 @@
     {
       "id": "risk_ratio",
       "name": "Razao de risco",
-      "formula": "RR = lambda_mitigado / lambda_referencia",
-      "pdf_reference": "Produto 3, secao 4.2.5, Eq. 4.7",
+      "formula": "RR_s = MAC_100k_s / MAC_100k_ref",
+      "pdf_reference": "Produto 3 v1, Eq. 4.10",
       "code_reference": "generate_dashboard.py::comparison_payload",
-      "status": "implemented_paired_mvp_vs_off",
-      "data_required": "cenarios pareados com e sem MVP"
+      "status": "implemented_reference_nominal_off",
+      "data_required": "MAC_100k do cenario avaliado e do cenario sem intervencao/sem perturbacao"
     }
   ]
 }

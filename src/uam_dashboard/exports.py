@@ -177,11 +177,8 @@ def conflicts_geojson(events: pd.DataFrame) -> dict[str, Any]:
                     "id_a": str(row.id_a),
                     "id_b": str(row.id_b),
                     "dist_h_m": float(row.dist_h_m),
-                    "dist_v_m": float(row.dist_v_m),
                     "horizontal_ratio": float(row.horizontal_ratio),
-                    "vertical_ratio": float(row.vertical_ratio),
                     "severity_ratio": float(row.severity_ratio),
-                    "severity_dimension": str(row.severity_dimension),
                     "is_nmac": bool(row.is_nmac),
                 },
                 "geometry": {

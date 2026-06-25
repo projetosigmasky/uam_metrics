@@ -25,7 +25,6 @@ from src.uam_dashboard.plots import (
     plot_route_distance_histogram,
     plot_separation_histogram,
     plot_severity_histogram,
-    plot_lowc_dimensions,
     plot_trajectory_conformity,
 )
 from src.uam_dashboard.scenario_parser import ground_delay_metrics, load_bluesky_scenario
@@ -117,21 +116,9 @@ def average_dashboard(run_dashboards: list[dict[str, Any]]) -> dict[str, Any]:
         "safety": {
             "lowc_events": mean([d["safety"]["lowc_events"] for d in run_dashboards]),
             "nmac_events": mean([d["safety"]["nmac_events"] for d in run_dashboards]),
-            "horizontal_dominant_events": mean(
-                [d["safety"]["horizontal_dominant_events"] for d in run_dashboards]
-            ),
-            "vertical_dominant_events": mean(
-                [d["safety"]["vertical_dominant_events"] for d in run_dashboards]
-            ),
-            "balanced_severity_events": mean(
-                [d["safety"]["balanced_severity_events"] for d in run_dashboards]
-            ),
             "lowc_horizontal_m": run_dashboards[0]["safety"]["lowc_horizontal_m"],
-            "lowc_vertical_m": run_dashboards[0]["safety"]["lowc_vertical_m"],
             "nmac_horizontal_m": run_dashboards[0]["safety"]["nmac_horizontal_m"],
-            "nmac_vertical_m": run_dashboards[0]["safety"]["nmac_vertical_m"],
             "sample_seconds": run_dashboards[0]["safety"]["sample_seconds"],
-            "same_altitude_band_m": run_dashboards[0]["safety"]["same_altitude_band_m"],
             "separation_samples": int(sum(d["safety"]["separation_samples"] for d in run_dashboards)),
             "lowc_per_100_operations": mean([d["safety"]["lowc_per_100_operations"] for d in run_dashboards]),
             "lowc_per_flight_hour": mean([d["safety"]["lowc_per_flight_hour"] for d in run_dashboards]),
@@ -153,12 +140,19 @@ def average_dashboard(run_dashboards: list[dict[str, Any]]) -> dict[str, Any]:
             "max_time_below_threshold_s": max(
                 d["safety"]["max_time_below_threshold_s"] for d in run_dashboards
             ),
-            "mac_probability_low": run_dashboards[0]["safety"]["mac_probability_low"],
-            "mac_probability_nominal": run_dashboards[0]["safety"]["mac_probability_nominal"],
-            "mac_probability_high": run_dashboards[0]["safety"]["mac_probability_high"],
-            "expected_mac_low": mean([d["safety"]["expected_mac_low"] for d in run_dashboards]),
-            "expected_mac_nominal": mean([d["safety"]["expected_mac_nominal"] for d in run_dashboards]),
-            "expected_mac_high": mean([d["safety"]["expected_mac_high"] for d in run_dashboards]),
+            "mac_beta": run_dashboards[0]["safety"]["mac_beta"],
+            "mac_probability_given_nmac": run_dashboards[0]["safety"]["mac_probability_given_nmac"],
+            "expected_mac": mean([d["safety"]["expected_mac"] for d in run_dashboards]),
+            "expected_mac_rate_per_flight_hour": mean(
+                [d["safety"]["expected_mac_rate_per_flight_hour"] for d in run_dashboards]
+            ),
+            "expected_mac_per_100k_flight_hours": mean(
+                [d["safety"]["expected_mac_per_100k_flight_hours"] for d in run_dashboards]
+            ),
+            "tls_target_per_flight_hour": run_dashboards[0]["safety"]["tls_target_per_flight_hour"],
+            "tls_epsilon": run_dashboards[0]["safety"]["tls_epsilon"],
+            "tls_margin": mean([d["safety"]["tls_margin"] for d in run_dashboards]),
+            "tls_compliant": all(d["safety"]["tls_compliant"] for d in run_dashboards),
         },
         "charts": run_dashboards[0]["charts"],
         "metric_catalog": metric_catalog_payload(),
@@ -247,6 +241,11 @@ def comparison_payload(runs: list[dict[str, Any]], average: dict[str, Any]) -> d
             "ground_delay_s": d["efficiency"]["ground_delay"].get("mean_ground_delay_s"),
             "lowc_events": d["safety"]["lowc_events"],
             "nmac_events": d["safety"]["nmac_events"],
+            "expected_mac": d["safety"]["expected_mac"],
+            "expected_mac_rate_per_flight_hour": d["safety"]["expected_mac_rate_per_flight_hour"],
+            "expected_mac_per_100k_flight_hours": d["safety"]["expected_mac_per_100k_flight_hours"],
+            "tls_margin": d["safety"]["tls_margin"],
+            "tls_compliant": d["safety"]["tls_compliant"],
             "lowc_per_flight_hour": d["safety"]["lowc_per_flight_hour"],
             "lowc_per_100_operations": d["safety"]["lowc_per_100_operations"],
             "min_severity_ratio": d["safety"]["min_severity_ratio"],
@@ -257,17 +256,21 @@ def comparison_payload(runs: list[dict[str, Any]], average: dict[str, Any]) -> d
     variant_order = {"disturbed_mvp": 0, "disturbed_off": 1, "nominal_mvp": 2, "nominal_off": 3}
     for rows in by_day.values():
         rows.sort(key=lambda row: variant_order.get(row["variant_key"], 99))
-        references = {
+        risk_reference = next(
+            (row for row in rows if row["mvp_enabled"] is False and row["disturbed"] is False),
+            None,
+        )
+        off_references = {
             row["disturbed"]: row
             for row in rows
             if row["mvp_enabled"] is False
         }
         for row in rows:
-            reference = references.get(row["disturbed"])
-            row["risk_ratio_vs_off"] = _ratio_or_none(
-                row["lowc_per_flight_hour"],
-                reference["lowc_per_flight_hour"] if reference else None,
+            row["risk_ratio_vs_reference"] = _ratio_or_none(
+                row["expected_mac_per_100k_flight_hours"],
+                risk_reference["expected_mac_per_100k_flight_hours"] if risk_reference else None,
             )
+            reference = off_references.get(row["disturbed"])
             row["flight_time_delta_vs_off_min"] = _difference_or_none(
                 row["flight_time_min"],
                 reference["flight_time_min"] if reference else None,
@@ -325,15 +328,15 @@ def analyze_log(log_path: Path, config: DashboardConfig, charts_dir: Path, run_i
     lowc_events, separation_samples, safety = detect_lowc_events(
         df,
         horizontal_threshold_m=config.lowc_horizontal_m,
-        vertical_threshold_m=config.lowc_vertical_m,
         nmac_horizontal_threshold_m=config.nmac_horizontal_m,
-        nmac_vertical_threshold_m=config.nmac_vertical_m,
         sample_seconds=config.conflict_sample_seconds,
-        same_altitude_band_m=config.same_altitude_band_m,
         aircraft_count=int(df["id"].nunique()),
         total_flight_hours=efficiency["total_flight_hours"],
         total_distance_km=efficiency["total_distance_km"],
-        mac_probability_bands=config.mac_probability_bands,
+        mac_beta=config.mac_beta,
+        mac_probability_given_nmac=config.mac_probability_given_nmac,
+        tls_target_per_flight_hour=config.tls_target_per_flight_hour,
+        tls_epsilon=config.tls_epsilon,
     )
 
     print("Rendering chart images...")
@@ -343,7 +346,6 @@ def analyze_log(log_path: Path, config: DashboardConfig, charts_dir: Path, run_i
         "altitude_histogram": f"assets/charts/{chart_prefix}_altitude_histogram.png",
         "distance_histogram": f"assets/charts/{chart_prefix}_distance_histogram.png",
         "severity_histogram": f"assets/charts/{chart_prefix}_severity_histogram.png",
-        "lowc_dimensions": f"assets/charts/{chart_prefix}_lowc_dimensions.png",
         "trajectory_conformity": f"assets/charts/{chart_prefix}_trajectory_conformity.png",
     }
     plot_active_aircraft(series, charts_dir / Path(chart_paths["active_aircraft"]).name)
@@ -361,7 +363,6 @@ def analyze_log(log_path: Path, config: DashboardConfig, charts_dir: Path, run_i
     )
     plot_route_distance_histogram(df, charts_dir / Path(chart_paths["distance_histogram"]).name)
     plot_severity_histogram(lowc_events, charts_dir / Path(chart_paths["severity_histogram"]).name)
-    plot_lowc_dimensions(lowc_events, charts_dir / Path(chart_paths["lowc_dimensions"]).name)
     plot_trajectory_conformity(
         conformity_by_instance,
         charts_dir / Path(chart_paths["trajectory_conformity"]).name,
@@ -459,9 +460,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--flight-instance-reset-distance-m", type=float, default=250.0)
     parser.add_argument("--flight-instance-jump-m", type=float, default=5000.0)
     parser.add_argument("--lowc-horizontal-m", type=float, default=500.0)
-    parser.add_argument("--lowc-vertical-m", type=float, default=30.0)
     parser.add_argument("--nmac-horizontal-m", type=float, default=150.0)
-    parser.add_argument("--nmac-vertical-m", type=float, default=30.0)
+    parser.add_argument("--mac-beta", type=float, default=5.038e-3)
+    parser.add_argument("--mac-probability-given-nmac", type=float, default=0.005)
+    parser.add_argument("--tls-target-per-flight-hour", type=float, default=9.4e-6)
+    parser.add_argument("--tls-epsilon", type=float, default=1e-15)
     parser.add_argument("--conflict-sample-seconds", type=int, default=10)
     parser.add_argument("--trajectory-shape-points", type=int, default=12)
     parser.add_argument("--trajectory-cluster-distance-m", type=float, default=1200.0)
@@ -527,9 +530,11 @@ def main() -> None:
         flight_instance_reset_distance_m=args.flight_instance_reset_distance_m,
         flight_instance_jump_m=args.flight_instance_jump_m,
         lowc_horizontal_m=args.lowc_horizontal_m,
-        lowc_vertical_m=args.lowc_vertical_m,
         nmac_horizontal_m=args.nmac_horizontal_m,
-        nmac_vertical_m=args.nmac_vertical_m,
+        mac_beta=args.mac_beta,
+        mac_probability_given_nmac=args.mac_probability_given_nmac,
+        tls_target_per_flight_hour=args.tls_target_per_flight_hour,
+        tls_epsilon=args.tls_epsilon,
         conflict_sample_seconds=args.conflict_sample_seconds,
         trajectory_shape_points=args.trajectory_shape_points,
         trajectory_cluster_distance_m=args.trajectory_cluster_distance_m,

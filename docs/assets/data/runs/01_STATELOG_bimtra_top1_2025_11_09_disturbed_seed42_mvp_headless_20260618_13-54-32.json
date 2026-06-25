@@ -71,7 +71,7 @@
         "planned_instances": 177,
         "matched_instances": 177,
         "spatial_adherence_pct": 91.4856788268722,
-        "mean_deviation_m": 85.34270369481104,
+        "mean_deviation_m": 85.34270369481102,
         "p95_deviation_m": 377.84592676242806,
         "max_deviation_m": 3634.2305724179873,
         "mean_trajectory_conformity_ratio": -0.03152869203244549,
@@ -85,38 +85,35 @@
       }
     },
     "safety": {
-      "lowc_events": 1,
+      "lowc_events": 3,
       "nmac_events": 1,
-      "horizontal_dominant_events": 0,
-      "vertical_dominant_events": 1,
-      "balanced_severity_events": 0,
       "lowc_horizontal_m": 500.0,
-      "lowc_vertical_m": 30.0,
       "nmac_horizontal_m": 150.0,
-      "nmac_vertical_m": 30.0,
       "sample_seconds": 10,
-      "same_altitude_band_m": 150.0,
-      "separation_samples": 4159,
-      "lowc_per_100_operations": 0.5649717514124294,
-      "lowc_per_flight_hour": 0.05895743600661634,
-      "lowc_per_1000_km": 0.27707336091630097,
+      "separation_samples": 5056,
+      "lowc_per_100_operations": 1.694915254237288,
+      "lowc_per_flight_hour": 0.17687230801984902,
+      "lowc_per_1000_km": 0.831220082748903,
       "nmac_per_100_operations": 0.5649717514124294,
       "nmac_per_flight_hour": 0.05895743600661634,
       "nmac_per_1000_km": 0.27707336091630097,
-      "monitored_pair_samples": 4159,
-      "min_severity_ratio": 0.0,
-      "p05_severity_ratio": 0.0,
-      "median_severity_ratio": 0.0,
-      "p95_severity_ratio": 0.0,
-      "total_time_below_threshold_s": 30.0,
-      "mean_time_below_threshold_s": 30.0,
+      "monitored_pair_samples": 5056,
+      "min_severity_ratio": 0.08256613255864284,
+      "p05_severity_ratio": 0.10521227777405531,
+      "median_severity_ratio": 0.30902758471276753,
+      "p95_severity_ratio": 0.876296153188489,
+      "total_time_below_threshold_s": 50.0,
+      "mean_time_below_threshold_s": 16.666666666666668,
       "max_time_below_threshold_s": 30.0,
-      "mac_probability_low": 0.001,
-      "mac_probability_nominal": 0.01,
-      "mac_probability_high": 0.05,
-      "expected_mac_low": 0.001,
-      "expected_mac_nominal": 0.01,
-      "expected_mac_high": 0.05
+      "mac_beta": 0.005038,
+      "mac_probability_given_nmac": 0.005,
+      "expected_mac": 2.519e-05,
+      "expected_mac_rate_per_flight_hour": 1.4851378130066658e-06,
+      "expected_mac_per_100k_flight_hours": 0.1485137813006666,
+      "tls_target_per_flight_hour": 9.4e-06,
+      "tls_epsilon": 1e-15,
+      "tls_margin": 6.329378937999225,
+      "tls_compliant": true
     },
     "charts": {
       "active_aircraft": "assets/charts/01_STATELOG_bimtra_top1_2025_11_09_disturbed_seed42_mvp_headless_20260618_13-54-32_active_aircraft.png",
@@ -124,7 +121,6 @@
       "altitude_histogram": "assets/charts/01_STATELOG_bimtra_top1_2025_11_09_disturbed_seed42_mvp_headless_20260618_13-54-32_altitude_histogram.png",
       "distance_histogram": "assets/charts/01_STATELOG_bimtra_top1_2025_11_09_disturbed_seed42_mvp_headless_20260618_13-54-32_distance_histogram.png",
       "severity_histogram": "assets/charts/01_STATELOG_bimtra_top1_2025_11_09_disturbed_seed42_mvp_headless_20260618_13-54-32_severity_histogram.png",
-      "lowc_dimensions": "assets/charts/01_STATELOG_bimtra_top1_2025_11_09_disturbed_seed42_mvp_headless_20260618_13-54-32_lowc_dimensions.png",
       "trajectory_conformity": "assets/charts/01_STATELOG_bimtra_top1_2025_11_09_disturbed_seed42_mvp_headless_20260618_13-54-32_trajectory_conformity.png"
     },
     "metric_catalog": [
@@ -140,11 +136,11 @@
       {
         "id": "lowc_events",
         "name": "Loss of Well Clear",
-        "formula": "Sh(t) < Smin_h and Sv(t) < Smin_v",
-        "pdf_reference": "Produto 3, secao 4.2.1, Eq. 4.1",
+        "formula": "Sh(t) < Smin_h",
+        "pdf_reference": "Produto 3 v1, criterio simplificado para separacao horizontal",
         "code_reference": "src/uam_dashboard/metrics.py::detect_lowc_events",
-        "status": "implemented",
-        "data_required": "simt, id, lat, lon, alt"
+        "status": "implemented_horizontal_only",
+        "data_required": "simt, id, lat, lon"
       },
       {
         "id": "lowc_per_flight_hour",
@@ -176,20 +172,11 @@
       {
         "id": "severity_ratio",
         "name": "Severidade de conflito",
-        "formula": "sev_ij = min_t(Sh/Smin_h, Sv/Smin_v)",
-        "pdf_reference": "Produto 3, secao 4.2.3, Eq. 4.5",
+        "formula": "sev_ij = min_t(Sh/Smin_h)",
+        "pdf_reference": "Produto 3 v1, severidade aplicada ao criterio horizontal simplificado",
         "code_reference": "src/uam_dashboard/metrics.py::_summarize_lowc_event",
-        "status": "implemented",
-        "data_required": "simt, lat, lon, alt"
-      },
-      {
-        "id": "severity_dimension",
-        "name": "Dimensao dominante da severidade",
-        "formula": "argmin(Sh/Smin_h, Sv/Smin_v)",
-        "pdf_reference": "Derivada da severidade da Eq. 4.5 para diagnostico",
-        "code_reference": "src/uam_dashboard/metrics.py::detect_lowc_events",
-        "status": "implemented_diagnostic_classification",
-        "data_required": "separacoes horizontal e vertical normalizadas"
+        "status": "implemented_horizontal_only",
+        "data_required": "simt, lat, lon"
       },
       {
         "id": "time_below_threshold",
@@ -203,20 +190,29 @@
       {
         "id": "nmac_events",
         "name": "Near Mid-Air Collision",
-        "formula": "Sh(t) < S_NMAC_h and Sv(t) < S_NMAC_v",
-        "pdf_reference": "Produto 3, secao 4.2.2",
+        "formula": "Sh(t) < S_NMAC_h",
+        "pdf_reference": "Produto 3 v1, criterio simplificado para separacao horizontal",
         "code_reference": "src/uam_dashboard/metrics.py::_safety_summary",
-        "status": "implemented_configurable_threshold",
-        "data_required": "simt, lat, lon, alt"
+        "status": "implemented_configurable_horizontal_threshold",
+        "data_required": "simt, lat, lon"
       },
       {
         "id": "expected_mac",
         "name": "MAC esperado",
-        "formula": "E[MAC] = N_NMAC * P(MAC|NMAC)",
-        "pdf_reference": "Produto 3, secao 4.2.2, Eq. 4.2-4.4",
+        "formula": "MAC = 5.038e-3 * 0.005 * N_NMAC; MAC_100k = MAC / H_voo * 100000",
+        "pdf_reference": "Produto 3 v1, seguranca; MAC estimado a partir de N_NMAC, beta e P(MAC|NMAC)",
         "code_reference": "src/uam_dashboard/metrics.py::_safety_summary",
-        "status": "implemented_as_sensitivity_band",
-        "data_required": "NMAC e bandas configuradas"
+        "status": "implemented_deterministic",
+        "data_required": "NMAC horizontal e horas totais de voo"
+      },
+      {
+        "id": "tls_margin",
+        "name": "Margem em relacao ao TLS",
+        "formula": "M_TLS = TLS / (lambda_MAC_obs + epsilon)",
+        "pdf_reference": "Produto 3 v1, Eq. 4.12",
+        "code_reference": "src/uam_dashboard/metrics.py::_safety_summary",
+        "status": "implemented_configurable_tls",
+        "data_required": "MAC estimado, horas totais de voo, TLS e epsilon"
       },
       {
         "id": "mean_flight_time_min",
@@ -249,7 +245,7 @@
         "id": "delay_metrics",
         "name": "Atraso em solo",
         "formula": "GD_f = max(0, R_f - S_f)",
-        "pdf_reference": "Produto 3, secao 4.3.1, Eq. 4.10",
+        "pdf_reference": "Produto 3, secao 4.3.1",
         "code_reference": "src/uam_dashboard/scenario_parser.py::ground_delay_metrics",
         "status": "implemented_by_paired_nominal_and_disturbed_scenarios",
         "data_required": "horarios de criacao nos SCNs nominal e perturbado"
@@ -275,11 +271,11 @@
       {
         "id": "risk_ratio",
         "name": "Razao de risco",
-        "formula": "RR = lambda_mitigado / lambda_referencia",
-        "pdf_reference": "Produto 3, secao 4.2.5, Eq. 4.7",
+        "formula": "RR_s = MAC_100k_s / MAC_100k_ref",
+        "pdf_reference": "Produto 3 v1, Eq. 4.10",
         "code_reference": "generate_dashboard.py::comparison_payload",
-        "status": "implemented_paired_mvp_vs_off",
-        "data_required": "cenarios pareados com e sem MVP"
+        "status": "implemented_reference_nominal_off",
+        "data_required": "MAC_100k do cenario avaliado e do cenario sem intervencao/sem perturbacao"
       }
     ]
   },
@@ -36110,6 +36106,28 @@
       {
         "type": "Feature",
         "properties": {
+          "simt": 67230.0,
+          "start_simt": 67230.0,
+          "end_simt": 67230.0,
+          "duration_s": 10.0,
+          "id_a": "PRMSO_002",
+          "id_b": "PSCCM_001",
+          "dist_h_m": 469.66299706511796,
+          "horizontal_ratio": 0.9393259941302359,
+          "severity_ratio": 0.9393259941302359,
+          "is_nmac": false
+        },
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            -46.684021745,
+            -23.59271996
+          ]
+        }
+      },
+      {
+        "type": "Feature",
+        "properties": {
           "simt": 72190.0,
           "start_simt": 72190.0,
           "end_simt": 72210.0,
@@ -36117,11 +36135,8 @@
           "id_a": "PRURG_003",
           "id_b": "PSHAH_006",
           "dist_h_m": 41.28306627932142,
-          "dist_v_m": 0.0,
           "horizontal_ratio": 0.08256613255864284,
-          "vertical_ratio": 0.0,
-          "severity_ratio": 0.0,
-          "severity_dimension": "vertical",
+          "severity_ratio": 0.08256613255864284,
           "is_nmac": true
         },
         "geometry": {
@@ -36129,6 +36144,28 @@
           "coordinates": [
             -46.633081065,
             -23.5091701
+          ]
+        }
+      },
+      {
+        "type": "Feature",
+        "properties": {
+          "simt": 78280.0,
+          "start_simt": 78280.0,
+          "end_simt": 78280.0,
+          "duration_s": 10.0,
+          "id_a": "PRSBK_006",
+          "id_b": "PSBOS_005",
+          "dist_h_m": 154.51379235638376,
+          "horizontal_ratio": 0.30902758471276753,
+          "severity_ratio": 0.30902758471276753,
+          "is_nmac": false
+        },
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            -46.69961266,
+            -23.602663575
           ]
         }
       }

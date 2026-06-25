@@ -212,7 +212,9 @@ function renderDayComparison() {
           <td>${formatOptionalPercent(row.spatial_adherence_pct)}</td>
           <td>${formatNumber(row.lowc_events, 1)}</td>
           <td>${formatNumber(row.lowc_per_flight_hour, 2)}</td>
-          <td>${formatOptionalRatio(row.risk_ratio_vs_off)}</td>
+          <td>${formatNumber(row.expected_mac_per_100k_flight_hours, 3)}</td>
+          <td>${formatTLSMargin(row.tls_margin, row.tls_compliant)}</td>
+          <td>${formatOptionalRatio(row.risk_ratio_vs_reference)}</td>
           <td>${formatNumber(row.nmac_events, 1)}</td>
           <td>${formatNumber(row.min_severity_ratio, 2)}</td>
         </tr>`
@@ -233,10 +235,13 @@ function renderMetrics(dashboard) {
   setText("metric-flight-time", formatNumber(efficiency.mean_flight_time_min, 1));
   setText("metric-distance", formatNumber(efficiency.mean_distance_nm, 1));
   setText("metric-lowc", formatNumber(safety.lowc_events));
-  setText("metric-lowc-threshold", `${formatNumber(safety.lowc_horizontal_m, 0)} m x ${formatNumber(safety.lowc_vertical_m, 0)} m`);
+  setText("metric-lowc-threshold", `${formatNumber(safety.lowc_horizontal_m, 0)} m horizontal`);
   setText("metric-nmac", formatNumber(safety.nmac_events));
-  setText("metric-nmac-threshold", `${formatNumber(safety.nmac_horizontal_m, 0)} m x ${formatNumber(safety.nmac_vertical_m, 0)} m`);
+  setText("metric-nmac-threshold", `${formatNumber(safety.nmac_horizontal_m, 0)} m horizontal`);
   setText("metric-lowc-rate", formatNumber(safety.lowc_per_flight_hour, 2));
+  setText("metric-mac-rate", formatNumber(safety.expected_mac_per_100k_flight_hours, 3));
+  setText("metric-tls-margin", formatTLSMargin(safety.tls_margin, safety.tls_compliant));
+  setText("metric-tls-status", safety.tls_compliant ? "atende ao TLS" : "viola o TLS");
   setText("kpa-route-efficiency", `${formatNumber(efficiency.mean_horizontal_inefficiency_pct, 1)}%`);
   setText(
     "kpa-conformity",
@@ -257,6 +262,8 @@ function renderMetrics(dashboard) {
       : "Sem pareamento"
   );
   setText("kpa-severity", formatNumber(safety.min_severity_ratio, 2));
+  setText("kpa-mac-rate", formatNumber(safety.expected_mac_per_100k_flight_hours, 3));
+  setText("kpa-tls-margin", formatTLSMargin(safety.tls_margin, safety.tls_compliant));
   setText("kpa-time-below", `${formatNumber(safety.total_time_below_threshold_s, 0)} s`);
   setText("kpa-safety-sample", `${formatNumber(safety.sample_seconds, 0)} s`);
 }
@@ -267,7 +274,6 @@ function renderCharts(dashboard) {
   showImageChart("chart-altitude", dashboard.charts.altitude_histogram);
   showImageChart("chart-distance", dashboard.charts.distance_histogram);
   showImageChart("chart-severity", dashboard.charts.severity_histogram);
-  showImageChart("chart-lowc-dimensions", dashboard.charts.lowc_dimensions);
   showImageChart("chart-conformity", dashboard.charts.trajectory_conformity);
 }
 
@@ -374,11 +380,8 @@ function renderMapLayers(tracks, plannedRoutes, conflicts, heatmap) {
         `<strong>${p.is_nmac ? "Evento NMAC" : "Evento LoWC"}</strong><br>` +
           `${escapeHtml(p.id_a)} / ${escapeHtml(p.id_b)}<br>` +
           `${formatNumber(p.dist_h_m, 1)} m horizontal<br>` +
-          `${formatNumber(p.dist_v_m, 1)} m vertical<br>` +
           `Severidade ${formatNumber(p.severity_ratio, 2)}<br>` +
           `Razao horizontal ${formatNumber(p.horizontal_ratio, 3)}<br>` +
-          `Razao vertical ${formatNumber(p.vertical_ratio, 3)}<br>` +
-          `Dimensao dominante: ${severityDimensionLabel(p.severity_dimension)}<br>` +
           `Duracao ${formatNumber(p.duration_s, 0)} s<br>` +
           `t = ${formatNumber(p.simt, 0)} s`
       );
@@ -593,7 +596,7 @@ function groupTraceability(catalog) {
 function inferMetricCategory(metric) {
   const id = metric.id || "";
   if (metric.status?.startsWith("unavailable")) return "Indisponiveis";
-  if (id.includes("lowc") || id.includes("nmac") || id.includes("severity") || id.includes("mac") || id.includes("risk")) {
+  if (id.includes("lowc") || id.includes("nmac") || id.includes("severity") || id.includes("mac") || id.includes("risk") || id.includes("tls")) {
     return "Seguranca";
   }
   if (id.includes("time") || id.includes("distance") || id.includes("efficiency") || id.includes("delay") || id.includes("conformity")) {
@@ -635,16 +638,19 @@ function formatOptionalRatio(value) {
     : "-";
 }
 
+function formatTLSMargin(value, compliant) {
+  if (value === null || value === undefined || !Number.isFinite(Number(value))) return "-";
+  const number = Number(value);
+  if (number > 999999) return compliant ? ">999999" : formatNumber(number, 1);
+  if (number >= 1000) return formatNumber(number, 0);
+  if (number >= 10) return formatNumber(number, 1);
+  return formatNumber(number, 2);
+}
+
 function formatSigned(value, digits, suffix = "") {
   if (value === null || value === undefined || !Number.isFinite(Number(value))) return "-";
   const number = Number(value);
   return `${number > 0 ? "+" : ""}${formatNumber(number, digits)}${suffix}`;
-}
-
-function severityDimensionLabel(value) {
-  if (value === "horizontal") return "horizontal";
-  if (value === "vertical") return "vertical";
-  return "equilibrada";
 }
 
 function setText(id, value) {

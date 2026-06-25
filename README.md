@@ -2,7 +2,7 @@
 
 Dashboard estatico para analisar logs `STATELOG` do BlueSky em cenarios de corredor aereo urbano na RMSP.
 
-Este repositorio implementa, em codigo, metricas de seguranca e eficiencia descritas no estudo `Projeto_SIGMA_Sky_Produto_3_Versao_0.pdf`. A saida principal e a pasta `docs/`, pronta para GitHub Pages.
+Este repositorio implementa, em codigo, metricas de seguranca e eficiencia descritas no estudo `Projeto_SIGMA_Sky_Produto_3_Versao_1.pdf`. A saida principal e a pasta `docs/`, pronta para GitHub Pages.
 
 ## 1. Preparar Os Logs
 
@@ -55,12 +55,12 @@ flight_instance_gap_seconds = 300.0
 flight_instance_reset_distance_m = 250.0
 flight_instance_jump_m = 5000.0
 lowc_horizontal_m = 500.0
-lowc_vertical_m = 30.0
 nmac_horizontal_m = 150.0
-nmac_vertical_m = 30.0
-mac_probability_bands = (0.001, 0.01, 0.05)
+mac_beta = 5.038e-3
+mac_probability_given_nmac = 0.005
+tls_target_per_flight_hour = 9.4e-6
+tls_epsilon = 1e-15
 conflict_sample_seconds = 10
-same_altitude_band_m = 150.0
 track_sample_stride = 20
 trajectory_shape_points = 12
 trajectory_cluster_distance_m = 1200.0
@@ -72,7 +72,7 @@ heatmap_sample_stride = 10
 Alguns parametros podem ser alterados pela linha de comando:
 
 ```powershell
-.\.venv\Scripts\python.exe generate_dashboard.py --lowc-horizontal-m 600 --lowc-vertical-m 40 --nmac-horizontal-m 150
+.\.venv\Scripts\python.exe generate_dashboard.py --lowc-horizontal-m 600 --nmac-horizontal-m 150
 .\.venv\Scripts\python.exe generate_dashboard.py --conformity-tolerance-m 250
 ```
 
@@ -96,7 +96,7 @@ O gerador publica em `docs/`:
 | Arquivo | Responsabilidade |
 |---|---|
 | `generate_dashboard.py` | Orquestra leitura, metricas, graficos, JSON/GeoJSON e copia `web/` para `docs/`. |
-| `src/uam_dashboard/config.py` | Centraliza colunas, unidades, limiares LoWC/NMAC, amostragem e bandas MAC. |
+| `src/uam_dashboard/config.py` | Centraliza colunas, unidades, limiares horizontais LoWC/NMAC, amostragem e coeficientes MAC. |
 | `src/uam_dashboard/log_parser.py` | Le o `STATELOG`, converte campos numericos e ordena os registros. |
 | `src/uam_dashboard/experiment.py` | Classifica automaticamente dia, MVP, distúrbio e variante pela nomenclatura. |
 | `src/uam_dashboard/scenario_parser.py` | Extrai origens e waypoints planejados dos arquivos BlueSky `.scn`. |
@@ -113,22 +113,22 @@ O gerador publica em `docs/`:
 | Metrica | Formula implementada | Referencia no PDF | Codigo |
 |---|---|---|---|
 | Frequencia de trajetorias | Contagem de instancias com origem, destino e forma dentro das tolerancias configuradas | Secoes 3.2 e 6, apoio visual a volume/utilizacao | `exports.py::tracks_geojson` |
-| LoWC | `Sh(t) < Smin_h and Sv(t) < Smin_v` | Secao 4.2.1, Eq. 4.1 | `metrics.py::detect_lowc_events` |
+| LoWC | `Sh(t) < Smin_h` | Produto 3 v1, criterio simplificado para separacao horizontal | `metrics.py::detect_lowc_events` |
 | LoWC por hora de voo | `N_lowc / sum(H_f)` | Secao 3.3, Eq. 3.2 | `metrics.py::_safety_summary` |
 | LoWC por 100 operacoes | `N_lowc / N_voos * 100` | Secao 3.3 | `metrics.py::_safety_summary` |
 | LoWC por 1000 km | `N_lowc / km_voados * 1000` | Secao 3.3 | `metrics.py::_safety_summary` |
-| Severidade | `sev_ij = min_t(Sh/Smin_h, Sv/Smin_v)` | Secao 4.2.3, Eq. 4.5 | `metrics.py::_summarize_lowc_event` |
-| Dimensao dominante da severidade | `argmin(Sh/Smin_h, Sv/Smin_v)` | Diagnostico derivado da Eq. 4.5 | `metrics.py::detect_lowc_events` |
+| Severidade | `sev_ij = min_t(Sh/Smin_h)` | Produto 3 v1, criterio horizontal simplificado | `metrics.py::_summarize_lowc_event` |
 | Tempo abaixo do limiar | `amostras consecutivas em LoWC * conflict_sample_seconds` | Secao 4.2.3 | `metrics.py::_summarize_lowc_event` |
-| NMAC | `Sh(t) < S_NMAC_h and Sv(t) < S_NMAC_v` | Secao 4.2.2 | `metrics.py::_safety_summary` |
-| MAC esperado | `E[MAC] = N_NMAC * P(MAC\|NMAC)` | Secao 4.2.2, Eq. 4.2-4.4 | `metrics.py::_safety_summary` |
+| NMAC | `Sh(t) < S_NMAC_h` | Produto 3 v1, criterio horizontal simplificado | `metrics.py::_safety_summary` |
+| MAC esperado | `MAC = 5.038e-3 * 0.005 * N_NMAC`; `MAC_100k = MAC / H_voo * 100000` | Produto 3 v1, seguranca | `metrics.py::_safety_summary` |
+| Margem TLS | `M_TLS = TLS / (lambda_MAC_obs + epsilon)` | Produto 3 v1, Eq. 4.12 | `metrics.py::_safety_summary` |
 | Tempo medio de voo | `mean(max(simt_f) - min(simt_f))` | Secao 4.3.4 | `metrics.py::efficiency_metrics` |
 | Distancia media | `mean(max(distflown_f))` | Secao 4.3.4 | `metrics.py::efficiency_metrics` |
 | Ineficiencia horizontal executada | `(d_real - d_gc) / d_gc * 100` | Secao 4.3.6, Eq. 4.19 | `metrics.py::efficiency_metrics` |
 | Conformidade de trajetoria | `TC_f = (d_real - d_plan) / d_plan`; `ED_f = d_real - d_plan` | Secao 4.3.5, Eq. 4.16-4.17 | `metrics.py::trajectory_conformity` |
 | Aderencia espacial a REH | Percentual de amostras dentro da tolerancia configurada | Diagnostico complementar | `metrics.py::trajectory_conformity` |
-| Atraso em solo | `GD_f = max(0, R_f - S_f)` | Secao 4.3.1, Eq. 4.10 | `scenario_parser.py::ground_delay_metrics` |
-| Razao de risco | `RR = lambda_MVP / lambda_OFF` | Secao 4.2.5, Eq. 4.7 | `generate_dashboard.py::comparison_payload` |
+| Atraso em solo | `GD_f = max(0, R_f - S_f)` | Secao 4.3.1 | `scenario_parser.py::ground_delay_metrics` |
+| Razao de risco | `RR_s = MAC_100k_s / MAC_100k_ref` | Produto 3 v1, Eq. 4.10 | `generate_dashboard.py::comparison_payload` |
 
 O dashboard tambem exporta esta matriz por meio de `metric_catalog.py` e mostra a tabela na propria pagina.
 
@@ -147,7 +147,7 @@ Os nomes `bimtra_topN_DATA_[disturbed_seedX_]mvp|off.log` sao classificados auto
 Para cada dia, o dashboard compara MVP ligado/desligado, com e sem disturbios.
 
 A tabela diaria apresenta metricas de seguranca e eficiencia, diferencas contra o cenario OFF
-pareado e a razao de risco da Eq. 4.7. Os seletores `Dia comparado` e `Cenario no mapa` controlam
+pareado e a razao de risco da Eq. 4.10. A referencia de risco e o cenario sem intervencao e sem perturbacao (`OFF / sem disturbios`). Os seletores `Dia comparado` e `Cenario no mapa` controlam
 a tabela, os cards, o mapa e os graficos exibidos.
 
 Todo processamento dos `STATELOGs` acontece em Python durante a execucao de `generate_dashboard.py`. O JavaScript da pagina apenas apresenta os arquivos gerados.
@@ -186,12 +186,13 @@ planejada nao aparece no `STATELOG`.
 
 ## 11. Diagnostico Da Severidade LoWC
 
-Todo LoWC exige simultaneamente `Sh < Smin_h` e `Sv < Smin_v`. O grafico de dimensao dominante nao
-separa LoWC em violacoes isoladas; ele mostra qual componente normalizado foi mais critico:
-`argmin(Sh/Smin_h, Sv/Smin_v)`.
+Por aderencia ao Produto 3 v1, nos cenarios em que as aeronaves operam no mesmo nivel ou em corredores
+com separacao vertical fixa, o dashboard usa o criterio simplificado horizontal. Assim, LoWC, NMAC e
+severidade sao calculados apenas por `Sh`.
 
-Um evento pode ter severidade proxima de zero sem ser NMAC. Isso acontece quando uma dimensao,
-por exemplo a vertical, chega perto de zero, mas a horizontal permanece acima do limiar NMAC.
+Um evento pode ter severidade proxima de zero quando a distancia horizontal entre duas aeronaves fica
+muito pequena em relacao ao limiar `Smin_h`. NMAC e identificado quando essa distancia tambem cruza o
+limiar horizontal mais restritivo `S_NMAC_h`.
 
 ## 12. Testes
 

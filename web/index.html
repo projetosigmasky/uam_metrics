@@ -60,6 +60,16 @@
           <strong id="metric-lowc-rate">-</strong>
           <small>eventos por hora de voo</small>
         </article>
+        <article class="metric danger">
+          <span>MAC / 100k h</span>
+          <strong id="metric-mac-rate">-</strong>
+          <small>estimativa deterministica</small>
+        </article>
+        <article class="metric">
+          <span>Margem TLS</span>
+          <strong id="metric-tls-margin">-</strong>
+          <small id="metric-tls-status">-</small>
+        </article>
       </section>
 
       <section class="workspace">
@@ -103,6 +113,14 @@
               <div>
                 <dt>Severidade minima</dt>
                 <dd id="kpa-severity">-</dd>
+              </div>
+              <div>
+                <dt>MAC esperado / 100k h</dt>
+                <dd id="kpa-mac-rate">-</dd>
+              </div>
+              <div>
+                <dt>Margem TLS</dt>
+                <dd id="kpa-tls-margin">-</dd>
               </div>
               <div>
                 <dt>Tempo abaixo do limiar</dt>
@@ -163,7 +181,9 @@
                 <th>Aderencia REH</th>
                 <th>LoWC</th>
                 <th>LoWC/h</th>
-                <th>Razao risco vs OFF</th>
+                <th>MAC/100k h</th>
+                <th>Margem TLS</th>
+                <th>Razao risco vs ref</th>
                 <th>NMAC</th>
                 <th>Sev. min</th>
               </tr>
@@ -186,10 +206,6 @@
         <article class="chart-card">
           <h2>Severidade LoWC</h2>
           <img id="chart-severity" alt="Histograma de severidade LoWC" />
-        </article>
-        <article class="chart-card">
-          <h2>Dimensao critica LoWC</h2>
-          <img id="chart-lowc-dimensions" alt="Eventos LoWC por dimensao dominante de severidade" />
         </article>
         </div>
       </section>

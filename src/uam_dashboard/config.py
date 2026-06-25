@@ -35,12 +35,12 @@ class DashboardConfig:
     flight_instance_reset_distance_m: float = 250.0
     flight_instance_jump_m: float = 5000.0
     lowc_horizontal_m: float = 500.0
-    lowc_vertical_m: float = 30.0
     nmac_horizontal_m: float = 150.0
-    nmac_vertical_m: float = 30.0
-    mac_probability_bands: tuple[float, float, float] = (0.001, 0.01, 0.05)
+    mac_beta: float = 5.038e-3
+    mac_probability_given_nmac: float = 0.005
+    tls_target_per_flight_hour: float = 9.4e-6
+    tls_epsilon: float = 1e-15
     conflict_sample_seconds: int = 10
-    same_altitude_band_m: float = 150.0
     track_sample_stride: int = 20
     trajectory_shape_points: int = 12
     trajectory_cluster_distance_m: float = 1200.0

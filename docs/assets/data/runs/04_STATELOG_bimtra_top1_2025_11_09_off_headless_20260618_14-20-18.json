@@ -85,38 +85,35 @@
       }
     },
     "safety": {
-      "lowc_events": 13,
+      "lowc_events": 16,
       "nmac_events": 1,
-      "horizontal_dominant_events": 1,
-      "vertical_dominant_events": 12,
-      "balanced_severity_events": 0,
       "lowc_horizontal_m": 500.0,
-      "lowc_vertical_m": 30.0,
       "nmac_horizontal_m": 150.0,
-      "nmac_vertical_m": 30.0,
       "sample_seconds": 10,
-      "same_altitude_band_m": 150.0,
-      "separation_samples": 4230,
-      "lowc_per_100_operations": 7.344632768361582,
-      "lowc_per_flight_hour": 0.7717932649493717,
-      "lowc_per_1000_km": 3.636153157277899,
+      "separation_samples": 5110,
+      "lowc_per_100_operations": 9.03954802259887,
+      "lowc_per_flight_hour": 0.9498994030146114,
+      "lowc_per_1000_km": 4.475265424342029,
       "nmac_per_100_operations": 0.5649717514124294,
       "nmac_per_flight_hour": 0.05936871268841321,
       "nmac_per_1000_km": 0.27970408902137683,
-      "monitored_pair_samples": 4230,
-      "min_severity_ratio": 0.0,
-      "p05_severity_ratio": 0.0,
-      "median_severity_ratio": 0.23368000000000014,
-      "p95_severity_ratio": 0.8736255466666664,
-      "total_time_below_threshold_s": 250.0,
-      "mean_time_below_threshold_s": 19.23076923076923,
+      "monitored_pair_samples": 5110,
+      "min_severity_ratio": 0.12324177416128541,
+      "p05_severity_ratio": 0.3617164769662747,
+      "median_severity_ratio": 0.7562775555230108,
+      "p95_severity_ratio": 0.9607211332779584,
+      "total_time_below_threshold_s": 370.0,
+      "mean_time_below_threshold_s": 23.125,
       "max_time_below_threshold_s": 100.0,
-      "mac_probability_low": 0.001,
-      "mac_probability_nominal": 0.01,
-      "mac_probability_high": 0.05,
-      "expected_mac_low": 0.001,
-      "expected_mac_nominal": 0.01,
-      "expected_mac_high": 0.05
+      "mac_beta": 0.005038,
+      "mac_probability_given_nmac": 0.005,
+      "expected_mac": 2.519e-05,
+      "expected_mac_rate_per_flight_hour": 1.4954978726211289e-06,
+      "expected_mac_per_100k_flight_hours": 0.14954978726211288,
+      "tls_target_per_flight_hour": 9.4e-06,
+      "tls_epsilon": 1e-15,
+      "tls_margin": 6.285532173468946,
+      "tls_compliant": true
     },
     "charts": {
       "active_aircraft": "assets/charts/04_STATELOG_bimtra_top1_2025_11_09_off_headless_20260618_14-20-18_active_aircraft.png",
@@ -124,7 +121,6 @@
       "altitude_histogram": "assets/charts/04_STATELOG_bimtra_top1_2025_11_09_off_headless_20260618_14-20-18_altitude_histogram.png",
       "distance_histogram": "assets/charts/04_STATELOG_bimtra_top1_2025_11_09_off_headless_20260618_14-20-18_distance_histogram.png",
       "severity_histogram": "assets/charts/04_STATELOG_bimtra_top1_2025_11_09_off_headless_20260618_14-20-18_severity_histogram.png",
-      "lowc_dimensions": "assets/charts/04_STATELOG_bimtra_top1_2025_11_09_off_headless_20260618_14-20-18_lowc_dimensions.png",
       "trajectory_conformity": "assets/charts/04_STATELOG_bimtra_top1_2025_11_09_off_headless_20260618_14-20-18_trajectory_conformity.png"
     },
     "metric_catalog": [
@@ -140,11 +136,11 @@
       {
         "id": "lowc_events",
         "name": "Loss of Well Clear",
-        "formula": "Sh(t) < Smin_h and Sv(t) < Smin_v",
-        "pdf_reference": "Produto 3, secao 4.2.1, Eq. 4.1",
+        "formula": "Sh(t) < Smin_h",
+        "pdf_reference": "Produto 3 v1, criterio simplificado para separacao horizontal",
         "code_reference": "src/uam_dashboard/metrics.py::detect_lowc_events",
-        "status": "implemented",
-        "data_required": "simt, id, lat, lon, alt"
+        "status": "implemented_horizontal_only",
+        "data_required": "simt, id, lat, lon"
       },
       {
         "id": "lowc_per_flight_hour",
@@ -176,20 +172,11 @@
       {
         "id": "severity_ratio",
         "name": "Severidade de conflito",
-        "formula": "sev_ij = min_t(Sh/Smin_h, Sv/Smin_v)",
-        "pdf_reference": "Produto 3, secao 4.2.3, Eq. 4.5",
+        "formula": "sev_ij = min_t(Sh/Smin_h)",
+        "pdf_reference": "Produto 3 v1, severidade aplicada ao criterio horizontal simplificado",
         "code_reference": "src/uam_dashboard/metrics.py::_summarize_lowc_event",
-        "status": "implemented",
-        "data_required": "simt, lat, lon, alt"
-      },
-      {
-        "id": "severity_dimension",
-        "name": "Dimensao dominante da severidade",
-        "formula": "argmin(Sh/Smin_h, Sv/Smin_v)",
-        "pdf_reference": "Derivada da severidade da Eq. 4.5 para diagnostico",
-        "code_reference": "src/uam_dashboard/metrics.py::detect_lowc_events",
-        "status": "implemented_diagnostic_classification",
-        "data_required": "separacoes horizontal e vertical normalizadas"
+        "status": "implemented_horizontal_only",
+        "data_required": "simt, lat, lon"
       },
       {
         "id": "time_below_threshold",
@@ -203,20 +190,29 @@
       {
         "id": "nmac_events",
         "name": "Near Mid-Air Collision",
-        "formula": "Sh(t) < S_NMAC_h and Sv(t) < S_NMAC_v",
-        "pdf_reference": "Produto 3, secao 4.2.2",
+        "formula": "Sh(t) < S_NMAC_h",
+        "pdf_reference": "Produto 3 v1, criterio simplificado para separacao horizontal",
         "code_reference": "src/uam_dashboard/metrics.py::_safety_summary",
-        "status": "implemented_configurable_threshold",
-        "data_required": "simt, lat, lon, alt"
+        "status": "implemented_configurable_horizontal_threshold",
+        "data_required": "simt, lat, lon"
       },
       {
         "id": "expected_mac",
         "name": "MAC esperado",
-        "formula": "E[MAC] = N_NMAC * P(MAC|NMAC)",
-        "pdf_reference": "Produto 3, secao 4.2.2, Eq. 4.2-4.4",
+        "formula": "MAC = 5.038e-3 * 0.005 * N_NMAC; MAC_100k = MAC / H_voo * 100000",
+        "pdf_reference": "Produto 3 v1, seguranca; MAC estimado a partir de N_NMAC, beta e P(MAC|NMAC)",
         "code_reference": "src/uam_dashboard/metrics.py::_safety_summary",
-        "status": "implemented_as_sensitivity_band",
-        "data_required": "NMAC e bandas configuradas"
+        "status": "implemented_deterministic",
+        "data_required": "NMAC horizontal e horas totais de voo"
+      },
+      {
+        "id": "tls_margin",
+        "name": "Margem em relacao ao TLS",
+        "formula": "M_TLS = TLS / (lambda_MAC_obs + epsilon)",
+        "pdf_reference": "Produto 3 v1, Eq. 4.12",
+        "code_reference": "src/uam_dashboard/metrics.py::_safety_summary",
+        "status": "implemented_configurable_tls",
+        "data_required": "MAC estimado, horas totais de voo, TLS e epsilon"
       },
       {
         "id": "mean_flight_time_min",
@@ -249,7 +245,7 @@
         "id": "delay_metrics",
         "name": "Atraso em solo",
         "formula": "GD_f = max(0, R_f - S_f)",
-        "pdf_reference": "Produto 3, secao 4.3.1, Eq. 4.10",
+        "pdf_reference": "Produto 3, secao 4.3.1",
         "code_reference": "src/uam_dashboard/scenario_parser.py::ground_delay_metrics",
         "status": "implemented_by_paired_nominal_and_disturbed_scenarios",
         "data_required": "horarios de criacao nos SCNs nominal e perturbado"
@@ -275,11 +271,11 @@
       {
         "id": "risk_ratio",
         "name": "Razao de risco",
-        "formula": "RR = lambda_mitigado / lambda_referencia",
-        "pdf_reference": "Produto 3, secao 4.2.5, Eq. 4.7",
+        "formula": "RR_s = MAC_100k_s / MAC_100k_ref",
+        "pdf_reference": "Produto 3 v1, Eq. 4.10",
         "code_reference": "generate_dashboard.py::comparison_payload",
-        "status": "implemented_paired_mvp_vs_off",
-        "data_required": "cenarios pareados com e sem MVP"
+        "status": "implemented_reference_nominal_off",
+        "data_required": "MAC_100k do cenario avaliado e do cenario sem intervencao/sem perturbacao"
       }
     ]
   },
@@ -35982,11 +35978,8 @@
           "id_a": "PROMB_001",
           "id_b": "PSHAH_001",
           "dist_h_m": 499.5882199762558,
-          "dist_v_m": 7.010400000000004,
           "horizontal_ratio": 0.9991764399525116,
-          "vertical_ratio": 0.23368000000000014,
-          "severity_ratio": 0.23368000000000014,
-          "severity_dimension": "vertical",
+          "severity_ratio": 0.9991764399525116,
           "is_nmac": false
         },
         "geometry": {
@@ -36000,6 +35993,28 @@
       {
         "type": "Feature",
         "properties": {
+          "simt": 45010.0,
+          "start_simt": 45010.0,
+          "end_simt": 45010.0,
+          "duration_s": 10.0,
+          "id_a": "AGUIA12",
+          "id_b": "PRGZA_001",
+          "dist_h_m": 308.0719184072629,
+          "horizontal_ratio": 0.6161438368145258,
+          "severity_ratio": 0.6161438368145258,
+          "is_nmac": false
+        },
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            -46.674501975,
+            -23.53915337
+          ]
+        }
+      },
+      {
+        "type": "Feature",
+        "properties": {
           "simt": 45130.0,
           "start_simt": 45130.0,
           "end_simt": 45130.0,
@@ -36007,11 +36022,8 @@
           "id_a": "PRGZA_001",
           "id_b": "PSHAH_002",
           "dist_h_m": 221.14672746818823,
-          "dist_v_m": 7.010400000000004,
           "horizontal_ratio": 0.44229345493637645,
-          "vertical_ratio": 0.23368000000000014,
-          "severity_ratio": 0.23368000000000014,
-          "severity_dimension": "vertical",
+          "severity_ratio": 0.44229345493637645,
           "is_nmac": false
         },
         "geometry": {
@@ -36032,11 +36044,8 @@
           "id_a": "PPKSL_002",
           "id_b": "PPKSL_003",
           "dist_h_m": 458.5794677118619,
-          "dist_v_m": 25.96374000000003,
           "horizontal_ratio": 0.9171589354237238,
-          "vertical_ratio": 0.865458000000001,
-          "severity_ratio": 0.865458000000001,
-          "severity_dimension": "vertical",
+          "severity_ratio": 0.9171589354237238,
           "is_nmac": false
         },
         "geometry": {
@@ -36050,25 +36059,22 @@
       {
         "type": "Feature",
         "properties": {
-          "simt": 53060.0,
+          "simt": 53050.0,
           "start_simt": 53050.0,
           "end_simt": 53060.0,
           "duration_s": 20.0,
           "id_a": "PPKSL_002",
           "id_b": "PPKSL_003",
-          "dist_h_m": 464.7625422151967,
-          "dist_v_m": 0.0,
-          "horizontal_ratio": 0.9295250844303934,
-          "vertical_ratio": 0.0,
-          "severity_ratio": 0.0,
-          "severity_dimension": "vertical",
+          "dist_h_m": 449.4685419252837,
+          "horizontal_ratio": 0.8989370838505675,
+          "severity_ratio": 0.8989370838505675,
           "is_nmac": false
         },
         "geometry": {
           "type": "Point",
           "coordinates": [
-            -46.65165216,
-            -23.585579595
+            -46.655253900000005,
+            -23.584898895000002
           ]
         }
       },
@@ -36082,11 +36088,8 @@
           "id_a": "PPKSL_002",
           "id_b": "PPKSL_003",
           "dist_h_m": 453.13746180510867,
-          "dist_v_m": 0.0,
           "horizontal_ratio": 0.9062749236102173,
-          "vertical_ratio": 0.0,
-          "severity_ratio": 0.0,
-          "severity_dimension": "vertical",
+          "severity_ratio": 0.9062749236102173,
           "is_nmac": false
         },
         "geometry": {
@@ -36100,43 +36103,15 @@
       {
         "type": "Feature",
         "properties": {
-          "simt": 53600.0,
-          "start_simt": 53600.0,
-          "end_simt": 53600.0,
-          "duration_s": 10.0,
-          "id_a": "PPKSL_002",
-          "id_b": "PPKSL_003",
-          "dist_h_m": 467.54230372310855,
-          "dist_v_m": 26.57630599999993,
-          "horizontal_ratio": 0.9350846074462171,
-          "vertical_ratio": 0.8858768666666644,
-          "severity_ratio": 0.8858768666666644,
-          "severity_dimension": "vertical",
-          "is_nmac": false
-        },
-        "geometry": {
-          "type": "Point",
-          "coordinates": [
-            -46.675265475,
-            -23.70322235
-          ]
-        }
-      },
-      {
-        "type": "Feature",
-        "properties": {
           "simt": 53640.0,
-          "start_simt": 53640.0,
+          "start_simt": 53600.0,
           "end_simt": 53640.0,
-          "duration_s": 10.0,
+          "duration_s": 50.0,
           "id_a": "PPKSL_002",
           "id_b": "PPKSL_003",
           "dist_h_m": 276.02007351813455,
-          "dist_v_m": 17.507654000000002,
           "horizontal_ratio": 0.5520401470362691,
-          "vertical_ratio": 0.5835884666666667,
           "severity_ratio": 0.5520401470362691,
-          "severity_dimension": "horizontal",
           "is_nmac": false
         },
         "geometry": {
@@ -36157,11 +36132,8 @@
           "id_a": "AGUIA21",
           "id_b": "PSCML",
           "dist_h_m": 473.951348859887,
-          "dist_v_m": 0.0,
           "horizontal_ratio": 0.947902697719774,
-          "vertical_ratio": 0.0,
-          "severity_ratio": 0.0,
-          "severity_dimension": "vertical",
+          "severity_ratio": 0.947902697719774,
           "is_nmac": false
         },
         "geometry": {
@@ -36175,25 +36147,66 @@
       {
         "type": "Feature",
         "properties": {
-          "simt": 58750.0,
+          "simt": 58800.0,
           "start_simt": 58750.0,
           "end_simt": 58840.0,
           "duration_s": 100.0,
           "id_a": "PROMH_005",
           "id_b": "PSEII_004",
-          "dist_h_m": 498.0208672998011,
-          "dist_v_m": 0.0,
-          "horizontal_ratio": 0.9960417345996022,
-          "vertical_ratio": 0.0,
-          "severity_ratio": 0.0,
-          "severity_dimension": "vertical",
+          "dist_h_m": 61.62088708064271,
+          "horizontal_ratio": 0.12324177416128541,
+          "severity_ratio": 0.12324177416128541,
           "is_nmac": true
         },
         "geometry": {
           "type": "Point",
           "coordinates": [
-            -46.714486765000004,
-            -23.629451615
+            -46.717658175,
+            -23.65840618
+          ]
+        }
+      },
+      {
+        "type": "Feature",
+        "properties": {
+          "simt": 58870.0,
+          "start_simt": 58870.0,
+          "end_simt": 58870.0,
+          "duration_s": 10.0,
+          "id_a": "PROMH_005",
+          "id_b": "PSEII_004",
+          "dist_h_m": 455.74735584973655,
+          "horizontal_ratio": 0.911494711699473,
+          "severity_ratio": 0.911494711699473,
+          "is_nmac": false
+        },
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            -46.691603775000004,
+            -23.697732379999998
+          ]
+        }
+      },
+      {
+        "type": "Feature",
+        "properties": {
+          "simt": 67090.0,
+          "start_simt": 67090.0,
+          "end_simt": 67090.0,
+          "duration_s": 10.0,
+          "id_a": "PRMSO_002",
+          "id_b": "PSCCM_001",
+          "dist_h_m": 260.05274600565605,
+          "horizontal_ratio": 0.5201054920113121,
+          "severity_ratio": 0.5201054920113121,
+          "is_nmac": false
+        },
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            -46.684413885,
+            -23.591422565000002
           ]
         }
       },
@@ -36207,11 +36220,8 @@
           "id_a": "PRMSO_002",
           "id_b": "PSCCM_001",
           "dist_h_m": 423.4731493689056,
-          "dist_v_m": 13.082471000000055,
           "horizontal_ratio": 0.8469462987378111,
-          "vertical_ratio": 0.4360823666666685,
-          "severity_ratio": 0.4360823666666685,
-          "severity_dimension": "vertical",
+          "severity_ratio": 0.8469462987378111,
           "is_nmac": false
         },
         "geometry": {
@@ -36232,11 +36242,8 @@
           "id_a": "PRSBK_004",
           "id_b": "PRURG_003",
           "dist_h_m": 332.8044061541052,
-          "dist_v_m": 18.65080999999998,
           "horizontal_ratio": 0.6656088123082105,
-          "vertical_ratio": 0.6216936666666659,
-          "severity_ratio": 0.6216936666666659,
-          "severity_dimension": "vertical",
+          "severity_ratio": 0.6656088123082105,
           "is_nmac": false
         },
         "geometry": {
@@ -36250,50 +36257,66 @@
       {
         "type": "Feature",
         "properties": {
-          "simt": 76910.0,
-          "start_simt": 76900.0,
+          "simt": 76880.0,
+          "start_simt": 76860.0,
           "end_simt": 76910.0,
-          "duration_s": 20.0,
+          "duration_s": 60.0,
           "id_a": "PPIFF_006",
           "id_b": "PSHAH_008",
-          "dist_h_m": 461.16482105520254,
-          "dist_v_m": 0.5555699999999888,
-          "horizontal_ratio": 0.922329642110405,
-          "vertical_ratio": 0.018518999999999626,
-          "severity_ratio": 0.018518999999999626,
-          "severity_dimension": "vertical",
+          "dist_h_m": 291.95446459824745,
+          "horizontal_ratio": 0.583908929196495,
+          "severity_ratio": 0.583908929196495,
           "is_nmac": false
         },
         "geometry": {
           "type": "Point",
           "coordinates": [
-            -46.695485515,
-            -23.597672850000002
+            -46.69209119,
+            -23.587067885
           ]
         }
       },
       {
         "type": "Feature",
         "properties": {
-          "simt": 78840.0,
-          "start_simt": 78840.0,
-          "end_simt": 78840.0,
+          "simt": 78830.0,
+          "start_simt": 78830.0,
+          "end_simt": 78830.0,
           "duration_s": 10.0,
-          "id_a": "PPKSL_005",
+          "id_a": "PPSUN_002",
           "id_b": "PSSPA_003",
-          "dist_h_m": 497.9646852262358,
-          "dist_v_m": 0.20955000000003565,
-          "horizontal_ratio": 0.9959293704524717,
-          "vertical_ratio": 0.006985000000001188,
-          "severity_ratio": 0.006985000000001188,
-          "severity_dimension": "vertical",
+          "dist_h_m": 220.60402228396887,
+          "horizontal_ratio": 0.4412080445679378,
+          "severity_ratio": 0.4412080445679378,
           "is_nmac": false
         },
         "geometry": {
           "type": "Point",
           "coordinates": [
-            -46.742517995,
-            -23.51908574
+            -46.73924735,
+            -23.51819907
+          ]
+        }
+      },
+      {
+        "type": "Feature",
+        "properties": {
+          "simt": 78850.0,
+          "start_simt": 78840.0,
+          "end_simt": 78850.0,
+          "duration_s": 20.0,
+          "id_a": "PPKSL_005",
+          "id_b": "PSSPA_003",
+          "dist_h_m": 468.9290789563851,
+          "horizontal_ratio": 0.9378581579127703,
+          "severity_ratio": 0.9378581579127703,
+          "is_nmac": false
+        },
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            -46.74725359,
+            -23.522785
           ]
         }
       }

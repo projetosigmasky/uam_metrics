@@ -126,26 +126,6 @@ def plot_severity_histogram(events: pd.DataFrame, output_path: Path) -> None:
     plt.close(fig)
 
 
-def plot_lowc_dimensions(events: pd.DataFrame, output_path: Path) -> None:
-    _set_style()
-    fig, ax = plt.subplots(figsize=(10.5, 4.2))
-    labels = ["Horizontal dominante", "Vertical dominante", "Equilibrada"]
-    dimensions = ["horizontal", "vertical", "both"]
-    counts = [
-        int((events["severity_dimension"] == dimension).sum()) if not events.empty else 0
-        for dimension in dimensions
-    ]
-    bars = ax.bar(labels, counts, color=["#2563eb", "#f59e0b", "#64748b"], alpha=0.86)
-    ax.bar_label(bars, padding=4)
-    ax.set_title("Dimensao dominante da severidade LoWC")
-    ax.set_ylabel("Eventos")
-    ax.set_ylim(0, max(counts + [1]) * 1.25)
-    ax.grid(True, axis="y", linestyle="--", alpha=0.25)
-    fig.tight_layout()
-    fig.savefig(output_path, dpi=180)
-    plt.close(fig)
-
-
 def plot_trajectory_conformity(conformity_by_instance: dict[str, dict], output_path: Path) -> None:
     _set_style()
     fig, ax = plt.subplots(figsize=(10.5, 4.2))
