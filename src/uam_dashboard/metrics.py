@@ -97,6 +97,74 @@ def efficiency_metrics(
     }
 
 
+def airborne_delay_metrics(
+    df: pd.DataFrame,
+    reference_df: pd.DataFrame | None,
+    gap_seconds: float,
+    reset_distance_m: float,
+    jump_m: float,
+) -> dict[str, Any]:
+    """Return airborne delay against a same-route no-deconfliction reference log."""
+
+    if reference_df is None or reference_df.empty:
+        return {"available": False}
+
+    observed = _flight_duration_by_instance(df, gap_seconds, reset_distance_m, jump_m)
+    reference = _flight_duration_by_instance(reference_df, gap_seconds, reset_distance_m, jump_m)
+    delays = []
+
+    for flight_instance, duration_s in observed.items():
+        reference_duration_s = reference.get(flight_instance)
+        if reference_duration_s is None:
+            continue
+        delays.append(max(0.0, float(duration_s - reference_duration_s)))
+
+    if not delays:
+        return {"available": False}
+
+    return {
+        "available": True,
+        "matched_flights": int(len(delays)),
+        "mean_airborne_delay_s": float(np.mean(delays)),
+        "median_airborne_delay_s": float(np.median(delays)),
+        "p95_airborne_delay_s": float(np.quantile(delays, 0.95)),
+        "max_airborne_delay_s": float(np.max(delays)),
+        "total_airborne_delay_s": float(np.sum(delays)),
+    }
+
+
+def total_delay_metrics(ground_delay: dict[str, Any], airborne_delay: dict[str, Any]) -> dict[str, Any]:
+    """Combine ground and airborne delay summaries as a per-flight average."""
+
+    ground_available = bool(ground_delay.get("available"))
+    airborne_available = bool(airborne_delay.get("available"))
+    if not ground_available and not airborne_available:
+        return {"available": False}
+
+    mean_ground_s = float(ground_delay.get("mean_ground_delay_s", 0.0)) if ground_available else 0.0
+    mean_airborne_s = float(airborne_delay.get("mean_airborne_delay_s", 0.0)) if airborne_available else 0.0
+    return {
+        "available": True,
+        "mean_total_delay_s": mean_ground_s + mean_airborne_s,
+        "mean_ground_component_s": mean_ground_s,
+        "mean_airborne_component_s": mean_airborne_s,
+        "ground_available": ground_available,
+        "airborne_available": airborne_available,
+    }
+
+
+def _flight_duration_by_instance(
+    df: pd.DataFrame,
+    gap_seconds: float,
+    reset_distance_m: float,
+    jump_m: float,
+) -> dict[str, float]:
+    annotated = flight_instance_frame(df, gap_seconds, reset_distance_m, jump_m)
+    grouped = annotated.groupby("flight_instance", sort=True)
+    durations = grouped["simt"].max() - grouped["simt"].min()
+    return {str(index): float(value) for index, value in durations.items()}
+
+
 def flight_instance_frame(
     df: pd.DataFrame,
     gap_seconds: float,

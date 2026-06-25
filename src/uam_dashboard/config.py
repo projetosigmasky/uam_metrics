@@ -46,4 +46,6 @@ class DashboardConfig:
     trajectory_cluster_distance_m: float = 1200.0
     trajectory_endpoint_tolerance_m: float = 2500.0
     conformity_tolerance_m: float = 250.0
+    capacity_window_seconds: int = 3600
+    capacity_reference_percentile: float = 0.95
     heatmap_sample_stride: int = 10

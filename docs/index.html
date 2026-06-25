@@ -111,6 +111,14 @@
                 <dd id="kpa-ground-delay">-</dd>
               </div>
               <div>
+                <dt>Atraso medio no ar</dt>
+                <dd id="kpa-airborne-delay">-</dd>
+              </div>
+              <div>
+                <dt>Atraso total medio</dt>
+                <dd id="kpa-total-delay">-</dd>
+              </div>
+              <div>
                 <dt>Severidade minima</dt>
                 <dd id="kpa-severity">-</dd>
               </div>
@@ -173,6 +181,8 @@
               <tr>
                 <th>Variante</th>
                 <th>Atraso solo</th>
+                <th>Atraso ar</th>
+                <th>Atraso total</th>
                 <th>Tempo medio</th>
                 <th>Δ tempo vs OFF</th>
                 <th>Distancia</th>
@@ -242,6 +252,51 @@
           <img id="chart-altitude" alt="Histograma de altitude" />
         </article>
         </div>
+      </section>
+
+      <section class="chart-section capacity-section" aria-label="Metricas de capacidade">
+        <div class="section-heading">
+          <p class="eyebrow">Capacidade</p>
+          <h2>Densidade, complexidade, throughput e utilizacao</h2>
+        </div>
+        <div class="metric-grid compact-grid">
+          <article class="metric">
+            <span>Densidade ATD</span>
+            <strong id="capacity-atd">-</strong>
+            <small>aeronaves / km²</small>
+          </article>
+          <article class="metric">
+            <span>Hotspot ATD</span>
+            <strong id="capacity-hotspot">-</strong>
+            <small>aeronaves / km²</small>
+          </article>
+          <article class="metric">
+            <span>Area REH</span>
+            <strong id="capacity-area">-</strong>
+            <small>km² de corredor</small>
+          </article>
+          <article class="metric">
+            <span>Cruzamentos REH</span>
+            <strong id="capacity-crossings">-</strong>
+            <small>proxy de complexidade</small>
+          </article>
+        </div>
+        <div class="table-wrap">
+          <table class="comparison-table capacity-table">
+            <thead>
+              <tr>
+                <th>Tipo</th>
+                <th>Recurso</th>
+                <th>Operacoes</th>
+                <th>THR pico</th>
+                <th>Capacidade P95</th>
+                <th>Utilizacao pico</th>
+              </tr>
+            </thead>
+            <tbody id="capacity-table-body"></tbody>
+          </table>
+        </div>
+        <div id="capacity-complexity" class="comparison-summary">-</div>
       </section>
 
       <section class="traceability-panel" aria-label="Rastreabilidade das metricas">

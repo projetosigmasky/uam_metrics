@@ -66,6 +66,8 @@ trajectory_shape_points = 12
 trajectory_cluster_distance_m = 1200.0
 trajectory_endpoint_tolerance_m = 2500.0
 conformity_tolerance_m = 250.0
+capacity_window_seconds = 3600
+capacity_reference_percentile = 0.95
 heatmap_sample_stride = 10
 ```
 
@@ -128,6 +130,11 @@ O gerador publica em `docs/`:
 | Conformidade de trajetoria | `TC_f = (d_real - d_plan) / d_plan`; `ED_f = d_real - d_plan` | Secao 4.3.5, Eq. 4.16-4.17 | `metrics.py::trajectory_conformity` |
 | Aderencia espacial a REH | Percentual de amostras dentro da tolerancia configurada | Diagnostico complementar | `metrics.py::trajectory_conformity` |
 | Atraso em solo | `GD_f = max(0, R_f - S_f)` | Secao 4.3.1 | `scenario_parser.py::ground_delay_metrics` |
+| Atraso no ar | `AD_f = max(0, (A_f - D_f) - T_f)` | Produto 3 v1, Eq. 4.14 | `metrics.py::airborne_delay_metrics` |
+| Atraso total | `TD_f = GD_f + AD_f` | Produto 3 v1, eficiencia | `metrics.py::total_delay_metrics` |
+| Densidade de trafego aereo | `ATD_dt = N_simultaneo_dt / A` | Produto 3 v1, Eq. 4.23 | `capacity.py::capacity_metrics` |
+| Throughput por recurso | `THR_r,dt = N_r,dt / \|dt\|` | Produto 3 v1, Eq. 4.24 | `capacity.py::_resource_throughput` |
+| Utilizacao de recurso | `U_r,dt = N_r,dt / C_r,dt`; `C_r,dt = P95(THR_r,dt)` | Produto 3 v1, Eq. 4.25 | `capacity.py::_resource_throughput` |
 | Razao de risco | `RR_s = MAC_100k_s / MAC_100k_ref` | Produto 3 v1, Eq. 4.10 | `generate_dashboard.py::comparison_payload` |
 
 O dashboard tambem exporta esta matriz por meio de `metric_catalog.py` e mostra a tabela na propria pagina.
@@ -136,8 +143,7 @@ O dashboard tambem exporta esta matriz por meio de `metric_catalog.py` e mostra 
 
 O `STATELOG` atual nao contem todos os campos minimos citados no PDF. Por isso, as metricas abaixo ficam documentadas como indisponiveis ate que novos dados sejam fornecidos:
 
-- atraso em voo: requer tempo nominal `T_f`;
-- atraso total e pontualidade: requer horarios planejados, autorizados e reais;
+- pontualidade operacional: requer horarios planejados, autorizados e reais de chegada;
 - tempo ate conflito: requer tempo de deteccao `tdet`;
 - carga de deconfliction: requer comandos de velocidade, proa ou altitude;
 
@@ -194,7 +200,23 @@ Um evento pode ter severidade proxima de zero quando a distancia horizontal entr
 muito pequena em relacao ao limiar `Smin_h`. NMAC e identificado quando essa distancia tambem cruza o
 limiar horizontal mais restritivo `S_NMAC_h`.
 
-## 12. Testes
+## 12. Capacidade, Densidade E Utilizacao
+
+A densidade formal usa corredores derivados da REH planejada. A largura do corredor e a mesma tolerancia
+usada na aderencia espacial (`conformity_tolerance_m`). A area `A` da Eq. 4.23 e estimada como a area
+dos corredores planejados, aproximados por capsulas ao redor das polilinhas da REH.
+
+O throughput da Eq. 4.24 e calculado em janelas de 1 hora para tres tipos de recurso:
+
+- pares origem-destino observados;
+- grupos de trajetoria executada;
+- REHs planejadas associadas aos voos.
+
+Como ainda nao ha capacidade declarada externa, a utilizacao da Eq. 4.25 usa uma referencia nominal
+interna: `C_r,dt = P95(THR_r,dt)` por tipo de recurso. Assim, a utilizacao informa quao proximo o recurso
+ficou do envelope operacional observado no proprio conjunto de simulacoes.
+
+## 13. Testes
 
 Rode os testes unitarios com:
 
@@ -202,7 +224,7 @@ Rode os testes unitarios com:
 .\.venv\Scripts\python.exe -m unittest discover -s tests
 ```
 
-## 13. Publicacao No GitHub Pages
+## 14. Publicacao No GitHub Pages
 
 Configure o GitHub Pages para publicar a pasta:
 

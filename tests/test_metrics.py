@@ -4,9 +4,16 @@ import unittest
 
 import pandas as pd
 
+from src.uam_dashboard.capacity import capacity_metrics
 from src.uam_dashboard.exports import tracks_geojson
 from src.uam_dashboard.experiment import experiment_metadata
-from src.uam_dashboard.metrics import detect_lowc_events, efficiency_metrics, trajectory_conformity
+from src.uam_dashboard.metrics import (
+    airborne_delay_metrics,
+    detect_lowc_events,
+    efficiency_metrics,
+    total_delay_metrics,
+    trajectory_conformity,
+)
 from src.uam_dashboard.scenario_parser import ground_delay_metrics
 
 
@@ -146,6 +153,70 @@ class MetricsTest(unittest.TestCase):
 
         self.assertAlmostEqual(metrics["mean_ground_delay_s"], 60.0)
         self.assertAlmostEqual(metrics["max_ground_delay_s"], 90.0)
+
+    def test_airborne_and_total_delay_use_off_reference_duration(self) -> None:
+        evaluated = pd.DataFrame(
+            [
+                {"simt": 0, "id": "A", "lat": -23.55, "lon": -46.63, "distflown": 0, "alt": 800},
+                {"simt": 130, "id": "A", "lat": -23.55, "lon": -46.62, "distflown": 1000, "alt": 800},
+                {"simt": 0, "id": "B", "lat": -23.56, "lon": -46.63, "distflown": 0, "alt": 800},
+                {"simt": 80, "id": "B", "lat": -23.56, "lon": -46.62, "distflown": 1000, "alt": 800},
+            ]
+        )
+        reference = pd.DataFrame(
+            [
+                {"simt": 0, "id": "A", "lat": -23.55, "lon": -46.63, "distflown": 0, "alt": 800},
+                {"simt": 100, "id": "A", "lat": -23.55, "lon": -46.62, "distflown": 1000, "alt": 800},
+                {"simt": 0, "id": "B", "lat": -23.56, "lon": -46.63, "distflown": 0, "alt": 800},
+                {"simt": 100, "id": "B", "lat": -23.56, "lon": -46.62, "distflown": 1000, "alt": 800},
+            ]
+        )
+
+        airborne = airborne_delay_metrics(evaluated, reference, 300, 250, 5000)
+        total = total_delay_metrics({"available": True, "mean_ground_delay_s": 20.0}, airborne)
+
+        self.assertAlmostEqual(airborne["mean_airborne_delay_s"], 15.0)
+        self.assertAlmostEqual(airborne["max_airborne_delay_s"], 30.0)
+        self.assertAlmostEqual(total["mean_total_delay_s"], 35.0)
+
+    def test_capacity_metrics_use_reh_corridors_and_p95_utilization(self) -> None:
+        df = pd.DataFrame(
+            [
+                {"simt": 0, "id": "A", "lat": -23.55, "lon": -46.63, "distflown": 0, "alt": 800},
+                {"simt": 60, "id": "A", "lat": -23.55, "lon": -46.62, "distflown": 1000, "alt": 800},
+                {"simt": 120, "id": "B", "lat": -23.55, "lon": -46.63, "distflown": 0, "alt": 800},
+                {"simt": 180, "id": "B", "lat": -23.55, "lon": -46.62, "distflown": 1000, "alt": 800},
+            ]
+        )
+        planned = [
+            {
+                "flight_instance": "A#0",
+                "aircraft_id": "A",
+                "start_time": "00:00:00.00",
+                "start_simt": 0.0,
+                "coordinates": [[-46.63, -23.55], [-46.62, -23.55]],
+            },
+            {
+                "flight_instance": "B#0",
+                "aircraft_id": "B",
+                "start_time": "00:02:00.00",
+                "start_simt": 120.0,
+                "coordinates": [[-46.63, -23.55], [-46.62, -23.55]],
+            },
+        ]
+        conformity = {
+            "A#0": {"planned_flight_instance": "A#0"},
+            "B#0": {"planned_flight_instance": "B#0"},
+        }
+        tracks = tracks_geojson(df, 1, 300, 250, 5000, 8, 1200, 2500, conformity)
+
+        metrics = capacity_metrics(df, planned, tracks, conformity, 0, 250, 3600, 0.95, 300, 250, 5000)
+
+        self.assertTrue(metrics["density"]["available"])
+        self.assertGreater(metrics["density"]["air_traffic_density_per_km2"], 0)
+        self.assertTrue(metrics["throughput"]["od_pairs"]["available"])
+        self.assertGreater(metrics["throughput"]["od_pairs"]["capacity_reference_per_hour"], 0)
+        self.assertTrue(metrics["throughput"]["planned_reh"]["available"])
 
 
 if __name__ == "__main__":

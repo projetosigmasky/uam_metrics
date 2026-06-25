@@ -162,6 +162,7 @@ function renderSelectedRun() {
   if (!run) return;
   renderMetrics(run.dashboard);
   renderCharts(run.dashboard);
+  renderCapacity(run.dashboard);
   renderMapLayers(run.tracks, run.planned_routes, run.conflicts, run.heatmap);
 }
 
@@ -204,6 +205,8 @@ function renderDayComparison() {
         <tr class="${row.mvp_enabled ? "mvp-row" : ""}">
           <td title="${escapeHtml(row.name)}">${escapeHtml(row.variant_label)}</td>
           <td>${formatOptionalDuration(row.ground_delay_s)}</td>
+          <td>${formatOptionalDuration(row.airborne_delay_s)}</td>
+          <td>${formatOptionalDuration(row.total_delay_s)}</td>
           <td>${formatNumber(row.flight_time_min, 1)} min</td>
           <td>${formatSigned(row.flight_time_delta_vs_off_min, 1, " min")}</td>
           <td>${formatNumber(row.distance_nm, 1)} NM</td>
@@ -261,6 +264,18 @@ function renderMetrics(dashboard) {
       ? `${formatNumber(efficiency.ground_delay.mean_ground_delay_s, 0)} s`
       : "Sem pareamento"
   );
+  setText(
+    "kpa-airborne-delay",
+    efficiency.airborne_delay?.available
+      ? `${formatNumber(efficiency.airborne_delay.mean_airborne_delay_s, 0)} s`
+      : "Sem referencia"
+  );
+  setText(
+    "kpa-total-delay",
+    efficiency.total_delay?.available
+      ? `${formatNumber(efficiency.total_delay.mean_total_delay_s, 0)} s`
+      : "Sem pareamento"
+  );
   setText("kpa-severity", formatNumber(safety.min_severity_ratio, 2));
   setText("kpa-mac-rate", formatNumber(safety.expected_mac_per_100k_flight_hours, 3));
   setText("kpa-tls-margin", formatTLSMargin(safety.tls_margin, safety.tls_compliant));
@@ -275,6 +290,70 @@ function renderCharts(dashboard) {
   showImageChart("chart-distance", dashboard.charts.distance_histogram);
   showImageChart("chart-severity", dashboard.charts.severity_histogram);
   showImageChart("chart-conformity", dashboard.charts.trajectory_conformity);
+}
+
+function renderCapacity(dashboard) {
+  const capacity = dashboard.capacity || {};
+  const density = capacity.density || {};
+  const complexity = capacity.complexity || {};
+  setText(
+    "capacity-atd",
+    density.available ? formatNumber(density.air_traffic_density_per_km2, 3) : "-"
+  );
+  setText(
+    "capacity-hotspot",
+    density.available ? formatNumber(density.hotspot_density_per_km2, 3) : "-"
+  );
+  setText("capacity-area", density.available ? formatNumber(density.corridor_area_km2, 2) : "-");
+  setText(
+    "capacity-crossings",
+    complexity.available ? formatNumber(complexity.planned_route_crossings, 0) : "-"
+  );
+  setText(
+    "capacity-complexity",
+    complexity.available
+      ? `${formatNumber(complexity.planned_route_count, 0)} REHs planejadas, ` +
+          `${formatNumber(complexity.planned_waypoint_count, 0)} waypoints, ` +
+          `${formatNumber(complexity.trajectory_group_count, 0)} grupos de trajetoria, ` +
+          `${formatNumber(complexity.repeated_trajectory_group_count, 0)} grupos recorrentes e ` +
+          `${formatNumber(complexity.lowc_event_count, 0)} eventos LoWC.`
+      : "Sem dados de capacidade."
+  );
+  renderCapacityTable(capacity.throughput || {});
+}
+
+function renderCapacityTable(throughput) {
+  const rows = [];
+  for (const [type, label] of [
+    ["od_pairs", "Par OD"],
+    ["trajectory_groups", "Grupo trajetoria"],
+    ["planned_reh", "REH planejada"],
+  ]) {
+    const group = throughput[type];
+    if (!group?.available) continue;
+    for (const resource of group.top_resources || []) {
+      rows.push({
+        type: label,
+        capacity: group.capacity_reference_per_hour,
+        ...resource,
+      });
+    }
+  }
+  document.getElementById("capacity-table-body").innerHTML = rows.length
+    ? rows
+        .map(
+          (row) => `
+        <tr>
+          <td>${escapeHtml(row.type)}</td>
+          <td title="${escapeHtml(row.resource_id)}">${escapeHtml(row.label)}</td>
+          <td>${formatNumber(row.operations, 0)}</td>
+          <td>${formatNumber(row.peak_throughput_per_hour, 1)} ops/h</td>
+          <td>${formatNumber(row.capacity, 1)} ops/h</td>
+          <td>${formatPercentRatio(row.utilization_peak)}</td>
+        </tr>`
+        )
+        .join("")
+    : `<tr><td colspan="6">Sem recursos de capacidade calculados.</td></tr>`;
 }
 
 function showImageChart(imageId, src) {
@@ -577,10 +656,11 @@ function renderTraceability(catalog) {
 }
 
 function groupTraceability(catalog) {
-  const order = ["Seguranca", "Eficiencia", "Trajetorias e mapa", "Indisponiveis"];
+  const order = ["Seguranca", "Eficiencia", "Capacidade", "Trajetorias e mapa", "Indisponiveis"];
   const labels = {
     Seguranca: "Metricas de seguranca",
     Eficiencia: "Metricas de eficiencia",
+    Capacidade: "Metricas de capacidade",
     "Trajetorias e mapa": "Trajetorias, mapa e diagnosticos espaciais",
     Indisponiveis: "Metricas ainda indisponiveis",
   };
@@ -598,6 +678,9 @@ function inferMetricCategory(metric) {
   if (metric.status?.startsWith("unavailable")) return "Indisponiveis";
   if (id.includes("lowc") || id.includes("nmac") || id.includes("severity") || id.includes("mac") || id.includes("risk") || id.includes("tls")) {
     return "Seguranca";
+  }
+  if (id.includes("density") || id.includes("complexity") || id.includes("throughput") || id.includes("utilization")) {
+    return "Capacidade";
   }
   if (id.includes("time") || id.includes("distance") || id.includes("efficiency") || id.includes("delay") || id.includes("conformity")) {
     return "Eficiencia";
@@ -635,6 +718,12 @@ function formatOptionalDuration(value) {
 function formatOptionalRatio(value) {
   return value !== null && value !== undefined && Number.isFinite(Number(value))
     ? formatNumber(value, 2)
+    : "-";
+}
+
+function formatPercentRatio(value) {
+  return value !== null && value !== undefined && Number.isFinite(Number(value))
+    ? `${formatNumber(Number(value) * 100, 1)}%`
     : "-";
 }
 

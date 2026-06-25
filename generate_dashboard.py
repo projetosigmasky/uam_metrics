@@ -7,15 +7,18 @@ import re
 from pathlib import Path
 from typing import Any
 
+from src.uam_dashboard.capacity import capacity_metrics
 from src.uam_dashboard.config import DashboardConfig, SAO_PAULO_CENTER
 from src.uam_dashboard.experiment import experiment_metadata, experiment_sort_key
 from src.uam_dashboard.exports import conflicts_geojson, heatmap_points, planned_routes_geojson, tracks_geojson
 from src.uam_dashboard.log_parser import load_state_log
 from src.uam_dashboard.metrics import (
     active_aircraft_series,
+    airborne_delay_metrics,
     build_summary,
     detect_lowc_events,
     efficiency_metrics,
+    total_delay_metrics,
     trajectory_conformity,
 )
 from src.uam_dashboard.metric_catalog import metric_catalog_payload
@@ -112,7 +115,10 @@ def average_dashboard(run_dashboards: list[dict[str, Any]]) -> dict[str, Any]:
             ),
             "trajectory_conformity": _average_conformity(run_dashboards),
             "ground_delay": _average_ground_delay(run_dashboards),
+            "airborne_delay": _average_airborne_delay(run_dashboards),
+            "total_delay": _average_total_delay(run_dashboards),
         },
+        "capacity": _average_capacity(run_dashboards),
         "safety": {
             "lowc_events": mean([d["safety"]["lowc_events"] for d in run_dashboards]),
             "nmac_events": mean([d["safety"]["nmac_events"] for d in run_dashboards]),
@@ -219,6 +225,90 @@ def _average_ground_delay(run_dashboards: list[dict[str, Any]]) -> dict[str, Any
     }
 
 
+def _average_airborne_delay(run_dashboards: list[dict[str, Any]]) -> dict[str, Any]:
+    values = [
+        dashboard["efficiency"]["airborne_delay"]
+        for dashboard in run_dashboards
+        if dashboard["efficiency"].get("airborne_delay", {}).get("available")
+    ]
+    if not values:
+        return {"available": False}
+    return {
+        "available": True,
+        "matched_flights": int(sum(item["matched_flights"] for item in values)),
+        "mean_airborne_delay_s": mean([item["mean_airborne_delay_s"] for item in values]),
+        "median_airborne_delay_s": mean([item["median_airborne_delay_s"] for item in values]),
+        "p95_airborne_delay_s": mean([item["p95_airborne_delay_s"] for item in values]),
+        "max_airborne_delay_s": max(item["max_airborne_delay_s"] for item in values),
+        "total_airborne_delay_s": sum(item["total_airborne_delay_s"] for item in values),
+    }
+
+
+def _average_total_delay(run_dashboards: list[dict[str, Any]]) -> dict[str, Any]:
+    values = [
+        dashboard["efficiency"]["total_delay"]
+        for dashboard in run_dashboards
+        if dashboard["efficiency"].get("total_delay", {}).get("available")
+    ]
+    if not values:
+        return {"available": False}
+    return {
+        "available": True,
+        "mean_total_delay_s": mean([item["mean_total_delay_s"] for item in values]),
+        "mean_ground_component_s": mean([item["mean_ground_component_s"] for item in values]),
+        "mean_airborne_component_s": mean([item["mean_airborne_component_s"] for item in values]),
+        "ground_available": all(item["ground_available"] for item in values),
+        "airborne_available": all(item["airborne_available"] for item in values),
+    }
+
+
+def _average_capacity(run_dashboards: list[dict[str, Any]]) -> dict[str, Any]:
+    capacities = [
+        dashboard.get("capacity", {})
+        for dashboard in run_dashboards
+        if dashboard.get("capacity", {}).get("available")
+    ]
+    if not capacities:
+        return {"available": False}
+    density_values = [item["density"] for item in capacities if item.get("density", {}).get("available")]
+    complexity_values = [
+        item["complexity"] for item in capacities if item.get("complexity", {}).get("available")
+    ]
+    first = capacities[0]
+    return {
+        "available": True,
+        "window_seconds": first["window_seconds"],
+        "capacity_percentile": first["capacity_percentile"],
+        "corridor_width_m": first["corridor_width_m"],
+        "density": {
+            "available": bool(density_values),
+            "corridor_area_km2": mean([item["corridor_area_km2"] for item in density_values]),
+            "mean_simultaneous_aircraft": mean(
+                [item["mean_simultaneous_aircraft"] for item in density_values]
+            ),
+            "peak_simultaneous_aircraft": max(
+                [item["peak_simultaneous_aircraft"] for item in density_values], default=0
+            ),
+            "air_traffic_density_per_km2": mean(
+                [item["air_traffic_density_per_km2"] for item in density_values]
+            ),
+            "hotspot_density_per_km2": mean([item["hotspot_density_per_km2"] for item in density_values]),
+        },
+        "throughput": first["throughput"],
+        "complexity": {
+            "available": bool(complexity_values),
+            "planned_route_count": mean([item["planned_route_count"] for item in complexity_values]),
+            "planned_waypoint_count": mean([item["planned_waypoint_count"] for item in complexity_values]),
+            "planned_route_crossings": mean([item["planned_route_crossings"] for item in complexity_values]),
+            "trajectory_group_count": mean([item["trajectory_group_count"] for item in complexity_values]),
+            "repeated_trajectory_group_count": mean(
+                [item["repeated_trajectory_group_count"] for item in complexity_values]
+            ),
+            "lowc_event_count": mean([item["lowc_event_count"] for item in complexity_values]),
+        },
+    }
+
+
 def comparison_payload(runs: list[dict[str, Any]], average: dict[str, Any]) -> dict[str, Any]:
     by_day: dict[str, list[dict[str, Any]]] = {}
     for index, run in enumerate(runs):
@@ -239,6 +329,8 @@ def comparison_payload(runs: list[dict[str, Any]], average: dict[str, Any]) -> d
             ),
             "spatial_adherence_pct": d["efficiency"]["trajectory_conformity"].get("spatial_adherence_pct"),
             "ground_delay_s": d["efficiency"]["ground_delay"].get("mean_ground_delay_s"),
+            "airborne_delay_s": d["efficiency"]["airborne_delay"].get("mean_airborne_delay_s"),
+            "total_delay_s": d["efficiency"]["total_delay"].get("mean_total_delay_s"),
             "lowc_events": d["safety"]["lowc_events"],
             "nmac_events": d["safety"]["nmac_events"],
             "expected_mac": d["safety"]["expected_mac"],
@@ -316,6 +408,19 @@ def analyze_log(log_path: Path, config: DashboardConfig, charts_dir: Path, run_i
     nominal_scenario = find_nominal_scenario(metadata, config.scenario_paths)
     nominal_flights = load_bluesky_scenario(nominal_scenario) if nominal_scenario else None
     efficiency["ground_delay"] = ground_delay_metrics(planned_flights, nominal_flights)
+    reference_log_path = find_reference_off_log(metadata, config.log_paths)
+    reference_df = load_state_log(reference_log_path) if reference_log_path else None
+    efficiency["airborne_delay"] = airborne_delay_metrics(
+        df,
+        reference_df,
+        gap_seconds=config.flight_instance_gap_seconds,
+        reset_distance_m=config.flight_instance_reset_distance_m,
+        jump_m=config.flight_instance_jump_m,
+    )
+    efficiency["total_delay"] = total_delay_metrics(
+        efficiency["ground_delay"],
+        efficiency["airborne_delay"],
+    )
     conformity, conformity_by_instance = trajectory_conformity(
         df,
         planned_flights,
@@ -367,6 +472,35 @@ def analyze_log(log_path: Path, config: DashboardConfig, charts_dir: Path, run_i
         conformity_by_instance,
         charts_dir / Path(chart_paths["trajectory_conformity"]).name,
     )
+    tracks = tracks_geojson(
+        df,
+        config.track_sample_stride,
+        instance_gap_seconds=config.flight_instance_gap_seconds,
+        instance_reset_distance_m=config.flight_instance_reset_distance_m,
+        instance_jump_m=config.flight_instance_jump_m,
+        shape_points=config.trajectory_shape_points,
+        cluster_distance_m=config.trajectory_cluster_distance_m,
+        endpoint_tolerance_m=config.trajectory_endpoint_tolerance_m,
+        conformity_by_instance=conformity_by_instance,
+    )
+    planned_routes = planned_routes_geojson(
+        planned_flights,
+        conformity_by_instance,
+        config.conformity_tolerance_m,
+    )
+    capacity = capacity_metrics(
+        df,
+        planned_flights,
+        tracks,
+        conformity_by_instance,
+        lowc_event_count=len(lowc_events),
+        corridor_width_m=config.conformity_tolerance_m,
+        window_seconds=config.capacity_window_seconds,
+        capacity_percentile=config.capacity_reference_percentile,
+        gap_seconds=config.flight_instance_gap_seconds,
+        reset_distance_m=config.flight_instance_reset_distance_m,
+        jump_m=config.flight_instance_jump_m,
+    )
 
     summary = build_summary(df)
     dashboard = {
@@ -376,6 +510,7 @@ def analyze_log(log_path: Path, config: DashboardConfig, charts_dir: Path, run_i
         "summary": summary,
         "efficiency": efficiency,
         "safety": safety,
+        "capacity": capacity,
         "charts": chart_paths,
         "metric_catalog": metric_catalog_payload(),
     }
@@ -385,22 +520,8 @@ def analyze_log(log_path: Path, config: DashboardConfig, charts_dir: Path, run_i
         "name": log_path.name,
         "metadata": metadata,
         "dashboard": dashboard,
-        "tracks": tracks_geojson(
-            df,
-            config.track_sample_stride,
-            instance_gap_seconds=config.flight_instance_gap_seconds,
-            instance_reset_distance_m=config.flight_instance_reset_distance_m,
-            instance_jump_m=config.flight_instance_jump_m,
-            shape_points=config.trajectory_shape_points,
-            cluster_distance_m=config.trajectory_cluster_distance_m,
-            endpoint_tolerance_m=config.trajectory_endpoint_tolerance_m,
-            conformity_by_instance=conformity_by_instance,
-        ),
-        "planned_routes": planned_routes_geojson(
-            planned_flights,
-            conformity_by_instance,
-            config.conformity_tolerance_m,
-        ),
+        "tracks": tracks,
+        "planned_routes": planned_routes,
         "conflicts": conflicts_geojson(lowc_events),
         "heatmap": heatmap_points(df, config.heatmap_sample_stride),
     }
@@ -470,6 +591,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--trajectory-cluster-distance-m", type=float, default=1200.0)
     parser.add_argument("--trajectory-endpoint-tolerance-m", type=float, default=2500.0)
     parser.add_argument("--conformity-tolerance-m", type=float, default=250.0)
+    parser.add_argument("--capacity-window-seconds", type=int, default=3600)
+    parser.add_argument("--capacity-reference-percentile", type=float, default=0.95)
     return parser.parse_args()
 
 
@@ -512,6 +635,17 @@ def find_nominal_scenario(metadata: dict[str, Any], scenario_paths: tuple[Path, 
     )
 
 
+def find_reference_off_log(metadata: dict[str, Any], log_paths: tuple[Path, ...]) -> Path | None:
+    if metadata.get("day_key") is None or metadata.get("disturbed") is None:
+        return None
+    return find(
+        log_paths,
+        lambda path: experiment_metadata(path)["day_key"] == metadata["day_key"]
+        and experiment_metadata(path)["mvp_enabled"] is False
+        and experiment_metadata(path)["disturbed"] == metadata["disturbed"],
+    )
+
+
 def find(paths: tuple[Path, ...], predicate: Any) -> Path | None:
     return next((path for path in paths if predicate(path)), None)
 
@@ -540,6 +674,8 @@ def main() -> None:
         trajectory_cluster_distance_m=args.trajectory_cluster_distance_m,
         trajectory_endpoint_tolerance_m=args.trajectory_endpoint_tolerance_m,
         conformity_tolerance_m=args.conformity_tolerance_m,
+        capacity_window_seconds=args.capacity_window_seconds,
+        capacity_reference_percentile=args.capacity_reference_percentile,
     )
     build_dashboard(config)
 
