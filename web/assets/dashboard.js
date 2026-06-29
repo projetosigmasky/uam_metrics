@@ -3,6 +3,8 @@ const state = {
   tracksLayer: null,
   plannedLayer: null,
   heatLayer: null,
+  atdHotspotLayer: null,
+  complexityLayer: null,
   conflictLayer: null,
   baseLayers: {},
   overlayLayers: {},
@@ -95,11 +97,13 @@ function bindLayerControls() {
   document.getElementById("layer-tracks").addEventListener("change", (event) => toggleLayer("tracksLayer", event));
   document.getElementById("layer-planned").addEventListener("change", (event) => toggleLayer("plannedLayer", event));
   document.getElementById("layer-heat").addEventListener("change", (event) => toggleLayer("heatLayer", event));
+  document.getElementById("layer-atd-hotspots").addEventListener("change", (event) => toggleLayer("atdHotspotLayer", event));
+  document.getElementById("layer-complexity").addEventListener("change", (event) => toggleLayer("complexityLayer", event));
   document.getElementById("layer-conflicts").addEventListener("change", (event) => toggleLayer("conflictLayer", event));
   document.getElementById("trajectory-volume-filter").addEventListener("change", (event) => {
     state.trajectoryVolumeFilter = event.target.value;
     const run = state.runs[state.activeRunIndex] || state.runs[0];
-    if (run) renderMapLayers(run.tracks, run.planned_routes, run.conflicts, run.heatmap);
+    if (run) renderMapLayers(run.tracks, run.planned_routes, run.conflicts, run.heatmap, run.dashboard.capacity);
   });
   document.getElementById("fit-map").addEventListener("click", () => {
     fitMapToOperationalArea(state.lastTracks, state.lastConflicts);
@@ -163,7 +167,7 @@ function renderSelectedRun() {
   renderMetrics(run.dashboard);
   renderCharts(run.dashboard);
   renderCapacity(run.dashboard);
-  renderMapLayers(run.tracks, run.planned_routes, run.conflicts, run.heatmap);
+  renderMapLayers(run.tracks, run.planned_routes, run.conflicts, run.heatmap, run.dashboard.capacity);
 }
 
 function renderComparison(model) {
@@ -230,7 +234,6 @@ function renderMetrics(dashboard) {
   const efficiency = dashboard.efficiency;
   const safety = dashboard.safety;
 
-  setText("source-log", dashboard.source_log);
   setText("metric-aircraft", formatNumber(summary.aircraft_count));
   setText("metric-records", `${formatNumber(summary.records)} registros`);
   setText("metric-peak", formatNumber(summary.peak_simultaneous_aircraft));
@@ -243,8 +246,6 @@ function renderMetrics(dashboard) {
   setText("metric-nmac-threshold", `${formatNumber(safety.nmac_horizontal_m, 0)} m horizontal`);
   setText("metric-lowc-rate", formatNumber(safety.lowc_per_flight_hour, 2));
   setText("metric-mac-rate", formatNumber(safety.expected_mac_per_100k_flight_hours, 3));
-  setText("metric-tls-margin", formatTLSMargin(safety.tls_margin, safety.tls_compliant));
-  setText("metric-tls-status", safety.tls_compliant ? "atende ao TLS" : "viola o TLS");
   setText("kpa-route-efficiency", `${formatNumber(efficiency.mean_horizontal_inefficiency_pct, 1)}%`);
   setText(
     "kpa-conformity",
@@ -280,6 +281,7 @@ function renderMetrics(dashboard) {
   setText("kpa-mac-rate", formatNumber(safety.expected_mac_per_100k_flight_hours, 3));
   setText("kpa-tls-margin", formatTLSMargin(safety.tls_margin, safety.tls_compliant));
   setText("kpa-time-below", `${formatNumber(safety.total_time_below_threshold_s, 0)} s`);
+  setText("kpa-time-to-conflict", `${formatNumber(safety.mean_time_to_conflict_s, 0)} s`);
   setText("kpa-safety-sample", `${formatNumber(safety.sample_seconds, 0)} s`);
 }
 
@@ -361,13 +363,15 @@ function showImageChart(imageId, src) {
   image.src = src;
 }
 
-function renderMapLayers(tracks, plannedRoutes, conflicts, heatmap) {
+function renderMapLayers(tracks, plannedRoutes, conflicts, heatmap, capacity) {
   state.lastTracks = tracks;
   state.lastConflicts = conflicts;
   const visibleTracks = filterTracksByVolume(tracks, state.trajectoryVolumeFilter);
   clearLayer("tracksLayer");
   clearLayer("plannedLayer");
   clearLayer("heatLayer");
+  clearLayer("atdHotspotLayer");
+  clearLayer("complexityLayer");
   clearLayer("conflictLayer");
 
   const routeHalo = L.geoJSON(visibleTracks, {
@@ -461,6 +465,7 @@ function renderMapLayers(tracks, plannedRoutes, conflicts, heatmap) {
           `${formatNumber(p.dist_h_m, 1)} m horizontal<br>` +
           `Severidade ${formatNumber(p.severity_ratio, 2)}<br>` +
           `Razao horizontal ${formatNumber(p.horizontal_ratio, 3)}<br>` +
+          `Tempo ate conflito ${formatNumber(p.time_to_conflict_s, 0)} s<br>` +
           `Duracao ${formatNumber(p.duration_s, 0)} s<br>` +
           `t = ${formatNumber(p.simt, 0)} s`
       );
@@ -512,13 +517,65 @@ function renderMapLayers(tracks, plannedRoutes, conflicts, heatmap) {
     );
   }
 
+  state.atdHotspotLayer = L.geoJSON(capacity?.density?.hotspots || emptyFeatureCollection(), {
+    pane: "heatPane",
+    style: (feature) => {
+      const ratio = Math.max(0, Math.min(1, Number(feature.properties.density_ratio) || 0));
+      return {
+        color: "#b91c1c",
+        fillColor: colorForHotspot(ratio),
+        fillOpacity: 0.12 + ratio * 0.28,
+        opacity: 0.45 + ratio * 0.35,
+        weight: 1.2 + ratio * 1.5,
+      };
+    },
+    onEachFeature: (feature, layer) => {
+      const p = feature.properties || {};
+      layer.bindTooltip(`Hotspot ATD ${escapeHtml(p.label)} - ${formatNumber(p.air_traffic_density_per_km2, 3)} aeronaves/km2`, {
+        sticky: true,
+      });
+      layer.bindPopup(
+        `<strong>Hotspot ATD ${escapeHtml(p.label)}</strong><br>` +
+          `${formatNumber(p.air_traffic_density_per_km2, 3)} aeronaves/km2<br>` +
+          `Media simultanea ${formatNumber(p.mean_simultaneous_aircraft, 2)}<br>` +
+          `Pico simultaneo ${formatNumber(p.peak_simultaneous_aircraft, 0)}<br>` +
+          `Area ${formatNumber(p.corridor_area_km2, 2)} km2`
+      );
+    },
+  });
+
+  state.complexityLayer = L.geoJSON(capacity?.complexity?.crossings || emptyFeatureCollection(), {
+    pane: "conflictPane",
+    pointToLayer: (_feature, latlng) =>
+      L.circleMarker(latlng, {
+        radius: 7,
+        color: "#581c87",
+        weight: 2,
+        fillColor: "#a855f7",
+        fillOpacity: 0.88,
+      }),
+    onEachFeature: (feature, layer) => {
+      const p = feature.properties || {};
+      layer.bindTooltip(`Cruzamento ${escapeHtml(p.route_a)} / ${escapeHtml(p.route_b)}`, {
+        sticky: true,
+      });
+      layer.bindPopup(
+        `<strong>Cruzamento REH</strong><br>` +
+          `${escapeHtml(p.route_a)} / ${escapeHtml(p.route_b)}<br>` +
+          `Segmentos ${formatNumber(p.segment_a, 0)} e ${formatNumber(p.segment_b, 0)}`
+      );
+    },
+  });
+
   applyCheckedLayer("layer-heat", state.heatLayer);
+  applyCheckedLayer("layer-atd-hotspots", state.atdHotspotLayer);
+  applyCheckedLayer("layer-complexity", state.complexityLayer);
   applyCheckedLayer("layer-tracks", state.tracksLayer);
   applyCheckedLayer("layer-planned", state.plannedLayer);
   applyCheckedLayer("layer-conflicts", state.conflictLayer);
 
   fitMapToOperationalArea(visibleTracks, conflicts);
-  updateMapInfo(tracks, visibleTracks, plannedRoutes, conflicts, heatmap);
+  updateMapInfo(tracks, visibleTracks, plannedRoutes, conflicts, heatmap, capacity);
 }
 
 function buildEndpointLayer(tracks) {
@@ -591,7 +648,7 @@ function fitMapToOperationalArea(tracks, conflicts) {
   });
 }
 
-function updateMapInfo(tracks, visibleTracks, plannedRoutes, conflicts, heatmap) {
+function updateMapInfo(tracks, visibleTracks, plannedRoutes, conflicts, heatmap, capacity) {
   const trajectories = tracks.features?.length || 0;
   const visible = visibleTracks.features?.length || 0;
   const groups = tracks.properties?.trajectory_group_count || new Set(
@@ -600,10 +657,12 @@ function updateMapInfo(tracks, visibleTracks, plannedRoutes, conflicts, heatmap)
   const lowc = conflicts.features?.length || 0;
   const planned = plannedRoutes?.features?.length || 0;
   const density = heatmap.length || 0;
+  const atdHotspots = capacity?.density?.hotspots?.features?.length || 0;
+  const crossings = capacity?.complexity?.crossings?.features?.length || 0;
   setText("map-info-title", "Mapa operacional");
   setText(
     "map-info-text",
-    `${formatNumber(visible)} de ${formatNumber(trajectories)} trajetorias executadas visiveis, ${formatNumber(planned)} trajetorias REH planejadas; ${formatNumber(density)} pontos de densidade e ${formatNumber(lowc)} eventos LoWC.`
+    `${formatNumber(visible)} de ${formatNumber(trajectories)} trajetorias executadas visiveis, ${formatNumber(planned)} trajetorias REH planejadas; ${formatNumber(density)} pontos de densidade, ${formatNumber(atdHotspots)} corredores ATD, ${formatNumber(crossings)} cruzamentos REH e ${formatNumber(lowc)} eventos LoWC.`
   );
 }
 
@@ -676,7 +735,7 @@ function groupTraceability(catalog) {
 function inferMetricCategory(metric) {
   const id = metric.id || "";
   if (metric.status?.startsWith("unavailable")) return "Indisponiveis";
-  if (id.includes("lowc") || id.includes("nmac") || id.includes("severity") || id.includes("mac") || id.includes("risk") || id.includes("tls")) {
+  if (id.includes("lowc") || id.includes("nmac") || id.includes("severity") || id.includes("mac") || id.includes("risk") || id.includes("tls") || id.includes("conflict")) {
     return "Seguranca";
   }
   if (id.includes("density") || id.includes("complexity") || id.includes("throughput") || id.includes("utilization")) {
@@ -693,6 +752,18 @@ function colorForVolume(volumeRatio) {
   if (ratio >= 0.67) return "#dc2626";
   if (ratio >= 0.34) return "#f59e0b";
   return "#0ea5e9";
+}
+
+function colorForHotspot(densityRatio) {
+  const ratio = Math.max(0, Math.min(1, Number(densityRatio) || 0));
+  if (ratio >= 0.75) return "#dc2626";
+  if (ratio >= 0.45) return "#f97316";
+  if (ratio >= 0.2) return "#facc15";
+  return "#14b8a6";
+}
+
+function emptyFeatureCollection() {
+  return { type: "FeatureCollection", features: [] };
 }
 
 function formatNumber(value, digits = 0) {
@@ -743,7 +814,8 @@ function formatSigned(value, digits, suffix = "") {
 }
 
 function setText(id, value) {
-  document.getElementById(id).textContent = value;
+  const element = document.getElementById(id);
+  if (element) element.textContent = value;
 }
 
 function escapeHtml(value) {

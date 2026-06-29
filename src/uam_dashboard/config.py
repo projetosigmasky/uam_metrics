@@ -41,6 +41,7 @@ class DashboardConfig:
     tls_target_per_flight_hour: float = 9.4e-6
     tls_epsilon: float = 1e-15
     conflict_sample_seconds: int = 10
+    conflict_detection_horizon_seconds: float = 60.0
     track_sample_stride: int = 20
     trajectory_shape_points: int = 12
     trajectory_cluster_distance_m: float = 1200.0

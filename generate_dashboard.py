@@ -125,6 +125,7 @@ def average_dashboard(run_dashboards: list[dict[str, Any]]) -> dict[str, Any]:
             "lowc_horizontal_m": run_dashboards[0]["safety"]["lowc_horizontal_m"],
             "nmac_horizontal_m": run_dashboards[0]["safety"]["nmac_horizontal_m"],
             "sample_seconds": run_dashboards[0]["safety"]["sample_seconds"],
+            "conflict_detection_horizon_s": run_dashboards[0]["safety"]["conflict_detection_horizon_s"],
             "separation_samples": int(sum(d["safety"]["separation_samples"] for d in run_dashboards)),
             "lowc_per_100_operations": mean([d["safety"]["lowc_per_100_operations"] for d in run_dashboards]),
             "lowc_per_flight_hour": mean([d["safety"]["lowc_per_flight_hour"] for d in run_dashboards]),
@@ -146,6 +147,8 @@ def average_dashboard(run_dashboards: list[dict[str, Any]]) -> dict[str, Any]:
             "max_time_below_threshold_s": max(
                 d["safety"]["max_time_below_threshold_s"] for d in run_dashboards
             ),
+            "mean_time_to_conflict_s": mean([d["safety"]["mean_time_to_conflict_s"] for d in run_dashboards]),
+            "min_time_to_conflict_s": min(d["safety"]["min_time_to_conflict_s"] for d in run_dashboards),
             "mac_beta": run_dashboards[0]["safety"]["mac_beta"],
             "mac_probability_given_nmac": run_dashboards[0]["safety"]["mac_probability_given_nmac"],
             "expected_mac": mean([d["safety"]["expected_mac"] for d in run_dashboards]),
@@ -293,6 +296,7 @@ def _average_capacity(run_dashboards: list[dict[str, Any]]) -> dict[str, Any]:
                 [item["air_traffic_density_per_km2"] for item in density_values]
             ),
             "hotspot_density_per_km2": mean([item["hotspot_density_per_km2"] for item in density_values]),
+            "hotspots": first.get("density", {}).get("hotspots", {"type": "FeatureCollection", "features": []}),
         },
         "throughput": first["throughput"],
         "complexity": {
@@ -305,6 +309,7 @@ def _average_capacity(run_dashboards: list[dict[str, Any]]) -> dict[str, Any]:
                 [item["repeated_trajectory_group_count"] for item in complexity_values]
             ),
             "lowc_event_count": mean([item["lowc_event_count"] for item in complexity_values]),
+            "crossings": first.get("complexity", {}).get("crossings", {"type": "FeatureCollection", "features": []}),
         },
     }
 
@@ -435,6 +440,7 @@ def analyze_log(log_path: Path, config: DashboardConfig, charts_dir: Path, run_i
         horizontal_threshold_m=config.lowc_horizontal_m,
         nmac_horizontal_threshold_m=config.nmac_horizontal_m,
         sample_seconds=config.conflict_sample_seconds,
+        detection_horizon_seconds=config.conflict_detection_horizon_seconds,
         aircraft_count=int(df["id"].nunique()),
         total_flight_hours=efficiency["total_flight_hours"],
         total_distance_km=efficiency["total_distance_km"],
@@ -587,6 +593,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--tls-target-per-flight-hour", type=float, default=9.4e-6)
     parser.add_argument("--tls-epsilon", type=float, default=1e-15)
     parser.add_argument("--conflict-sample-seconds", type=int, default=10)
+    parser.add_argument("--conflict-detection-horizon-seconds", type=float, default=60.0)
     parser.add_argument("--trajectory-shape-points", type=int, default=12)
     parser.add_argument("--trajectory-cluster-distance-m", type=float, default=1200.0)
     parser.add_argument("--trajectory-endpoint-tolerance-m", type=float, default=2500.0)
@@ -670,6 +677,7 @@ def main() -> None:
         tls_target_per_flight_hour=args.tls_target_per_flight_hour,
         tls_epsilon=args.tls_epsilon,
         conflict_sample_seconds=args.conflict_sample_seconds,
+        conflict_detection_horizon_seconds=args.conflict_detection_horizon_seconds,
         trajectory_shape_points=args.trajectory_shape_points,
         trajectory_cluster_distance_m=args.trajectory_cluster_distance_m,
         trajectory_endpoint_tolerance_m=args.trajectory_endpoint_tolerance_m,

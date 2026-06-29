@@ -369,6 +369,7 @@ def detect_lowc_events(
     horizontal_threshold_m: float,
     nmac_horizontal_threshold_m: float,
     sample_seconds: int,
+    detection_horizon_seconds: float,
     aircraft_count: int,
     total_flight_hours: float,
     total_distance_km: float,
@@ -420,7 +421,7 @@ def detect_lowc_events(
                 }
             )
 
-    events = _collapse_lowc_samples(pair_samples, sample_seconds)
+    events = _collapse_lowc_samples(pair_samples, sample_seconds, detection_horizon_seconds)
     safety = _safety_summary(
         events,
         pair_sample_count=len(separation_samples),
@@ -430,6 +431,7 @@ def detect_lowc_events(
         horizontal_threshold_m=horizontal_threshold_m,
         nmac_horizontal_threshold_m=nmac_horizontal_threshold_m,
         sample_seconds=sample_seconds,
+        detection_horizon_seconds=detection_horizon_seconds,
         mac_beta=mac_beta,
         mac_probability_given_nmac=mac_probability_given_nmac,
         tls_target_per_flight_hour=tls_target_per_flight_hour,
@@ -438,7 +440,11 @@ def detect_lowc_events(
     return pd.DataFrame(events), separation_samples, safety
 
 
-def _collapse_lowc_samples(samples: list[dict[str, Any]], sample_seconds: int) -> list[dict[str, Any]]:
+def _collapse_lowc_samples(
+    samples: list[dict[str, Any]],
+    sample_seconds: int,
+    detection_horizon_seconds: float,
+) -> list[dict[str, Any]]:
     if not samples:
         return []
 
@@ -455,23 +461,30 @@ def _collapse_lowc_samples(samples: list[dict[str, Any]], sample_seconds: int) -
 
         for sample in pair_samples:
             if current and sample["simt"] - current[-1]["simt"] > max_gap_s:
-                events.append(_summarize_lowc_event(current, sample_seconds))
+                events.append(_summarize_lowc_event(current, sample_seconds, detection_horizon_seconds))
                 current = []
             current.append(sample)
 
         if current:
-            events.append(_summarize_lowc_event(current, sample_seconds))
+            events.append(_summarize_lowc_event(current, sample_seconds, detection_horizon_seconds))
 
     events.sort(key=lambda item: item["simt"])
     return events
 
 
-def _summarize_lowc_event(samples: list[dict[str, Any]], sample_seconds: int) -> dict[str, Any]:
+def _summarize_lowc_event(
+    samples: list[dict[str, Any]],
+    sample_seconds: int,
+    detection_horizon_seconds: float,
+) -> dict[str, Any]:
     most_severe = min(samples, key=lambda item: item["severity_ratio"])
+    start_simt = float(samples[0]["simt"])
     return {
         "simt": float(most_severe["simt"]),
-        "start_simt": float(samples[0]["simt"]),
+        "start_simt": start_simt,
         "end_simt": float(samples[-1]["simt"]),
+        "detection_simt": max(0.0, start_simt - float(detection_horizon_seconds)),
+        "time_to_conflict_s": float(detection_horizon_seconds),
         "duration_s": float(len(samples) * sample_seconds),
         "sample_count": int(len(samples)),
         "id_a": most_severe["id_a"],
@@ -494,6 +507,7 @@ def _safety_summary(
     horizontal_threshold_m: float,
     nmac_horizontal_threshold_m: float,
     sample_seconds: int,
+    detection_horizon_seconds: float,
     mac_beta: float,
     mac_probability_given_nmac: float,
     tls_target_per_flight_hour: float,
@@ -503,6 +517,7 @@ def _safety_summary(
     nmac_count = sum(1 for event in events if event["is_nmac"])
     severities = [event["severity_ratio"] for event in events]
     durations = [event["duration_s"] for event in events]
+    time_to_conflict_values = [event["time_to_conflict_s"] for event in events]
     expected_mac = float(nmac_count * mac_beta * mac_probability_given_nmac)
     expected_mac_rate_per_flight_hour = _safe_rate(expected_mac, total_flight_hours)
     tls_margin = float(tls_target_per_flight_hour / (expected_mac_rate_per_flight_hour + tls_epsilon))
@@ -513,6 +528,7 @@ def _safety_summary(
         "lowc_horizontal_m": float(horizontal_threshold_m),
         "nmac_horizontal_m": float(nmac_horizontal_threshold_m),
         "sample_seconds": int(sample_seconds),
+        "conflict_detection_horizon_s": float(detection_horizon_seconds),
         "separation_samples": int(pair_sample_count),
         "lowc_per_100_operations": _safe_rate(lowc_count, aircraft_count, 100.0),
         "lowc_per_flight_hour": _safe_rate(lowc_count, total_flight_hours),
@@ -528,6 +544,10 @@ def _safety_summary(
         "total_time_below_threshold_s": float(sum(durations)),
         "mean_time_below_threshold_s": float(np.mean(durations)) if durations else 0.0,
         "max_time_below_threshold_s": max(durations) if durations else 0.0,
+        "mean_time_to_conflict_s": float(np.mean(time_to_conflict_values))
+        if time_to_conflict_values
+        else 0.0,
+        "min_time_to_conflict_s": min(time_to_conflict_values) if time_to_conflict_values else 0.0,
         "mac_beta": float(mac_beta),
         "mac_probability_given_nmac": float(mac_probability_given_nmac),
         "expected_mac": expected_mac,

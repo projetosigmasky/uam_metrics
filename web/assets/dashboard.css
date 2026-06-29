@@ -260,21 +260,33 @@ main {
   padding: 18px clamp(18px, 4vw, 44px) 36px;
 }
 
-.source-panel {
+.topbar-controls {
   align-items: center;
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 14px;
   justify-content: flex-end;
 }
 
-#source-log {
+.topbar-controls label {
+  display: grid;
+  gap: 5px;
+}
+
+.topbar-controls label span {
   color: var(--muted);
-  font-size: 13px;
-  max-width: 420px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.topbar-controls select {
+  background: #ffffff;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  color: var(--ink);
+  font: inherit;
+  min-width: min(360px, 36vw);
+  padding: 9px 12px;
 }
 
 .metric-grid {
@@ -330,7 +342,7 @@ main {
   align-self: stretch;
   display: grid;
   gap: 8px;
-  grid-template-rows: min-content min-content 1fr;
+  grid-template-rows: min-content 1fr;
   padding: 18px;
 }
 
@@ -410,6 +422,49 @@ input[type="checkbox"] {
   font-size: 18px;
   font-weight: 760;
   margin: 0;
+}
+
+.detail-panel {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+}
+
+.detail-grid {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+}
+
+.detail-group {
+  background: #f8fafc;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+}
+
+.detail-group h3 {
+  font-size: 13px;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.detail-group .kpa-list {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.detail-safety {
+  border-top: 3px solid var(--red);
+}
+
+.detail-efficiency {
+  border-top: 3px solid var(--teal);
 }
 
 .map-stage {
@@ -605,6 +660,14 @@ input[type="checkbox"] {
   background: linear-gradient(90deg, #2dd4bf, #2563eb, #f59e0b, #dc2626);
 }
 
+.legend-atd {
+  background: linear-gradient(90deg, #14b8a6, #facc15, #f97316, #dc2626);
+}
+
+.legend-complexity {
+  background: #a855f7;
+}
+
 .legend-lowc {
   background: #ef4444;
 }
@@ -677,19 +740,21 @@ input[type="checkbox"] {
     flex-direction: column;
   }
 
-  .source-panel {
+  .topbar-controls {
     justify-content: flex-start;
     width: 100%;
   }
 
-  #source-log {
-    max-width: 100%;
+  .topbar-controls label,
+  .topbar-controls select {
     width: 100%;
   }
 
   .metric-grid,
   .charts,
-  .side-panel {
+  .side-panel,
+  .detail-grid,
+  .detail-group .kpa-list {
     grid-template-columns: 1fr;
   }
 
