@@ -1,6 +1,7 @@
 const state = {
   map: null,
   tracksLayer: null,
+  plannedLayer: null,
   heatLayer: null,
   conflictLayer: null,
   baseLayers: {},
@@ -9,47 +10,33 @@ const state = {
   lastConflicts: null,
   runs: [],
   comparison: null,
-  currentModel: null,
   activeRunIndex: 0,
+  activeDayKey: null,
+  trajectoryVolumeFilter: "all",
 };
-
-const colors = ["#1d4ed8", "#047857", "#be123c", "#6d28d9", "#b45309", "#0e7490", "#c2410c"];
-
-const metersPerNm = 1852;
-const feetToMeters = 0.3048;
 
 document.addEventListener("DOMContentLoaded", () => {
   initMap();
   bindLayerControls();
-  bindUpload();
   loadStaticDashboard();
 });
 
 async function loadStaticDashboard() {
   if (window.__UAM_DASHBOARD_DATA__) {
-    renderDashboard({
-      ...window.__UAM_DASHBOARD_DATA__,
-      uploaded: false,
-    });
+    renderDashboard(window.__UAM_DASHBOARD_DATA__);
     return;
   }
 
-  const [dashboard, tracks, conflicts, heatmap, timeline] = await Promise.all([
+  const [dashboard, tracks, plannedRoutes, conflicts, heatmap, comparison] = await Promise.all([
     fetchJson("assets/data/dashboard.json"),
     fetchJson("assets/data/tracks.geojson"),
+    fetchJson("assets/data/planned_routes.geojson"),
     fetchJson("assets/data/conflicts.geojson"),
     fetchJson("assets/data/heatmap_points.json"),
-    fetchJson("assets/data/timeline.json"),
+    fetchJson("assets/data/comparison.json"),
   ]);
 
-  renderDashboard({
-    dashboard,
-    tracks,
-    conflicts,
-    heatmap,
-    timeline,
-    uploaded: false,
-  });
+  renderDashboard({ dashboard, tracks, planned_routes: plannedRoutes, conflicts, heatmap, comparison });
 }
 
 async function fetchJson(path) {
@@ -84,14 +71,14 @@ function initMap() {
   const conflictPane = state.map.createPane("conflictPane");
   conflictPane.style.zIndex = 560;
 
-  const osm = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-    attribution: "&copy; OpenStreetMap",
-    maxZoom: 19,
+  const positron = L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", {
+    attribution: "&copy; OpenStreetMap &copy; CARTO",
+    maxZoom: 20,
     updateWhenIdle: true,
     keepBuffer: 4,
   }).addTo(state.map);
 
-  const positron = L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", {
+  const voyager = L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", {
     attribution: "&copy; OpenStreetMap &copy; CARTO",
     maxZoom: 20,
     updateWhenIdle: true,
@@ -99,37 +86,32 @@ function initMap() {
   });
 
   state.baseLayers = {
-    OpenStreetMap: osm,
     "Base clara": positron,
+    "Base detalhada": voyager,
   };
 }
 
 function bindLayerControls() {
   document.getElementById("layer-tracks").addEventListener("change", (event) => toggleLayer("tracksLayer", event));
+  document.getElementById("layer-planned").addEventListener("change", (event) => toggleLayer("plannedLayer", event));
   document.getElementById("layer-heat").addEventListener("change", (event) => toggleLayer("heatLayer", event));
   document.getElementById("layer-conflicts").addEventListener("change", (event) => toggleLayer("conflictLayer", event));
+  document.getElementById("trajectory-volume-filter").addEventListener("change", (event) => {
+    state.trajectoryVolumeFilter = event.target.value;
+    const run = state.runs[state.activeRunIndex] || state.runs[0];
+    if (run) renderMapLayers(run.tracks, run.planned_routes, run.conflicts, run.heatmap);
+  });
   document.getElementById("fit-map").addEventListener("click", () => {
     fitMapToOperationalArea(state.lastTracks, state.lastConflicts);
   });
   document.getElementById("run-select").addEventListener("change", (event) => {
     state.activeRunIndex = Number(event.target.value);
-    renderSelectedRun(false);
+    renderSelectedRun();
   });
-}
-
-function bindUpload() {
-  document.getElementById("log-upload").addEventListener("change", async (event) => {
-    const files = Array.from(event.target.files || []);
-    if (!files.length) return;
-
-    const runs = [];
-    for (const [index, file] of files.entries()) {
-      const text = await file.text();
-      const parsed = parseStateLog(text);
-      const model = buildClientModel(parsed, file.name);
-      runs.push({ id: `upload_${index + 1}`, name: file.name, ...model });
-    }
-    renderDashboard(buildMultiRunModel(runs, true));
+  document.getElementById("day-select").addEventListener("change", (event) => {
+    state.activeDayKey = event.target.value;
+    renderDayComparison();
+    populateRunSelect();
   });
 }
 
@@ -145,14 +127,13 @@ function toggleLayer(layerName, event) {
 
 function renderDashboard(model) {
   const normalized = normalizeModel(model);
-  state.currentModel = normalized;
   state.runs = normalized.runs;
   state.comparison = normalized.comparison;
   state.activeRunIndex = Math.min(state.activeRunIndex, state.runs.length - 1);
 
-  renderMetrics(normalized.dashboard);
   renderComparison(normalized);
-  renderSelectedRun(normalized.uploaded);
+  renderTraceability(normalized.metric_catalog || normalized.dashboard.metric_catalog || []);
+  renderSelectedRun();
 }
 
 function normalizeModel(model) {
@@ -165,49 +146,80 @@ function normalizeModel(model) {
     name: model.dashboard.source_log,
     dashboard: model.dashboard,
     tracks: model.tracks,
+    planned_routes: model.planned_routes,
     conflicts: model.conflicts,
     heatmap: model.heatmap,
-    timeline: model.timeline,
   };
-  return buildMultiRunModel([singleRun], model.uploaded);
+  return {
+    ...model,
+    runs: [singleRun],
+    comparison: model.comparison || { run_count: 1, rows: [] },
+  };
 }
 
-function renderSelectedRun(uploaded) {
+function renderSelectedRun() {
   const run = state.runs[state.activeRunIndex] || state.runs[0];
   if (!run) return;
-  renderCharts(run.dashboard, run.timeline, uploaded ?? state.currentModel?.uploaded);
-  renderMapLayers(run.tracks, run.conflicts, run.heatmap);
+  renderMetrics(run.dashboard);
+  renderCharts(run.dashboard);
+  renderCapacity(run.dashboard);
+  renderMapLayers(run.tracks, run.planned_routes, run.conflicts, run.heatmap);
 }
 
 function renderComparison(model) {
-  const select = document.getElementById("run-select");
-  select.innerHTML = model.runs
-    .map((run, index) => `<option value="${index}">${escapeHtml(run.name)}</option>`)
+  const days = model.comparison?.days || [];
+  state.activeDayKey = state.activeDayKey || days[0]?.day_key || null;
+  const daySelect = document.getElementById("day-select");
+  daySelect.innerHTML = days
+    .map((day) => `<option value="${escapeHtml(day.day_key)}">${escapeHtml(day.day_label)}</option>`)
     .join("");
-  select.value = String(state.activeRunIndex);
-
-  const runCount = model.runs.length;
+  daySelect.value = state.activeDayKey || "";
+  populateRunSelect();
   setText(
     "comparison-summary",
-    runCount > 1
-      ? `${formatNumber(runCount)} logs processados. Os cards superiores mostram a media das metricas; o mapa e os graficos mostram o cenario selecionado.`
-      : "Um log processado. Adicione mais STATELOGs para comparar cenarios e calcular medias."
+    `${formatNumber(model.runs.length)} simulacoes organizadas em ${formatNumber(days.length)} dias. A tabela compara as quatro variantes do dia selecionado; cards, mapa e graficos mostram a variante escolhida.`
   );
+  renderDayComparison();
+}
 
-  const rows = model.comparison?.rows || [];
+function populateRunSelect() {
+  const select = document.getElementById("run-select");
+  const day = state.comparison?.days?.find((item) => item.day_key === state.activeDayKey);
+  const rows = day?.rows || state.runs.map((run, index) => ({ run_index: index, variant_label: run.name }));
+  if (!rows.some((row) => row.run_index === state.activeRunIndex)) {
+    state.activeRunIndex = rows[0]?.run_index ?? 0;
+  }
+  select.innerHTML = rows
+    .map((row) => `<option value="${row.run_index}">${escapeHtml(row.variant_label)}</option>`)
+    .join("");
+  select.value = String(state.activeRunIndex);
+  renderSelectedRun();
+}
+
+function renderDayComparison() {
+  const day = state.comparison?.days?.find((item) => item.day_key === state.activeDayKey);
+  const rows = day?.rows || [];
   document.getElementById("comparison-table-body").innerHTML = rows
     .map(
       (row) => `
-        <tr class="${row.is_average ? "average-row" : ""}">
-          <td title="${escapeHtml(row.name)}">${escapeHtml(row.name)}</td>
-          <td>${formatNumber(row.aircraft, 1)}</td>
-          <td>${formatNumber(row.peak, 1)}</td>
-          <td>${formatNumber(row.duration_min, 1)} min</td>
+        <tr class="${row.mvp_enabled ? "mvp-row" : ""}">
+          <td title="${escapeHtml(row.name)}">${escapeHtml(row.variant_label)}</td>
+          <td>${formatOptionalDuration(row.ground_delay_s)}</td>
+          <td>${formatOptionalDuration(row.airborne_delay_s)}</td>
+          <td>${formatOptionalDuration(row.total_delay_s)}</td>
           <td>${formatNumber(row.flight_time_min, 1)} min</td>
+          <td>${formatSigned(row.flight_time_delta_vs_off_min, 1, " min")}</td>
           <td>${formatNumber(row.distance_nm, 1)} NM</td>
-          <td>${formatNumber(row.route_efficiency_pct, 1)}%</td>
-          <td>${formatNumber(row.low_altitude_pct, 1)}%</td>
+          <td>${formatSigned(row.distance_delta_vs_off_nm, 2, " NM")}</td>
+          <td>${formatOptionalPercent(row.trajectory_conformity_pct)}</td>
+          <td>${formatOptionalPercent(row.spatial_adherence_pct)}</td>
           <td>${formatNumber(row.lowc_events, 1)}</td>
+          <td>${formatNumber(row.lowc_per_flight_hour, 2)}</td>
+          <td>${formatNumber(row.expected_mac_per_100k_flight_hours, 3)}</td>
+          <td>${formatTLSMargin(row.tls_margin, row.tls_compliant)}</td>
+          <td>${formatOptionalRatio(row.risk_ratio_vs_reference)}</td>
+          <td>${formatNumber(row.nmac_events, 1)}</td>
+          <td>${formatNumber(row.min_severity_ratio, 2)}</td>
         </tr>`
     )
     .join("");
@@ -216,7 +228,6 @@ function renderComparison(model) {
 function renderMetrics(dashboard) {
   const summary = dashboard.summary;
   const efficiency = dashboard.efficiency;
-  const environment = dashboard.environment;
   const safety = dashboard.safety;
 
   setText("source-log", dashboard.source_log);
@@ -226,54 +237,140 @@ function renderMetrics(dashboard) {
   setText("metric-duration", `${formatNumber(summary.duration_min, 1)} min`);
   setText("metric-flight-time", formatNumber(efficiency.mean_flight_time_min, 1));
   setText("metric-distance", formatNumber(efficiency.mean_distance_nm, 1));
-  setText("metric-low-altitude", `${formatNumber(environment.low_altitude_share_pct, 1)}%`);
-  setText("metric-low-altitude-threshold", `< ${formatNumber(environment.low_altitude_threshold_ft, 0)} ft`);
   setText("metric-lowc", formatNumber(safety.lowc_events));
-  setText("metric-lowc-threshold", `${formatNumber(safety.lowc_horizontal_m, 0)} m x ${formatNumber(safety.lowc_vertical_m, 0)} m`);
-  setText("kpa-route-efficiency", `${formatNumber(efficiency.mean_route_efficiency_pct, 1)}%`);
-  setText("kpa-altitude", `${formatNumber(environment.median_altitude_m, 0)} m`);
+  setText("metric-lowc-threshold", `${formatNumber(safety.lowc_horizontal_m, 0)} m horizontal`);
+  setText("metric-nmac", formatNumber(safety.nmac_events));
+  setText("metric-nmac-threshold", `${formatNumber(safety.nmac_horizontal_m, 0)} m horizontal`);
+  setText("metric-lowc-rate", formatNumber(safety.lowc_per_flight_hour, 2));
+  setText("metric-mac-rate", formatNumber(safety.expected_mac_per_100k_flight_hours, 3));
+  setText("metric-tls-margin", formatTLSMargin(safety.tls_margin, safety.tls_compliant));
+  setText("metric-tls-status", safety.tls_compliant ? "atende ao TLS" : "viola o TLS");
+  setText("kpa-route-efficiency", `${formatNumber(efficiency.mean_horizontal_inefficiency_pct, 1)}%`);
+  setText(
+    "kpa-conformity",
+    efficiency.trajectory_conformity?.available
+      ? `${formatNumber(efficiency.trajectory_conformity.mean_trajectory_conformity_ratio * 100, 1)}%`
+      : "Sem SCN"
+  );
+  setText(
+    "kpa-spatial-adherence",
+    efficiency.trajectory_conformity?.available
+      ? `${formatNumber(efficiency.trajectory_conformity.spatial_adherence_pct, 1)}%`
+      : "Sem SCN"
+  );
+  setText(
+    "kpa-ground-delay",
+    efficiency.ground_delay?.available
+      ? `${formatNumber(efficiency.ground_delay.mean_ground_delay_s, 0)} s`
+      : "Sem pareamento"
+  );
+  setText(
+    "kpa-airborne-delay",
+    efficiency.airborne_delay?.available
+      ? `${formatNumber(efficiency.airborne_delay.mean_airborne_delay_s, 0)} s`
+      : "Sem referencia"
+  );
+  setText(
+    "kpa-total-delay",
+    efficiency.total_delay?.available
+      ? `${formatNumber(efficiency.total_delay.mean_total_delay_s, 0)} s`
+      : "Sem pareamento"
+  );
+  setText("kpa-severity", formatNumber(safety.min_severity_ratio, 2));
+  setText("kpa-mac-rate", formatNumber(safety.expected_mac_per_100k_flight_hours, 3));
+  setText("kpa-tls-margin", formatTLSMargin(safety.tls_margin, safety.tls_compliant));
+  setText("kpa-time-below", `${formatNumber(safety.total_time_below_threshold_s, 0)} s`);
   setText("kpa-safety-sample", `${formatNumber(safety.sample_seconds, 0)} s`);
 }
 
-function renderCharts(dashboard, timeline, uploaded) {
-  if (!uploaded) {
-    showImageChart("chart-active", "canvas-active", dashboard.charts.active_aircraft);
-    showImageChart("chart-separation", "canvas-separation", dashboard.charts.separation_histogram);
-    showImageChart("chart-altitude", "canvas-altitude", dashboard.charts.altitude_histogram);
-    showImageChart("chart-distance", "canvas-distance", dashboard.charts.distance_histogram);
-    return;
-  }
-
-  showCanvasChart("chart-active", "canvas-active", timeline.map((item) => item.aircraft), "#2563eb");
-  showCanvasChart("chart-separation", "canvas-separation", dashboard._client.separationSamples, "#dc2626");
-  showCanvasChart("chart-altitude", "canvas-altitude", dashboard._client.altitudes, "#0f766e");
-  showCanvasChart("chart-distance", "canvas-distance", dashboard._client.distancesNm, "#7c3aed");
+function renderCharts(dashboard) {
+  showImageChart("chart-active", dashboard.charts.active_aircraft);
+  showImageChart("chart-separation", dashboard.charts.separation_histogram);
+  showImageChart("chart-altitude", dashboard.charts.altitude_histogram);
+  showImageChart("chart-distance", dashboard.charts.distance_histogram);
+  showImageChart("chart-severity", dashboard.charts.severity_histogram);
+  showImageChart("chart-conformity", dashboard.charts.trajectory_conformity);
 }
 
-function showImageChart(imageId, canvasId, src) {
+function renderCapacity(dashboard) {
+  const capacity = dashboard.capacity || {};
+  const density = capacity.density || {};
+  const complexity = capacity.complexity || {};
+  setText(
+    "capacity-atd",
+    density.available ? formatNumber(density.air_traffic_density_per_km2, 3) : "-"
+  );
+  setText(
+    "capacity-hotspot",
+    density.available ? formatNumber(density.hotspot_density_per_km2, 3) : "-"
+  );
+  setText("capacity-area", density.available ? formatNumber(density.corridor_area_km2, 2) : "-");
+  setText(
+    "capacity-crossings",
+    complexity.available ? formatNumber(complexity.planned_route_crossings, 0) : "-"
+  );
+  setText(
+    "capacity-complexity",
+    complexity.available
+      ? `${formatNumber(complexity.planned_route_count, 0)} REHs planejadas, ` +
+          `${formatNumber(complexity.planned_waypoint_count, 0)} waypoints, ` +
+          `${formatNumber(complexity.trajectory_group_count, 0)} grupos de trajetoria, ` +
+          `${formatNumber(complexity.repeated_trajectory_group_count, 0)} grupos recorrentes e ` +
+          `${formatNumber(complexity.lowc_event_count, 0)} eventos LoWC.`
+      : "Sem dados de capacidade."
+  );
+  renderCapacityTable(capacity.throughput || {});
+}
+
+function renderCapacityTable(throughput) {
+  const rows = [];
+  for (const [type, label] of [
+    ["od_pairs", "Par OD"],
+    ["trajectory_groups", "Grupo trajetoria"],
+    ["planned_reh", "REH planejada"],
+  ]) {
+    const group = throughput[type];
+    if (!group?.available) continue;
+    for (const resource of group.top_resources || []) {
+      rows.push({
+        type: label,
+        capacity: group.capacity_reference_per_hour,
+        ...resource,
+      });
+    }
+  }
+  document.getElementById("capacity-table-body").innerHTML = rows.length
+    ? rows
+        .map(
+          (row) => `
+        <tr>
+          <td>${escapeHtml(row.type)}</td>
+          <td title="${escapeHtml(row.resource_id)}">${escapeHtml(row.label)}</td>
+          <td>${formatNumber(row.operations, 0)}</td>
+          <td>${formatNumber(row.peak_throughput_per_hour, 1)} ops/h</td>
+          <td>${formatNumber(row.capacity, 1)} ops/h</td>
+          <td>${formatPercentRatio(row.utilization_peak)}</td>
+        </tr>`
+        )
+        .join("")
+    : `<tr><td colspan="6">Sem recursos de capacidade calculados.</td></tr>`;
+}
+
+function showImageChart(imageId, src) {
   const image = document.getElementById(imageId);
-  const canvas = document.getElementById(canvasId);
-  image.hidden = false;
-  canvas.hidden = true;
   image.src = src;
 }
 
-function showCanvasChart(imageId, canvasId, values, color) {
-  const image = document.getElementById(imageId);
-  const canvas = document.getElementById(canvasId);
-  image.hidden = true;
-  canvas.hidden = false;
-  drawHistogram(canvas, values, color);
-}
-
-function renderMapLayers(tracks, conflicts, heatmap) {
+function renderMapLayers(tracks, plannedRoutes, conflicts, heatmap) {
   state.lastTracks = tracks;
   state.lastConflicts = conflicts;
+  const visibleTracks = filterTracksByVolume(tracks, state.trajectoryVolumeFilter);
   clearLayer("tracksLayer");
+  clearLayer("plannedLayer");
   clearLayer("heatLayer");
   clearLayer("conflictLayer");
 
-  const routeHalo = L.geoJSON(tracks, {
+  const routeHalo = L.geoJSON(visibleTracks, {
     interactive: false,
     pane: "routePane",
     style: () => ({
@@ -285,30 +382,63 @@ function renderMapLayers(tracks, conflicts, heatmap) {
     }),
   });
 
-  const routeLines = L.geoJSON(tracks, {
+  const routeLines = L.geoJSON(visibleTracks, {
     pane: "routePane",
     style: (feature) => ({
-      color: colorForId(feature.properties.id),
+      color: colorForVolume(feature.properties.volume_ratio),
       opacity: 1,
-      weight: 4,
+      weight: 3 + feature.properties.volume_ratio * 3,
       lineCap: "round",
       lineJoin: "round",
     }),
     onEachFeature: (feature, layer) => {
       const p = feature.properties;
-      layer.bindTooltip(`${escapeHtml(p.id)} - ${formatNumber(p.distance_nm, 1)} NM`, {
+      layer.bindTooltip(`${escapeHtml(p.trajectory_group)} - ${formatNumber(p.frequency)} ocorrencias`, {
         sticky: true,
       });
       layer.bindPopup(
-        `<strong>Aeronave ${escapeHtml(p.id)}</strong><br>` +
+        `<strong>Trajetoria ${escapeHtml(p.trajectory_group)}</strong><br>` +
+          `Aeronave ${escapeHtml(p.id)} / ${escapeHtml(p.flight_instance)}<br>` +
+          `${formatNumber(p.frequency)} instancias semelhantes<br>` +
           `${formatNumber(p.distance_nm, 1)} NM voadas<br>` +
           `${formatNumber(p.duration_min, 1)} min de voo<br>` +
-          `Altitude ${formatNumber(p.min_alt_m, 0)}-${formatNumber(p.max_alt_m, 0)} m`
+          `Altitude ${formatNumber(p.min_alt_m, 0)}-${formatNumber(p.max_alt_m, 0)} m` +
+          (Number.isFinite(Number(p.trajectory_conformity_ratio))
+            ? `<br>Conformidade por distancia ${formatNumber(p.trajectory_conformity_ratio * 100, 1)}%<br>` +
+              `Aderencia espacial ${formatNumber(p.spatial_adherence_pct, 1)}%<br>` +
+              `Desvio medio da REH ${formatNumber(p.mean_deviation_m, 1)} m`
+            : "")
       );
     },
   });
 
   state.tracksLayer = L.layerGroup([routeHalo, routeLines]);
+
+  state.plannedLayer = L.geoJSON(plannedRoutes, {
+    pane: "routePane",
+    style: {
+      color: "#111827",
+      opacity: 0.82,
+      weight: 2.5,
+      dashArray: "8 7",
+      lineCap: "round",
+    },
+    onEachFeature: (feature, layer) => {
+      const p = feature.properties;
+      const conformity = Number.isFinite(Number(p.spatial_adherence_pct))
+        ? `${formatNumber(p.spatial_adherence_pct, 1)}% das amostras dentro de ${formatNumber(plannedRoutes.properties.conformity_tolerance_m, 0)} m`
+        : "Sem trajetoria executada associada";
+      layer.bindTooltip(`REH planejada ${escapeHtml(p.flight_instance)}`, { sticky: true });
+      layer.bindPopup(
+        `<strong>REH planejada</strong><br>` +
+          `${escapeHtml(p.flight_instance)} / ${formatNumber(p.waypoint_count)} waypoints<br>` +
+          `${conformity}<br>` +
+          (Number.isFinite(Number(p.mean_deviation_m))
+            ? `Desvio medio ${formatNumber(p.mean_deviation_m, 1)} m<br>P95 ${formatNumber(p.p95_deviation_m, 1)} m`
+            : "")
+      );
+    },
+  });
 
   const conflictMarkers = L.geoJSON(conflicts, {
     pane: "conflictPane",
@@ -326,10 +456,12 @@ function renderMapLayers(tracks, conflicts, heatmap) {
         sticky: true,
       });
       layer.bindPopup(
-        `<strong>Evento LoWC</strong><br>` +
+        `<strong>${p.is_nmac ? "Evento NMAC" : "Evento LoWC"}</strong><br>` +
           `${escapeHtml(p.id_a)} / ${escapeHtml(p.id_b)}<br>` +
           `${formatNumber(p.dist_h_m, 1)} m horizontal<br>` +
-          `${formatNumber(p.dist_v_m, 1)} m vertical<br>` +
+          `Severidade ${formatNumber(p.severity_ratio, 2)}<br>` +
+          `Razao horizontal ${formatNumber(p.horizontal_ratio, 3)}<br>` +
+          `Duracao ${formatNumber(p.duration_s, 0)} s<br>` +
           `t = ${formatNumber(p.simt, 0)} s`
       );
     },
@@ -350,16 +482,16 @@ function renderMapLayers(tracks, conflicts, heatmap) {
   });
   state.conflictLayer = L.layerGroup([conflictPulse, conflictMarkers]);
 
-  const airportMarkers = buildEndpointLayer(tracks);
+  const airportMarkers = buildEndpointLayer(visibleTracks);
   state.tracksLayer.addLayer(airportMarkers);
 
   if (L.heatLayer) {
     state.heatLayer = L.heatLayer(heatmap, {
       pane: "heatPane",
-      radius: 18,
-      blur: 22,
-      minOpacity: 0.28,
-      maxZoom: 12,
+      radius: 9,
+      blur: 10,
+      minOpacity: 0.08,
+      maxZoom: 14,
       gradient: {
         0.15: "#2dd4bf",
         0.45: "#2563eb",
@@ -373,7 +505,7 @@ function renderMapLayers(tracks, conflicts, heatmap) {
         L.circleMarker([point[0], point[1]], {
           radius: 3,
           stroke: false,
-          fillOpacity: 0.32,
+          fillOpacity: 0.16,
           fillColor: "#2563eb",
         })
       )
@@ -382,10 +514,11 @@ function renderMapLayers(tracks, conflicts, heatmap) {
 
   applyCheckedLayer("layer-heat", state.heatLayer);
   applyCheckedLayer("layer-tracks", state.tracksLayer);
+  applyCheckedLayer("layer-planned", state.plannedLayer);
   applyCheckedLayer("layer-conflicts", state.conflictLayer);
 
-  fitMapToOperationalArea(tracks, conflicts);
-  updateMapInfo(tracks, conflicts, heatmap);
+  fitMapToOperationalArea(visibleTracks, conflicts);
+  updateMapInfo(tracks, visibleTracks, plannedRoutes, conflicts, heatmap);
 }
 
 function buildEndpointLayer(tracks) {
@@ -458,15 +591,28 @@ function fitMapToOperationalArea(tracks, conflicts) {
   });
 }
 
-function updateMapInfo(tracks, conflicts, heatmap) {
-  const aircraft = tracks.features?.length || 0;
+function updateMapInfo(tracks, visibleTracks, plannedRoutes, conflicts, heatmap) {
+  const trajectories = tracks.features?.length || 0;
+  const visible = visibleTracks.features?.length || 0;
+  const groups = tracks.properties?.trajectory_group_count || new Set(
+    (tracks.features || []).map((feature) => feature.properties.trajectory_group)
+  ).size;
   const lowc = conflicts.features?.length || 0;
+  const planned = plannedRoutes?.features?.length || 0;
   const density = heatmap.length || 0;
   setText("map-info-title", "Mapa operacional");
   setText(
     "map-info-text",
-    `${formatNumber(aircraft)} rotas amostradas, ${formatNumber(density)} pontos de densidade e ${formatNumber(lowc)} eventos LoWC. Clique nas linhas ou pontos para detalhes.`
+    `${formatNumber(visible)} de ${formatNumber(trajectories)} trajetorias executadas visiveis, ${formatNumber(planned)} trajetorias REH planejadas; ${formatNumber(density)} pontos de densidade e ${formatNumber(lowc)} eventos LoWC.`
   );
+}
+
+function filterTracksByVolume(tracks, filter) {
+  if (!tracks || filter === "all") return tracks;
+  return {
+    ...tracks,
+    features: (tracks.features || []).filter((feature) => feature.properties.volume_class === filter),
+  };
 }
 
 function clearLayer(layerName) {
@@ -483,359 +629,70 @@ function applyCheckedLayer(controlId, layer) {
   }
 }
 
-function parseStateLog(text) {
-  return text
-    .split(/\r?\n/)
-    .filter((line) => line && !line.startsWith("#"))
-    .map((line) => line.split(",").map((value) => value.trim()))
-    .filter((parts) => parts.length >= 9)
-    .map((parts) => ({
-      simt: Number(parts[0]),
-      id: parts[1],
-      lat: Number(parts[2]),
-      lon: Number(parts[3]),
-      distflown: Number(parts[4]),
-      alt: Number(parts[5]),
-      cas: Number(parts[6]),
-      tas: Number(parts[7]),
-      gs: Number(parts[8]),
-    }))
-    .filter((row) => Number.isFinite(row.simt) && row.id && Number.isFinite(row.lat) && Number.isFinite(row.lon));
+function renderTraceability(catalog) {
+  const body = document.getElementById("traceability-table-body");
+  if (!body) return;
+  const groups = groupTraceability(catalog || []);
+  body.innerHTML = groups
+    .map(
+      (group) => `
+        <tr class="traceability-group-row">
+          <td colspan="5">${escapeHtml(group.label)}</td>
+        </tr>
+        ${group.items
+          .map(
+            (metric) => `
+        <tr>
+          <td>${escapeHtml(metric.name)}</td>
+          <td>${escapeHtml(metric.formula)}</td>
+          <td>${escapeHtml(metric.pdf_reference)}</td>
+          <td>${escapeHtml(metric.code_reference)}</td>
+          <td>${escapeHtml(metric.status)}</td>
+        </tr>`
+          )
+          .join("")}`
+    )
+    .join("");
 }
 
-function buildClientModel(rows, fileName) {
-  rows.sort((a, b) => a.simt - b.simt || a.id.localeCompare(b.id));
-  const byId = groupBy(rows, (row) => row.id);
-  const byTime = groupBy(rows, (row) => String(row.simt));
-  const activeCounts = [...byTime.entries()].map(([simt, group]) => ({
-    simt: Number(simt),
-    hour: Number(simt) / 3600,
-    aircraft: new Set(group.map((row) => row.id)).size,
-  }));
-
-  const durations = [];
-  const distancesNm = [];
-  const routeEfficiencies = [];
-  const features = [];
-  let minLat = Infinity;
-  let maxLat = -Infinity;
-  let minLon = Infinity;
-  let maxLon = -Infinity;
-
-  for (const [id, group] of byId.entries()) {
-    group.sort((a, b) => a.simt - b.simt);
-    const first = group[0];
-    const last = group[group.length - 1];
-    const distanceM = Math.max(...group.map((row) => row.distflown));
-    const distanceNm = distanceM / metersPerNm;
-    distancesNm.push(distanceNm);
-    durations.push((last.simt - first.simt) / 60);
-    if (distanceM > 0) {
-      routeEfficiencies.push((haversineM(first.lat, first.lon, last.lat, last.lon) / distanceM) * 100);
-    }
-
-    const sampled = sampleRows(group, 20);
-    features.push({
-      type: "Feature",
-      properties: {
-        id,
-        samples: group.length,
-        distance_nm: distanceNm,
-        duration_min: (last.simt - first.simt) / 60,
-        min_alt_m: Math.min(...group.map((row) => row.alt)),
-        max_alt_m: Math.max(...group.map((row) => row.alt)),
-      },
-      geometry: {
-        type: "LineString",
-        coordinates: sampled.map((row) => [row.lon, row.lat, row.alt]),
-      },
-    });
-  }
-
-  for (const row of rows) {
-    minLat = Math.min(minLat, row.lat);
-    maxLat = Math.max(maxLat, row.lat);
-    minLon = Math.min(minLon, row.lon);
-    maxLon = Math.max(maxLon, row.lon);
-  }
-
-  const lowAltitudeFt = 1500;
-  const lowAltitudeM = lowAltitudeFt * feetToMeters;
-  const lowc = detectClientLowc(byTime, 500, 30, 10);
-
-  const dashboard = {
-    source_log: `${fileName} (preview local)`,
-    summary: {
-      records: rows.length,
-      aircraft_count: byId.size,
-      sim_start_s: Math.min(...rows.map((row) => row.simt)),
-      sim_end_s: Math.max(...rows.map((row) => row.simt)),
-      duration_min: (Math.max(...rows.map((row) => row.simt)) - Math.min(...rows.map((row) => row.simt))) / 60,
-      mean_simultaneous_aircraft: average(activeCounts.map((row) => row.aircraft)),
-      peak_simultaneous_aircraft: Math.max(...activeCounts.map((row) => row.aircraft)),
-      bounds: { min_lat: minLat, max_lat: maxLat, min_lon: minLon, max_lon: maxLon },
-    },
-    efficiency: {
-      mean_flight_time_min: average(durations),
-      median_flight_time_min: median(durations),
-      mean_distance_nm: average(distancesNm),
-      median_distance_nm: median(distancesNm),
-      mean_route_efficiency_pct: average(routeEfficiencies),
-    },
-    environment: {
-      low_altitude_threshold_ft: lowAltitudeFt,
-      low_altitude_threshold_m: lowAltitudeM,
-      low_altitude_share_pct: (rows.filter((row) => row.alt < lowAltitudeM).length / rows.length) * 100,
-      mean_altitude_m: average(rows.map((row) => row.alt)),
-      median_altitude_m: median(rows.map((row) => row.alt)),
-    },
-    safety: {
-      lowc_events: lowc.events.length,
-      lowc_horizontal_m: 500,
-      lowc_vertical_m: 30,
-      sample_seconds: 10,
-      separation_samples: lowc.separationSamples.length,
-    },
-    _client: {
-      altitudes: rows.map((row) => row.alt),
-      distancesNm,
-      separationSamples: lowc.separationSamples,
-    },
+function groupTraceability(catalog) {
+  const order = ["Seguranca", "Eficiencia", "Capacidade", "Trajetorias e mapa", "Indisponiveis"];
+  const labels = {
+    Seguranca: "Metricas de seguranca",
+    Eficiencia: "Metricas de eficiencia",
+    Capacidade: "Metricas de capacidade",
+    "Trajetorias e mapa": "Trajetorias, mapa e diagnosticos espaciais",
+    Indisponiveis: "Metricas ainda indisponiveis",
   };
-
-  return {
-    dashboard,
-    timeline: activeCounts.sort((a, b) => a.simt - b.simt),
-    tracks: { type: "FeatureCollection", features },
-    conflicts: {
-      type: "FeatureCollection",
-      features: lowc.events.map((event) => ({
-        type: "Feature",
-        properties: event,
-        geometry: { type: "Point", coordinates: [event.lon, event.lat] },
-      })),
-    },
-    heatmap: sampleRows(rows, 10).map((row) => [row.lat, row.lon, 0.65]),
-  };
-}
-
-function buildMultiRunModel(runs, uploaded) {
-  const dashboards = runs.map((run) => run.dashboard);
-  const dashboard = dashboards.length > 1 ? averageDashboard(dashboards) : dashboards[0];
-  const comparison = buildComparison(runs, dashboard);
-  return {
-    dashboard,
-    tracks: runs[0].tracks,
-    conflicts: runs[0].conflicts,
-    heatmap: runs[0].heatmap,
-    timeline: runs[0].timeline,
-    runs,
-    comparison,
-    uploaded,
-  };
-}
-
-function averageDashboard(dashboards) {
-  if (dashboards.length === 1) return dashboards[0];
-
-  return {
-    source_log: `Media de ${dashboards.length} STATELOGs`,
-    summary: {
-      records: dashboards.reduce((sum, item) => sum + item.summary.records, 0),
-      aircraft_count: average(dashboards.map((item) => item.summary.aircraft_count)),
-      sim_start_s: average(dashboards.map((item) => item.summary.sim_start_s)),
-      sim_end_s: average(dashboards.map((item) => item.summary.sim_end_s)),
-      duration_min: average(dashboards.map((item) => item.summary.duration_min)),
-      mean_simultaneous_aircraft: average(dashboards.map((item) => item.summary.mean_simultaneous_aircraft)),
-      peak_simultaneous_aircraft: average(dashboards.map((item) => item.summary.peak_simultaneous_aircraft)),
-      bounds: {
-        min_lat: Math.min(...dashboards.map((item) => item.summary.bounds.min_lat)),
-        max_lat: Math.max(...dashboards.map((item) => item.summary.bounds.max_lat)),
-        min_lon: Math.min(...dashboards.map((item) => item.summary.bounds.min_lon)),
-        max_lon: Math.max(...dashboards.map((item) => item.summary.bounds.max_lon)),
-      },
-    },
-    efficiency: {
-      mean_flight_time_min: average(dashboards.map((item) => item.efficiency.mean_flight_time_min)),
-      median_flight_time_min: average(dashboards.map((item) => item.efficiency.median_flight_time_min)),
-      mean_distance_nm: average(dashboards.map((item) => item.efficiency.mean_distance_nm)),
-      median_distance_nm: average(dashboards.map((item) => item.efficiency.median_distance_nm)),
-      mean_route_efficiency_pct: average(dashboards.map((item) => item.efficiency.mean_route_efficiency_pct)),
-    },
-    environment: {
-      low_altitude_threshold_ft: dashboards[0].environment.low_altitude_threshold_ft,
-      low_altitude_threshold_m: dashboards[0].environment.low_altitude_threshold_m,
-      low_altitude_share_pct: average(dashboards.map((item) => item.environment.low_altitude_share_pct)),
-      mean_altitude_m: average(dashboards.map((item) => item.environment.mean_altitude_m)),
-      median_altitude_m: average(dashboards.map((item) => item.environment.median_altitude_m)),
-    },
-    safety: {
-      lowc_events: average(dashboards.map((item) => item.safety.lowc_events)),
-      lowc_horizontal_m: dashboards[0].safety.lowc_horizontal_m,
-      lowc_vertical_m: dashboards[0].safety.lowc_vertical_m,
-      sample_seconds: dashboards[0].safety.sample_seconds,
-      separation_samples: dashboards.reduce((sum, item) => sum + item.safety.separation_samples, 0),
-    },
-    charts: dashboards[0].charts || {},
-  };
-}
-
-function buildComparison(runs, dashboard) {
-  const rows = runs.map((run) => comparisonRow(run.name, run.dashboard, false));
-  rows.push(comparisonRow("Media", dashboard, true));
-  return { run_count: runs.length, rows };
-}
-
-function comparisonRow(name, dashboard, isAverage) {
-  return {
-    name,
-    records: dashboard.summary.records,
-    aircraft: dashboard.summary.aircraft_count,
-    peak: dashboard.summary.peak_simultaneous_aircraft,
-    duration_min: dashboard.summary.duration_min,
-    flight_time_min: dashboard.efficiency.mean_flight_time_min,
-    distance_nm: dashboard.efficiency.mean_distance_nm,
-    route_efficiency_pct: dashboard.efficiency.mean_route_efficiency_pct,
-    low_altitude_pct: dashboard.environment.low_altitude_share_pct,
-    lowc_events: dashboard.safety.lowc_events,
-    is_average: isAverage,
-  };
-}
-
-function detectClientLowc(byTime, horizontalM, verticalM, sampleSeconds) {
-  const events = [];
-  const separationSamples = [];
-  for (const [simtText, group] of byTime.entries()) {
-    const simt = Number(simtText);
-    if (simt % sampleSeconds !== 0 || group.length < 2) continue;
-
-    for (let i = 0; i < group.length; i += 1) {
-      for (let j = i + 1; j < group.length; j += 1) {
-        const a = group[i];
-        const b = group[j];
-        const distV = Math.abs(a.alt - b.alt);
-        if (distV >= 150) continue;
-        const distH = haversineM(a.lat, a.lon, b.lat, b.lon);
-        separationSamples.push(distH);
-        if (distH < horizontalM && distV < verticalM) {
-          events.push({
-            simt,
-            id_a: a.id,
-            id_b: b.id,
-            lat: (a.lat + b.lat) / 2,
-            lon: (a.lon + b.lon) / 2,
-            dist_h_m: distH,
-            dist_v_m: distV,
-          });
-        }
-      }
-    }
+  const groups = Object.fromEntries(order.map((key) => [key, []]));
+  for (const metric of catalog) {
+    groups[inferMetricCategory(metric)].push(metric);
   }
-  return { events, separationSamples };
+  return order
+    .filter((key) => groups[key].length)
+    .map((key) => ({ label: labels[key], items: groups[key] }));
 }
 
-function drawHistogram(canvas, values, color) {
-  const dpr = window.devicePixelRatio || 1;
-  const width = canvas.clientWidth;
-  const height = Math.max(220, Math.round(width / 2.5));
-  canvas.width = width * dpr;
-  canvas.height = height * dpr;
-  const ctx = canvas.getContext("2d");
-  ctx.scale(dpr, dpr);
-  ctx.clearRect(0, 0, width, height);
-  ctx.fillStyle = "#ffffff";
-  ctx.fillRect(0, 0, width, height);
-
-  const clean = values.filter(Number.isFinite);
-  if (!clean.length) {
-    ctx.fillStyle = "#667085";
-    ctx.font = "14px system-ui";
-    ctx.fillText("Sem dados", 18, 34);
-    return;
+function inferMetricCategory(metric) {
+  const id = metric.id || "";
+  if (metric.status?.startsWith("unavailable")) return "Indisponiveis";
+  if (id.includes("lowc") || id.includes("nmac") || id.includes("severity") || id.includes("mac") || id.includes("risk") || id.includes("tls")) {
+    return "Seguranca";
   }
-
-  const bins = Math.min(48, Math.max(12, Math.round(Math.sqrt(clean.length))));
-  const min = Math.min(...clean);
-  const max = Math.max(...clean);
-  const span = max - min || 1;
-  const counts = new Array(bins).fill(0);
-  for (const value of clean) {
-    const index = Math.min(bins - 1, Math.floor(((value - min) / span) * bins));
-    counts[index] += 1;
+  if (id.includes("density") || id.includes("complexity") || id.includes("throughput") || id.includes("utilization")) {
+    return "Capacidade";
   }
-
-  const pad = { left: 42, right: 14, top: 18, bottom: 34 };
-  const plotWidth = width - pad.left - pad.right;
-  const plotHeight = height - pad.top - pad.bottom;
-  const maxCount = Math.max(...counts);
-
-  ctx.strokeStyle = "#d8e0ea";
-  ctx.lineWidth = 1;
-  ctx.beginPath();
-  ctx.moveTo(pad.left, pad.top);
-  ctx.lineTo(pad.left, pad.top + plotHeight);
-  ctx.lineTo(pad.left + plotWidth, pad.top + plotHeight);
-  ctx.stroke();
-
-  ctx.fillStyle = color;
-  counts.forEach((count, index) => {
-    const barWidth = plotWidth / bins - 2;
-    const barHeight = (count / maxCount) * plotHeight;
-    const x = pad.left + index * (plotWidth / bins) + 1;
-    const y = pad.top + plotHeight - barHeight;
-    ctx.fillRect(x, y, Math.max(1, barWidth), barHeight);
-  });
-
-  ctx.fillStyle = "#667085";
-  ctx.font = "12px system-ui";
-  ctx.fillText(formatNumber(min, 1), pad.left, height - 10);
-  ctx.fillText(formatNumber(max, 1), width - pad.right - 52, height - 10);
-}
-
-function sampleRows(rows, stride) {
-  const sampled = rows.filter((_row, index) => index % stride === 0);
-  if (sampled.length < 2 && rows.length) return rows;
-  return sampled;
-}
-
-function groupBy(rows, getKey) {
-  const map = new Map();
-  for (const row of rows) {
-    const key = getKey(row);
-    if (!map.has(key)) map.set(key, []);
-    map.get(key).push(row);
+  if (id.includes("time") || id.includes("distance") || id.includes("efficiency") || id.includes("delay") || id.includes("conformity")) {
+    return "Eficiencia";
   }
-  return map;
+  return "Trajetorias e mapa";
 }
 
-function colorForId(id) {
-  let hash = 0;
-  for (let i = 0; i < id.length; i += 1) {
-    hash = (hash * 31 + id.charCodeAt(i)) >>> 0;
-  }
-  return colors[hash % colors.length];
-}
-
-function haversineM(lat1, lon1, lat2, lon2) {
-  const r = 6371000;
-  const p1 = (lat1 * Math.PI) / 180;
-  const p2 = (lat2 * Math.PI) / 180;
-  const dp = ((lat2 - lat1) * Math.PI) / 180;
-  const dl = ((lon2 - lon1) * Math.PI) / 180;
-  const a = Math.sin(dp / 2) ** 2 + Math.cos(p1) * Math.cos(p2) * Math.sin(dl / 2) ** 2;
-  return 2 * r * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-}
-
-function average(values) {
-  const clean = values.filter(Number.isFinite);
-  return clean.length ? clean.reduce((sum, value) => sum + value, 0) / clean.length : 0;
-}
-
-function median(values) {
-  const clean = values.filter(Number.isFinite).sort((a, b) => a - b);
-  if (!clean.length) return 0;
-  const middle = Math.floor(clean.length / 2);
-  return clean.length % 2 ? clean[middle] : (clean[middle - 1] + clean[middle]) / 2;
+function colorForVolume(volumeRatio) {
+  const ratio = Math.max(0, Math.min(1, Number(volumeRatio) || 0));
+  if (ratio >= 0.67) return "#dc2626";
+  if (ratio >= 0.34) return "#f59e0b";
+  return "#0ea5e9";
 }
 
 function formatNumber(value, digits = 0) {
@@ -844,6 +701,45 @@ function formatNumber(value, digits = 0) {
     maximumFractionDigits: digits,
     minimumFractionDigits: digits,
   });
+}
+
+function formatOptionalPercent(value) {
+  return value !== null && value !== undefined && Number.isFinite(Number(value))
+    ? `${formatNumber(value, 1)}%`
+    : "-";
+}
+
+function formatOptionalDuration(value) {
+  return value !== null && value !== undefined && Number.isFinite(Number(value))
+    ? `${formatNumber(value, 0)} s`
+    : "-";
+}
+
+function formatOptionalRatio(value) {
+  return value !== null && value !== undefined && Number.isFinite(Number(value))
+    ? formatNumber(value, 2)
+    : "-";
+}
+
+function formatPercentRatio(value) {
+  return value !== null && value !== undefined && Number.isFinite(Number(value))
+    ? `${formatNumber(Number(value) * 100, 1)}%`
+    : "-";
+}
+
+function formatTLSMargin(value, compliant) {
+  if (value === null || value === undefined || !Number.isFinite(Number(value))) return "-";
+  const number = Number(value);
+  if (number > 999999) return compliant ? ">999999" : formatNumber(number, 1);
+  if (number >= 1000) return formatNumber(number, 0);
+  if (number >= 10) return formatNumber(number, 1);
+  return formatNumber(number, 2);
+}
+
+function formatSigned(value, digits, suffix = "") {
+  if (value === null || value === undefined || !Number.isFinite(Number(value))) return "-";
+  const number = Number(value);
+  return `${number > 0 ? "+" : ""}${formatNumber(number, digits)}${suffix}`;
 }
 
 function setText(id, value) {

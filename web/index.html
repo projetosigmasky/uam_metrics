@@ -10,7 +10,7 @@
       integrity="sha256-p4NxAoJBhIINfQd+g9FQXHyzyTAFi+lyLwN2Bja9fM="
       crossorigin=""
     />
-    <link rel="stylesheet" href="assets/dashboard.css?v=0.2.0" />
+    <link rel="stylesheet" href="assets/dashboard.css?v=0.4.0" />
   </head>
   <body>
     <header class="topbar">
@@ -20,8 +20,6 @@
       </div>
       <div class="source-panel">
         <span id="source-log">STATELOG</span>
-        <label class="upload-button" for="log-upload">Carregar STATELOGs</label>
-        <input id="log-upload" type="file" accept=".log,.csv,.txt" multiple />
       </div>
     </header>
 
@@ -47,15 +45,30 @@
           <strong id="metric-distance">-</strong>
           <small>NM por aeronave</small>
         </article>
-        <article class="metric">
-          <span>Baixa altitude</span>
-          <strong id="metric-low-altitude">-</strong>
-          <small id="metric-low-altitude-threshold">-</small>
-        </article>
         <article class="metric danger">
           <span>Eventos LoWC</span>
           <strong id="metric-lowc">-</strong>
           <small id="metric-lowc-threshold">-</small>
+        </article>
+        <article class="metric danger">
+          <span>Eventos NMAC</span>
+          <strong id="metric-nmac">-</strong>
+          <small id="metric-nmac-threshold">-</small>
+        </article>
+        <article class="metric">
+          <span>LoWC / hora</span>
+          <strong id="metric-lowc-rate">-</strong>
+          <small>eventos por hora de voo</small>
+        </article>
+        <article class="metric danger">
+          <span>MAC / 100k h</span>
+          <strong id="metric-mac-rate">-</strong>
+          <small>estimativa deterministica</small>
+        </article>
+        <article class="metric">
+          <span>Margem TLS</span>
+          <strong id="metric-tls-margin">-</strong>
+          <small id="metric-tls-status">-</small>
         </article>
       </section>
 
@@ -63,21 +76,63 @@
         <aside class="side-panel">
           <div class="panel-section">
             <h2>Camadas</h2>
-            <label><input type="checkbox" id="layer-tracks" checked /> Rotas</label>
+            <label><input type="checkbox" id="layer-tracks" checked /> Trajetorias</label>
+            <label><input type="checkbox" id="layer-planned" checked /> REH planejada</label>
+            <label class="stacked-control">
+              <span>Volume das trajetorias</span>
+              <select id="trajectory-volume-filter">
+                <option value="all">Todas</option>
+                <option value="high">Maior volume</option>
+                <option value="medium">Volume intermediario</option>
+                <option value="low">Menor volume</option>
+              </select>
+            </label>
             <label><input type="checkbox" id="layer-heat" /> Densidade</label>
             <label><input type="checkbox" id="layer-conflicts" checked /> LoWC</label>
             <button class="panel-button" id="fit-map" type="button">Reenquadrar mapa</button>
           </div>
           <div class="panel-section">
-            <h2>KPA</h2>
+            <h2>Detalhamento</h2>
             <dl class="kpa-list">
               <div>
-                <dt>Eficiencia de rota</dt>
+                <dt>Ineficiencia horizontal executada</dt>
                 <dd id="kpa-route-efficiency">-</dd>
               </div>
               <div>
-                <dt>Altitude mediana</dt>
-                <dd id="kpa-altitude">-</dd>
+                <dt>Conformidade por distancia</dt>
+                <dd id="kpa-conformity">-</dd>
+              </div>
+              <div>
+                <dt>Aderencia espacial a REH</dt>
+                <dd id="kpa-spatial-adherence">-</dd>
+              </div>
+              <div>
+                <dt>Atraso medio em solo</dt>
+                <dd id="kpa-ground-delay">-</dd>
+              </div>
+              <div>
+                <dt>Atraso medio no ar</dt>
+                <dd id="kpa-airborne-delay">-</dd>
+              </div>
+              <div>
+                <dt>Atraso total medio</dt>
+                <dd id="kpa-total-delay">-</dd>
+              </div>
+              <div>
+                <dt>Severidade minima</dt>
+                <dd id="kpa-severity">-</dd>
+              </div>
+              <div>
+                <dt>MAC esperado / 100k h</dt>
+                <dd id="kpa-mac-rate">-</dd>
+              </div>
+              <div>
+                <dt>Margem TLS</dt>
+                <dd id="kpa-tls-margin">-</dd>
+              </div>
+              <div>
+                <dt>Tempo abaixo do limiar</dt>
+                <dd id="kpa-time-below">-</dd>
               </div>
               <div>
                 <dt>Amostragem LoWC</dt>
@@ -91,9 +146,12 @@
           <div id="map"></div>
           <div class="map-info" aria-live="polite">
             <strong id="map-info-title">Mapa operacional</strong>
-            <span id="map-info-text">Rotas, densidade e eventos LoWC georreferenciados.</span>
+            <span id="map-info-text">Trajetorias, densidade e eventos LoWC georreferenciados.</span>
             <div class="map-legend">
-              <span><i class="legend-swatch legend-route"></i>Rotas</span>
+              <span><i class="legend-swatch legend-volume-low"></i>Menor volume</span>
+              <span><i class="legend-swatch legend-volume-medium"></i>Volume intermediario</span>
+              <span><i class="legend-swatch legend-volume-high"></i>Maior volume</span>
+              <span><i class="legend-swatch legend-planned"></i>REH planejada</span>
               <span><i class="legend-swatch legend-heat"></i>Densidade</span>
               <span><i class="legend-swatch legend-lowc"></i>LoWC</span>
             </div>
@@ -108,6 +166,10 @@
             <h2>Cenarios processados</h2>
           </div>
           <label>
+            <span>Dia comparado</span>
+            <select id="day-select"></select>
+          </label>
+          <label>
             <span>Cenario no mapa</span>
             <select id="run-select"></select>
           </label>
@@ -117,15 +179,23 @@
           <table class="comparison-table">
             <thead>
               <tr>
-                <th>Log</th>
-                <th>Aeronaves</th>
-                <th>Pico</th>
-                <th>Duracao</th>
+                <th>Variante</th>
+                <th>Atraso solo</th>
+                <th>Atraso ar</th>
+                <th>Atraso total</th>
                 <th>Tempo medio</th>
+                <th>Δ tempo vs OFF</th>
                 <th>Distancia</th>
-                <th>Ef. rota</th>
-                <th>Baixa alt.</th>
+                <th>Δ distancia vs OFF</th>
+                <th>Conformidade TC</th>
+                <th>Aderencia REH</th>
                 <th>LoWC</th>
+                <th>LoWC/h</th>
+                <th>MAC/100k h</th>
+                <th>Margem TLS</th>
+                <th>Razao risco vs ref</th>
+                <th>NMAC</th>
+                <th>Sev. min</th>
               </tr>
             </thead>
             <tbody id="comparison-table-body"></tbody>
@@ -133,27 +203,121 @@
         </div>
       </section>
 
-      <section class="charts" aria-label="Graficos">
-        <article class="chart-card">
-          <h2>Aeronaves simultaneas</h2>
-          <img id="chart-active" alt="Serie temporal de aeronaves simultaneas" />
-          <canvas id="canvas-active" hidden></canvas>
-        </article>
+      <section class="chart-section safety-section" aria-label="Graficos de seguranca">
+        <div class="section-heading">
+          <p class="eyebrow">Seguranca</p>
+          <h2>Separacao, LoWC e severidade</h2>
+        </div>
+        <div class="charts">
         <article class="chart-card">
           <h2>Separacao horizontal</h2>
           <img id="chart-separation" alt="Histograma de separacao horizontal" />
-          <canvas id="canvas-separation" hidden></canvas>
+        </article>
+        <article class="chart-card">
+          <h2>Severidade LoWC</h2>
+          <img id="chart-severity" alt="Histograma de severidade LoWC" />
+        </article>
+        </div>
+      </section>
+
+      <section class="chart-section efficiency-section" aria-label="Graficos de eficiencia">
+        <div class="section-heading">
+          <p class="eyebrow">Eficiencia</p>
+          <h2>Tempo, distancia e aderencia ao planejamento</h2>
+        </div>
+        <div class="charts">
+        <article class="chart-card">
+          <h2>Distancia por voo</h2>
+          <img id="chart-distance" alt="Histograma de distancia por voo" />
+        </article>
+        <article class="chart-card">
+          <h2>Conformidade da trajetoria</h2>
+          <img id="chart-conformity" alt="Distancia adicional executada em relacao ao plano" />
+        </article>
+        </div>
+      </section>
+
+      <section class="chart-section context-section" aria-label="Graficos de contexto operacional">
+        <div class="section-heading">
+          <p class="eyebrow">Contexto operacional</p>
+          <h2>Demanda simultanea e perfil de altitude</h2>
+        </div>
+        <div class="charts">
+        <article class="chart-card">
+          <h2>Aeronaves simultaneas</h2>
+          <img id="chart-active" alt="Serie temporal de aeronaves simultaneas" />
         </article>
         <article class="chart-card">
           <h2>Altitude</h2>
           <img id="chart-altitude" alt="Histograma de altitude" />
-          <canvas id="canvas-altitude" hidden></canvas>
         </article>
-        <article class="chart-card">
-          <h2>Distancia por aeronave</h2>
-          <img id="chart-distance" alt="Histograma de distancia por aeronave" />
-          <canvas id="canvas-distance" hidden></canvas>
-        </article>
+        </div>
+      </section>
+
+      <section class="chart-section capacity-section" aria-label="Metricas de capacidade">
+        <div class="section-heading">
+          <p class="eyebrow">Capacidade</p>
+          <h2>Densidade, complexidade, throughput e utilizacao</h2>
+        </div>
+        <div class="metric-grid compact-grid">
+          <article class="metric">
+            <span>Densidade ATD</span>
+            <strong id="capacity-atd">-</strong>
+            <small>aeronaves / km²</small>
+          </article>
+          <article class="metric">
+            <span>Hotspot ATD</span>
+            <strong id="capacity-hotspot">-</strong>
+            <small>aeronaves / km²</small>
+          </article>
+          <article class="metric">
+            <span>Area REH</span>
+            <strong id="capacity-area">-</strong>
+            <small>km² de corredor</small>
+          </article>
+          <article class="metric">
+            <span>Cruzamentos REH</span>
+            <strong id="capacity-crossings">-</strong>
+            <small>proxy de complexidade</small>
+          </article>
+        </div>
+        <div class="table-wrap">
+          <table class="comparison-table capacity-table">
+            <thead>
+              <tr>
+                <th>Tipo</th>
+                <th>Recurso</th>
+                <th>Operacoes</th>
+                <th>THR pico</th>
+                <th>Capacidade P95</th>
+                <th>Utilizacao pico</th>
+              </tr>
+            </thead>
+            <tbody id="capacity-table-body"></tbody>
+          </table>
+        </div>
+        <div id="capacity-complexity" class="comparison-summary">-</div>
+      </section>
+
+      <section class="traceability-panel" aria-label="Rastreabilidade das metricas">
+        <div>
+          <p class="eyebrow">Rastreabilidade</p>
+          <h2>Formulas, codigo e referencia no PDF</h2>
+        </div>
+        <div class="table-wrap">
+          <table class="comparison-table traceability-table">
+            <thead>
+              <tr>
+                <th>Metrica</th>
+                <th>Formula</th>
+                <th>PDF</th>
+                <th>Codigo</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="traceability-table-body"></tbody>
+          </table>
+        </div>
       </section>
     </main>
 
@@ -163,7 +327,7 @@
       crossorigin=""
     ></script>
     <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
-    <script src="assets/data_bundle.js?v=0.2.0"></script>
-    <script src="assets/dashboard.js?v=0.2.0"></script>
+    <script src="assets/data_bundle.js?v=0.4.0"></script>
+    <script src="assets/dashboard.js?v=0.4.0"></script>
   </body>
 </html>

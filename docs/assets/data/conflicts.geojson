@@ -4,51 +4,66 @@
     {
       "type": "Feature",
       "properties": {
-        "simt": 50000.0,
-        "id_a": "PPJBB",
-        "id_b": "PTYKK",
-        "dist_h_m": 268.4662392792808,
-        "dist_v_m": 0.8001000000000431
+        "simt": 67230.0,
+        "start_simt": 67230.0,
+        "end_simt": 67230.0,
+        "duration_s": 10.0,
+        "id_a": "PRMSO_002",
+        "id_b": "PSCCM_001",
+        "dist_h_m": 469.66299706511796,
+        "horizontal_ratio": 0.9393259941302359,
+        "severity_ratio": 0.9393259941302359,
+        "is_nmac": false
       },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -46.633681425000006,
-          -23.510032885
+          -46.684021745,
+          -23.59271996
         ]
       }
     },
     {
       "type": "Feature",
       "properties": {
-        "simt": 60800.0,
-        "id_a": "PREVU",
-        "id_b": "PRMSO",
-        "dist_h_m": 256.0724674269796,
-        "dist_v_m": 20.116800000000012
+        "simt": 72190.0,
+        "start_simt": 72190.0,
+        "end_simt": 72210.0,
+        "duration_s": 30.0,
+        "id_a": "PRURG_003",
+        "id_b": "PSHAH_006",
+        "dist_h_m": 41.28306627932142,
+        "horizontal_ratio": 0.08256613255864284,
+        "severity_ratio": 0.08256613255864284,
+        "is_nmac": true
       },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -46.685038715000005,
-          -23.589368370000003
+          -46.633081065,
+          -23.5091701
         ]
       }
     },
     {
       "type": "Feature",
       "properties": {
-        "simt": 60810.0,
-        "id_a": "PREVU",
-        "id_b": "PRMSO",
-        "dist_h_m": 386.07774515560783,
-        "dist_v_m": 20.116800000000012
+        "simt": 78280.0,
+        "start_simt": 78280.0,
+        "end_simt": 78280.0,
+        "duration_s": 10.0,
+        "id_a": "PRSBK_006",
+        "id_b": "PSBOS_005",
+        "dist_h_m": 154.51379235638376,
+        "horizontal_ratio": 0.30902758471276753,
+        "severity_ratio": 0.30902758471276753,
+        "is_nmac": false
       },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -46.688774769999995,
-          -23.58729579
+          -46.69961266,
+          -23.602663575
         ]
       }
     }
