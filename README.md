@@ -114,22 +114,22 @@ O gerador publica em `docs/`:
 
 | Metrica | Formula implementada | Referencia no PDF | Codigo |
 |---|---|---|---|
-| Frequencia de trajetorias | Contagem de instancias com origem, destino e forma dentro das tolerancias configuradas | Secoes 3.2 e 6, apoio visual a volume/utilizacao | `exports.py::tracks_geojson` |
+| Frequencia de trajetorias | Contagem de instancias com origem, destino e forma dentro das tolerancias configuradas | Produto 3 v1, secoes 3.2 e 6, apoio visual a volume/utilizacao | `exports.py::tracks_geojson` |
 | LoWC | `Sh(t) < Smin_h` | Produto 3 v1, criterio simplificado para separacao horizontal | `metrics.py::detect_lowc_events` |
-| LoWC por hora de voo | `N_lowc / sum(H_f)` | Secao 3.3, Eq. 3.2 | `metrics.py::_safety_summary` |
-| LoWC por 100 operacoes | `N_lowc / N_voos * 100` | Secao 3.3 | `metrics.py::_safety_summary` |
-| LoWC por 1000 km | `N_lowc / km_voados * 1000` | Secao 3.3 | `metrics.py::_safety_summary` |
+| LoWC por hora de voo | `N_lowc / sum(H_f)` | Produto 3 v1, secao 3.3, Eq. 3.2 | `metrics.py::_safety_summary` |
+| LoWC por 100 operacoes | `N_lowc / N_voos * 100` | Produto 3 v1, secao 3.3 | `metrics.py::_safety_summary` |
+| LoWC por 1000 km | `N_lowc / km_voados * 1000` | Produto 3 v1, secao 3.3 | `metrics.py::_safety_summary` |
 | Severidade | `sev_ij = min_t(Sh/Smin_h)` | Produto 3 v1, criterio horizontal simplificado | `metrics.py::_summarize_lowc_event` |
-| Tempo abaixo do limiar | `amostras consecutivas em LoWC * conflict_sample_seconds` | Secao 4.2.3 | `metrics.py::_summarize_lowc_event` |
+| Tempo abaixo do limiar | `amostras consecutivas em LoWC * conflict_sample_seconds` | Produto 3 v1, secao 4.2.3 | `metrics.py::_summarize_lowc_event` |
 | NMAC | `Sh(t) < S_NMAC_h` | Produto 3 v1, criterio horizontal simplificado | `metrics.py::_safety_summary` |
 | MAC esperado | `MAC = 5.038e-3 * 0.005 * N_NMAC`; `MAC_100k = MAC / H_voo * 100000` | Produto 3 v1, seguranca | `metrics.py::_safety_summary` |
 | Margem TLS | `M_TLS = TLS / (lambda_MAC_obs + epsilon)` | Produto 3 v1, Eq. 4.12 | `metrics.py::_safety_summary` |
-| Tempo medio de voo | `mean(max(simt_f) - min(simt_f))` | Secao 4.3.4 | `metrics.py::efficiency_metrics` |
-| Distancia media | `mean(max(distflown_f))` | Secao 4.3.4 | `metrics.py::efficiency_metrics` |
-| Ineficiencia horizontal executada | `(d_real - d_gc) / d_gc * 100` | Secao 4.3.6, Eq. 4.19 | `metrics.py::efficiency_metrics` |
-| Conformidade de trajetoria | `TC_f = (d_real - d_plan) / d_plan`; `ED_f = d_real - d_plan` | Secao 4.3.5, Eq. 4.16-4.17 | `metrics.py::trajectory_conformity` |
-| Aderencia espacial a REH | Percentual de amostras dentro da tolerancia configurada | Diagnostico complementar | `metrics.py::trajectory_conformity` |
-| Atraso em solo | `GD_f = max(0, R_f - S_f)` | Secao 4.3.1 | `scenario_parser.py::ground_delay_metrics` |
+| Tempo medio de voo | `mean(max(simt_f) - min(simt_f))` | Produto 3 v1, secao 4.3.4 | `metrics.py::efficiency_metrics` |
+| Distancia media | `mean(max(distflown_f))` | Produto 3 v1, secao 4.3.4 | `metrics.py::efficiency_metrics` |
+| Ineficiencia horizontal executada | `(d_real - d_gc) / d_gc * 100` | Produto 3 v1, secao 4.3.6, Eq. 4.19 | `metrics.py::efficiency_metrics` |
+| Conformidade de trajetoria | `TC_f = (d_real - d_plan) / d_plan`; `ED_f = d_real - d_plan` | Produto 3 v1, secao 4.3.5, Eq. 4.16-4.17 | `metrics.py::trajectory_conformity` |
+| Aderencia espacial a REH | Percentual de amostras dentro da tolerancia configurada | Produto 3 v1, diagnostico complementar a secao 4.3.5 | `metrics.py::trajectory_conformity` |
+| Atraso em solo | `GD_f = max(0, R_f - S_f)` | Produto 3 v1, secao 4.3.1 | `scenario_parser.py::ground_delay_metrics` |
 | Atraso no ar | `AD_f = max(0, (A_f - D_f) - T_f)` | Produto 3 v1, Eq. 4.14 | `metrics.py::airborne_delay_metrics` |
 | Atraso total | `TD_f = GD_f + AD_f` | Produto 3 v1, eficiencia | `metrics.py::total_delay_metrics` |
 | Densidade de trafego aereo | `ATD_dt = N_simultaneo_dt / A` | Produto 3 v1, Eq. 4.23 | `capacity.py::capacity_metrics` |
