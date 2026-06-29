@@ -4,7 +4,7 @@ import unittest
 
 import pandas as pd
 
-from src.uam_dashboard.capacity import capacity_metrics
+from src.uam_dashboard.capacity import _resource_throughput, capacity_metrics
 from src.uam_dashboard.exports import tracks_geojson
 from src.uam_dashboard.experiment import experiment_metadata
 from src.uam_dashboard.metrics import (
@@ -51,6 +51,7 @@ class MetricsTest(unittest.TestCase):
             horizontal_threshold_m=500,
             nmac_horizontal_threshold_m=150,
             sample_seconds=10,
+            detection_horizon_seconds=60,
             aircraft_count=2,
             total_flight_hours=40 / 3600,
             total_distance_km=0.4,
@@ -75,6 +76,8 @@ class MetricsTest(unittest.TestCase):
         self.assertAlmostEqual(safety["tls_margin"], 9.4e-6 / (expected_rate + 1e-15))
         self.assertFalse(safety["tls_compliant"])
         self.assertAlmostEqual(events.iloc[0]["severity_ratio"], 0.0)
+        self.assertAlmostEqual(events.iloc[0]["time_to_conflict_s"], 60.0)
+        self.assertAlmostEqual(safety["mean_time_to_conflict_s"], 60.0)
 
     def test_similar_trajectories_share_frequency_group(self) -> None:
         rows = []
@@ -214,9 +217,23 @@ class MetricsTest(unittest.TestCase):
 
         self.assertTrue(metrics["density"]["available"])
         self.assertGreater(metrics["density"]["air_traffic_density_per_km2"], 0)
+        self.assertEqual(len(metrics["density"]["hotspots"]["features"]), 1)
         self.assertTrue(metrics["throughput"]["od_pairs"]["available"])
         self.assertGreater(metrics["throughput"]["od_pairs"]["capacity_reference_per_hour"], 0)
+        self.assertLessEqual(len(metrics["throughput"]["od_pairs"]["top_resources"]), 5)
         self.assertTrue(metrics["throughput"]["planned_reh"]["available"])
+        self.assertIn("crossings", metrics["complexity"])
+
+    def test_capacity_rankings_are_limited_to_top_five_resources(self) -> None:
+        items = [
+            {"resource_id": f"R{index}", "label": f"R{index}", "time_s": index * 60}
+            for index in range(8)
+        ]
+
+        metrics = _resource_throughput(items, 3600, 0.95)
+
+        self.assertEqual(metrics["resource_count"], 8)
+        self.assertEqual(len(metrics["top_resources"]), 5)
 
 
 if __name__ == "__main__":

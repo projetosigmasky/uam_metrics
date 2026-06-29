@@ -68,6 +68,15 @@ METRIC_CATALOG: list[dict[str, Any]] = [
         "data_required": "simt regular ou amostragem configurada",
     },
     {
+        "id": "time_to_conflict",
+        "name": "Tempo ate conflito",
+        "formula": "TTC = t_conflito - t_deteccao",
+        "pdf_reference": "Produto 3 v1, metrica de proximidade operacional",
+        "code_reference": "src/uam_dashboard/metrics.py::_summarize_lowc_event",
+        "status": "implemented_configured_detection_horizon_60s",
+        "data_required": "horizonte de deteccao configurado na simulacao",
+    },
+    {
         "id": "nmac_events",
         "name": "Near Mid-Air Collision",
         "formula": "Sh(t) < S_NMAC_h",

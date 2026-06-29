@@ -173,6 +173,8 @@ def conflicts_geojson(events: pd.DataFrame) -> dict[str, Any]:
                     "simt": float(row.simt),
                     "start_simt": float(row.start_simt),
                     "end_simt": float(row.end_simt),
+                    "detection_simt": float(row.detection_simt),
+                    "time_to_conflict_s": float(row.time_to_conflict_s),
                     "duration_s": float(row.duration_s),
                     "id_a": str(row.id_a),
                     "id_b": str(row.id_b),

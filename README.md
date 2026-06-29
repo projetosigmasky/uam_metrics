@@ -61,6 +61,7 @@ mac_probability_given_nmac = 0.005
 tls_target_per_flight_hour = 9.4e-6
 tls_epsilon = 1e-15
 conflict_sample_seconds = 10
+conflict_detection_horizon_seconds = 60.0
 track_sample_stride = 20
 trajectory_shape_points = 12
 trajectory_cluster_distance_m = 1200.0
@@ -121,6 +122,7 @@ O gerador publica em `docs/`:
 | LoWC por 1000 km | `N_lowc / km_voados * 1000` | Produto 3 v1, secao 3.3 | `metrics.py::_safety_summary` |
 | Severidade | `sev_ij = min_t(Sh/Smin_h)` | Produto 3 v1, criterio horizontal simplificado | `metrics.py::_summarize_lowc_event` |
 | Tempo abaixo do limiar | `amostras consecutivas em LoWC * conflict_sample_seconds` | Produto 3 v1, secao 4.2.3 | `metrics.py::_summarize_lowc_event` |
+| Tempo ate conflito | `TTC = t_conflito - t_deteccao` | Produto 3 v1, metrica de proximidade operacional | `metrics.py::_summarize_lowc_event` |
 | NMAC | `Sh(t) < S_NMAC_h` | Produto 3 v1, criterio horizontal simplificado | `metrics.py::_safety_summary` |
 | MAC esperado | `MAC = 5.038e-3 * 0.005 * N_NMAC`; `MAC_100k = MAC / H_voo * 100000` | Produto 3 v1, seguranca | `metrics.py::_safety_summary` |
 | Margem TLS | `M_TLS = TLS / (lambda_MAC_obs + epsilon)` | Produto 3 v1, Eq. 4.12 | `metrics.py::_safety_summary` |
@@ -143,9 +145,10 @@ O dashboard tambem exporta esta matriz por meio de `metric_catalog.py` e mostra 
 
 O `STATELOG` atual nao contem todos os campos minimos citados no PDF. Por isso, as metricas abaixo ficam documentadas como indisponiveis ate que novos dados sejam fornecidos:
 
-- pontualidade operacional: requer horarios planejados, autorizados e reais de chegada;
-- tempo ate conflito: requer tempo de deteccao `tdet`;
-- carga de deconfliction: requer comandos de velocidade, proa ou altitude;
+- pontualidade operacional: requer horarios planejados, autorizados e reais de chegada.
+
+O tempo ate conflito e reportado como proxy configurado pelo horizonte de deteccao da simulacao
+(`conflict_detection_horizon_seconds`, hoje 60 s), nao como tempo de deteccao observado no `STATELOG`.
 
 ## 8. Comparacao Entre Logs
 

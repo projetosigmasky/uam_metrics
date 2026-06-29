@@ -18,8 +18,15 @@
         <p class="eyebrow">RMSP / corredor aereo urbano</p>
         <h1>KPI/KPA Dashboard</h1>
       </div>
-      <div class="source-panel">
-        <span id="source-log">STATELOG</span>
+      <div class="topbar-controls">
+        <label>
+          <span>Dia comparado</span>
+          <select id="day-select"></select>
+        </label>
+        <label>
+          <span>Cenario no mapa</span>
+          <select id="run-select"></select>
+        </label>
       </div>
     </header>
 
@@ -55,7 +62,7 @@
           <strong id="metric-nmac">-</strong>
           <small id="metric-nmac-threshold">-</small>
         </article>
-        <article class="metric">
+        <article class="metric danger">
           <span>LoWC / hora</span>
           <strong id="metric-lowc-rate">-</strong>
           <small>eventos por hora de voo</small>
@@ -65,98 +72,6 @@
           <strong id="metric-mac-rate">-</strong>
           <small>estimativa deterministica</small>
         </article>
-        <article class="metric">
-          <span>Margem TLS</span>
-          <strong id="metric-tls-margin">-</strong>
-          <small id="metric-tls-status">-</small>
-        </article>
-      </section>
-
-      <section class="workspace">
-        <aside class="side-panel">
-          <div class="panel-section">
-            <h2>Camadas</h2>
-            <label><input type="checkbox" id="layer-tracks" checked /> Trajetorias</label>
-            <label><input type="checkbox" id="layer-planned" checked /> REH planejada</label>
-            <label class="stacked-control">
-              <span>Volume das trajetorias</span>
-              <select id="trajectory-volume-filter">
-                <option value="all">Todas</option>
-                <option value="high">Maior volume</option>
-                <option value="medium">Volume intermediario</option>
-                <option value="low">Menor volume</option>
-              </select>
-            </label>
-            <label><input type="checkbox" id="layer-heat" /> Densidade</label>
-            <label><input type="checkbox" id="layer-conflicts" checked /> LoWC</label>
-            <button class="panel-button" id="fit-map" type="button">Reenquadrar mapa</button>
-          </div>
-          <div class="panel-section">
-            <h2>Detalhamento</h2>
-            <dl class="kpa-list">
-              <div>
-                <dt>Ineficiencia horizontal executada</dt>
-                <dd id="kpa-route-efficiency">-</dd>
-              </div>
-              <div>
-                <dt>Conformidade por distancia</dt>
-                <dd id="kpa-conformity">-</dd>
-              </div>
-              <div>
-                <dt>Aderencia espacial a REH</dt>
-                <dd id="kpa-spatial-adherence">-</dd>
-              </div>
-              <div>
-                <dt>Atraso medio em solo</dt>
-                <dd id="kpa-ground-delay">-</dd>
-              </div>
-              <div>
-                <dt>Atraso medio no ar</dt>
-                <dd id="kpa-airborne-delay">-</dd>
-              </div>
-              <div>
-                <dt>Atraso total medio</dt>
-                <dd id="kpa-total-delay">-</dd>
-              </div>
-              <div>
-                <dt>Severidade minima</dt>
-                <dd id="kpa-severity">-</dd>
-              </div>
-              <div>
-                <dt>MAC esperado / 100k h</dt>
-                <dd id="kpa-mac-rate">-</dd>
-              </div>
-              <div>
-                <dt>Margem TLS</dt>
-                <dd id="kpa-tls-margin">-</dd>
-              </div>
-              <div>
-                <dt>Tempo abaixo do limiar</dt>
-                <dd id="kpa-time-below">-</dd>
-              </div>
-              <div>
-                <dt>Amostragem LoWC</dt>
-                <dd id="kpa-safety-sample">-</dd>
-              </div>
-            </dl>
-          </div>
-        </aside>
-
-        <section class="map-stage" aria-label="Mapa georreferenciado">
-          <div id="map"></div>
-          <div class="map-info" aria-live="polite">
-            <strong id="map-info-title">Mapa operacional</strong>
-            <span id="map-info-text">Trajetorias, densidade e eventos LoWC georreferenciados.</span>
-            <div class="map-legend">
-              <span><i class="legend-swatch legend-volume-low"></i>Menor volume</span>
-              <span><i class="legend-swatch legend-volume-medium"></i>Volume intermediario</span>
-              <span><i class="legend-swatch legend-volume-high"></i>Maior volume</span>
-              <span><i class="legend-swatch legend-planned"></i>REH planejada</span>
-              <span><i class="legend-swatch legend-heat"></i>Densidade</span>
-              <span><i class="legend-swatch legend-lowc"></i>LoWC</span>
-            </div>
-          </div>
-        </section>
       </section>
 
       <section class="comparison-panel" aria-label="Comparacao entre STATELOGs">
@@ -165,14 +80,6 @@
             <p class="eyebrow">Comparacao</p>
             <h2>Cenarios processados</h2>
           </div>
-          <label>
-            <span>Dia comparado</span>
-            <select id="day-select"></select>
-          </label>
-          <label>
-            <span>Cenario no mapa</span>
-            <select id="run-select"></select>
-          </label>
         </div>
         <div id="comparison-summary" class="comparison-summary">-</div>
         <div class="table-wrap">
@@ -200,6 +107,116 @@
             </thead>
             <tbody id="comparison-table-body"></tbody>
           </table>
+        </div>
+      </section>
+
+      <section class="workspace">
+        <aside class="side-panel">
+          <div class="panel-section">
+            <h2>Camadas</h2>
+            <label><input type="checkbox" id="layer-tracks" checked /> Trajetorias</label>
+            <label><input type="checkbox" id="layer-planned" checked /> REH planejada</label>
+            <label class="stacked-control">
+              <span>Volume das trajetorias</span>
+              <select id="trajectory-volume-filter">
+                <option value="all">Todas</option>
+                <option value="high">Maior volume</option>
+                <option value="medium">Volume intermediario</option>
+                <option value="low">Menor volume</option>
+              </select>
+            </label>
+            <label><input type="checkbox" id="layer-heat" /> Densidade</label>
+            <label><input type="checkbox" id="layer-atd-hotspots" /> Hotspots ATD</label>
+            <label><input type="checkbox" id="layer-complexity" /> Cruzamentos REH</label>
+            <label><input type="checkbox" id="layer-conflicts" checked /> LoWC</label>
+            <button class="panel-button" id="fit-map" type="button">Reenquadrar mapa</button>
+          </div>
+        </aside>
+
+        <section class="map-stage" aria-label="Mapa georreferenciado">
+          <div id="map"></div>
+          <div class="map-info" aria-live="polite">
+            <strong id="map-info-title">Mapa operacional</strong>
+            <span id="map-info-text">Trajetorias, densidade e eventos LoWC georreferenciados.</span>
+            <div class="map-legend">
+              <span><i class="legend-swatch legend-volume-low"></i>Menor volume</span>
+              <span><i class="legend-swatch legend-volume-medium"></i>Volume intermediario</span>
+              <span><i class="legend-swatch legend-volume-high"></i>Maior volume</span>
+              <span><i class="legend-swatch legend-planned"></i>REH planejada</span>
+              <span><i class="legend-swatch legend-heat"></i>Densidade</span>
+              <span><i class="legend-swatch legend-atd"></i>Hotspot ATD</span>
+              <span><i class="legend-swatch legend-complexity"></i>Cruzamento REH</span>
+              <span><i class="legend-swatch legend-lowc"></i>LoWC</span>
+            </div>
+          </div>
+        </section>
+      </section>
+
+      <section class="detail-panel" aria-label="Detalhamento das metricas">
+        <div class="section-heading">
+          <p class="eyebrow">Detalhamento</p>
+          <h2>Leitura complementar do cenario selecionado</h2>
+        </div>
+        <div class="detail-grid">
+          <article class="detail-group detail-efficiency">
+            <h3>Eficiencia</h3>
+            <dl class="kpa-list">
+              <div>
+                <dt>Ineficiencia horizontal executada</dt>
+                <dd id="kpa-route-efficiency">-</dd>
+              </div>
+              <div>
+                <dt>Conformidade por distancia</dt>
+                <dd id="kpa-conformity">-</dd>
+              </div>
+              <div>
+                <dt>Aderencia espacial a REH</dt>
+                <dd id="kpa-spatial-adherence">-</dd>
+              </div>
+              <div>
+                <dt>Atraso medio em solo</dt>
+                <dd id="kpa-ground-delay">-</dd>
+              </div>
+              <div>
+                <dt>Atraso medio no ar</dt>
+                <dd id="kpa-airborne-delay">-</dd>
+              </div>
+              <div>
+                <dt>Atraso total medio</dt>
+                <dd id="kpa-total-delay">-</dd>
+              </div>
+            </dl>
+          </article>
+
+          <article class="detail-group detail-safety">
+            <h3>Seguranca</h3>
+            <dl class="kpa-list">
+              <div>
+                <dt>Severidade minima</dt>
+                <dd id="kpa-severity">-</dd>
+              </div>
+              <div>
+                <dt>MAC esperado / 100k h</dt>
+                <dd id="kpa-mac-rate">-</dd>
+              </div>
+              <div>
+                <dt>Margem TLS</dt>
+                <dd id="kpa-tls-margin">-</dd>
+              </div>
+              <div>
+                <dt>Tempo abaixo do limiar</dt>
+                <dd id="kpa-time-below">-</dd>
+              </div>
+              <div>
+                <dt>Tempo ate conflito</dt>
+                <dd id="kpa-time-to-conflict">-</dd>
+              </div>
+              <div>
+                <dt>Amostragem LoWC</dt>
+                <dd id="kpa-safety-sample">-</dd>
+              </div>
+            </dl>
+          </article>
         </div>
       </section>
 
