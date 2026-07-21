@@ -30,6 +30,7 @@ from src.uam_dashboard.plots import (
     plot_severity_histogram,
     plot_trajectory_conformity,
 )
+from src.uam_dashboard.reh_parser import load_reh_network
 from src.uam_dashboard.scenario_parser import ground_delay_metrics, load_bluesky_scenario
 
 
@@ -283,6 +284,8 @@ def _average_capacity(run_dashboards: list[dict[str, Any]]) -> dict[str, Any]:
         "window_seconds": first["window_seconds"],
         "capacity_percentile": first["capacity_percentile"],
         "corridor_width_m": first["corridor_width_m"],
+        "geometry_source": first.get("geometry_source", "scenario_route_buffers"),
+        "official_reh_segment_count": first.get("official_reh_segment_count", 0),
         "density": {
             "available": bool(density_values),
             "corridor_area_km2": mean([item["corridor_area_km2"] for item in density_values]),
@@ -409,6 +412,8 @@ def analyze_log(log_path: Path, config: DashboardConfig, charts_dir: Path, run_i
     )
     scenario_path = find_matching_scenario(log_path, config.scenario_paths)
     planned_flights = load_bluesky_scenario(scenario_path) if scenario_path else []
+    reh_network = load_reh_network(config.reh_xml_path) if config.reh_xml_path else None
+    reh_segments = reh_network["segments"] if reh_network else []
     metadata = experiment_metadata(log_path)
     nominal_scenario = find_nominal_scenario(metadata, config.scenario_paths)
     nominal_flights = load_bluesky_scenario(nominal_scenario) if nominal_scenario else None
@@ -433,6 +438,7 @@ def analyze_log(log_path: Path, config: DashboardConfig, charts_dir: Path, run_i
         gap_seconds=config.flight_instance_gap_seconds,
         reset_distance_m=config.flight_instance_reset_distance_m,
         jump_m=config.flight_instance_jump_m,
+        reh_segments=reh_segments,
     )
     efficiency["trajectory_conformity"] = conformity
     lowc_events, separation_samples, safety = detect_lowc_events(
@@ -506,6 +512,7 @@ def analyze_log(log_path: Path, config: DashboardConfig, charts_dir: Path, run_i
         gap_seconds=config.flight_instance_gap_seconds,
         reset_distance_m=config.flight_instance_reset_distance_m,
         jump_m=config.flight_instance_jump_m,
+        reh_segments=reh_segments,
     )
 
     summary = build_summary(df)
@@ -528,6 +535,11 @@ def analyze_log(log_path: Path, config: DashboardConfig, charts_dir: Path, run_i
         "dashboard": dashboard,
         "tracks": tracks,
         "planned_routes": planned_routes,
+        "official_reh": reh_network["geojson"] if reh_network else {
+            "type": "FeatureCollection",
+            "properties": {"segment_count": 0, "geometry_reference": "unavailable"},
+            "features": [],
+        },
         "conflicts": conflicts_geojson(lowc_events),
         "heatmap": heatmap_points(df, config.heatmap_sample_stride),
     }
@@ -553,6 +565,7 @@ def build_dashboard(config: DashboardConfig) -> None:
     write_json(data_dir / "comparison.json", comparison)
     write_json(data_dir / "tracks.geojson", primary["tracks"])
     write_json(data_dir / "planned_routes.geojson", primary["planned_routes"])
+    write_json(data_dir / "official_reh.geojson", primary["official_reh"])
     write_json(data_dir / "conflicts.geojson", primary["conflicts"])
     write_json(data_dir / "heatmap_points.json", primary["heatmap"])
     runs_dir = data_dir / "runs"
@@ -565,6 +578,7 @@ def build_dashboard(config: DashboardConfig) -> None:
             "dashboard": dashboard,
             "tracks": primary["tracks"],
             "planned_routes": primary["planned_routes"],
+            "official_reh": primary["official_reh"],
             "conflicts": primary["conflicts"],
             "heatmap": primary["heatmap"],
             "runs": runs,
@@ -583,6 +597,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--data-dir", default="data", help="Folder searched when no log is passed.")
     parser.add_argument("--scenario-dir", default="data/scenarios", help="Folder searched for BlueSky SCN files.")
     parser.add_argument("--scenarios", nargs="*", default=None, help="BlueSky SCN files used as planned routes.")
+    parser.add_argument(
+        "--reh-xml",
+        default=None,
+        help="WFS/GML XML with the official Sao Paulo REH polygons.",
+    )
     parser.add_argument("--flight-instance-gap-seconds", type=float, default=300.0)
     parser.add_argument("--flight-instance-reset-distance-m", type=float, default=250.0)
     parser.add_argument("--flight-instance-jump-m", type=float, default=5000.0)
@@ -618,6 +637,21 @@ def find_scenarios(scenario_dir: Path, explicit: list[str] | None) -> tuple[Path
     if explicit:
         return tuple(Path(path) for path in explicit)
     return tuple(sorted(scenario_dir.glob("*.scn"))) if scenario_dir.exists() else ()
+
+
+def find_reh_xml(data_dir: Path, explicit: str | None) -> Path | None:
+    if explicit:
+        path = Path(explicit)
+        if not path.exists():
+            raise FileNotFoundError(f"REH XML not found: {path}")
+        return path
+
+    candidates = [
+        data_dir / "xml" / "CV_REH_XP_SAO_PAULO.xml",
+        Path("../rmsp-uam-simulations/data/xml/CV_REH_XP_SAO_PAULO.xml"),
+    ]
+    candidates.extend(sorted(data_dir.glob("**/CV_REH_XP_SAO_PAULO.xml")))
+    return next((path for path in candidates if path.exists()), None)
 
 
 def find_matching_scenario(log_path: Path, scenario_paths: tuple[Path, ...]) -> Path | None:
@@ -662,11 +696,13 @@ def main() -> None:
     data_dir = Path(args.data_dir)
     log_paths = tuple(Path(log) for log in args.logs) if args.logs else find_default_logs(data_dir)
     scenario_paths = find_scenarios(Path(args.scenario_dir), args.scenarios)
+    reh_xml_path = find_reh_xml(data_dir, args.reh_xml)
     config = DashboardConfig(
         log_paths=log_paths,
         scenario_paths=scenario_paths,
         output_dir=Path(args.output),
         data_dir=data_dir,
+        reh_xml_path=reh_xml_path,
         flight_instance_gap_seconds=args.flight_instance_gap_seconds,
         flight_instance_reset_distance_m=args.flight_instance_reset_distance_m,
         flight_instance_jump_m=args.flight_instance_jump_m,

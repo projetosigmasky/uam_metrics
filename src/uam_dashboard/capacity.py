@@ -10,6 +10,7 @@ from .metrics import (
     _polyline_distance_m,
     flight_instance_frame,
 )
+from .reh_parser import points_in_polygons
 
 
 def capacity_metrics(
@@ -24,18 +25,30 @@ def capacity_metrics(
     gap_seconds: float,
     reset_distance_m: float,
     jump_m: float,
+    reh_segments: list[dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     """Compute capacity proxies based on REH corridors and observed resources."""
 
     annotated = flight_instance_frame(df, gap_seconds, reset_distance_m, jump_m)
     instances = _flight_instances(annotated)
-    route_groups, planned_to_route = _planned_route_groups(planned_flights)
+    scenario_route_groups, planned_to_scenario_route = _planned_route_groups(planned_flights)
+    if reh_segments:
+        route_groups = _official_route_groups(reh_segments)
+        planned_to_route = _planned_to_official_routes(planned_flights, route_groups)
+        geometry_source = "official_reh_polygons"
+    else:
+        route_groups = scenario_route_groups
+        planned_to_route = {
+            key: [value] for key, value in planned_to_scenario_route.items()
+        }
+        geometry_source = "scenario_route_buffers"
     density = _corridor_density(df, route_groups, corridor_width_m)
     throughput = _throughput_metrics(
         instances,
         tracks,
         conformity_by_instance,
         planned_to_route,
+        {route["resource_id"]: route["label"] for route in route_groups},
         window_seconds,
         capacity_percentile,
     )
@@ -45,10 +58,56 @@ def capacity_metrics(
         "window_seconds": int(window_seconds),
         "capacity_percentile": float(capacity_percentile),
         "corridor_width_m": float(corridor_width_m),
+        "geometry_source": geometry_source,
+        "official_reh_segment_count": int(len(reh_segments or [])),
         "density": density,
         "throughput": throughput,
         "complexity": complexity,
     }
+
+
+def _official_route_groups(reh_segments: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    return [
+        {
+            **segment,
+            "coordinates": np.asarray(segment["coordinates"], dtype=float),
+            "waypoint_count": len(segment["coordinates"]),
+        }
+        for segment in reh_segments
+    ]
+
+
+def _planned_to_official_routes(
+    planned_flights: list[dict[str, Any]],
+    route_groups: list[dict[str, Any]],
+) -> dict[str, list[str]]:
+    mapping: dict[str, list[str]] = {}
+    for flight in planned_flights:
+        coordinates = np.asarray(
+            [[coordinate[1], coordinate[0]] for coordinate in flight["coordinates"]],
+            dtype=float,
+        )
+        sampled = _densify_polyline(coordinates, 100.0)
+        matched = [
+            route["resource_id"]
+            for route in route_groups
+            if np.any(points_in_polygons(sampled, route.get("polygons", [])))
+        ]
+        mapping[flight["flight_instance"]] = matched
+    return mapping
+
+
+def _densify_polyline(polyline: np.ndarray, spacing_m: float) -> np.ndarray:
+    if len(polyline) < 2:
+        return polyline
+    samples = [polyline[0]]
+    for start, end in zip(polyline[:-1], polyline[1:]):
+        length_m = float(
+            _polyline_distance_m(np.asarray([start, end], dtype=float))
+        )
+        steps = max(1, int(np.ceil(length_m / max(spacing_m, 1.0))))
+        samples.extend(start + (end - start) * (index / steps) for index in range(1, steps + 1))
+    return np.asarray(samples, dtype=float)
 
 
 def _flight_instances(annotated: pd.DataFrame) -> list[dict[str, Any]]:
@@ -110,16 +169,18 @@ def _corridor_density(
             "hotspots": {"type": "FeatureCollection", "features": []},
         }
 
-    area_m2 = sum(_corridor_area_m2(route["coordinates"], corridor_width_m) for route in route_groups)
+    area_m2 = sum(_route_area_m2(route, corridor_width_m) for route in route_groups)
     area_km2 = area_m2 / 1_000_000.0
     if area_km2 <= 0:
         return {"available": False, "corridor_area_km2": 0.0}
 
     points = df[["lat", "lon"]].to_numpy(dtype=float)
     inside_any = np.zeros(len(points), dtype=bool)
+    route_masks = []
     for route in route_groups:
-        deviations = _point_to_polyline_distances_m(points, route["coordinates"])
-        inside_any |= deviations <= corridor_width_m
+        route_mask = _route_inside_mask(points, route, corridor_width_m)
+        route_masks.append(route_mask)
+        inside_any |= route_mask
 
     corridor_samples = df.loc[inside_any, ["simt", "id"]]
     simultaneous = corridor_samples.groupby("simt")["id"].nunique()
@@ -132,11 +193,10 @@ def _corridor_density(
 
     hotspot_density = 0.0
     hotspot_features = []
-    for route in route_groups:
-        deviations = _point_to_polyline_distances_m(points, route["coordinates"])
-        route_samples = df.loc[deviations <= corridor_width_m, ["simt", "id"]]
+    for route, route_mask in zip(route_groups, route_masks):
+        route_samples = df.loc[route_mask, ["simt", "id"]]
         route_simultaneous = route_samples.groupby("simt")["id"].nunique()
-        route_area_km2 = _corridor_area_m2(route["coordinates"], corridor_width_m) / 1_000_000.0
+        route_area_km2 = _route_area_m2(route, corridor_width_m) / 1_000_000.0
         route_density = 0.0
         route_peak = 0
         route_mean = 0.0
@@ -151,16 +211,17 @@ def _corridor_density(
                 "properties": {
                     "resource_id": route["resource_id"],
                     "label": route["label"],
+                    "reh_name": route.get("name", route["label"]),
+                    "section": route.get("section", ""),
+                    "route_type": route.get("route_type", ""),
+                    "semi_width_m": route.get("semi_width_m"),
                     "mean_simultaneous_aircraft": route_mean,
                     "peak_simultaneous_aircraft": route_peak,
                     "corridor_area_km2": float(route_area_km2),
                     "air_traffic_density_per_km2": float(route_density),
                     "sample_count": int(len(route_samples)),
                 },
-                "geometry": {
-                    "type": "Polygon",
-                    "coordinates": [_corridor_polygon_coordinates(route["coordinates"], corridor_width_m)],
-                },
+                "geometry": _route_geometry(route, corridor_width_m),
             }
         )
 
@@ -180,6 +241,35 @@ def _corridor_density(
         "air_traffic_density_per_km2": float(mean_simultaneous / area_km2),
         "hotspot_density_per_km2": float(hotspot_density),
         "hotspots": {"type": "FeatureCollection", "features": hotspot_features},
+    }
+
+
+def _route_inside_mask(
+    points: np.ndarray,
+    route: dict[str, Any],
+    corridor_width_m: float,
+) -> np.ndarray:
+    if route.get("polygons"):
+        return points_in_polygons(points, route["polygons"])
+    deviations = _point_to_polyline_distances_m(points, route["coordinates"])
+    return deviations <= corridor_width_m
+
+
+def _route_area_m2(route: dict[str, Any], corridor_width_m: float) -> float:
+    if route.get("area_m2") is not None:
+        return float(route["area_m2"])
+    return _corridor_area_m2(route["coordinates"], corridor_width_m)
+
+
+def _route_geometry(route: dict[str, Any], corridor_width_m: float) -> dict[str, Any]:
+    if route.get("polygons"):
+        return {
+            "type": "MultiPolygon",
+            "coordinates": [[ring] for ring in route["polygons"]],
+        }
+    return {
+        "type": "Polygon",
+        "coordinates": [_corridor_polygon_coordinates(route["coordinates"], corridor_width_m)],
     }
 
 
@@ -220,7 +310,8 @@ def _throughput_metrics(
     instances: list[dict[str, Any]],
     tracks: dict[str, Any],
     conformity_by_instance: dict[str, dict[str, Any]],
-    planned_to_route: dict[str, str],
+    planned_to_route: dict[str, list[str]],
+    route_labels: dict[str, str],
     window_seconds: int,
     capacity_percentile: float,
 ) -> dict[str, Any]:
@@ -248,10 +339,14 @@ def _throughput_metrics(
                 {"resource_id": group, "label": group, "time_s": instance["start_s"]}
             )
         planned = conformity_by_instance.get(instance["flight_instance"], {}).get("planned_flight_instance")
-        route_id = planned_to_route.get(planned)
-        if route_id:
+        route_ids = planned_to_route.get(planned, [])
+        for route_id in route_ids:
             resources["planned_reh"].append(
-                {"resource_id": route_id, "label": route_id, "time_s": instance["start_s"]}
+                {
+                    "resource_id": route_id,
+                    "label": route_labels.get(route_id, route_id),
+                    "time_s": instance["start_s"],
+                }
             )
 
     return {
@@ -346,6 +441,9 @@ def _complexity_components(
 def _route_crossing_features(route_groups: list[dict[str, Any]]) -> list[dict[str, Any]]:
     if not route_groups:
         return []
+    if any(route.get("polygons") for route in route_groups):
+        return _official_corridor_crossing_features(route_groups)
+
     reference_lat = float(
         np.mean([point[0] for route in route_groups for point in route["coordinates"]])
     )
@@ -354,6 +452,8 @@ def _route_crossing_features(route_groups: list[dict[str, Any]]) -> list[dict[st
         xy = _project_with_reference(route["coordinates"], reference_lat)
         for segment_index, (start, end) in enumerate(zip(xy[:-1], xy[1:])):
             segments.append((route["resource_id"], segment_index, start, end))
+
+    route_labels = {route["resource_id"]: route["label"] for route in route_groups}
 
     crossings = []
     seen_coordinates: set[tuple[int, int]] = set()
@@ -378,6 +478,8 @@ def _route_crossing_features(route_groups: list[dict[str, Any]]) -> list[dict[st
                         "properties": {
                             "route_a": route_a,
                             "route_b": route_b,
+                            "route_a_label": route_labels.get(route_a, route_a),
+                            "route_b_label": route_labels.get(route_b, route_b),
                             "segment_a": int(segment_a),
                             "segment_b": int(segment_b),
                         },
@@ -385,6 +487,90 @@ def _route_crossing_features(route_groups: list[dict[str, Any]]) -> list[dict[st
                     }
                 )
     return crossings
+
+
+def _official_corridor_crossing_features(
+    route_groups: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    reference_lat = float(
+        np.mean(
+            [coordinate[1] for route in route_groups for ring in route.get("polygons", []) for coordinate in ring]
+        )
+    )
+    crossings = []
+    seen_coordinates: set[tuple[int, int]] = set()
+
+    for left_index, route_a in enumerate(route_groups):
+        for route_b in route_groups[left_index + 1 :]:
+            if _routes_share_endpoint(route_a, route_b):
+                continue
+            overlap_points = _polygon_overlap_points(route_a, route_b, reference_lat)
+            if not overlap_points:
+                continue
+            point = np.mean(np.asarray(overlap_points, dtype=float), axis=0)
+            key = (round(float(point[0]) / 20.0), round(float(point[1]) / 20.0))
+            if key in seen_coordinates:
+                continue
+            seen_coordinates.add(key)
+            crossings.append(
+                {
+                    "type": "Feature",
+                    "properties": {
+                        "route_a": route_a["resource_id"],
+                        "route_b": route_b["resource_id"],
+                        "route_a_label": route_a["label"],
+                        "route_b_label": route_b["label"],
+                        "method": "official_polygon_overlap",
+                    },
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": _unproject_xy(point, reference_lat),
+                    },
+                }
+            )
+    return crossings
+
+
+def _polygon_overlap_points(
+    route_a: dict[str, Any],
+    route_b: dict[str, Any],
+    reference_lat: float,
+) -> list[np.ndarray]:
+    points: list[np.ndarray] = []
+    polygons_a = route_a.get("polygons", [])
+    polygons_b = route_b.get("polygons", [])
+
+    for ring_a in polygons_a:
+        lat_lon_a = np.asarray([[coordinate[1], coordinate[0]] for coordinate in ring_a], dtype=float)
+        inside_b = points_in_polygons(lat_lon_a, polygons_b)
+        points.extend(_project_with_reference(lat_lon_a[inside_b], reference_lat))
+        xy_a = _project_with_reference(lat_lon_a, reference_lat)
+        for ring_b in polygons_b:
+            lat_lon_b = np.asarray([[coordinate[1], coordinate[0]] for coordinate in ring_b], dtype=float)
+            xy_b = _project_with_reference(lat_lon_b, reference_lat)
+            for a1, a2 in zip(xy_a[:-1], xy_a[1:]):
+                for b1, b2 in zip(xy_b[:-1], xy_b[1:]):
+                    if _segments_intersect(a1, a2, b1, b2):
+                        intersection = _segment_intersection(a1, a2, b1, b2)
+                        if intersection is not None:
+                            points.append(intersection)
+
+    for ring_b in polygons_b:
+        lat_lon_b = np.asarray([[coordinate[1], coordinate[0]] for coordinate in ring_b], dtype=float)
+        inside_a = points_in_polygons(lat_lon_b, polygons_a)
+        points.extend(_project_with_reference(lat_lon_b[inside_a], reference_lat))
+    return points
+
+
+def _routes_share_endpoint(route_a: dict[str, Any], route_b: dict[str, Any]) -> bool:
+    coordinates_a = np.asarray(route_a.get("coordinates", []), dtype=float)
+    coordinates_b = np.asarray(route_b.get("coordinates", []), dtype=float)
+    if len(coordinates_a) < 2 or len(coordinates_b) < 2:
+        return False
+    reference_lat = float(np.mean(np.concatenate((coordinates_a[:, 0], coordinates_b[:, 0]))))
+    xy_a = _project_with_reference(coordinates_a[[0, -1]], reference_lat)
+    xy_b = _project_with_reference(coordinates_b[[0, -1]], reference_lat)
+    return any(float(np.linalg.norm(left - right)) < 15.0 for left in xy_a for right in xy_b)
 
 
 def _project(coordinates: np.ndarray) -> np.ndarray:

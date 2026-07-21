@@ -179,15 +179,23 @@ As cores do mapa representam volume relativo ao grupo mais frequente:
 
 Esse agrupamento e uma aproximacao configuravel baseada nas trajetorias observadas. Ele nao identifica formalmente uma REH.
 
-## 10. REH Planejada E Conformidade
+## 10. REH Formal, Planejamento E Conformidade
 
 Coloque os arquivos BlueSky `.scn` em `data/scenarios/`. O gerador associa automaticamente cada
 log ao cenario de mesmo nome-base.
 
-A camada `REH planejada` conecta a origem e os waypoints definidos por `CRE`, `ADDWPT` e `DEFWPT`.
+Coloque `CV_REH_XP_SAO_PAULO.xml` em `data/xml/` ou informe seu caminho com
+`--reh-xml caminho/para/CV_REH_XP_SAO_PAULO.xml`. O gerador tambem procura automaticamente o XML
+no projeto irmao `../rmsp-uam-simulations/data/xml/`.
+
+A camada `REH formal` desenha os poligonos WFS/GML do XML, incluindo a semilargura oficial de cada
+trecho. A camada `Planejamento do cenario` conecta a origem e os waypoints definidos por `CRE`,
+`ADDWPT` e `DEFWPT` no arquivo `.scn`.
+
 A conformidade formal segue as Eq. 4.16-4.17 do PDF, comparando distancia executada e planejada.
-Separadamente, a aderencia espacial informa o percentual de amostras executadas cuja menor
-distancia horizontal ate a REH e menor ou igual a `conformity_tolerance_m`.
+Separadamente, a aderencia espacial informa o percentual de amostras executadas que estao dentro
+de algum poligono oficial da REH. O parametro `conformity_tolerance_m` continua sendo usado apenas
+no diagnostico de proximidade da linha planejada quando o XML nao esta disponivel.
 
 As instancias planejadas e executadas sao associadas por matricula e horario de criacao mais
 proximo. Isso evita deslocar a sequencia quando uma matricula e reutilizada e alguma instanciacao
@@ -205,15 +213,20 @@ limiar horizontal mais restritivo `S_NMAC_h`.
 
 ## 12. Capacidade, Densidade E Utilizacao
 
-A densidade formal usa corredores derivados da REH planejada. A largura do corredor e a mesma tolerancia
-usada na aderencia espacial (`conformity_tolerance_m`). A area `A` da Eq. 4.23 e estimada como a area
-dos corredores planejados, aproximados por capsulas ao redor das polilinhas da REH.
+A densidade formal usa os poligonos oficiais de cada trecho REH. A area `A` da Eq. 4.23 e calculada
+diretamente da geometria WFS/GML; a semilargura deixa de ser imposta globalmente e passa a ser a do
+cadastro oficial (100 m ou 250 m, conforme o trecho). Os hotspots ATD tambem passam a ser agregados
+por trecho oficial.
 
 O throughput da Eq. 4.24 e calculado em janelas de 1 hora para tres tipos de recurso:
 
 - pares origem-destino observados;
 - grupos de trajetoria executada;
-- REHs planejadas associadas aos voos.
+- trechos REH oficiais atravessados pelo planejamento de cada voo.
+
+Os cruzamentos REH sao calculados pelas intersecoes entre os poligonos oficiais dos trechos no XML.
+O ponto exibido representa o centro aproximado da area de sobreposicao. Encontros em um mesmo fixo
+terminal sao tratados como continuidade da malha e nao como cruzamento.
 
 Como ainda nao ha capacidade declarada externa, a utilizacao da Eq. 4.25 usa uma referencia nominal
 interna: `C_r,dt = P95(THR_r,dt)` por tipo de recurso. Assim, a utilizacao informa quao proximo o recurso

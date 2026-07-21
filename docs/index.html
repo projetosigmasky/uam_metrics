@@ -10,7 +10,7 @@
       integrity="sha256-p4NxAoJBhIINfQd+g9FQXHyzyTAFi+lyLwN2Bja9fM="
       crossorigin=""
     />
-    <link rel="stylesheet" href="assets/dashboard.css?v=0.4.0" />
+    <link rel="stylesheet" href="assets/dashboard.css?v=0.4.1" />
   </head>
   <body>
     <header class="topbar">
@@ -115,7 +115,8 @@
           <div class="panel-section">
             <h2>Camadas</h2>
             <label><input type="checkbox" id="layer-tracks" checked /> Trajetorias</label>
-            <label><input type="checkbox" id="layer-planned" checked /> REH planejada</label>
+            <label><input type="checkbox" id="layer-official-reh" checked /> REH formal</label>
+            <label><input type="checkbox" id="layer-planned" /> Planejamento do cenario</label>
             <label class="stacked-control">
               <span>Volume das trajetorias</span>
               <select id="trajectory-volume-filter">
@@ -142,7 +143,7 @@
               <span><i class="legend-swatch legend-volume-low"></i>Menor volume</span>
               <span><i class="legend-swatch legend-volume-medium"></i>Volume intermediario</span>
               <span><i class="legend-swatch legend-volume-high"></i>Maior volume</span>
-              <span><i class="legend-swatch legend-planned"></i>REH planejada</span>
+              <span><i class="legend-swatch legend-planned"></i>Planejamento do cenario</span>
               <span><i class="legend-swatch legend-heat"></i>Densidade</span>
               <span><i class="legend-swatch legend-atd"></i>Hotspot ATD</span>
               <span><i class="legend-swatch legend-complexity"></i>Cruzamento REH</span>
@@ -345,6 +346,6 @@
     ></script>
     <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
     <script src="assets/data_bundle.js?v=0.4.0"></script>
-    <script src="assets/dashboard.js?v=0.4.0"></script>
+    <script src="assets/dashboard.js?v=0.4.1"></script>
   </body>
 </html>

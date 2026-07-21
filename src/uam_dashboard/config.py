@@ -31,6 +31,7 @@ class DashboardConfig:
     scenario_paths: tuple[Path, ...] = ()
     output_dir: Path = Path("docs")
     data_dir: Path = Path("data")
+    reh_xml_path: Path | None = None
     flight_instance_gap_seconds: float = 300.0
     flight_instance_reset_distance_m: float = 250.0
     flight_instance_jump_m: float = 5000.0

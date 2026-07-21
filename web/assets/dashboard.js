@@ -1,6 +1,7 @@
 const state = {
   map: null,
   tracksLayer: null,
+  officialRehLayer: null,
   plannedLayer: null,
   heatLayer: null,
   atdHotspotLayer: null,
@@ -29,16 +30,17 @@ async function loadStaticDashboard() {
     return;
   }
 
-  const [dashboard, tracks, plannedRoutes, conflicts, heatmap, comparison] = await Promise.all([
+  const [dashboard, tracks, plannedRoutes, officialReh, conflicts, heatmap, comparison] = await Promise.all([
     fetchJson("assets/data/dashboard.json"),
     fetchJson("assets/data/tracks.geojson"),
     fetchJson("assets/data/planned_routes.geojson"),
+    fetchJson("assets/data/official_reh.geojson"),
     fetchJson("assets/data/conflicts.geojson"),
     fetchJson("assets/data/heatmap_points.json"),
     fetchJson("assets/data/comparison.json"),
   ]);
 
-  renderDashboard({ dashboard, tracks, planned_routes: plannedRoutes, conflicts, heatmap, comparison });
+  renderDashboard({ dashboard, tracks, planned_routes: plannedRoutes, official_reh: officialReh, conflicts, heatmap, comparison });
 }
 
 async function fetchJson(path) {
@@ -95,6 +97,7 @@ function initMap() {
 
 function bindLayerControls() {
   document.getElementById("layer-tracks").addEventListener("change", (event) => toggleLayer("tracksLayer", event));
+  document.getElementById("layer-official-reh").addEventListener("change", (event) => toggleLayer("officialRehLayer", event));
   document.getElementById("layer-planned").addEventListener("change", (event) => toggleLayer("plannedLayer", event));
   document.getElementById("layer-heat").addEventListener("change", (event) => toggleLayer("heatLayer", event));
   document.getElementById("layer-atd-hotspots").addEventListener("change", (event) => toggleLayer("atdHotspotLayer", event));
@@ -103,7 +106,7 @@ function bindLayerControls() {
   document.getElementById("trajectory-volume-filter").addEventListener("change", (event) => {
     state.trajectoryVolumeFilter = event.target.value;
     const run = state.runs[state.activeRunIndex] || state.runs[0];
-    if (run) renderMapLayers(run.tracks, run.planned_routes, run.conflicts, run.heatmap, run.dashboard.capacity);
+    if (run) renderMapLayers(run.tracks, run.planned_routes, run.official_reh, run.conflicts, run.heatmap, run.dashboard.capacity);
   });
   document.getElementById("fit-map").addEventListener("click", () => {
     fitMapToOperationalArea(state.lastTracks, state.lastConflicts);
@@ -151,6 +154,7 @@ function normalizeModel(model) {
     dashboard: model.dashboard,
     tracks: model.tracks,
     planned_routes: model.planned_routes,
+    official_reh: model.official_reh || emptyFeatureCollection(),
     conflicts: model.conflicts,
     heatmap: model.heatmap,
   };
@@ -167,7 +171,7 @@ function renderSelectedRun() {
   renderMetrics(run.dashboard);
   renderCharts(run.dashboard);
   renderCapacity(run.dashboard);
-  renderMapLayers(run.tracks, run.planned_routes, run.conflicts, run.heatmap, run.dashboard.capacity);
+  renderMapLayers(run.tracks, run.planned_routes, run.official_reh || emptyFeatureCollection(), run.conflicts, run.heatmap, run.dashboard.capacity);
 }
 
 function renderComparison(model) {
@@ -314,8 +318,8 @@ function renderCapacity(dashboard) {
   setText(
     "capacity-complexity",
     complexity.available
-      ? `${formatNumber(complexity.planned_route_count, 0)} REHs planejadas, ` +
-          `${formatNumber(complexity.planned_waypoint_count, 0)} waypoints, ` +
+      ? `${formatNumber(complexity.planned_route_count, 0)} trechos REH formais, ` +
+          `${formatNumber(complexity.planned_waypoint_count, 0)} pontos de eixo, ` +
           `${formatNumber(complexity.trajectory_group_count, 0)} grupos de trajetoria, ` +
           `${formatNumber(complexity.repeated_trajectory_group_count, 0)} grupos recorrentes e ` +
           `${formatNumber(complexity.lowc_event_count, 0)} eventos LoWC.`
@@ -329,7 +333,7 @@ function renderCapacityTable(throughput) {
   for (const [type, label] of [
     ["od_pairs", "Par OD"],
     ["trajectory_groups", "Grupo trajetoria"],
-    ["planned_reh", "REH planejada"],
+    ["planned_reh", "Trecho REH formal"],
   ]) {
     const group = throughput[type];
     if (!group?.available) continue;
@@ -363,11 +367,12 @@ function showImageChart(imageId, src) {
   image.src = src;
 }
 
-function renderMapLayers(tracks, plannedRoutes, conflicts, heatmap, capacity) {
+function renderMapLayers(tracks, plannedRoutes, officialReh, conflicts, heatmap, capacity) {
   state.lastTracks = tracks;
   state.lastConflicts = conflicts;
   const visibleTracks = filterTracksByVolume(tracks, state.trajectoryVolumeFilter);
   clearLayer("tracksLayer");
+  clearLayer("officialRehLayer");
   clearLayer("plannedLayer");
   clearLayer("heatLayer");
   clearLayer("atdHotspotLayer");
@@ -410,13 +415,43 @@ function renderMapLayers(tracks, plannedRoutes, conflicts, heatmap, capacity) {
           (Number.isFinite(Number(p.trajectory_conformity_ratio))
             ? `<br>Conformidade por distancia ${formatNumber(p.trajectory_conformity_ratio * 100, 1)}%<br>` +
               `Aderencia espacial ${formatNumber(p.spatial_adherence_pct, 1)}%<br>` +
-              `Desvio medio da REH ${formatNumber(p.mean_deviation_m, 1)} m`
+              `Desvio medio do planejamento ${formatNumber(p.mean_deviation_m, 1)} m`
             : "")
       );
     },
   });
 
   state.tracksLayer = L.layerGroup([routeHalo, routeLines]);
+
+  state.officialRehLayer = L.geoJSON(officialReh || emptyFeatureCollection(), {
+    pane: "routePane",
+    style: (feature) => ({
+      className: "official-reh-feature",
+      color: feature.properties.route_type === "Obrig" ? "#075985" : "#0f766e",
+      fillColor: feature.properties.route_type === "Obrig" ? "#38bdf8" : "#5eead4",
+      opacity: 0.82,
+      fillOpacity: 0.12,
+      weight: 1.5,
+    }),
+    onEachFeature: (feature, layer) => {
+      const p = feature.properties || {};
+      layer.bindTooltip(`${escapeHtml(p.label)} - ${escapeHtml(p.route_type || "REH")}`, { sticky: true });
+      layer.bindPopup(
+        `<strong>${escapeHtml(p.label)}</strong><br>` +
+          `Tipo ${escapeHtml(p.route_type || "nao informado")} / classe ${escapeHtml(p.airspace_class || "nao informada")}<br>` +
+          `Semilargura ${formatNumber(p.semi_width_m, 0)} m` +
+          (p.fix_a_name || p.fix_b_name
+            ? `<br>${escapeHtml(p.fix_a_name || "-")} -> ${escapeHtml(p.fix_b_name || "-")}`
+            : "") +
+          (p.altitude_min_ft != null || p.altitude_max_ft != null
+            ? `<br>Altitude ${formatNumber(p.altitude_min_ft, 0)}-${formatNumber(p.altitude_max_ft, 0)} ft`
+            : p.altitude_compulsory_ft != null
+              ? `<br>Altitude compulsoria ${formatNumber(p.altitude_compulsory_ft, 0)} ft`
+              : "") +
+          (p.source_identifier ? `<br>Fonte ${escapeHtml(p.source_identifier)}` : "")
+      );
+    },
+  });
 
   state.plannedLayer = L.geoJSON(plannedRoutes, {
     pane: "routePane",
@@ -429,12 +464,12 @@ function renderMapLayers(tracks, plannedRoutes, conflicts, heatmap, capacity) {
     },
     onEachFeature: (feature, layer) => {
       const p = feature.properties;
-      const conformity = Number.isFinite(Number(p.spatial_adherence_pct))
-        ? `${formatNumber(p.spatial_adherence_pct, 1)}% das amostras dentro de ${formatNumber(plannedRoutes.properties.conformity_tolerance_m, 0)} m`
+      const conformity = Number.isFinite(Number(p.planned_line_adherence_pct))
+        ? `${formatNumber(p.planned_line_adherence_pct, 1)}% das amostras dentro de ${formatNumber(plannedRoutes.properties.conformity_tolerance_m, 0)} m da linha planejada`
         : "Sem trajetoria executada associada";
-      layer.bindTooltip(`REH planejada ${escapeHtml(p.flight_instance)}`, { sticky: true });
+      layer.bindTooltip(`Planejamento ${escapeHtml(p.flight_instance)}`, { sticky: true });
       layer.bindPopup(
-        `<strong>REH planejada</strong><br>` +
+        `<strong>Planejamento do cenario</strong><br>` +
           `${escapeHtml(p.flight_instance)} / ${formatNumber(p.waypoint_count)} waypoints<br>` +
           `${conformity}<br>` +
           (Number.isFinite(Number(p.mean_deviation_m))
@@ -556,18 +591,21 @@ function renderMapLayers(tracks, plannedRoutes, conflicts, heatmap, capacity) {
       }),
     onEachFeature: (feature, layer) => {
       const p = feature.properties || {};
-      layer.bindTooltip(`Cruzamento ${escapeHtml(p.route_a)} / ${escapeHtml(p.route_b)}`, {
+      layer.bindTooltip(`Cruzamento ${escapeHtml(p.route_a_label || p.route_a)} / ${escapeHtml(p.route_b_label || p.route_b)}`, {
         sticky: true,
       });
       layer.bindPopup(
         `<strong>Cruzamento REH</strong><br>` +
-          `${escapeHtml(p.route_a)} / ${escapeHtml(p.route_b)}<br>` +
-          `Segmentos ${formatNumber(p.segment_a, 0)} e ${formatNumber(p.segment_b, 0)}`
+          `${escapeHtml(p.route_a_label || p.route_a)} / ${escapeHtml(p.route_b_label || p.route_b)}<br>` +
+          (p.method === "official_polygon_overlap"
+            ? "Sobreposicao entre corredores oficiais"
+            : `Segmentos ${formatNumber(p.segment_a, 0)} e ${formatNumber(p.segment_b, 0)}`)
       );
     },
   });
 
   applyCheckedLayer("layer-heat", state.heatLayer);
+  applyCheckedLayer("layer-official-reh", state.officialRehLayer);
   applyCheckedLayer("layer-atd-hotspots", state.atdHotspotLayer);
   applyCheckedLayer("layer-complexity", state.complexityLayer);
   applyCheckedLayer("layer-tracks", state.tracksLayer);
@@ -575,7 +613,7 @@ function renderMapLayers(tracks, plannedRoutes, conflicts, heatmap, capacity) {
   applyCheckedLayer("layer-conflicts", state.conflictLayer);
 
   fitMapToOperationalArea(visibleTracks, conflicts);
-  updateMapInfo(tracks, visibleTracks, plannedRoutes, conflicts, heatmap, capacity);
+  updateMapInfo(tracks, visibleTracks, plannedRoutes, officialReh, conflicts, heatmap, capacity);
 }
 
 function buildEndpointLayer(tracks) {
@@ -648,7 +686,7 @@ function fitMapToOperationalArea(tracks, conflicts) {
   });
 }
 
-function updateMapInfo(tracks, visibleTracks, plannedRoutes, conflicts, heatmap, capacity) {
+function updateMapInfo(tracks, visibleTracks, plannedRoutes, officialReh, conflicts, heatmap, capacity) {
   const trajectories = tracks.features?.length || 0;
   const visible = visibleTracks.features?.length || 0;
   const groups = tracks.properties?.trajectory_group_count || new Set(
@@ -656,13 +694,14 @@ function updateMapInfo(tracks, visibleTracks, plannedRoutes, conflicts, heatmap,
   ).size;
   const lowc = conflicts.features?.length || 0;
   const planned = plannedRoutes?.features?.length || 0;
+  const officialSegments = officialReh?.features?.length || 0;
   const density = heatmap.length || 0;
   const atdHotspots = capacity?.density?.hotspots?.features?.length || 0;
   const crossings = capacity?.complexity?.crossings?.features?.length || 0;
   setText("map-info-title", "Mapa operacional");
   setText(
     "map-info-text",
-    `${formatNumber(visible)} de ${formatNumber(trajectories)} trajetorias executadas visiveis, ${formatNumber(planned)} trajetorias REH planejadas; ${formatNumber(density)} pontos de densidade, ${formatNumber(atdHotspots)} corredores ATD, ${formatNumber(crossings)} cruzamentos REH e ${formatNumber(lowc)} eventos LoWC.`
+    `${formatNumber(visible)} de ${formatNumber(trajectories)} trajetorias executadas visiveis, ${formatNumber(officialSegments)} trechos REH oficiais e ${formatNumber(planned)} planejamentos de voo; ${formatNumber(density)} pontos de densidade, ${formatNumber(atdHotspots)} corredores ATD, ${formatNumber(crossings)} cruzamentos REH e ${formatNumber(lowc)} eventos LoWC.`
   );
 }
 
