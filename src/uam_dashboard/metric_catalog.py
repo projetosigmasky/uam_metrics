@@ -169,11 +169,11 @@ METRIC_CATALOG: list[dict[str, Any]] = [
     {
         "id": "spatial_route_adherence",
         "name": "Aderencia espacial a REH",
-        "formula": "amostras executadas com distancia a polilinha planejada <= tolerancia / amostras associadas * 100",
+        "formula": "amostras executadas dentro dos poligonos oficiais REH / amostras associadas * 100",
         "pdf_reference": "Produto 3 v1, diagnostico espacial complementar a secao 4.3.5",
         "code_reference": "src/uam_dashboard/metrics.py::trajectory_conformity",
-        "status": "implemented_configurable_diagnostic",
-        "data_required": "STATELOG executado e waypoints planejados do SCN",
+        "status": "implemented_official_wfs_gml_polygons",
+        "data_required": "STATELOG executado, SCN para associacao de voo e XML WFS/GML oficial da REH",
     },
     {
         "id": "air_traffic_density",
@@ -181,8 +181,8 @@ METRIC_CATALOG: list[dict[str, Any]] = [
         "formula": "ATD_dt = N_simultaneo_dt / A",
         "pdf_reference": "Produto 3 v1, Eq. 4.23",
         "code_reference": "src/uam_dashboard/capacity.py::capacity_metrics",
-        "status": "implemented_reh_corridor_area",
-        "data_required": "STATELOG, REH planejada e largura de corredor",
+        "status": "implemented_official_reh_polygon_area",
+        "data_required": "STATELOG e poligonos oficiais da REH no XML WFS/GML",
     },
     {
         "id": "complexity_components",
@@ -191,7 +191,7 @@ METRIC_CATALOG: list[dict[str, Any]] = [
         "pdf_reference": "Produto 3 v1, secao 4.4.1",
         "code_reference": "src/uam_dashboard/capacity.py::_complexity_components",
         "status": "implemented_proxy_components",
-        "data_required": "STATELOG, SCN, trajetorias agrupadas e LoWC",
+        "data_required": "STATELOG, eixos e poligonos oficiais da REH, trajetorias agrupadas e LoWC",
     },
     {
         "id": "resource_throughput",
@@ -200,7 +200,7 @@ METRIC_CATALOG: list[dict[str, Any]] = [
         "pdf_reference": "Produto 3 v1, Eq. 4.24",
         "code_reference": "src/uam_dashboard/capacity.py::_resource_throughput",
         "status": "implemented_one_hour_windows",
-        "data_required": "instancias de voo, pares OD, grupos de trajetoria e REH planejada",
+        "data_required": "instancias de voo, pares OD, grupos de trajetoria, SCN e trechos REH oficiais",
     },
     {
         "id": "resource_utilization",

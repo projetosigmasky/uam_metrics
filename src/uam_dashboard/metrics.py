@@ -5,6 +5,8 @@ from typing import Any
 import numpy as np
 import pandas as pd
 
+from .reh_parser import points_in_reh_network
+
 from .config import METERS_PER_NM
 
 
@@ -208,8 +210,9 @@ def trajectory_conformity(
     gap_seconds: float,
     reset_distance_m: float,
     jump_m: float,
+    reh_segments: list[dict[str, Any]] | None = None,
 ) -> tuple[dict[str, Any], dict[str, dict[str, Any]]]:
-    """Compare executed samples with the closest point of their planned polyline."""
+    """Compare execution with its plan and, when available, official REH polygons."""
 
     annotated = flight_instance_frame(df, gap_seconds, reset_distance_m, jump_m)
     by_instance: dict[str, dict[str, Any]] = {}
@@ -220,6 +223,7 @@ def trajectory_conformity(
     planned_horizontal_inefficiencies: list[float] = []
     executed_horizontal_inefficiencies: list[float] = []
     conforming_samples = 0
+    planned_line_conforming_samples = 0
     matched_instances = 0
 
     for flight_instance, group in annotated.groupby("flight_instance", sort=True):
@@ -251,7 +255,16 @@ def trajectory_conformity(
 
         matched_instances += 1
         all_deviations.extend(deviations.tolist())
-        inside = int(np.sum(deviations <= tolerance_m))
+        planned_line_inside = int(np.sum(deviations <= tolerance_m))
+        planned_line_conforming_samples += planned_line_inside
+        if reh_segments:
+            official_inside_mask = points_in_reh_network(
+                group[["lat", "lon"]].to_numpy(dtype=float),
+                reh_segments,
+            )
+            inside = int(np.sum(official_inside_mask))
+        else:
+            inside = planned_line_inside
         conforming_samples += inside
         planned_distance_m = _polyline_distance_m(planned_coordinates)
         executed_distance_m = float(group["distflown"].max() - group["distflown"].min())
@@ -271,6 +284,8 @@ def trajectory_conformity(
             "planned_start_time": planned["start_time"],
             "start_time_delta_s": abs(float(planned["start_simt"]) - start_simt),
             "spatial_adherence_pct": float(inside / len(deviations) * 100.0),
+            "planned_line_adherence_pct": float(planned_line_inside / len(deviations) * 100.0),
+            "adherence_reference": "official_reh_polygons" if reh_segments else "planned_line_tolerance",
             "mean_deviation_m": float(np.mean(deviations)),
             "p95_deviation_m": _percentile(deviations.tolist(), 0.95),
             "max_deviation_m": float(np.max(deviations)),
@@ -290,6 +305,13 @@ def trajectory_conformity(
         "planned_instances": int(len(planned_flights)),
         "matched_instances": int(matched_instances),
         "spatial_adherence_pct": _safe_rate(conforming_samples, total_samples, 100.0),
+        "planned_line_adherence_pct": _safe_rate(
+            planned_line_conforming_samples,
+            total_samples,
+            100.0,
+        ),
+        "adherence_reference": "official_reh_polygons" if reh_segments else "planned_line_tolerance",
+        "official_reh_segment_count": int(len(reh_segments or [])),
         "mean_deviation_m": float(np.mean(all_deviations)) if all_deviations else 0.0,
         "p95_deviation_m": _percentile(all_deviations, 0.95),
         "max_deviation_m": max(all_deviations) if all_deviations else 0.0,

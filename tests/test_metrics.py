@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import unittest
+from pathlib import Path
+from tempfile import TemporaryDirectory
 
 import pandas as pd
 
@@ -15,9 +17,60 @@ from src.uam_dashboard.metrics import (
     trajectory_conformity,
 )
 from src.uam_dashboard.scenario_parser import ground_delay_metrics
+from src.uam_dashboard.reh_parser import load_reh_network
 
 
 class MetricsTest(unittest.TestCase):
+    def test_reh_xml_parser_preserves_official_polygon_and_metadata(self) -> None:
+        xml = """<?xml version="1.0" encoding="UTF-8"?>
+<wfs:FeatureCollection xmlns:wfs="http://www.opengis.net/wfs" xmlns:gml="http://www.opengis.net/gml" xmlns:ICA="https://geoaisweb.decea.mil.br/geoserver/ICA">
+  <gml:featureMember><ICA:CV_REH_XP_SAO_PAULO><ICA:id>208</ICA:id><ICA:geom>
+    <gml:MultiPolygon><gml:polygonMember><gml:Polygon><gml:outerBoundaryIs><gml:LinearRing>
+      <gml:coordinates>-46.64,-23.56 -46.62,-23.56 -46.62,-23.54 -46.64,-23.54 -46.64,-23.56</gml:coordinates>
+    </gml:LinearRing></gml:outerBoundaryIs></gml:Polygon></gml:polygonMember></gml:MultiPolygon>
+  </ICA:geom><ICA:tipo>Obrig</ICA:tipo><ICA:nome>TESTE</ICA:nome><ICA:trecho>1</ICA:trecho>
+  <ICA:semi_largura>100.0</ICA:semi_largura><ICA:fixo_a_lat>-23.55</ICA:fixo_a_lat>
+  <ICA:fixo_a_lon>-46.64</ICA:fixo_a_lon><ICA:fixo_b_lat>-23.55</ICA:fixo_b_lat>
+  <ICA:fixo_b_lon>-46.62</ICA:fixo_b_lon></ICA:CV_REH_XP_SAO_PAULO></gml:featureMember>
+</wfs:FeatureCollection>"""
+        with TemporaryDirectory() as directory:
+            path = Path(directory) / "reh.xml"
+            path.write_text(xml, encoding="utf-8")
+            network = load_reh_network(path)
+
+        self.assertEqual(len(network["segments"]), 1)
+        self.assertEqual(network["segments"][0]["label"], "TESTE - trecho 1")
+        self.assertEqual(network["segments"][0]["semi_width_m"], 100.0)
+        self.assertGreater(network["segments"][0]["area_m2"], 0.0)
+        self.assertEqual(network["geojson"]["features"][0]["geometry"]["type"], "MultiPolygon")
+
+    def test_spatial_adherence_uses_official_reh_polygon_when_available(self) -> None:
+        df = pd.DataFrame(
+            [
+                {"simt": 0, "id": "A", "lat": -23.55, "lon": -46.63, "distflown": 0, "alt": 800},
+                {"simt": 60, "id": "A", "lat": -23.55, "lon": -46.62, "distflown": 1000, "alt": 800},
+            ]
+        )
+        planned = [{
+            "flight_instance": "A#0",
+            "aircraft_id": "A",
+            "start_time": "00:00:00.00",
+            "start_simt": 0.0,
+            "coordinates": [[-46.63, -23.55], [-46.62, -23.55]],
+        }]
+        reh_segments = [{
+            "polygons": [[
+                [-46.70, -23.60], [-46.69, -23.60], [-46.69, -23.59],
+                [-46.70, -23.59], [-46.70, -23.60],
+            ]]
+        }]
+
+        summary, _ = trajectory_conformity(df, planned, 50, 300, 250, 5000, reh_segments)
+
+        self.assertEqual(summary["planned_line_adherence_pct"], 100.0)
+        self.assertEqual(summary["spatial_adherence_pct"], 0.0)
+        self.assertEqual(summary["adherence_reference"], "official_reh_polygons")
+
     def test_efficiency_exposure_metrics(self) -> None:
         df = pd.DataFrame(
             [
