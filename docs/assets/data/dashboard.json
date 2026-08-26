@@ -1,78 +1,110 @@
 {
-  "source_log": "Media de 4 STATELOGs",
+  "source_log": "Media de 2 STATELOGs",
   "map_center": [
     -23.5505,
     -46.6333
   ],
   "summary": {
-    "records": 244337,
-    "aircraft_count": 177.0,
-    "sim_start_s": 3516.5,
-    "sim_end_s": 83758.0,
-    "duration_min": 1337.3583333333331,
-    "mean_simultaneous_aircraft": 2.0964956332201425,
-    "peak_simultaneous_aircraft": 6.0,
+    "records": 338166,
+    "aircraft_count": 325.0,
+    "operation_count": 325.0,
+    "fleet_mix": {
+      "eVTOL": 183,
+      "helicoptero": 142
+    },
+    "kinematics": {
+      "min_alt_m": 722.9856,
+      "mean_alt_m": 901.7037095010105,
+      "max_alt_m": 954.9384,
+      "mean_cas": 41.7505356249894,
+      "min_cas": 0.64549638,
+      "max_cas": 89.88365568,
+      "mean_tas": 43.61350528286352,
+      "min_tas": 0.67110074,
+      "max_tas": 93.86811382,
+      "mean_gs": 43.61350528286352,
+      "min_gs": 0.67110074,
+      "max_gs": 93.86811382,
+      "mean_vs": -0.052956182709431344,
+      "min_vs": -15.01199632,
+      "max_vs": 10.05264844,
+      "mean_hdg": 191.61329818534225,
+      "min_hdg": 0.06274136,
+      "max_hdg": 359.96369713,
+      "mean_trk": 191.61329818534225,
+      "min_trk": 0.06274136,
+      "max_trk": 359.96369713
+    },
+    "sim_start_s": 46720.0,
+    "sim_end_s": 79678.0,
+    "duration_min": 549.3,
+    "mean_simultaneous_aircraft": 6.238969937923898,
+    "peak_simultaneous_aircraft": 16.5,
     "bounds": {
-      "min_lat": -23.71823257,
+      "min_lat": -23.71822339,
       "max_lat": -23.435556,
-      "min_lon": -46.91935619,
+      "min_lon": -46.91935904,
       "max_lon": -46.46933745
     }
   },
   "efficiency": {
-    "mean_flight_time_min": 5.735145951035782,
-    "median_flight_time_min": 4.941666666666666,
-    "p95_flight_time_min": 10.966666666666667,
-    "mean_distance_nm": 10.962369562525303,
-    "median_distance_nm": 9.512972784395249,
-    "p95_distance_nm": 20.601234117026458,
-    "total_distance_km": 14374.03436829618,
-    "total_flight_hours": 67.67472222222221,
-    "mean_great_circle_distance_nm": 7.808244006166637,
-    "mean_route_efficiency_pct": 74.03290252423484,
-    "mean_horizontal_inefficiency_pct": 41.43066111491649,
+    "mean_flight_time_min": 8.65425641025641,
+    "median_flight_time_min": 7.433333333333334,
+    "p95_flight_time_min": 18.90833333333333,
+    "mean_distance_nm": 12.040793747338096,
+    "median_distance_nm": 10.498536240021597,
+    "p95_distance_nm": 24.245472154082076,
+    "total_distance_km": 14494.707513045601,
+    "total_flight_hours": 93.75444444444445,
+    "mean_great_circle_distance_nm": 8.179545977394223,
+    "mean_route_efficiency_pct": 70.10182198216839,
+    "mean_horizontal_inefficiency_pct": 65.01129122738205,
     "trajectory_conformity": {
       "available": true,
       "tolerance_m": 250.0,
-      "planned_instances": 708,
-      "matched_instances": 708,
-      "spatial_adherence_pct": 66.34734922261825,
-      "mean_deviation_m": 73.16110623641472,
-      "p95_deviation_m": 335.0852125981945,
-      "max_deviation_m": 4323.115159403422,
-      "mean_trajectory_conformity_ratio": -0.03454664834993274,
-      "median_trajectory_conformity_ratio": -0.034761776837311194,
-      "p95_trajectory_conformity_ratio": 0.0028185811792285787,
-      "mean_additional_distance_m": -730.7362887745271,
-      "total_additional_distance_m": -517361.29245236516,
-      "mean_planned_horizontal_inefficiency_ratio": 0.4649394028857432,
-      "mean_executed_horizontal_inefficiency_ratio": 0.4143066111491649,
-      "executed_samples": 244337
+      "planned_instances": 650,
+      "matched_instances": 650,
+      "spatial_adherence_pct": 69.00511201473103,
+      "spatial_adherence_scope": "media de cenarios; consultar cada execucao para o escopo aplicavel",
+      "spatial_adherence_by_vehicle_type": {
+        "helicoptero": {
+          "matched_instances": 142,
+          "executed_samples": 52346,
+          "conforming_samples": 31077,
+          "spatial_adherence_pct": 59.36843311809881
+        },
+        "eVTOL": {
+          "matched_instances": 183,
+          "executed_samples": 131700,
+          "conforming_samples": 99549,
+          "spatial_adherence_pct": 75.5876993166287
+        }
+      },
+      "mean_deviation_m": 33.76633212605377,
+      "p95_deviation_m": 162.1294875742825,
+      "max_deviation_m": 854.5660193190478,
+      "mean_trajectory_conformity_ratio": -0.03557425560952593,
+      "median_trajectory_conformity_ratio": -0.0299308702282381,
+      "p95_trajectory_conformity_ratio": -0.004808872495492221,
+      "mean_additional_distance_m": -775.2187307621948,
+      "total_additional_distance_m": -503892.17499542667,
+      "mean_planned_horizontal_inefficiency_ratio": 0.7112474675704846,
+      "mean_executed_horizontal_inefficiency_ratio": 0.6501129122738204,
+      "executed_samples": 338166
     },
     "ground_delay": {
       "available": true,
-      "matched_flights": 708,
-      "mean_ground_delay_s": 66.25141242937853,
-      "median_ground_delay_s": 67.5,
-      "p95_ground_delay_s": 129.49999999999997,
-      "max_ground_delay_s": 330.0
+      "matched_flights": 650,
+      "mean_ground_delay_s": 0.0,
+      "median_ground_delay_s": 0.0,
+      "p95_ground_delay_s": 0.0,
+      "max_ground_delay_s": 0.0
     },
     "airborne_delay": {
-      "available": true,
-      "matched_flights": 708,
-      "mean_airborne_delay_s": 2.06638418079096,
-      "median_airborne_delay_s": 0.0,
-      "p95_airborne_delay_s": 16.14999999999999,
-      "max_airborne_delay_s": 120.0,
-      "total_airborne_delay_s": 1463.0
+      "available": false
     },
     "total_delay": {
-      "available": true,
-      "mean_total_delay_s": 68.3177966101695,
-      "mean_ground_component_s": 66.25141242937853,
-      "mean_airborne_component_s": 2.06638418079096,
-      "ground_available": true,
-      "airborne_available": true
+      "available": false
     }
   },
   "capacity": {
@@ -85,9 +117,9 @@
     "density": {
       "available": true,
       "corridor_area_km2": 293.2333127578125,
-      "mean_simultaneous_aircraft": 1.658491582534609,
-      "peak_simultaneous_aircraft": 6,
-      "air_traffic_density_per_km2": 0.00565587711347241,
+      "mean_simultaneous_aircraft": 3.601068441273224,
+      "peak_simultaneous_aircraft": 14,
+      "air_traffic_density_per_km2": 0.012280557101121116,
       "hotspot_density_per_km2": 5.564928256988387,
       "hotspots": {
         "type": "FeatureCollection",
@@ -105,7 +137,7 @@
               "peak_simultaneous_aircraft": 1,
               "corridor_area_km2": 0.1796968359375,
               "air_traffic_density_per_km2": 5.564928256988387,
-              "sample_count": 27,
+              "sample_count": 66,
               "density_ratio": 1.0
             },
             "geometry": {
@@ -149,18 +181,72 @@
           {
             "type": "Feature",
             "properties": {
+              "resource_id": "REH-187",
+              "label": "Portão Luz - trecho 1",
+              "reh_name": "Portão Luz",
+              "section": "1",
+              "route_type": "Obrig",
+              "semi_width_m": 100.0,
+              "mean_simultaneous_aircraft": 1.0,
+              "peak_simultaneous_aircraft": 1,
+              "corridor_area_km2": 0.2300770625,
+              "air_traffic_density_per_km2": 4.346369816852125,
+              "sample_count": 19,
+              "density_ratio": 0.7810289039025782
+            },
+            "geometry": {
+              "type": "MultiPolygon",
+              "coordinates": [
+                [
+                  [
+                    [
+                      -46.6353,
+                      -23.535
+                    ],
+                    [
+                      -46.6361,
+                      -23.5324
+                    ],
+                    [
+                      -46.6356,
+                      -23.5227
+                    ],
+                    [
+                      -46.6347,
+                      -23.5227
+                    ],
+                    [
+                      -46.6338,
+                      -23.5227
+                    ],
+                    [
+                      -46.6343,
+                      -23.533
+                    ],
+                    [
+                      -46.6353,
+                      -23.535
+                    ]
+                  ]
+                ]
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
               "resource_id": "REH-204",
               "label": "MORUMBI - trecho 1",
               "reh_name": "MORUMBI",
               "section": "1",
               "route_type": "Obrig",
               "semi_width_m": 100.0,
-              "mean_simultaneous_aircraft": 1.0019607843137255,
+              "mean_simultaneous_aircraft": 1.0580152671755725,
               "peak_simultaneous_aircraft": 2,
               "corridor_area_km2": 0.267515203125,
-              "air_traffic_density_per_km2": 3.7454349233585282,
-              "sample_count": 511,
-              "density_ratio": 0.6730428049373403
+              "air_traffic_density_per_km2": 3.954972483119776,
+              "sample_count": 1386,
+              "density_ratio": 0.7106960414365013
             },
             "geometry": {
               "type": "MultiPolygon",
@@ -213,7 +299,7 @@
               "peak_simultaneous_aircraft": 1,
               "corridor_area_km2": 0.270127546875,
               "air_traffic_density_per_km2": 3.7019549156263736,
-              "sample_count": 85,
+              "sample_count": 116,
               "density_ratio": 0.6652295851213341
             },
             "geometry": {
@@ -265,72 +351,18 @@
           {
             "type": "Feature",
             "properties": {
-              "resource_id": "REH-190",
-              "label": "Portão Dumont - trecho 1",
-              "reh_name": "Portão Dumont",
-              "section": "1",
-              "route_type": "Obrig",
-              "semi_width_m": 100.0,
-              "mean_simultaneous_aircraft": 1.0,
-              "peak_simultaneous_aircraft": 1,
-              "corridor_area_km2": 0.2905293125,
-              "air_traffic_density_per_km2": 3.441993482155092,
-              "sample_count": 210,
-              "density_ratio": 0.6185153380607679
-            },
-            "geometry": {
-              "type": "MultiPolygon",
-              "coordinates": [
-                [
-                  [
-                    [
-                      -46.4692,
-                      -23.4803
-                    ],
-                    [
-                      -46.4701,
-                      -23.4782
-                    ],
-                    [
-                      -46.4701,
-                      -23.4661
-                    ],
-                    [
-                      -46.4692,
-                      -23.4661
-                    ],
-                    [
-                      -46.4683,
-                      -23.4661
-                    ],
-                    [
-                      -46.4683,
-                      -23.4824
-                    ],
-                    [
-                      -46.4692,
-                      -23.4803
-                    ]
-                  ]
-                ]
-              ]
-            }
-          },
-          {
-            "type": "Feature",
-            "properties": {
               "resource_id": "REH-200",
               "label": "EXTERNO - trecho 1",
               "reh_name": "EXTERNO",
               "section": "1",
               "route_type": "Recom",
               "semi_width_m": 100.0,
-              "mean_simultaneous_aircraft": 1.0,
-              "peak_simultaneous_aircraft": 1,
+              "mean_simultaneous_aircraft": 1.0396039603960396,
+              "peak_simultaneous_aircraft": 3,
               "corridor_area_km2": 0.319839421875,
-              "air_traffic_density_per_km2": 3.1265689330529782,
-              "sample_count": 137,
-              "density_ratio": 0.5618345446101054
+              "air_traffic_density_per_km2": 3.250393445253096,
+              "sample_count": 315,
+              "density_ratio": 0.5840854176639709
             },
             "geometry": {
               "type": "MultiPolygon",
@@ -383,7 +415,7 @@
               "peak_simultaneous_aircraft": 1,
               "corridor_area_km2": 0.3207762109375,
               "air_traffic_density_per_km2": 3.1174381575161134,
-              "sample_count": 80,
+              "sample_count": 122,
               "density_ratio": 0.5601937731364753
             },
             "geometry": {
@@ -427,72 +459,18 @@
           {
             "type": "Feature",
             "properties": {
-              "resource_id": "REH-140",
-              "label": "CONGONHAS - trecho 2",
-              "reh_name": "CONGONHAS",
-              "section": "2",
-              "route_type": "Recom",
-              "semi_width_m": 100.0,
-              "mean_simultaneous_aircraft": 1.0,
-              "peak_simultaneous_aircraft": 1,
-              "corridor_area_km2": 0.3304482734375,
-              "air_traffic_density_per_km2": 3.0261922375852177,
-              "sample_count": 147,
-              "density_ratio": 0.5437971700326869
-            },
-            "geometry": {
-              "type": "MultiPolygon",
-              "coordinates": [
-                [
-                  [
-                    [
-                      -46.6519,
-                      -23.6079
-                    ],
-                    [
-                      -46.6528,
-                      -23.6078
-                    ],
-                    [
-                      -46.6537,
-                      -23.6077
-                    ],
-                    [
-                      -46.6518,
-                      -23.5919
-                    ],
-                    [
-                      -46.6508,
-                      -23.5917
-                    ],
-                    [
-                      -46.65,
-                      -23.5921
-                    ],
-                    [
-                      -46.6519,
-                      -23.6079
-                    ]
-                  ]
-                ]
-              ]
-            }
-          },
-          {
-            "type": "Feature",
-            "properties": {
               "resource_id": "REH-205",
               "label": "PINHEIROS - trecho 3",
               "reh_name": "PINHEIROS",
               "section": "3",
               "route_type": "Obrig",
               "semi_width_m": 100.0,
-              "mean_simultaneous_aircraft": 1.0,
-              "peak_simultaneous_aircraft": 1,
+              "mean_simultaneous_aircraft": 1.0048959608323134,
+              "peak_simultaneous_aircraft": 2,
               "corridor_area_km2": 0.420546609375,
-              "air_traffic_density_per_km2": 2.3778577159049292,
-              "sample_count": 1434,
-              "density_ratio": 0.42729350785768655
+              "air_traffic_density_per_km2": 2.389499614146814,
+              "sample_count": 821,
+              "density_ratio": 0.4293855201360596
             },
             "geometry": {
               "type": "MultiPolygon",
@@ -565,7 +543,7 @@
               "peak_simultaneous_aircraft": 1,
               "corridor_area_km2": 0.4440066796875,
               "air_traffic_density_per_km2": 2.2522183691106137,
-              "sample_count": 5,
+              "sample_count": 39,
               "density_ratio": 0.4047165147694938
             },
             "geometry": {
@@ -619,7 +597,7 @@
               "peak_simultaneous_aircraft": 1,
               "corridor_area_km2": 0.4744545390625,
               "air_traffic_density_per_km2": 2.1076834926607577,
-              "sample_count": 92,
+              "sample_count": 250,
               "density_ratio": 0.37874405478883716
             },
             "geometry": {
@@ -669,12 +647,12 @@
               "section": "2",
               "route_type": "Recom",
               "semi_width_m": 250.0,
-              "mean_simultaneous_aircraft": 1.0,
-              "peak_simultaneous_aircraft": 1,
+              "mean_simultaneous_aircraft": 1.0314547837483616,
+              "peak_simultaneous_aircraft": 2,
               "corridor_area_km2": 0.5030644375,
-              "air_traffic_density_per_km2": 1.987816918583119,
-              "sample_count": 275,
-              "density_ratio": 0.3572044106924175
+              "air_traffic_density_per_km2": 2.0503432698884856,
+              "sample_count": 787,
+              "density_ratio": 0.36844019818470847
             },
             "geometry": {
               "type": "MultiPolygon",
@@ -723,12 +701,12 @@
               "section": "2",
               "route_type": "Recom",
               "semi_width_m": 250.0,
-              "mean_simultaneous_aircraft": 1.0,
-              "peak_simultaneous_aircraft": 1,
+              "mean_simultaneous_aircraft": 1.0204918032786885,
+              "peak_simultaneous_aircraft": 2,
               "corridor_area_km2": 0.6266585859375,
-              "air_traffic_density_per_km2": 1.5957652578939296,
-              "sample_count": 167,
-              "density_ratio": 0.2867539677425278
+              "air_traffic_density_per_km2": 1.6284653656376578,
+              "sample_count": 249,
+              "density_ratio": 0.29263007363889115
             },
             "geometry": {
               "type": "MultiPolygon",
@@ -771,18 +749,84 @@
           {
             "type": "Feature",
             "properties": {
+              "resource_id": "REH-114",
+              "label": "ARICANDUVA - trecho 1",
+              "reh_name": "ARICANDUVA",
+              "section": "1",
+              "route_type": "Recom",
+              "semi_width_m": 250.0,
+              "mean_simultaneous_aircraft": 1.0,
+              "peak_simultaneous_aircraft": 1,
+              "corridor_area_km2": 0.705563703125,
+              "air_traffic_density_per_km2": 1.4173064679644336,
+              "sample_count": 107,
+              "density_ratio": 0.25468548784696243
+            },
+            "geometry": {
+              "type": "MultiPolygon",
+              "coordinates": [
+                [
+                  [
+                    [
+                      -46.5483,
+                      -23.535
+                    ],
+                    [
+                      -46.5537,
+                      -23.5335
+                    ],
+                    [
+                      -46.5587,
+                      -23.5264
+                    ],
+                    [
+                      -46.5583,
+                      -23.5231
+                    ],
+                    [
+                      -46.5555,
+                      -23.5231
+                    ],
+                    [
+                      -46.5506,
+                      -23.53
+                    ],
+                    [
+                      -46.5488,
+                      -23.531
+                    ],
+                    [
+                      -46.547,
+                      -23.5323
+                    ],
+                    [
+                      -46.5469,
+                      -23.5324
+                    ],
+                    [
+                      -46.5483,
+                      -23.535
+                    ]
+                  ]
+                ]
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
               "resource_id": "REH-141",
               "label": "ESPRAIADA - trecho 1",
               "reh_name": "ESPRAIADA",
               "section": "1",
               "route_type": "Recom",
               "semi_width_m": 100.0,
-              "mean_simultaneous_aircraft": 1.0,
-              "peak_simultaneous_aircraft": 1,
+              "mean_simultaneous_aircraft": 1.0543042270904042,
+              "peak_simultaneous_aircraft": 2,
               "corridor_area_km2": 0.7709270625,
-              "air_traffic_density_per_km2": 1.2971395721368908,
-              "sample_count": 354,
-              "density_ratio": 0.2330918768823218
+              "air_traffic_density_per_km2": 1.367579734030162,
+              "sample_count": 3417,
+              "density_ratio": 0.2457497510974679
             },
             "geometry": {
               "type": "MultiPolygon",
@@ -863,12 +907,12 @@
               "section": "6",
               "route_type": "Recom",
               "semi_width_m": 250.0,
-              "mean_simultaneous_aircraft": 1.0,
-              "peak_simultaneous_aircraft": 1,
+              "mean_simultaneous_aircraft": 1.0043478260869565,
+              "peak_simultaneous_aircraft": 2,
               "corridor_area_km2": 0.79548565625,
-              "air_traffic_density_per_km2": 1.2570936913106658,
-              "sample_count": 323,
-              "density_ratio": 0.225895758805519
+              "air_traffic_density_per_km2": 1.2625593160554949,
+              "sample_count": 462,
+              "density_ratio": 0.22687791427858647
             },
             "geometry": {
               "type": "MultiPolygon",
@@ -911,6 +955,92 @@
           {
             "type": "Feature",
             "properties": {
+              "resource_id": "REH-186",
+              "label": "TANCREDO - trecho 2",
+              "reh_name": "TANCREDO",
+              "section": "2",
+              "route_type": "Obrig",
+              "semi_width_m": 100.0,
+              "mean_simultaneous_aircraft": 1.0,
+              "peak_simultaneous_aircraft": 1,
+              "corridor_area_km2": 0.823806234375,
+              "air_traffic_density_per_km2": 1.2138776793291368,
+              "sample_count": 22,
+              "density_ratio": 0.21812997819060112
+            },
+            "geometry": {
+              "type": "MultiPolygon",
+              "coordinates": [
+                [
+                  [
+                    [
+                      -46.6295,
+                      -23.63
+                    ],
+                    [
+                      -46.6297,
+                      -23.6292
+                    ],
+                    [
+                      -46.6299,
+                      -23.6283
+                    ],
+                    [
+                      -46.6175,
+                      -23.6258
+                    ],
+                    [
+                      -46.6129,
+                      -23.6219
+                    ],
+                    [
+                      -46.6065,
+                      -23.6068
+                    ],
+                    [
+                      -46.6058,
+                      -23.6049
+                    ],
+                    [
+                      -46.6039,
+                      -23.6041
+                    ],
+                    [
+                      -46.6006,
+                      -23.6036
+                    ],
+                    [
+                      -46.6022,
+                      -23.6053
+                    ],
+                    [
+                      -46.6044,
+                      -23.6062
+                    ],
+                    [
+                      -46.6049,
+                      -23.6074
+                    ],
+                    [
+                      -46.6114,
+                      -23.6229
+                    ],
+                    [
+                      -46.6167,
+                      -23.6275
+                    ],
+                    [
+                      -46.6295,
+                      -23.63
+                    ]
+                  ]
+                ]
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
               "resource_id": "REH-185",
               "label": "TANCREDO - trecho 1",
               "reh_name": "TANCREDO",
@@ -921,7 +1051,7 @@
               "peak_simultaneous_aircraft": 1,
               "corridor_area_km2": 0.8732630625,
               "air_traffic_density_per_km2": 1.1451303083141686,
-              "sample_count": 309,
+              "sample_count": 197,
               "density_ratio": 0.20577629314018994
             },
             "geometry": {
@@ -997,18 +1127,72 @@
           {
             "type": "Feature",
             "properties": {
+              "resource_id": "REH-128",
+              "label": "OESTE - trecho 1",
+              "reh_name": "OESTE",
+              "section": "1",
+              "route_type": "Recom",
+              "semi_width_m": 250.0,
+              "mean_simultaneous_aircraft": 1.0389749065670049,
+              "peak_simultaneous_aircraft": 2,
+              "corridor_area_km2": 0.9939642890625,
+              "air_traffic_density_per_km2": 1.04528393826599,
+              "sample_count": 1946,
+              "density_ratio": 0.18783421636268746
+            },
+            "geometry": {
+              "type": "MultiPolygon",
+              "coordinates": [
+                [
+                  [
+                    [
+                      -46.7528,
+                      -23.5475
+                    ],
+                    [
+                      -46.7553,
+                      -23.5481
+                    ],
+                    [
+                      -46.7575,
+                      -23.5479
+                    ],
+                    [
+                      -46.7529,
+                      -23.5277
+                    ],
+                    [
+                      -46.7503,
+                      -23.5261
+                    ],
+                    [
+                      -46.75,
+                      -23.5349
+                    ],
+                    [
+                      -46.7528,
+                      -23.5475
+                    ]
+                  ]
+                ]
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
               "resource_id": "REH-183",
               "label": "MARTE - trecho 4",
               "reh_name": "MARTE",
               "section": "4",
               "route_type": "Recom",
               "semi_width_m": 250.0,
-              "mean_simultaneous_aircraft": 1.0167364016736402,
+              "mean_simultaneous_aircraft": 1.0197250448296473,
               "peak_simultaneous_aircraft": 2,
               "corridor_area_km2": 0.989880359375,
-              "air_traffic_density_per_km2": 1.0271305941614974,
-              "sample_count": 243,
-              "density_ratio": 0.1845721178654255
+              "air_traffic_density_per_km2": 1.0301497904994206,
+              "sample_count": 1706,
+              "density_ratio": 0.18511465789442436
             },
             "geometry": {
               "type": "MultiPolygon",
@@ -1055,18 +1239,18 @@
           {
             "type": "Feature",
             "properties": {
-              "resource_id": "REH-128",
-              "label": "OESTE - trecho 1",
-              "reh_name": "OESTE",
-              "section": "1",
+              "resource_id": "REH-112",
+              "label": "ACLIMAÇÃO - trecho 3",
+              "reh_name": "ACLIMAÇÃO",
+              "section": "3",
               "route_type": "Recom",
               "semi_width_m": 250.0,
-              "mean_simultaneous_aircraft": 1.0,
-              "peak_simultaneous_aircraft": 1,
-              "corridor_area_km2": 0.9939642890625,
-              "air_traffic_density_per_km2": 1.0060723619589924,
-              "sample_count": 485,
-              "density_ratio": 0.18078802016819817
+              "mean_simultaneous_aircraft": 1.0440528634361232,
+              "peak_simultaneous_aircraft": 2,
+              "corridor_area_km2": 1.0839422265625,
+              "air_traffic_density_per_km2": 0.9631997332063742,
+              "sample_count": 474,
+              "density_ratio": 0.1730839444330296
             },
             "geometry": {
               "type": "MultiPolygon",
@@ -1074,86 +1258,32 @@
                 [
                   [
                     [
-                      -46.7528,
-                      -23.5475
+                      -46.627,
+                      -23.5761
                     ],
                     [
-                      -46.7553,
-                      -23.5481
+                      -46.6286,
+                      -23.5744
                     ],
                     [
-                      -46.7575,
-                      -23.5479
+                      -46.6302,
+                      -23.5728
                     ],
                     [
-                      -46.7529,
-                      -23.5277
+                      -46.6173,
+                      -23.5564
                     ],
                     [
-                      -46.7503,
-                      -23.5261
+                      -46.6156,
+                      -23.5578
                     ],
                     [
-                      -46.75,
-                      -23.5349
+                      -46.6138,
+                      -23.5592
                     ],
                     [
-                      -46.7528,
-                      -23.5475
-                    ]
-                  ]
-                ]
-              ]
-            }
-          },
-          {
-            "type": "Feature",
-            "properties": {
-              "resource_id": "REH-120",
-              "label": "ECOLÓGICO - trecho 1",
-              "reh_name": "ECOLÓGICO",
-              "section": "1",
-              "route_type": "Recom",
-              "semi_width_m": 250.0,
-              "mean_simultaneous_aircraft": 1.0,
-              "peak_simultaneous_aircraft": 1,
-              "corridor_area_km2": 1.0745419609375,
-              "air_traffic_density_per_km2": 0.9306290832305285,
-              "sample_count": 259,
-              "density_ratio": 0.1672311016879423
-            },
-            "geometry": {
-              "type": "MultiPolygon",
-              "coordinates": [
-                [
-                  [
-                    [
-                      -46.5612,
-                      -23.5226
-                    ],
-                    [
-                      -46.5583,
-                      -23.5231
-                    ],
-                    [
-                      -46.5587,
-                      -23.5264
-                    ],
-                    [
-                      -46.5692,
-                      -23.5357
-                    ],
-                    [
-                      -46.5763,
-                      -23.539
-                    ],
-                    [
-                      -46.5773,
-                      -23.5368
-                    ],
-                    [
-                      -46.5612,
-                      -23.5226
+                      -46.627,
+                      -23.5761
                     ]
                   ]
                 ]
@@ -1169,12 +1299,12 @@
               "section": "1",
               "route_type": "Recom",
               "semi_width_m": 250.0,
-              "mean_simultaneous_aircraft": 1.0,
-              "peak_simultaneous_aircraft": 1,
+              "mean_simultaneous_aircraft": 1.0310880829015545,
+              "peak_simultaneous_aircraft": 2,
               "corridor_area_km2": 1.08334971875,
-              "air_traffic_density_per_km2": 0.9230629617496265,
-              "sample_count": 494,
-              "density_ratio": 0.16587149359750547
+              "air_traffic_density_per_km2": 0.9517592196278534,
+              "sample_count": 597,
+              "density_ratio": 0.1710281203414694
             },
             "geometry": {
               "type": "MultiPolygon",
@@ -1257,18 +1387,18 @@
           {
             "type": "Feature",
             "properties": {
-              "resource_id": "REH-112",
-              "label": "ACLIMAÇÃO - trecho 3",
-              "reh_name": "ACLIMAÇÃO",
-              "section": "3",
+              "resource_id": "REH-120",
+              "label": "ECOLÓGICO - trecho 1",
+              "reh_name": "ECOLÓGICO",
+              "section": "1",
               "route_type": "Recom",
               "semi_width_m": 250.0,
-              "mean_simultaneous_aircraft": 1.0,
-              "peak_simultaneous_aircraft": 1,
-              "corridor_area_km2": 1.0839422265625,
-              "air_traffic_density_per_km2": 0.9225583942525188,
-              "sample_count": 323,
-              "density_ratio": 0.1657808244147583
+              "mean_simultaneous_aircraft": 1.0174002047082906,
+              "peak_simultaneous_aircraft": 2,
+              "corridor_area_km2": 1.0745419609375,
+              "air_traffic_density_per_km2": 0.9468222197862286,
+              "sample_count": 1988,
+              "density_ratio": 0.1701409570909055
             },
             "geometry": {
               "type": "MultiPolygon",
@@ -1276,32 +1406,32 @@
                 [
                   [
                     [
-                      -46.627,
-                      -23.5761
+                      -46.5612,
+                      -23.5226
                     ],
                     [
-                      -46.6286,
-                      -23.5744
+                      -46.5583,
+                      -23.5231
                     ],
                     [
-                      -46.6302,
-                      -23.5728
+                      -46.5587,
+                      -23.5264
                     ],
                     [
-                      -46.6173,
-                      -23.5564
+                      -46.5692,
+                      -23.5357
                     ],
                     [
-                      -46.6156,
-                      -23.5578
+                      -46.5763,
+                      -23.539
                     ],
                     [
-                      -46.6138,
-                      -23.5592
+                      -46.5773,
+                      -23.5368
                     ],
                     [
-                      -46.627,
-                      -23.5761
+                      -46.5612,
+                      -23.5226
                     ]
                   ]
                 ]
@@ -1317,12 +1447,12 @@
               "section": "1",
               "route_type": "Recom",
               "semi_width_m": 250.0,
-              "mean_simultaneous_aircraft": 1.0,
-              "peak_simultaneous_aircraft": 1,
+              "mean_simultaneous_aircraft": 1.1158963585434174,
+              "peak_simultaneous_aircraft": 3,
               "corridor_area_km2": 1.1940535859375,
-              "air_traffic_density_per_km2": 0.8374833523194516,
-              "sample_count": 737,
-              "density_ratio": 0.150493108562136
+              "air_traffic_density_per_km2": 0.9345446231940099,
+              "sample_count": 6374,
+              "density_ratio": 0.16793471183036673
             },
             "geometry": {
               "type": "MultiPolygon",
@@ -1373,18 +1503,204 @@
           {
             "type": "Feature",
             "properties": {
+              "resource_id": "REH-202",
+              "label": "ESTÁDIO - trecho 1",
+              "reh_name": "ESTÁDIO",
+              "section": "1",
+              "route_type": "Recom",
+              "semi_width_m": 100.0,
+              "mean_simultaneous_aircraft": 1.16075985256592,
+              "peak_simultaneous_aircraft": 3,
+              "corridor_area_km2": 1.2769798671875,
+              "air_traffic_density_per_km2": 0.908988373577455,
+              "sample_count": 4094,
+              "density_ratio": 0.16334233463584288
+            },
+            "geometry": {
+              "type": "MultiPolygon",
+              "coordinates": [
+                [
+                  [
+                    [
+                      -46.7482,
+                      -23.5578
+                    ],
+                    [
+                      -46.7475,
+                      -23.5572
+                    ],
+                    [
+                      -46.7464,
+                      -23.5574
+                    ],
+                    [
+                      -46.722,
+                      -23.6014
+                    ],
+                    [
+                      -46.7124,
+                      -23.6108
+                    ],
+                    [
+                      -46.7128,
+                      -23.6117
+                    ],
+                    [
+                      -46.7167,
+                      -23.6091
+                    ],
+                    [
+                      -46.7234,
+                      -23.6025
+                    ],
+                    [
+                      -46.7482,
+                      -23.5578
+                    ]
+                  ]
+                ]
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "resource_id": "REH-181",
+              "label": "MARTE - trecho 1",
+              "reh_name": "MARTE",
+              "section": "1",
+              "route_type": "Recom",
+              "semi_width_m": 250.0,
+              "mean_simultaneous_aircraft": 1.2409230272712604,
+              "peak_simultaneous_aircraft": 4,
+              "corridor_area_km2": 1.429986875,
+              "air_traffic_density_per_km2": 0.8677863055709937,
+              "sample_count": 7690,
+              "density_ratio": 0.1559384533810001
+            },
+            "geometry": {
+              "type": "MultiPolygon",
+              "coordinates": [
+                [
+                  [
+                    [
+                      -46.7503,
+                      -23.5261
+                    ],
+                    [
+                      -46.7513,
+                      -23.5235
+                    ],
+                    [
+                      -46.7466,
+                      -23.5159
+                    ],
+                    [
+                      -46.7333,
+                      -23.5154
+                    ],
+                    [
+                      -46.729,
+                      -23.5133
+                    ],
+                    [
+                      -46.7261,
+                      -23.5144
+                    ],
+                    [
+                      -46.7257,
+                      -23.5168
+                    ],
+                    [
+                      -46.7322,
+                      -23.5198
+                    ],
+                    [
+                      -46.744,
+                      -23.5203
+                    ],
+                    [
+                      -46.7478,
+                      -23.5264
+                    ],
+                    [
+                      -46.7503,
+                      -23.5261
+                    ]
+                  ]
+                ]
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "resource_id": "REH-137",
+              "label": "ECOLÓGICO - trecho 2",
+              "reh_name": "ECOLÓGICO",
+              "section": "2",
+              "route_type": "Recom",
+              "semi_width_m": 250.0,
+              "mean_simultaneous_aircraft": 1.0669061517736866,
+              "peak_simultaneous_aircraft": 2,
+              "corridor_area_km2": 1.299694359375,
+              "air_traffic_density_per_km2": 0.820890037782993,
+              "sample_count": 2376,
+              "density_ratio": 0.14751134244221867
+            },
+            "geometry": {
+              "type": "MultiPolygon",
+              "coordinates": [
+                [
+                  [
+                    [
+                      -46.5433,
+                      -23.5003
+                    ],
+                    [
+                      -46.5419,
+                      -23.5022
+                    ],
+                    [
+                      -46.5406,
+                      -23.5042
+                    ],
+                    [
+                      -46.5555,
+                      -23.5231
+                    ],
+                    [
+                      -46.5583,
+                      -23.5231
+                    ],
+                    [
+                      -46.5581,
+                      -23.5191
+                    ],
+                    [
+                      -46.5433,
+                      -23.5003
+                    ]
+                  ]
+                ]
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
               "resource_id": "REH-122",
               "label": "FÁBRICA - trecho 2",
               "reh_name": "FÁBRICA",
               "section": "2",
               "route_type": "Obrig",
               "semi_width_m": 100.0,
-              "mean_simultaneous_aircraft": 1.0661818181818181,
+              "mean_simultaneous_aircraft": 1.0414703110273327,
               "peak_simultaneous_aircraft": 2,
               "corridor_area_km2": 1.2946532578125,
-              "air_traffic_density_per_km2": 0.8235269264167946,
-              "sample_count": 1466,
-              "density_ratio": 0.14798518298643237
+              "air_traffic_density_per_km2": 0.8044395707828706,
+              "sample_count": 1105,
+              "density_ratio": 0.1445552455726024
             },
             "geometry": {
               "type": "MultiPolygon",
@@ -1437,7 +1753,7 @@
               "peak_simultaneous_aircraft": 1,
               "corridor_area_km2": 1.25524121875,
               "air_traffic_density_per_km2": 0.7966596261042356,
-              "sample_count": 35,
+              "sample_count": 191,
               "density_ratio": 0.1431572141300829
             },
             "geometry": {
@@ -1491,7 +1807,7 @@
               "peak_simultaneous_aircraft": 1,
               "corridor_area_km2": 1.274680109375,
               "air_traffic_density_per_km2": 0.7845105549582312,
-              "sample_count": 10,
+              "sample_count": 136,
               "density_ratio": 0.14097406448556635
             },
             "geometry": {
@@ -1543,68 +1859,6 @@
           {
             "type": "Feature",
             "properties": {
-              "resource_id": "REH-202",
-              "label": "ESTÁDIO - trecho 1",
-              "reh_name": "ESTÁDIO",
-              "section": "1",
-              "route_type": "Recom",
-              "semi_width_m": 100.0,
-              "mean_simultaneous_aircraft": 1.0,
-              "peak_simultaneous_aircraft": 1,
-              "corridor_area_km2": 1.2769798671875,
-              "air_traffic_density_per_km2": 0.7830977023956238,
-              "sample_count": 1634,
-              "density_ratio": 0.1407201793504196
-            },
-            "geometry": {
-              "type": "MultiPolygon",
-              "coordinates": [
-                [
-                  [
-                    [
-                      -46.7482,
-                      -23.5578
-                    ],
-                    [
-                      -46.7475,
-                      -23.5572
-                    ],
-                    [
-                      -46.7464,
-                      -23.5574
-                    ],
-                    [
-                      -46.722,
-                      -23.6014
-                    ],
-                    [
-                      -46.7124,
-                      -23.6108
-                    ],
-                    [
-                      -46.7128,
-                      -23.6117
-                    ],
-                    [
-                      -46.7167,
-                      -23.6091
-                    ],
-                    [
-                      -46.7234,
-                      -23.6025
-                    ],
-                    [
-                      -46.7482,
-                      -23.5578
-                    ]
-                  ]
-                ]
-              ]
-            }
-          },
-          {
-            "type": "Feature",
-            "properties": {
               "resource_id": "REH-209",
               "label": "FERNÃO - trecho 1",
               "reh_name": "FERNÃO",
@@ -1615,7 +1869,7 @@
               "peak_simultaneous_aircraft": 1,
               "corridor_area_km2": 1.296174578125,
               "air_traffic_density_per_km2": 0.771501012962748,
-              "sample_count": 1,
+              "sample_count": 123,
               "density_ratio": 0.138636290951982
             },
             "geometry": {
@@ -1675,60 +1929,6 @@
           {
             "type": "Feature",
             "properties": {
-              "resource_id": "REH-137",
-              "label": "ECOLÓGICO - trecho 2",
-              "reh_name": "ECOLÓGICO",
-              "section": "2",
-              "route_type": "Recom",
-              "semi_width_m": 250.0,
-              "mean_simultaneous_aircraft": 1.0,
-              "peak_simultaneous_aircraft": 1,
-              "corridor_area_km2": 1.299694359375,
-              "air_traffic_density_per_km2": 0.7694116642014837,
-              "sample_count": 347,
-              "density_ratio": 0.13826084159041285
-            },
-            "geometry": {
-              "type": "MultiPolygon",
-              "coordinates": [
-                [
-                  [
-                    [
-                      -46.5433,
-                      -23.5003
-                    ],
-                    [
-                      -46.5419,
-                      -23.5022
-                    ],
-                    [
-                      -46.5406,
-                      -23.5042
-                    ],
-                    [
-                      -46.5555,
-                      -23.5231
-                    ],
-                    [
-                      -46.5583,
-                      -23.5231
-                    ],
-                    [
-                      -46.5581,
-                      -23.5191
-                    ],
-                    [
-                      -46.5433,
-                      -23.5003
-                    ]
-                  ]
-                ]
-              ]
-            }
-          },
-          {
-            "type": "Feature",
-            "properties": {
               "resource_id": "REH-208",
               "label": "FÁBRICA - trecho 1",
               "reh_name": "FÁBRICA",
@@ -1739,7 +1939,7 @@
               "peak_simultaneous_aircraft": 1,
               "corridor_area_km2": 1.370008359375,
               "air_traffic_density_per_km2": 0.729922553506317,
-              "sample_count": 343,
+              "sample_count": 154,
               "density_ratio": 0.1311647733445057
             },
             "geometry": {
@@ -1789,12 +1989,12 @@
               "section": "4",
               "route_type": "Recom",
               "semi_width_m": 250.0,
-              "mean_simultaneous_aircraft": 1.0282698831511496,
+              "mean_simultaneous_aircraft": 1.0442095146564152,
               "peak_simultaneous_aircraft": 2,
               "corridor_area_km2": 1.4458094296875,
-              "air_traffic_density_per_km2": 0.7112070664620038,
-              "sample_count": 2728,
-              "density_ratio": 0.12780165953961337
+              "air_traffic_density_per_km2": 0.7222317777261369,
+              "sample_count": 2173,
+              "density_ratio": 0.12978276527090257
             },
             "geometry": {
               "type": "MultiPolygon",
@@ -1849,88 +2049,18 @@
           {
             "type": "Feature",
             "properties": {
-              "resource_id": "REH-181",
-              "label": "MARTE - trecho 1",
-              "reh_name": "MARTE",
-              "section": "1",
-              "route_type": "Recom",
-              "semi_width_m": 250.0,
-              "mean_simultaneous_aircraft": 1.0043668122270741,
-              "peak_simultaneous_aircraft": 2,
-              "corridor_area_km2": 1.429986875,
-              "air_traffic_density_per_km2": 0.7023608606387203,
-              "sample_count": 1380,
-              "density_ratio": 0.1262120243431174
-            },
-            "geometry": {
-              "type": "MultiPolygon",
-              "coordinates": [
-                [
-                  [
-                    [
-                      -46.7503,
-                      -23.5261
-                    ],
-                    [
-                      -46.7513,
-                      -23.5235
-                    ],
-                    [
-                      -46.7466,
-                      -23.5159
-                    ],
-                    [
-                      -46.7333,
-                      -23.5154
-                    ],
-                    [
-                      -46.729,
-                      -23.5133
-                    ],
-                    [
-                      -46.7261,
-                      -23.5144
-                    ],
-                    [
-                      -46.7257,
-                      -23.5168
-                    ],
-                    [
-                      -46.7322,
-                      -23.5198
-                    ],
-                    [
-                      -46.744,
-                      -23.5203
-                    ],
-                    [
-                      -46.7478,
-                      -23.5264
-                    ],
-                    [
-                      -46.7503,
-                      -23.5261
-                    ]
-                  ]
-                ]
-              ]
-            }
-          },
-          {
-            "type": "Feature",
-            "properties": {
               "resource_id": "REH-139",
               "label": "CONGONHAS - trecho 1",
               "reh_name": "CONGONHAS",
               "section": "1",
               "route_type": "Recom",
               "semi_width_m": 100.0,
-              "mean_simultaneous_aircraft": 1.024390243902439,
-              "peak_simultaneous_aircraft": 2,
+              "mean_simultaneous_aircraft": 1.1787650602409638,
+              "peak_simultaneous_aircraft": 3,
               "corridor_area_km2": 1.6498113125,
-              "air_traffic_density_per_km2": 0.6209135772927603,
-              "sample_count": 2226,
-              "density_ratio": 0.11157620523014337
+              "air_traffic_density_per_km2": 0.7144847724766488,
+              "sample_count": 7827,
+              "density_ratio": 0.12839065293957835
             },
             "geometry": {
               "type": "MultiPolygon",
@@ -2011,12 +2141,12 @@
               "section": "2",
               "route_type": "Obrig",
               "semi_width_m": 100.0,
-              "mean_simultaneous_aircraft": 1.0303274288781534,
-              "peak_simultaneous_aircraft": 2,
+              "mean_simultaneous_aircraft": 1.191735347985348,
+              "peak_simultaneous_aircraft": 4,
               "corridor_area_km2": 1.816744,
-              "air_traffic_density_per_km2": 0.5671285711570554,
-              "sample_count": 3839,
-              "density_ratio": 0.10191120980667817
+              "air_traffic_density_per_km2": 0.6559731849866289,
+              "sample_count": 10411,
+              "density_ratio": 0.1178763058019416
             },
             "geometry": {
               "type": "MultiPolygon",
@@ -2083,72 +2213,18 @@
           {
             "type": "Feature",
             "properties": {
-              "resource_id": "REH-203",
-              "label": "MORUMBI - trecho 2",
-              "reh_name": "MORUMBI",
-              "section": "2",
-              "route_type": "Recom",
-              "semi_width_m": 250.0,
-              "mean_simultaneous_aircraft": 1.02002002002002,
-              "peak_simultaneous_aircraft": 2,
-              "corridor_area_km2": 1.8835353203125,
-              "air_traffic_density_per_km2": 0.5415454698512301,
-              "sample_count": 1019,
-              "density_ratio": 0.09731400744855284
-            },
-            "geometry": {
-              "type": "MultiPolygon",
-              "coordinates": [
-                [
-                  [
-                    [
-                      -46.7489,
-                      -23.6111
-                    ],
-                    [
-                      -46.7517,
-                      -23.6086
-                    ],
-                    [
-                      -46.7495,
-                      -23.6065
-                    ],
-                    [
-                      -46.7167,
-                      -23.6091
-                    ],
-                    [
-                      -46.7128,
-                      -23.6117
-                    ],
-                    [
-                      -46.713,
-                      -23.6139
-                    ],
-                    [
-                      -46.7489,
-                      -23.6111
-                    ]
-                  ]
-                ]
-              ]
-            }
-          },
-          {
-            "type": "Feature",
-            "properties": {
               "resource_id": "REH-195",
               "label": "MARTE - trecho 3",
               "reh_name": "MARTE",
               "section": "3",
               "route_type": "Obrig",
               "semi_width_m": 250.0,
-              "mean_simultaneous_aircraft": 1.0198776758409787,
-              "peak_simultaneous_aircraft": 2,
+              "mean_simultaneous_aircraft": 1.10778739184178,
+              "peak_simultaneous_aircraft": 3,
               "corridor_area_km2": 1.908335921875,
-              "air_traffic_density_per_km2": 0.5344329916710454,
-              "sample_count": 1334,
-              "density_ratio": 0.09603591762389915
+              "air_traffic_density_per_km2": 0.5804991559103201,
+              "sample_count": 4481,
+              "density_ratio": 0.10431386158147402
             },
             "geometry": {
               "type": "MultiPolygon",
@@ -2243,18 +2319,72 @@
           {
             "type": "Feature",
             "properties": {
+              "resource_id": "REH-203",
+              "label": "MORUMBI - trecho 2",
+              "reh_name": "MORUMBI",
+              "section": "2",
+              "route_type": "Recom",
+              "semi_width_m": 250.0,
+              "mean_simultaneous_aircraft": 1.0517241379310345,
+              "peak_simultaneous_aircraft": 2,
+              "corridor_area_km2": 1.8835353203125,
+              "air_traffic_density_per_km2": 0.5583777095066852,
+              "sample_count": 1708,
+              "density_ratio": 0.10033870765637984
+            },
+            "geometry": {
+              "type": "MultiPolygon",
+              "coordinates": [
+                [
+                  [
+                    [
+                      -46.7489,
+                      -23.6111
+                    ],
+                    [
+                      -46.7517,
+                      -23.6086
+                    ],
+                    [
+                      -46.7495,
+                      -23.6065
+                    ],
+                    [
+                      -46.7167,
+                      -23.6091
+                    ],
+                    [
+                      -46.7128,
+                      -23.6117
+                    ],
+                    [
+                      -46.713,
+                      -23.6139
+                    ],
+                    [
+                      -46.7489,
+                      -23.6111
+                    ]
+                  ]
+                ]
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
               "resource_id": "REH-130",
               "label": "RADIAL - trecho 1",
               "reh_name": "RADIAL",
               "section": "1",
               "route_type": "Recom",
               "semi_width_m": 250.0,
-              "mean_simultaneous_aircraft": 1.0,
-              "peak_simultaneous_aircraft": 1,
+              "mean_simultaneous_aircraft": 1.0580260303687636,
+              "peak_simultaneous_aircraft": 2,
               "corridor_area_km2": 2.0552302421875,
-              "air_traffic_density_per_km2": 0.4865634902956869,
-              "sample_count": 454,
-              "density_ratio": 0.08743391968884143
+              "air_traffic_density_per_km2": 0.5147968381599161,
+              "sample_count": 3902,
+              "density_ratio": 0.09250736296796618
             },
             "geometry": {
               "type": "MultiPolygon",
@@ -2303,12 +2433,12 @@
               "section": "2",
               "route_type": "Recom",
               "semi_width_m": 250.0,
-              "mean_simultaneous_aircraft": 1.0,
-              "peak_simultaneous_aircraft": 1,
+              "mean_simultaneous_aircraft": 1.0493827160493827,
+              "peak_simultaneous_aircraft": 2,
               "corridor_area_km2": 2.112722640625,
-              "air_traffic_density_per_km2": 0.4733228966127675,
-              "sample_count": 368,
-              "density_ratio": 0.08505462689808675
+              "air_traffic_density_per_km2": 0.4966968668158671,
+              "sample_count": 2295,
+              "density_ratio": 0.08925485538688116
             },
             "geometry": {
               "type": "MultiPolygon",
@@ -2395,6 +2525,154 @@
           {
             "type": "Feature",
             "properties": {
+              "resource_id": "REH-182",
+              "label": "MARTE - trecho 2",
+              "reh_name": "MARTE",
+              "section": "2",
+              "route_type": "Recom",
+              "semi_width_m": 250.0,
+              "mean_simultaneous_aircraft": 1.3819372271876948,
+              "peak_simultaneous_aircraft": 4,
+              "corridor_area_km2": 2.855636796875,
+              "air_traffic_density_per_km2": 0.48393312087166895,
+              "sample_count": 13297,
+              "density_ratio": 0.08696125062599865
+            },
+            "geometry": {
+              "type": "MultiPolygon",
+              "coordinates": [
+                [
+                  [
+                    [
+                      -46.6706,
+                      -23.5225
+                    ],
+                    [
+                      -46.6708,
+                      -23.5247
+                    ],
+                    [
+                      -46.6724,
+                      -23.5269
+                    ],
+                    [
+                      -46.6786,
+                      -23.5267
+                    ],
+                    [
+                      -46.6843,
+                      -23.5244
+                    ],
+                    [
+                      -46.6957,
+                      -23.5237
+                    ],
+                    [
+                      -46.7063,
+                      -23.5192
+                    ],
+                    [
+                      -46.7257,
+                      -23.5168
+                    ],
+                    [
+                      -46.7261,
+                      -23.5144
+                    ],
+                    [
+                      -46.7245,
+                      -23.5124
+                    ],
+                    [
+                      -46.7051,
+                      -23.5148
+                    ],
+                    [
+                      -46.6947,
+                      -23.5193
+                    ],
+                    [
+                      -46.6833,
+                      -23.52
+                    ],
+                    [
+                      -46.6777,
+                      -23.5222
+                    ],
+                    [
+                      -46.6706,
+                      -23.5225
+                    ]
+                  ]
+                ]
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "resource_id": "REH-175",
+              "label": "CASTELO - trecho 1",
+              "reh_name": "CASTELO",
+              "section": "1",
+              "route_type": "Recom",
+              "semi_width_m": 250.0,
+              "mean_simultaneous_aircraft": 1.2236259442563167,
+              "peak_simultaneous_aircraft": 4,
+              "corridor_area_km2": 2.7968557265625,
+              "air_traffic_density_per_km2": 0.43750055915834635,
+              "sample_count": 9395,
+              "density_ratio": 0.07861746620164187
+            },
+            "geometry": {
+              "type": "MultiPolygon",
+              "coordinates": [
+                [
+                  [
+                    [
+                      -46.8235,
+                      -23.5064
+                    ],
+                    [
+                      -46.8214,
+                      -23.5089
+                    ],
+                    [
+                      -46.8225,
+                      -23.511
+                    ],
+                    [
+                      -46.8634,
+                      -23.5071
+                    ],
+                    [
+                      -46.8775,
+                      -23.5073
+                    ],
+                    [
+                      -46.8767,
+                      -23.505
+                    ],
+                    [
+                      -46.8758,
+                      -23.5027
+                    ],
+                    [
+                      -46.8632,
+                      -23.5026
+                    ],
+                    [
+                      -46.8235,
+                      -23.5064
+                    ]
+                  ]
+                ]
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
               "resource_id": "REH-177",
               "label": "ESTADO - trecho 2",
               "reh_name": "ESTADO",
@@ -2405,7 +2683,7 @@
               "peak_simultaneous_aircraft": 1,
               "corridor_area_km2": 2.297754140625,
               "air_traffic_density_per_km2": 0.4352075717413332,
-              "sample_count": 152,
+              "sample_count": 132,
               "density_ratio": 0.07820542361796011
             },
             "geometry": {
@@ -2497,166 +2775,18 @@
           {
             "type": "Feature",
             "properties": {
-              "resource_id": "REH-175",
-              "label": "CASTELO - trecho 1",
-              "reh_name": "CASTELO",
-              "section": "1",
-              "route_type": "Recom",
-              "semi_width_m": 250.0,
-              "mean_simultaneous_aircraft": 1.0901162790697674,
-              "peak_simultaneous_aircraft": 2,
-              "corridor_area_km2": 2.7968557265625,
-              "air_traffic_density_per_km2": 0.38976493092462244,
-              "sample_count": 375,
-              "density_ratio": 0.0700395248465529
-            },
-            "geometry": {
-              "type": "MultiPolygon",
-              "coordinates": [
-                [
-                  [
-                    [
-                      -46.8235,
-                      -23.5064
-                    ],
-                    [
-                      -46.8214,
-                      -23.5089
-                    ],
-                    [
-                      -46.8225,
-                      -23.511
-                    ],
-                    [
-                      -46.8634,
-                      -23.5071
-                    ],
-                    [
-                      -46.8775,
-                      -23.5073
-                    ],
-                    [
-                      -46.8767,
-                      -23.505
-                    ],
-                    [
-                      -46.8758,
-                      -23.5027
-                    ],
-                    [
-                      -46.8632,
-                      -23.5026
-                    ],
-                    [
-                      -46.8235,
-                      -23.5064
-                    ]
-                  ]
-                ]
-              ]
-            }
-          },
-          {
-            "type": "Feature",
-            "properties": {
-              "resource_id": "REH-182",
-              "label": "MARTE - trecho 2",
-              "reh_name": "MARTE",
-              "section": "2",
-              "route_type": "Recom",
-              "semi_width_m": 250.0,
-              "mean_simultaneous_aircraft": 1.03466796875,
-              "peak_simultaneous_aircraft": 2,
-              "corridor_area_km2": 2.855636796875,
-              "air_traffic_density_per_km2": 0.36232477809582264,
-              "sample_count": 2119,
-              "density_ratio": 0.06510861620557613
-            },
-            "geometry": {
-              "type": "MultiPolygon",
-              "coordinates": [
-                [
-                  [
-                    [
-                      -46.6706,
-                      -23.5225
-                    ],
-                    [
-                      -46.6708,
-                      -23.5247
-                    ],
-                    [
-                      -46.6724,
-                      -23.5269
-                    ],
-                    [
-                      -46.6786,
-                      -23.5267
-                    ],
-                    [
-                      -46.6843,
-                      -23.5244
-                    ],
-                    [
-                      -46.6957,
-                      -23.5237
-                    ],
-                    [
-                      -46.7063,
-                      -23.5192
-                    ],
-                    [
-                      -46.7257,
-                      -23.5168
-                    ],
-                    [
-                      -46.7261,
-                      -23.5144
-                    ],
-                    [
-                      -46.7245,
-                      -23.5124
-                    ],
-                    [
-                      -46.7051,
-                      -23.5148
-                    ],
-                    [
-                      -46.6947,
-                      -23.5193
-                    ],
-                    [
-                      -46.6833,
-                      -23.52
-                    ],
-                    [
-                      -46.6777,
-                      -23.5222
-                    ],
-                    [
-                      -46.6706,
-                      -23.5225
-                    ]
-                  ]
-                ]
-              ]
-            }
-          },
-          {
-            "type": "Feature",
-            "properties": {
-              "resource_id": "REH-127",
-              "label": "MORUMBI - trecho 3",
-              "reh_name": "MORUMBI",
+              "resource_id": "REH-184",
+              "label": "OESTE - trecho 3",
+              "reh_name": "OESTE",
               "section": "3",
               "route_type": "Recom",
               "semi_width_m": 250.0,
-              "mean_simultaneous_aircraft": 1.0255009107468125,
-              "peak_simultaneous_aircraft": 2,
-              "corridor_area_km2": 2.9949601171875,
-              "air_traffic_density_per_km2": 0.3424088704426012,
-              "sample_count": 1689,
-              "density_ratio": 0.0615297906154688
+              "mean_simultaneous_aircraft": 1.0,
+              "peak_simultaneous_aircraft": 1,
+              "corridor_area_km2": 2.55015025,
+              "air_traffic_density_per_km2": 0.3921337576089879,
+              "sample_count": 95,
+              "density_ratio": 0.07046519550661769
             },
             "geometry": {
               "type": "MultiPolygon",
@@ -2664,86 +2794,52 @@
                 [
                   [
                     [
-                      -46.8087,
-                      -23.595
+                      -46.7284,
+                      -23.6448
                     ],
                     [
-                      -46.8103,
-                      -23.5922
+                      -46.7233,
+                      -23.6525
                     ],
                     [
-                      -46.8077,
-                      -23.5906
+                      -46.7257,
+                      -23.6534
                     ],
                     [
-                      -46.7541,
-                      -23.6056
+                      -46.7257,
+                      -23.6534
                     ],
                     [
-                      -46.7517,
-                      -23.6086
+                      -46.7415,
+                      -23.6388
+                    ],
+                    [
+                      -46.7526,
+                      -23.6159
                     ],
                     [
                       -46.7536,
                       -23.6104
                     ],
                     [
-                      -46.8087,
-                      -23.595
-                    ]
-                  ]
-                ]
-              ]
-            }
-          },
-          {
-            "type": "Feature",
-            "properties": {
-              "resource_id": "REH-129",
-              "label": "OESTE - trecho 2",
-              "reh_name": "OESTE",
-              "section": "2",
-              "route_type": "Recom",
-              "semi_width_m": 250.0,
-              "mean_simultaneous_aircraft": 1.0,
-              "peak_simultaneous_aircraft": 1,
-              "corridor_area_km2": 2.95715040625,
-              "air_traffic_density_per_km2": 0.33816338793132705,
-              "sample_count": 1,
-              "density_ratio": 0.06076689084116484
-            },
-            "geometry": {
-              "type": "MultiPolygon",
-              "coordinates": [
-                [
-                  [
-                    [
-                      -46.7553,
-                      -23.5481
-                    ],
-                    [
-                      -46.7526,
-                      -23.5547
-                    ],
-                    [
-                      -46.7495,
-                      -23.6065
-                    ],
-                    [
                       -46.7517,
                       -23.6086
                     ],
                     [
-                      -46.7541,
-                      -23.6056
+                      -46.7489,
+                      -23.6111
                     ],
                     [
-                      -46.7575,
-                      -23.5479
+                      -46.7482,
+                      -23.6145
                     ],
                     [
-                      -46.7553,
-                      -23.5481
+                      -46.7379,
+                      -23.6361
+                    ],
+                    [
+                      -46.7284,
+                      -23.6448
                     ]
                   ]
                 ]
@@ -2759,12 +2855,12 @@
               "section": "1",
               "route_type": "Recom",
               "semi_width_m": 250.0,
-              "mean_simultaneous_aircraft": 1.0049109883364027,
-              "peak_simultaneous_aircraft": 2,
+              "mean_simultaneous_aircraft": 1.1364284259824884,
+              "peak_simultaneous_aircraft": 3,
               "corridor_area_km2": 3.00717896875,
-              "air_traffic_density_per_km2": 0.3341706625309753,
-              "sample_count": 1637,
-              "density_ratio": 0.06004941071995435
+              "air_traffic_density_per_km2": 0.3779051522347105,
+              "sample_count": 5581,
+              "density_ratio": 0.06790836014105674
             },
             "geometry": {
               "type": "MultiPolygon",
@@ -2903,18 +2999,126 @@
           {
             "type": "Feature",
             "properties": {
+              "resource_id": "REH-127",
+              "label": "MORUMBI - trecho 3",
+              "reh_name": "MORUMBI",
+              "section": "3",
+              "route_type": "Recom",
+              "semi_width_m": 250.0,
+              "mean_simultaneous_aircraft": 1.0382209867963863,
+              "peak_simultaneous_aircraft": 2,
+              "corridor_area_km2": 2.9949601171875,
+              "air_traffic_density_per_km2": 0.34665603085604907,
+              "sample_count": 2988,
+              "density_ratio": 0.062292991903484383
+            },
+            "geometry": {
+              "type": "MultiPolygon",
+              "coordinates": [
+                [
+                  [
+                    [
+                      -46.8087,
+                      -23.595
+                    ],
+                    [
+                      -46.8103,
+                      -23.5922
+                    ],
+                    [
+                      -46.8077,
+                      -23.5906
+                    ],
+                    [
+                      -46.7541,
+                      -23.6056
+                    ],
+                    [
+                      -46.7517,
+                      -23.6086
+                    ],
+                    [
+                      -46.7536,
+                      -23.6104
+                    ],
+                    [
+                      -46.8087,
+                      -23.595
+                    ]
+                  ]
+                ]
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "resource_id": "REH-129",
+              "label": "OESTE - trecho 2",
+              "reh_name": "OESTE",
+              "section": "2",
+              "route_type": "Recom",
+              "semi_width_m": 250.0,
+              "mean_simultaneous_aircraft": 1.0,
+              "peak_simultaneous_aircraft": 1,
+              "corridor_area_km2": 2.95715040625,
+              "air_traffic_density_per_km2": 0.33816338793132705,
+              "sample_count": 106,
+              "density_ratio": 0.06076689084116484
+            },
+            "geometry": {
+              "type": "MultiPolygon",
+              "coordinates": [
+                [
+                  [
+                    [
+                      -46.7553,
+                      -23.5481
+                    ],
+                    [
+                      -46.7526,
+                      -23.5547
+                    ],
+                    [
+                      -46.7495,
+                      -23.6065
+                    ],
+                    [
+                      -46.7517,
+                      -23.6086
+                    ],
+                    [
+                      -46.7541,
+                      -23.6056
+                    ],
+                    [
+                      -46.7575,
+                      -23.5479
+                    ],
+                    [
+                      -46.7553,
+                      -23.5481
+                    ]
+                  ]
+                ]
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
               "resource_id": "REH-167",
               "label": "CASTELO - trecho 2",
               "reh_name": "CASTELO",
               "section": "2",
               "route_type": "Recom",
               "semi_width_m": 250.0,
-              "mean_simultaneous_aircraft": 1.0829081632653061,
-              "peak_simultaneous_aircraft": 2,
+              "mean_simultaneous_aircraft": 1.2054811982154239,
+              "peak_simultaneous_aircraft": 3,
               "corridor_area_km2": 3.60557128125,
-              "air_traffic_density_per_km2": 0.30034301884329334,
-              "sample_count": 849,
-              "density_ratio": 0.05397069018205675
+              "air_traffic_density_per_km2": 0.33433847348526163,
+              "sample_count": 9457,
+              "density_ratio": 0.06007956581747525
             },
             "geometry": {
               "type": "MultiPolygon",
@@ -2985,18 +3189,18 @@
           {
             "type": "Feature",
             "properties": {
-              "resource_id": "REH-207",
-              "label": "PINHEIROS - trecho 5",
-              "reh_name": "PINHEIROS",
-              "section": "5",
+              "resource_id": "REH-176",
+              "label": "ECOLÓGICO - trecho 3",
+              "reh_name": "ECOLÓGICO",
+              "section": "3",
               "route_type": "Recom",
               "semi_width_m": 250.0,
-              "mean_simultaneous_aircraft": 1.0853911404335532,
+              "mean_simultaneous_aircraft": 1.1269135802469137,
               "peak_simultaneous_aircraft": 3,
-              "corridor_area_km2": 3.642172234375,
-              "air_traffic_density_per_km2": 0.29800653856772025,
-              "sample_count": 5758,
-              "density_ratio": 0.05355083206930589
+              "corridor_area_km2": 3.90805590625,
+              "air_traffic_density_per_km2": 0.2883565658425421,
+              "sample_count": 9128,
+              "density_ratio": 0.0518167625037082
             },
             "geometry": {
               "type": "MultiPolygon",
@@ -3004,48 +3208,32 @@
                 [
                   [
                     [
-                      -46.6738,
-                      -23.7009
+                      -46.4701,
+                      -23.4782
                     ],
                     [
-                      -46.6744,
-                      -23.7031
+                      -46.4692,
+                      -23.4803
                     ],
                     [
-                      -46.6751,
-                      -23.7052
+                      -46.4683,
+                      -23.4824
                     ],
                     [
-                      -46.6896,
-                      -23.701
+                      -46.5406,
+                      -23.5042
                     ],
                     [
-                      -46.713,
-                      -23.6651
+                      -46.5419,
+                      -23.5022
                     ],
                     [
-                      -46.7214,
-                      -23.6573
+                      -46.5433,
+                      -23.5003
                     ],
                     [
-                      -46.7233,
-                      -23.6525
-                    ],
-                    [
-                      -46.7215,
-                      -23.6511
-                    ],
-                    [
-                      -46.7095,
-                      -23.6622
-                    ],
-                    [
-                      -46.6868,
-                      -23.6972
-                    ],
-                    [
-                      -46.6738,
-                      -23.7009
+                      -46.4701,
+                      -23.4782
                     ]
                   ]
                 ]
@@ -3061,12 +3249,12 @@
               "section": "1",
               "route_type": "Recom",
               "semi_width_m": 250.0,
-              "mean_simultaneous_aircraft": 1.0764285714285715,
+              "mean_simultaneous_aircraft": 1.052756372258447,
               "peak_simultaneous_aircraft": 2,
               "corridor_area_km2": 3.675348921875,
-              "air_traffic_density_per_km2": 0.29287792650702277,
-              "sample_count": 1507,
-              "density_ratio": 0.05262923670924765
+              "air_traffic_density_per_km2": 0.2864371232871619,
+              "sample_count": 1776,
+              "density_ratio": 0.0514718447497426
             },
             "geometry": {
               "type": "MultiPolygon",
@@ -3157,18 +3345,18 @@
           {
             "type": "Feature",
             "properties": {
-              "resource_id": "REH-176",
-              "label": "ECOLÓGICO - trecho 3",
-              "reh_name": "ECOLÓGICO",
-              "section": "3",
+              "resource_id": "REH-207",
+              "label": "PINHEIROS - trecho 5",
+              "reh_name": "PINHEIROS",
+              "section": "5",
               "route_type": "Recom",
               "semi_width_m": 250.0,
-              "mean_simultaneous_aircraft": 1.0,
-              "peak_simultaneous_aircraft": 1,
-              "corridor_area_km2": 3.90805590625,
-              "air_traffic_density_per_km2": 0.2558817028182067,
-              "sample_count": 1309,
-              "density_ratio": 0.04598113237073142
+              "mean_simultaneous_aircraft": 1.0256916996047432,
+              "peak_simultaneous_aircraft": 2,
+              "corridor_area_km2": 3.642172234375,
+              "air_traffic_density_per_km2": 0.281615375001823,
+              "sample_count": 1557,
+              "density_ratio": 0.05060539183918012
             },
             "geometry": {
               "type": "MultiPolygon",
@@ -3176,32 +3364,48 @@
                 [
                   [
                     [
-                      -46.4701,
-                      -23.4782
+                      -46.6738,
+                      -23.7009
                     ],
                     [
-                      -46.4692,
-                      -23.4803
+                      -46.6744,
+                      -23.7031
                     ],
                     [
-                      -46.4683,
-                      -23.4824
+                      -46.6751,
+                      -23.7052
                     ],
                     [
-                      -46.5406,
-                      -23.5042
+                      -46.6896,
+                      -23.701
                     ],
                     [
-                      -46.5419,
-                      -23.5022
+                      -46.713,
+                      -23.6651
                     ],
                     [
-                      -46.5433,
-                      -23.5003
+                      -46.7214,
+                      -23.6573
                     ],
                     [
-                      -46.4701,
-                      -23.4782
+                      -46.7233,
+                      -23.6525
+                    ],
+                    [
+                      -46.7215,
+                      -23.6511
+                    ],
+                    [
+                      -46.7095,
+                      -23.6622
+                    ],
+                    [
+                      -46.6868,
+                      -23.6972
+                    ],
+                    [
+                      -46.6738,
+                      -23.7009
                     ]
                   ]
                 ]
@@ -3217,12 +3421,12 @@
               "section": "4",
               "route_type": "Recom",
               "semi_width_m": 250.0,
-              "mean_simultaneous_aircraft": 1.0044893378226711,
-              "peak_simultaneous_aircraft": 2,
+              "mean_simultaneous_aircraft": 1.0940834141610087,
+              "peak_simultaneous_aircraft": 3,
               "corridor_area_km2": 4.42508846875,
-              "air_traffic_density_per_km2": 0.22699870181497625,
-              "sample_count": 895,
-              "density_ratio": 0.04079094847807127
+              "air_traffic_density_per_km2": 0.24724554591110032,
+              "sample_count": 6768,
+              "density_ratio": 0.04442924229986461
             },
             "geometry": {
               "type": "MultiPolygon",
@@ -3315,7 +3519,7 @@
               "peak_simultaneous_aircraft": 1,
               "corridor_area_km2": 4.49409496875,
               "air_traffic_density_per_km2": 0.2225142118610241,
-              "sample_count": 102,
+              "sample_count": 98,
               "density_ratio": 0.039985099822552564
             },
             "geometry": {
@@ -3431,6 +3635,262 @@
           {
             "type": "Feature",
             "properties": {
+              "resource_id": "REH-174",
+              "label": "ARICANDUVA - trecho 1",
+              "reh_name": "ARICANDUVA",
+              "section": "1",
+              "route_type": "Recom",
+              "semi_width_m": 250.0,
+              "mean_simultaneous_aircraft": 1.0,
+              "peak_simultaneous_aircraft": 1,
+              "corridor_area_km2": 5.45664934375,
+              "air_traffic_density_per_km2": 0.18326264654432883,
+              "sample_count": 4,
+              "density_ratio": 0.03293171772954831
+            },
+            "geometry": {
+              "type": "MultiPolygon",
+              "coordinates": [
+                [
+                  [
+                    [
+                      -46.4635,
+                      -23.5937
+                    ],
+                    [
+                      -46.4658,
+                      -23.5944
+                    ],
+                    [
+                      -46.4682,
+                      -23.5952
+                    ],
+                    [
+                      -46.4682,
+                      -23.5952
+                    ],
+                    [
+                      -46.475,
+                      -23.5946
+                    ],
+                    [
+                      -46.4785,
+                      -23.5925
+                    ],
+                    [
+                      -46.4811,
+                      -23.5915
+                    ],
+                    [
+                      -46.484,
+                      -23.5892
+                    ],
+                    [
+                      -46.4888,
+                      -23.5886
+                    ],
+                    [
+                      -46.493,
+                      -23.5833
+                    ],
+                    [
+                      -46.4953,
+                      -23.5812
+                    ],
+                    [
+                      -46.5021,
+                      -23.5798
+                    ],
+                    [
+                      -46.5058,
+                      -23.5751
+                    ],
+                    [
+                      -46.5068,
+                      -23.5697
+                    ],
+                    [
+                      -46.5102,
+                      -23.5652
+                    ],
+                    [
+                      -46.5173,
+                      -23.5587
+                    ],
+                    [
+                      -46.5204,
+                      -23.5548
+                    ],
+                    [
+                      -46.5256,
+                      -23.5516
+                    ],
+                    [
+                      -46.5311,
+                      -23.5464
+                    ],
+                    [
+                      -46.5361,
+                      -23.5436
+                    ],
+                    [
+                      -46.5398,
+                      -23.5433
+                    ],
+                    [
+                      -46.548,
+                      -23.5397
+                    ],
+                    [
+                      -46.5495,
+                      -23.5374
+                    ],
+                    [
+                      -46.5483,
+                      -23.535
+                    ],
+                    [
+                      -46.5442,
+                      -23.5365
+                    ],
+                    [
+                      -46.5386,
+                      -23.5388
+                    ],
+                    [
+                      -46.5348,
+                      -23.5392
+                    ],
+                    [
+                      -46.5284,
+                      -23.5427
+                    ],
+                    [
+                      -46.5228,
+                      -23.548
+                    ],
+                    [
+                      -46.5174,
+                      -23.5514
+                    ],
+                    [
+                      -46.514,
+                      -23.5556
+                    ],
+                    [
+                      -46.5069,
+                      -23.5621
+                    ],
+                    [
+                      -46.5026,
+                      -23.5678
+                    ],
+                    [
+                      -46.5016,
+                      -23.5732
+                    ],
+                    [
+                      -46.4996,
+                      -23.5757
+                    ],
+                    [
+                      -46.4932,
+                      -23.577
+                    ],
+                    [
+                      -46.4897,
+                      -23.5802
+                    ],
+                    [
+                      -46.4864,
+                      -23.5844
+                    ],
+                    [
+                      -46.4821,
+                      -23.5849
+                    ],
+                    [
+                      -46.4789,
+                      -23.5875
+                    ],
+                    [
+                      -46.4765,
+                      -23.5884
+                    ],
+                    [
+                      -46.4735,
+                      -23.5902
+                    ],
+                    [
+                      -46.4662,
+                      -23.5908
+                    ],
+                    [
+                      -46.4635,
+                      -23.5937
+                    ]
+                  ]
+                ]
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "resource_id": "REH-124",
+              "label": "GUARAPIRANGA - trecho 1",
+              "reh_name": "GUARAPIRANGA",
+              "section": "1",
+              "route_type": "Recom",
+              "semi_width_m": 250.0,
+              "mean_simultaneous_aircraft": 1.0,
+              "peak_simultaneous_aircraft": 1,
+              "corridor_area_km2": 7.620449921875,
+              "air_traffic_density_per_km2": 0.13122584758800587,
+              "sample_count": 56,
+              "density_ratio": 0.02358086960478127
+            },
+            "geometry": {
+              "type": "MultiPolygon",
+              "coordinates": [
+                [
+                  [
+                    [
+                      -46.7257,
+                      -23.6534
+                    ],
+                    [
+                      -46.7233,
+                      -23.6525
+                    ],
+                    [
+                      -46.7214,
+                      -23.6573
+                    ],
+                    [
+                      -46.732,
+                      -23.801
+                    ],
+                    [
+                      -46.7344,
+                      -23.8031
+                    ],
+                    [
+                      -46.7364,
+                      -23.7996
+                    ],
+                    [
+                      -46.7257,
+                      -23.6534
+                    ]
+                  ]
+                ]
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
               "resource_id": "REH-166",
               "label": "Tietê - trecho 2",
               "reh_name": "Tietê",
@@ -3441,7 +3901,7 @@
               "peak_simultaneous_aircraft": 1,
               "corridor_area_km2": 8.4382036015625,
               "air_traffic_density_per_km2": 0.11850863610529973,
-              "sample_count": 41,
+              "sample_count": 64,
               "density_ratio": 0.021295626939390935
             },
             "geometry": {
@@ -3530,72 +3990,6 @@
                     [
                       -47.0851,
                       -23.5419
-                    ]
-                  ]
-                ]
-              ]
-            }
-          },
-          {
-            "type": "Feature",
-            "properties": {
-              "resource_id": "REH-114",
-              "label": "ARICANDUVA - trecho 1",
-              "reh_name": "ARICANDUVA",
-              "section": "1",
-              "route_type": "Recom",
-              "semi_width_m": 250.0,
-              "mean_simultaneous_aircraft": 0.0,
-              "peak_simultaneous_aircraft": 0,
-              "corridor_area_km2": 0.705563703125,
-              "air_traffic_density_per_km2": 0.0,
-              "sample_count": 0,
-              "density_ratio": 0.0
-            },
-            "geometry": {
-              "type": "MultiPolygon",
-              "coordinates": [
-                [
-                  [
-                    [
-                      -46.5483,
-                      -23.535
-                    ],
-                    [
-                      -46.5537,
-                      -23.5335
-                    ],
-                    [
-                      -46.5587,
-                      -23.5264
-                    ],
-                    [
-                      -46.5583,
-                      -23.5231
-                    ],
-                    [
-                      -46.5555,
-                      -23.5231
-                    ],
-                    [
-                      -46.5506,
-                      -23.53
-                    ],
-                    [
-                      -46.5488,
-                      -23.531
-                    ],
-                    [
-                      -46.547,
-                      -23.5323
-                    ],
-                    [
-                      -46.5469,
-                      -23.5324
-                    ],
-                    [
-                      -46.5483,
-                      -23.535
                     ]
                   ]
                 ]
@@ -3995,60 +4389,6 @@
           {
             "type": "Feature",
             "properties": {
-              "resource_id": "REH-124",
-              "label": "GUARAPIRANGA - trecho 1",
-              "reh_name": "GUARAPIRANGA",
-              "section": "1",
-              "route_type": "Recom",
-              "semi_width_m": 250.0,
-              "mean_simultaneous_aircraft": 0.0,
-              "peak_simultaneous_aircraft": 0,
-              "corridor_area_km2": 7.620449921875,
-              "air_traffic_density_per_km2": 0.0,
-              "sample_count": 0,
-              "density_ratio": 0.0
-            },
-            "geometry": {
-              "type": "MultiPolygon",
-              "coordinates": [
-                [
-                  [
-                    [
-                      -46.7257,
-                      -23.6534
-                    ],
-                    [
-                      -46.7233,
-                      -23.6525
-                    ],
-                    [
-                      -46.7214,
-                      -23.6573
-                    ],
-                    [
-                      -46.732,
-                      -23.801
-                    ],
-                    [
-                      -46.7344,
-                      -23.8031
-                    ],
-                    [
-                      -46.7364,
-                      -23.7996
-                    ],
-                    [
-                      -46.7257,
-                      -23.6534
-                    ]
-                  ]
-                ]
-              ]
-            }
-          },
-          {
-            "type": "Feature",
-            "properties": {
               "resource_id": "REH-125",
               "label": "JUNDIAÍ - trecho 3",
               "reh_name": "JUNDIAÍ",
@@ -4334,6 +4674,60 @@
                     [
                       -46.1553,
                       -23.3824
+                    ]
+                  ]
+                ]
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "resource_id": "REH-140",
+              "label": "CONGONHAS - trecho 2",
+              "reh_name": "CONGONHAS",
+              "section": "2",
+              "route_type": "Recom",
+              "semi_width_m": 100.0,
+              "mean_simultaneous_aircraft": 0.0,
+              "peak_simultaneous_aircraft": 0,
+              "corridor_area_km2": 0.3304482734375,
+              "air_traffic_density_per_km2": 0.0,
+              "sample_count": 0,
+              "density_ratio": 0.0
+            },
+            "geometry": {
+              "type": "MultiPolygon",
+              "coordinates": [
+                [
+                  [
+                    [
+                      -46.6519,
+                      -23.6079
+                    ],
+                    [
+                      -46.6528,
+                      -23.6078
+                    ],
+                    [
+                      -46.6537,
+                      -23.6077
+                    ],
+                    [
+                      -46.6518,
+                      -23.5919
+                    ],
+                    [
+                      -46.6508,
+                      -23.5917
+                    ],
+                    [
+                      -46.65,
+                      -23.5921
+                    ],
+                    [
+                      -46.6519,
+                      -23.6079
                     ]
                   ]
                 ]
@@ -6429,15 +6823,15 @@
           {
             "type": "Feature",
             "properties": {
-              "resource_id": "REH-174",
-              "label": "ARICANDUVA - trecho 1",
-              "reh_name": "ARICANDUVA",
+              "resource_id": "REH-190",
+              "label": "Portão Dumont - trecho 1",
+              "reh_name": "Portão Dumont",
               "section": "1",
-              "route_type": "Recom",
-              "semi_width_m": 250.0,
+              "route_type": "Obrig",
+              "semi_width_m": 100.0,
               "mean_simultaneous_aircraft": 0.0,
               "peak_simultaneous_aircraft": 0,
-              "corridor_area_km2": 5.45664934375,
+              "corridor_area_km2": 0.2905293125,
               "air_traffic_density_per_km2": 0.0,
               "sample_count": 0,
               "density_ratio": 0.0
@@ -6448,180 +6842,32 @@
                 [
                   [
                     [
-                      -46.4635,
-                      -23.5937
+                      -46.4692,
+                      -23.4803
                     ],
                     [
-                      -46.4658,
-                      -23.5944
+                      -46.4701,
+                      -23.4782
                     ],
                     [
-                      -46.4682,
-                      -23.5952
+                      -46.4701,
+                      -23.4661
                     ],
                     [
-                      -46.4682,
-                      -23.5952
+                      -46.4692,
+                      -23.4661
                     ],
                     [
-                      -46.475,
-                      -23.5946
+                      -46.4683,
+                      -23.4661
                     ],
                     [
-                      -46.4785,
-                      -23.5925
+                      -46.4683,
+                      -23.4824
                     ],
                     [
-                      -46.4811,
-                      -23.5915
-                    ],
-                    [
-                      -46.484,
-                      -23.5892
-                    ],
-                    [
-                      -46.4888,
-                      -23.5886
-                    ],
-                    [
-                      -46.493,
-                      -23.5833
-                    ],
-                    [
-                      -46.4953,
-                      -23.5812
-                    ],
-                    [
-                      -46.5021,
-                      -23.5798
-                    ],
-                    [
-                      -46.5058,
-                      -23.5751
-                    ],
-                    [
-                      -46.5068,
-                      -23.5697
-                    ],
-                    [
-                      -46.5102,
-                      -23.5652
-                    ],
-                    [
-                      -46.5173,
-                      -23.5587
-                    ],
-                    [
-                      -46.5204,
-                      -23.5548
-                    ],
-                    [
-                      -46.5256,
-                      -23.5516
-                    ],
-                    [
-                      -46.5311,
-                      -23.5464
-                    ],
-                    [
-                      -46.5361,
-                      -23.5436
-                    ],
-                    [
-                      -46.5398,
-                      -23.5433
-                    ],
-                    [
-                      -46.548,
-                      -23.5397
-                    ],
-                    [
-                      -46.5495,
-                      -23.5374
-                    ],
-                    [
-                      -46.5483,
-                      -23.535
-                    ],
-                    [
-                      -46.5442,
-                      -23.5365
-                    ],
-                    [
-                      -46.5386,
-                      -23.5388
-                    ],
-                    [
-                      -46.5348,
-                      -23.5392
-                    ],
-                    [
-                      -46.5284,
-                      -23.5427
-                    ],
-                    [
-                      -46.5228,
-                      -23.548
-                    ],
-                    [
-                      -46.5174,
-                      -23.5514
-                    ],
-                    [
-                      -46.514,
-                      -23.5556
-                    ],
-                    [
-                      -46.5069,
-                      -23.5621
-                    ],
-                    [
-                      -46.5026,
-                      -23.5678
-                    ],
-                    [
-                      -46.5016,
-                      -23.5732
-                    ],
-                    [
-                      -46.4996,
-                      -23.5757
-                    ],
-                    [
-                      -46.4932,
-                      -23.577
-                    ],
-                    [
-                      -46.4897,
-                      -23.5802
-                    ],
-                    [
-                      -46.4864,
-                      -23.5844
-                    ],
-                    [
-                      -46.4821,
-                      -23.5849
-                    ],
-                    [
-                      -46.4789,
-                      -23.5875
-                    ],
-                    [
-                      -46.4765,
-                      -23.5884
-                    ],
-                    [
-                      -46.4735,
-                      -23.5902
-                    ],
-                    [
-                      -46.4662,
-                      -23.5908
-                    ],
-                    [
-                      -46.4635,
-                      -23.5937
+                      -46.4692,
+                      -23.4803
                     ]
                   ]
                 ]
@@ -6884,220 +7130,6 @@
                     [
                       -46.501,
                       -23.6586
-                    ]
-                  ]
-                ]
-              ]
-            }
-          },
-          {
-            "type": "Feature",
-            "properties": {
-              "resource_id": "REH-184",
-              "label": "OESTE - trecho 3",
-              "reh_name": "OESTE",
-              "section": "3",
-              "route_type": "Recom",
-              "semi_width_m": 250.0,
-              "mean_simultaneous_aircraft": 0.0,
-              "peak_simultaneous_aircraft": 0,
-              "corridor_area_km2": 2.55015025,
-              "air_traffic_density_per_km2": 0.0,
-              "sample_count": 0,
-              "density_ratio": 0.0
-            },
-            "geometry": {
-              "type": "MultiPolygon",
-              "coordinates": [
-                [
-                  [
-                    [
-                      -46.7284,
-                      -23.6448
-                    ],
-                    [
-                      -46.7233,
-                      -23.6525
-                    ],
-                    [
-                      -46.7257,
-                      -23.6534
-                    ],
-                    [
-                      -46.7257,
-                      -23.6534
-                    ],
-                    [
-                      -46.7415,
-                      -23.6388
-                    ],
-                    [
-                      -46.7526,
-                      -23.6159
-                    ],
-                    [
-                      -46.7536,
-                      -23.6104
-                    ],
-                    [
-                      -46.7517,
-                      -23.6086
-                    ],
-                    [
-                      -46.7489,
-                      -23.6111
-                    ],
-                    [
-                      -46.7482,
-                      -23.6145
-                    ],
-                    [
-                      -46.7379,
-                      -23.6361
-                    ],
-                    [
-                      -46.7284,
-                      -23.6448
-                    ]
-                  ]
-                ]
-              ]
-            }
-          },
-          {
-            "type": "Feature",
-            "properties": {
-              "resource_id": "REH-186",
-              "label": "TANCREDO - trecho 2",
-              "reh_name": "TANCREDO",
-              "section": "2",
-              "route_type": "Obrig",
-              "semi_width_m": 100.0,
-              "mean_simultaneous_aircraft": 0.0,
-              "peak_simultaneous_aircraft": 0,
-              "corridor_area_km2": 0.823806234375,
-              "air_traffic_density_per_km2": 0.0,
-              "sample_count": 0,
-              "density_ratio": 0.0
-            },
-            "geometry": {
-              "type": "MultiPolygon",
-              "coordinates": [
-                [
-                  [
-                    [
-                      -46.6295,
-                      -23.63
-                    ],
-                    [
-                      -46.6297,
-                      -23.6292
-                    ],
-                    [
-                      -46.6299,
-                      -23.6283
-                    ],
-                    [
-                      -46.6175,
-                      -23.6258
-                    ],
-                    [
-                      -46.6129,
-                      -23.6219
-                    ],
-                    [
-                      -46.6065,
-                      -23.6068
-                    ],
-                    [
-                      -46.6058,
-                      -23.6049
-                    ],
-                    [
-                      -46.6039,
-                      -23.6041
-                    ],
-                    [
-                      -46.6006,
-                      -23.6036
-                    ],
-                    [
-                      -46.6022,
-                      -23.6053
-                    ],
-                    [
-                      -46.6044,
-                      -23.6062
-                    ],
-                    [
-                      -46.6049,
-                      -23.6074
-                    ],
-                    [
-                      -46.6114,
-                      -23.6229
-                    ],
-                    [
-                      -46.6167,
-                      -23.6275
-                    ],
-                    [
-                      -46.6295,
-                      -23.63
-                    ]
-                  ]
-                ]
-              ]
-            }
-          },
-          {
-            "type": "Feature",
-            "properties": {
-              "resource_id": "REH-187",
-              "label": "Portão Luz - trecho 1",
-              "reh_name": "Portão Luz",
-              "section": "1",
-              "route_type": "Obrig",
-              "semi_width_m": 100.0,
-              "mean_simultaneous_aircraft": 0.0,
-              "peak_simultaneous_aircraft": 0,
-              "corridor_area_km2": 0.2300770625,
-              "air_traffic_density_per_km2": 0.0,
-              "sample_count": 0,
-              "density_ratio": 0.0
-            },
-            "geometry": {
-              "type": "MultiPolygon",
-              "coordinates": [
-                [
-                  [
-                    [
-                      -46.6353,
-                      -23.535
-                    ],
-                    [
-                      -46.6361,
-                      -23.5324
-                    ],
-                    [
-                      -46.6356,
-                      -23.5227
-                    ],
-                    [
-                      -46.6347,
-                      -23.5227
-                    ],
-                    [
-                      -46.6338,
-                      -23.5227
-                    ],
-                    [
-                      -46.6343,
-                      -23.533
-                    ],
-                    [
-                      -46.6353,
-                      -23.535
                     ]
                   ]
                 ]
@@ -7847,156 +7879,156 @@
       "od_pairs": {
         "available": true,
         "capacity_reference_per_hour": 2.0,
-        "resource_count": 105,
+        "resource_count": 150,
         "top_resources": [
+          {
+            "resource_id": "-23.5622,-46.6550->-23.5911,-46.6856",
+            "label": "-23.562,-46.655 -> -23.591,-46.686",
+            "operations": 13,
+            "mean_throughput_per_hour": 1.625,
+            "peak_throughput_per_hour": 4.0,
+            "utilization_peak": 2.0,
+            "utilization_mean": 0.8125
+          },
+          {
+            "resource_id": "-23.4356,-46.4731->-23.6261,-46.6564",
+            "label": "-23.436,-46.473 -> -23.626,-46.656",
+            "operations": 5,
+            "mean_throughput_per_hour": 2.5,
+            "peak_throughput_per_hour": 4.0,
+            "utilization_peak": 2.0,
+            "utilization_mean": 1.25
+          },
+          {
+            "resource_id": "-23.5911,-46.6856->-23.5622,-46.6550",
+            "label": "-23.591,-46.686 -> -23.562,-46.655",
+            "operations": 13,
+            "mean_throughput_per_hour": 1.625,
+            "peak_throughput_per_hour": 3.0,
+            "utilization_peak": 1.5,
+            "utilization_mean": 0.8125
+          },
           {
             "resource_id": "-23.5912,-46.6823->-23.7030,-46.6925",
             "label": "-23.591,-46.682 -> -23.703,-46.692",
-            "operations": 10,
-            "mean_throughput_per_hour": 1.6666666666666667,
+            "operations": 6,
+            "mean_throughput_per_hour": 2.0,
             "peak_throughput_per_hour": 3.0,
             "utilization_peak": 1.5,
-            "utilization_mean": 0.8333333333333334
+            "utilization_mean": 1.0
           },
           {
-            "resource_id": "-23.5853,-46.6822->-23.7028,-46.6924",
-            "label": "-23.585,-46.682 -> -23.703,-46.692",
-            "operations": 10,
-            "mean_throughput_per_hour": 1.4285714285714286,
-            "peak_throughput_per_hour": 2.0,
-            "utilization_peak": 1.0,
-            "utilization_mean": 0.7142857142857143
-          },
-          {
-            "resource_id": "-23.5642,-46.6558->-23.7031,-46.6925",
-            "label": "-23.564,-46.656 -> -23.703,-46.693",
-            "operations": 6,
-            "mean_throughput_per_hour": 1.5,
-            "peak_throughput_per_hour": 2.0,
-            "utilization_peak": 1.0,
-            "utilization_mean": 0.75
-          },
-          {
-            "resource_id": "-23.5911,-46.6808->-23.4786,-46.7811",
-            "label": "-23.591,-46.681 -> -23.479,-46.781",
-            "operations": 6,
-            "mean_throughput_per_hour": 1.2,
-            "peak_throughput_per_hour": 2.0,
-            "utilization_peak": 1.0,
-            "utilization_mean": 0.6
-          },
-          {
-            "resource_id": "-23.6017,-46.6992->-23.7030,-46.6925",
-            "label": "-23.602,-46.699 -> -23.703,-46.692",
+            "resource_id": "-23.5647,-46.8303->-23.4867,-46.8567",
+            "label": "-23.565,-46.830 -> -23.487,-46.857",
             "operations": 4,
-            "mean_throughput_per_hour": 1.3333333333333333,
-            "peak_throughput_per_hour": 2.0,
-            "utilization_peak": 1.0,
-            "utilization_mean": 0.6666666666666666
+            "mean_throughput_per_hour": 2.0,
+            "peak_throughput_per_hour": 3.0,
+            "utilization_peak": 1.5,
+            "utilization_mean": 1.0
           }
         ]
       },
       "trajectory_groups": {
         "available": true,
         "capacity_reference_per_hour": 4.0,
-        "resource_count": 46,
+        "resource_count": 93,
         "top_resources": [
           {
-            "resource_id": "T003",
-            "label": "T003",
-            "operations": 27,
-            "mean_throughput_per_hour": 3.0,
-            "peak_throughput_per_hour": 7.0,
-            "utilization_peak": 1.75,
-            "utilization_mean": 0.75
+            "resource_id": "T073",
+            "label": "T073",
+            "operations": 39,
+            "mean_throughput_per_hour": 5.571428571428571,
+            "peak_throughput_per_hour": 11.0,
+            "utilization_peak": 2.75,
+            "utilization_mean": 1.3928571428571428
           },
           {
-            "resource_id": "T004",
-            "label": "T004",
-            "operations": 22,
-            "mean_throughput_per_hour": 3.6666666666666665,
-            "peak_throughput_per_hour": 7.0,
-            "utilization_peak": 1.75,
-            "utilization_mean": 0.9166666666666666
-          },
-          {
-            "resource_id": "T023",
-            "label": "T023",
-            "operations": 17,
-            "mean_throughput_per_hour": 2.125,
-            "peak_throughput_per_hour": 5.0,
-            "utilization_peak": 1.25,
-            "utilization_mean": 0.53125
-          },
-          {
-            "resource_id": "T002",
-            "label": "T002",
-            "operations": 13,
-            "mean_throughput_per_hour": 1.8571428571428572,
-            "peak_throughput_per_hour": 4.0,
-            "utilization_peak": 1.0,
-            "utilization_mean": 0.4642857142857143
+            "resource_id": "T020",
+            "label": "T020",
+            "operations": 23,
+            "mean_throughput_per_hour": 3.8333333333333335,
+            "peak_throughput_per_hour": 8.0,
+            "utilization_peak": 2.0,
+            "utilization_mean": 0.9583333333333334
           },
           {
             "resource_id": "T021",
             "label": "T021",
-            "operations": 4,
-            "mean_throughput_per_hour": 2.0,
-            "peak_throughput_per_hour": 3.0,
-            "utilization_peak": 0.75,
-            "utilization_mean": 0.5
+            "operations": 9,
+            "mean_throughput_per_hour": 3.0,
+            "peak_throughput_per_hour": 5.0,
+            "utilization_peak": 1.25,
+            "utilization_mean": 0.75
+          },
+          {
+            "resource_id": "T011",
+            "label": "T011",
+            "operations": 13,
+            "mean_throughput_per_hour": 1.625,
+            "peak_throughput_per_hour": 4.0,
+            "utilization_peak": 1.0,
+            "utilization_mean": 0.40625
+          },
+          {
+            "resource_id": "T019",
+            "label": "T019",
+            "operations": 13,
+            "mean_throughput_per_hour": 2.1666666666666665,
+            "peak_throughput_per_hour": 4.0,
+            "utilization_peak": 1.0,
+            "utilization_mean": 0.5416666666666666
           }
         ]
       },
       "planned_reh": {
         "available": true,
-        "capacity_reference_per_hour": 10.0,
-        "resource_count": 49,
+        "capacity_reference_per_hour": 22.0,
+        "resource_count": 56,
         "top_resources": [
+          {
+            "resource_id": "REH-181",
+            "label": "MARTE - trecho 1",
+            "operations": 163,
+            "mean_throughput_per_hour": 18.11111111111111,
+            "peak_throughput_per_hour": 39.0,
+            "utilization_peak": 1.7727272727272727,
+            "utilization_mean": 0.8232323232323232
+          },
           {
             "resource_id": "REH-201",
             "label": "PINHEIROS - trecho 2",
-            "operations": 95,
-            "mean_throughput_per_hour": 7.3076923076923075,
-            "peak_throughput_per_hour": 18.0,
-            "utilization_peak": 1.8,
-            "utilization_mean": 0.7307692307692307
+            "operations": 181,
+            "mean_throughput_per_hour": 20.11111111111111,
+            "peak_throughput_per_hour": 38.0,
+            "utilization_peak": 1.7272727272727273,
+            "utilization_mean": 0.9141414141414141
           },
           {
-            "resource_id": "REH-204",
-            "label": "MORUMBI - trecho 1",
-            "operations": 97,
-            "mean_throughput_per_hour": 7.461538461538462,
-            "peak_throughput_per_hour": 17.0,
-            "utilization_peak": 1.7,
-            "utilization_mean": 0.7461538461538462
+            "resource_id": "REH-182",
+            "label": "MARTE - trecho 2",
+            "operations": 151,
+            "mean_throughput_per_hour": 16.77777777777778,
+            "peak_throughput_per_hour": 37.0,
+            "utilization_peak": 1.6818181818181819,
+            "utilization_mean": 0.7626262626262627
           },
           {
-            "resource_id": "REH-207",
-            "label": "PINHEIROS - trecho 5",
-            "operations": 80,
-            "mean_throughput_per_hour": 7.2727272727272725,
-            "peak_throughput_per_hour": 15.0,
-            "utilization_peak": 1.5,
-            "utilization_mean": 0.7272727272727273
+            "resource_id": "REH-198",
+            "label": "PINHEIROS - trecho 1",
+            "operations": 145,
+            "mean_throughput_per_hour": 16.11111111111111,
+            "peak_throughput_per_hour": 32.0,
+            "utilization_peak": 1.4545454545454546,
+            "utilization_mean": 0.7323232323232323
           },
           {
-            "resource_id": "REH-184",
-            "label": "OESTE - trecho 3",
-            "operations": 66,
-            "mean_throughput_per_hour": 6.0,
-            "peak_throughput_per_hour": 12.0,
-            "utilization_peak": 1.2,
-            "utilization_mean": 0.6
-          },
-          {
-            "resource_id": "REH-205",
-            "label": "PINHEIROS - trecho 3",
-            "operations": 66,
-            "mean_throughput_per_hour": 6.0,
-            "peak_throughput_per_hour": 12.0,
-            "utilization_peak": 1.2,
-            "utilization_mean": 0.6
+            "resource_id": "REH-195",
+            "label": "MARTE - trecho 3",
+            "operations": 109,
+            "mean_throughput_per_hour": 12.11111111111111,
+            "peak_throughput_per_hour": 31.0,
+            "utilization_peak": 1.4090909090909092,
+            "utilization_mean": 0.5505050505050505
           }
         ]
       }
@@ -8006,9 +8038,9 @@
       "planned_route_count": 106.0,
       "planned_waypoint_count": 212.0,
       "planned_route_crossings": 1.0,
-      "trajectory_group_count": 45.75,
-      "repeated_trajectory_group_count": 27.75,
-      "lowc_event_count": 7.75,
+      "trajectory_group_count": 95.0,
+      "repeated_trajectory_group_count": 54.0,
+      "lowc_event_count": 206.5,
       "crossings": {
         "type": "FeatureCollection",
         "features": [
@@ -8034,263 +8066,402 @@
     }
   },
   "safety": {
-    "lowc_events": 7.75,
-    "nmac_events": 1.5,
+    "lowc_events": 206.5,
+    "nmac_events": 71.0,
     "lowc_horizontal_m": 500.0,
+    "lowc_vertical_m": 137.16,
     "nmac_horizontal_m": 150.0,
-    "sample_seconds": 10,
+    "nmac_vertical_m": 30.48,
+    "conflict_definition": "3D retangular",
+    "operation_count": 325.0,
+    "events_by_vehicle_pair": {
+      "eVTOL - eVTOL": {
+        "lowc_events": 195,
+        "nmac_events": 62
+      },
+      "eVTOL - helicoptero": {
+        "lowc_events": 105,
+        "nmac_events": 54
+      },
+      "helicoptero - helicoptero": {
+        "lowc_events": 16,
+        "nmac_events": 5
+      }
+    },
+    "sample_seconds": 1,
     "conflict_detection_horizon_s": 60.0,
-    "separation_samples": 20347,
-    "lowc_per_100_operations": 4.378531073446328,
-    "lowc_per_flight_hour": 0.45932395726851855,
-    "lowc_per_1000_km": 2.16345499114709,
-    "nmac_per_100_operations": 0.847457627118644,
-    "nmac_per_flight_hour": 0.0889502498621706,
-    "nmac_per_1000_km": 0.4188984515057963,
-    "monitored_pair_samples": 20347,
-    "min_severity_ratio": 0.08256613255864284,
-    "p05_severity_ratio": 0.2837160863277082,
-    "median_severity_ratio": 0.5819673564924466,
-    "p95_severity_ratio": 0.888223448503927,
-    "total_time_below_threshold_s": 720.0,
-    "mean_time_below_threshold_s": 19.947916666666668,
-    "max_time_below_threshold_s": 100.0,
+    "time_to_conflict_source": "horizonte configurado; nao observado no STATELOG",
+    "separation_samples": 1231274,
+    "lowc_per_100_operations": 63.53846153846153,
+    "lowc_per_flight_hour": 4.231276304066265,
+    "lowc_per_1000_km": 27.190908066700835,
+    "nmac_per_100_operations": 21.846153846153843,
+    "nmac_per_flight_hour": 1.4312749431214824,
+    "nmac_per_1000_km": 9.165056460048197,
+    "monitored_pair_samples": 1231274,
+    "min_severity_ratio": 0.0,
+    "p05_severity_ratio": 0.04419142797459276,
+    "median_severity_ratio": 0.5242213823415014,
+    "p95_severity_ratio": 0.9210670781055657,
+    "total_time_below_threshold_s": 8617.0,
+    "mean_time_below_threshold_s": 20.38982774370351,
+    "max_time_below_threshold_s": 604.0,
     "mean_time_to_conflict_s": 60.0,
     "min_time_to_conflict_s": 60.0,
     "mac_beta": 0.005038,
     "mac_probability_given_nmac": 0.005,
-    "expected_mac": 3.7785000000000005e-05,
-    "expected_mac_rate_per_flight_hour": 2.2406567940280776e-06,
-    "expected_mac_per_100k_flight_hours": 0.22406567940280775,
+    "expected_mac": 0.00178849,
+    "expected_mac_rate_per_flight_hour": 3.6053815817230145e-05,
+    "expected_mac_per_100k_flight_hours": 3.605381581723014,
     "tls_target_per_flight_hour": 9.4e-06,
     "tls_epsilon": 1e-15,
-    "tls_margin": 2350000003.5465736,
-    "tls_compliant": true
+    "tls_margin": 0.45826227294032373,
+    "tls_compliant": false
   },
   "charts": {
-    "active_aircraft": "assets/charts/01_STATELOG_bimtra_top1_2025_11_09_disturbed_seed42_mvp_headless_20260618_13-54-32_active_aircraft.png",
-    "separation_histogram": "assets/charts/01_STATELOG_bimtra_top1_2025_11_09_disturbed_seed42_mvp_headless_20260618_13-54-32_separation_histogram.png",
-    "altitude_histogram": "assets/charts/01_STATELOG_bimtra_top1_2025_11_09_disturbed_seed42_mvp_headless_20260618_13-54-32_altitude_histogram.png",
-    "distance_histogram": "assets/charts/01_STATELOG_bimtra_top1_2025_11_09_disturbed_seed42_mvp_headless_20260618_13-54-32_distance_histogram.png",
-    "severity_histogram": "assets/charts/01_STATELOG_bimtra_top1_2025_11_09_disturbed_seed42_mvp_headless_20260618_13-54-32_severity_histogram.png",
-    "trajectory_conformity": "assets/charts/01_STATELOG_bimtra_top1_2025_11_09_disturbed_seed42_mvp_headless_20260618_13-54-32_trajectory_conformity.png"
+    "active_aircraft": "assets/charts/01_STATELOG_produto2_C1_2025-11-09_off_20260818_14-48-46_active_aircraft.png",
+    "separation_histogram": "assets/charts/01_STATELOG_produto2_C1_2025-11-09_off_20260818_14-48-46_separation_histogram.png",
+    "altitude_histogram": "assets/charts/01_STATELOG_produto2_C1_2025-11-09_off_20260818_14-48-46_altitude_histogram.png",
+    "distance_histogram": "assets/charts/01_STATELOG_produto2_C1_2025-11-09_off_20260818_14-48-46_distance_histogram.png",
+    "severity_histogram": "assets/charts/01_STATELOG_produto2_C1_2025-11-09_off_20260818_14-48-46_severity_histogram.png",
+    "trajectory_conformity": "assets/charts/01_STATELOG_produto2_C1_2025-11-09_off_20260818_14-48-46_trajectory_conformity.png"
   },
   "metric_catalog": [
     {
+      "id": "fleet_mix",
+      "name": "Composicao da frota",
+      "formula": "contagem de operacoes por tipo e modelo",
+      "pdf_reference": "Diagnostico operacional complementar",
+      "code_reference": "scenario_parser.py::annotate_aircraft_metadata",
+      "status": "Implementada com metadados dos cenarios C1/C2",
+      "availability": "implementada",
+      "data_required": "CRE do SCN, id e instancias do STATELOG",
+      "implemented": "Tipo e modelo sao lidos do comando CRE e associados a cada amostra.",
+      "improvements_needed": "Validar a taxonomia e manter um cadastro mestre de aeronaves."
+    },
+    {
+      "id": "kinematic_profile",
+      "name": "Perfil cinematico observado",
+      "formula": "estatisticas de altitude, CAS, TAS, GS, VS, rumo e trilha",
+      "pdf_reference": "Diagnostico operacional complementar",
+      "code_reference": "log_parser.py::load_state_log; metrics.py::build_summary",
+      "status": "Implementada com os campos estendidos do STATELOG",
+      "availability": "implementada",
+      "data_required": "alt, cas, tas, gs, vs, hdg e trk",
+      "implemented": "Todos os campos estendidos sao preservados e resumidos.",
+      "improvements_needed": "Definir envelopes e limites operacionais por modelo."
+    },
+    {
+      "id": "interactive_3d_visualization",
+      "name": "Visualizacao 3D temporal",
+      "formula": "posicao=(lon,lat,alt) em janelas temporais regulares",
+      "pdf_reference": "Produto visual complementar",
+      "code_reference": "exports.py::trajectory_3d_payload; web/assets/dashboard.js::draw3D",
+      "status": "Implementada com amostragem configuravel de 5 segundos",
+      "availability": "implementada",
+      "data_required": "simt, id, lat, lon, alt e tipo de veiculo",
+      "implemented": "Anima aeronaves com silhuetas vetoriais e lista LoWC/NMAC por timestamp; o plano-base usa 2.621 pes MSL.",
+      "improvements_needed": "Validar o MSL de referencia; substituir o plano medio por modelo digital de elevacao se houver terreno confiavel."
+    },
+    {
       "id": "trajectory_frequency",
       "name": "Frequencia de trajetorias semelhantes",
-      "formula": "contagem de instancias com origem, destino e distancia media entre formas dentro das tolerancias",
-      "pdf_reference": "Produto 3 v1, secoes 3.2 e 6; apoio visual a volume e utilizacao",
-      "code_reference": "src/uam_dashboard/exports.py::tracks_geojson",
-      "status": "implemented_configurable_clustering",
-      "data_required": "simt, id, lat, lon, distflown"
+      "formula": "contagem de instancias com origem, destino e forma dentro das tolerancias",
+      "pdf_reference": "Produto 3 v1, secoes 3.2 e 6",
+      "code_reference": "exports.py::tracks_geojson",
+      "status": "Implementada como agrupamento configuravel de trajetorias observadas",
+      "availability": "implementada",
+      "data_required": "simt, id, lat, lon e distflown",
+      "implemented": "Agrupa formas executadas e informa frequencia e volume relativo.",
+      "improvements_needed": "Calibrar tolerancias e validar grupos contra rotas reconhecidas."
     },
     {
       "id": "lowc_events",
-      "name": "Loss of Well Clear",
-      "formula": "Sh(t) < Smin_h",
-      "pdf_reference": "Produto 3 v1, criterio simplificado para separacao horizontal",
-      "code_reference": "src/uam_dashboard/metrics.py::detect_lowc_events",
-      "status": "implemented_horizontal_only",
-      "data_required": "simt, id, lat, lon"
+      "name": "Loss of Well Clear 3D",
+      "formula": "Sh(t) < Smin_h e Sv(t) < Smin_v",
+      "pdf_reference": "Produto 3 v1, criterio de separacao",
+      "code_reference": "metrics.py::detect_lowc_events",
+      "status": "Implementada em 3D com limites horizontal e vertical configuraveis",
+      "availability": "parcial",
+      "data_required": "simt, id, lat, lon, alt e limites de separacao",
+      "implemented": "Detecta e consolida eventos em 1 s e os separa por combinacao de veiculos.",
+      "improvements_needed": "Validar os padroes atuais de 500 m e 137,16 m (450 ft)."
     },
     {
       "id": "lowc_per_flight_hour",
       "name": "Taxa LoWC por hora de voo",
-      "formula": "N_lowc / sum(H_f)",
+      "formula": "N_lowc / soma(H_f)",
       "pdf_reference": "Produto 3 v1, secao 3.3, Eq. 3.2",
-      "code_reference": "src/uam_dashboard/metrics.py::_safety_summary",
-      "status": "implemented",
-      "data_required": "duracao observada por aeronave"
+      "code_reference": "metrics.py::_safety_summary",
+      "status": "Implementada a partir das instancias observadas",
+      "availability": "parcial",
+      "data_required": "LoWC 3D e duracao por instancia",
+      "implemented": "Normaliza eventos pela exposicao total em horas.",
+      "improvements_needed": "Herdara a validacao pendente dos criterios LoWC."
     },
     {
       "id": "lowc_per_100_operations",
       "name": "Taxa LoWC por 100 operacoes",
-      "formula": "N_lowc / N_voos * 100",
+      "formula": "N_lowc / N_operacoes * 100",
       "pdf_reference": "Produto 3 v1, secao 3.3",
-      "code_reference": "src/uam_dashboard/metrics.py::_safety_summary",
-      "status": "implemented",
-      "data_required": "id da aeronave"
+      "code_reference": "metrics.py::_safety_summary",
+      "status": "Implementada usando instancias, nao apenas IDs unicos",
+      "availability": "parcial",
+      "data_required": "LoWC 3D e instancias de voo",
+      "implemented": "O denominador contabiliza reutilizacao de matricula.",
+      "improvements_needed": "Herdara a validacao pendente dos criterios LoWC."
     },
     {
       "id": "lowc_per_1000_km",
       "name": "Taxa LoWC por 1000 km",
       "formula": "N_lowc / km_voados * 1000",
       "pdf_reference": "Produto 3 v1, secao 3.3",
-      "code_reference": "src/uam_dashboard/metrics.py::_safety_summary",
-      "status": "implemented",
-      "data_required": "distflown"
+      "code_reference": "metrics.py::_safety_summary",
+      "status": "Implementada",
+      "availability": "parcial",
+      "data_required": "LoWC 3D e distflown",
+      "implemented": "Normaliza eventos pela distancia executada.",
+      "improvements_needed": "Herdara a validacao pendente dos criterios LoWC."
     },
     {
       "id": "severity_ratio",
-      "name": "Severidade de conflito",
-      "formula": "sev_ij = min_t(Sh/Smin_h)",
-      "pdf_reference": "Produto 3 v1, severidade aplicada ao criterio horizontal simplificado",
-      "code_reference": "src/uam_dashboard/metrics.py::_summarize_lowc_event",
-      "status": "implemented_horizontal_only",
-      "data_required": "simt, lat, lon"
+      "name": "Severidade de conflito 3D",
+      "formula": "sev = min_t(max(Sh/Smin_h, Sv/Smin_v))",
+      "pdf_reference": "Produto 3 v1, severidade de conflito",
+      "code_reference": "metrics.py::_summarize_lowc_event",
+      "status": "Implementada com componentes horizontal e vertical",
+      "availability": "parcial",
+      "data_required": "separacoes horizontal/vertical e limites",
+      "implemented": "Mede a penetracao no volume retangular 3D.",
+      "improvements_needed": "Validar se o modelo retangular e a severidade combinada sao os adotados pelo projeto."
     },
     {
       "id": "time_below_threshold",
       "name": "Tempo abaixo do limiar",
-      "formula": "amostras consecutivas em LoWC * passo de amostragem",
+      "formula": "duracao das amostras consecutivas em LoWC 3D",
       "pdf_reference": "Produto 3 v1, secao 4.2.3",
-      "code_reference": "src/uam_dashboard/metrics.py::_summarize_lowc_event",
-      "status": "implemented_as_sampled_estimate",
-      "data_required": "simt regular ou amostragem configurada"
+      "code_reference": "metrics.py::_summarize_lowc_event",
+      "status": "Implementada com amostragem de 1 segundo",
+      "availability": "implementada",
+      "data_required": "simt regular e eventos LoWC 3D",
+      "implemented": "Usa a resolucao integral dos novos STATELOGs.",
+      "improvements_needed": "Tratar explicitamente logs futuros com amostragem irregular."
     },
     {
       "id": "time_to_conflict",
-      "name": "Tempo ate conflito",
-      "formula": "TTC = t_conflito - t_deteccao",
-      "pdf_reference": "Produto 3 v1, metrica de proximidade operacional",
-      "code_reference": "src/uam_dashboard/metrics.py::_summarize_lowc_event",
-      "status": "implemented_configured_detection_horizon_60s",
-      "data_required": "horizonte de deteccao configurado na simulacao"
+      "name": "Tempo ate conflito observado",
+      "formula": "TTC=t_conflito-t_deteccao",
+      "pdf_reference": "Produto 3 v1, metrica de proximidade",
+      "code_reference": "metrics.py::_summarize_lowc_event",
+      "status": "Indisponivel como observacao; exibido apenas como horizonte configurado",
+      "availability": "indisponivel",
+      "data_required": "instante de alerta ou previsao de CPA",
+      "implemented": "O dashboard identifica 60 s como DTLOOK, nao TTC medido.",
+      "improvements_needed": "Adicionar ao log o alerta e o conflito previsto correspondente."
     },
     {
       "id": "nmac_events",
-      "name": "Near Mid-Air Collision",
-      "formula": "Sh(t) < S_NMAC_h",
-      "pdf_reference": "Produto 3 v1, criterio simplificado para separacao horizontal",
-      "code_reference": "src/uam_dashboard/metrics.py::_safety_summary",
-      "status": "implemented_configurable_horizontal_threshold",
-      "data_required": "simt, lat, lon"
+      "name": "Near Mid-Air Collision 3D",
+      "formula": "Sh(t)<S_NMAC_h e Sv(t)<S_NMAC_v",
+      "pdf_reference": "Produto 3 v1, criterio de separacao restritivo",
+      "code_reference": "metrics.py::_safety_summary",
+      "status": "Implementada em 3D com limites configuraveis",
+      "availability": "parcial",
+      "data_required": "simt, lat, lon, alt e limites NMAC",
+      "implemented": "Usa atualmente 150 m horizontal e 30,48 m vertical (100 ft).",
+      "improvements_needed": "Validar formalmente os dois limites para operacoes UAM/helicoptero."
     },
     {
       "id": "expected_mac",
       "name": "MAC esperado",
-      "formula": "MAC = 5.038e-3 * 0.005 * N_NMAC; MAC_100k = MAC / H_voo * 100000",
-      "pdf_reference": "Produto 3 v1, seguranca; MAC estimado a partir de N_NMAC, beta e P(MAC|NMAC)",
-      "code_reference": "src/uam_dashboard/metrics.py::_safety_summary",
-      "status": "implemented_deterministic",
-      "data_required": "NMAC horizontal e horas totais de voo"
+      "formula": "MAC=beta*P(MAC|NMAC)*N_NMAC",
+      "pdf_reference": "Produto 3 v1, seguranca",
+      "code_reference": "metrics.py::_safety_summary",
+      "status": "Implementada como estimativa condicionada a parametros externos",
+      "availability": "parcial",
+      "data_required": "NMAC 3D, beta, P(MAC|NMAC) e horas",
+      "implemented": "Calcula valor esperado e taxa por 100 mil horas; nao inventa timestamp MAC.",
+      "improvements_needed": "Validar beta e P(MAC|NMAC); fornecer flag/instante de colisao se MAC observado precisar ser georreferenciado."
     },
     {
       "id": "tls_margin",
       "name": "Margem em relacao ao TLS",
-      "formula": "M_TLS = TLS / (lambda_MAC_obs + epsilon)",
+      "formula": "M_TLS=TLS/(lambda_MAC+epsilon)",
       "pdf_reference": "Produto 3 v1, Eq. 4.12",
-      "code_reference": "src/uam_dashboard/metrics.py::_safety_summary",
-      "status": "implemented_configurable_tls",
-      "data_required": "MAC estimado, horas totais de voo, TLS e epsilon"
+      "code_reference": "metrics.py::_safety_summary",
+      "status": "Implementada com TLS configuravel",
+      "availability": "parcial",
+      "data_required": "MAC estimado, horas, TLS e epsilon",
+      "implemented": "Compara a taxa estimada ao alvo configurado.",
+      "improvements_needed": "Homologar o TLS e os parametros de risco com a autoridade do estudo."
     },
     {
       "id": "mean_flight_time_min",
       "name": "Tempo medio de voo",
-      "formula": "mean(max(simt_f) - min(simt_f))",
+      "formula": "media(max(simt_f)-min(simt_f))",
       "pdf_reference": "Produto 3 v1, secao 4.3.4",
-      "code_reference": "src/uam_dashboard/metrics.py::efficiency_metrics",
-      "status": "implemented_observed_proxy",
-      "data_required": "simt, id"
+      "code_reference": "metrics.py::efficiency_metrics",
+      "status": "Implementada como duracao observada no STATELOG",
+      "availability": "implementada",
+      "data_required": "simt e instancias",
+      "implemented": "Calcula media, mediana e P95.",
+      "improvements_needed": "Adicionar marcos de decolagem/pouso para medir airborne time estrito."
     },
     {
       "id": "mean_distance_nm",
       "name": "Distancia media executada",
-      "formula": "mean(max(distflown_f))",
+      "formula": "media(max(distflown_f)-min(distflown_f))",
       "pdf_reference": "Produto 3 v1, secao 4.3.4",
-      "code_reference": "src/uam_dashboard/metrics.py::efficiency_metrics",
-      "status": "implemented",
-      "data_required": "distflown, id"
+      "code_reference": "metrics.py::efficiency_metrics",
+      "status": "Implementada",
+      "availability": "implementada",
+      "data_required": "distflown e instancias",
+      "implemented": "Calcula media, mediana, P95 e total.",
+      "improvements_needed": "Validar distflown contra uma referencia independente."
     },
     {
       "id": "mean_route_efficiency_pct",
       "name": "Ineficiencia horizontal executada",
-      "formula": "(d_real - d_gc) / d_gc * 100",
+      "formula": "(d_real-d_gc)/d_gc*100",
       "pdf_reference": "Produto 3 v1, secao 4.3.6, Eq. 4.19",
-      "code_reference": "src/uam_dashboard/metrics.py::efficiency_metrics",
-      "status": "implemented",
-      "data_required": "lat/lon inicial e final, distflown"
+      "code_reference": "metrics.py::efficiency_metrics",
+      "status": "Implementada contra a distancia geodesica",
+      "availability": "implementada",
+      "data_required": "extremos lat/lon e distflown",
+      "implemented": "Mede o alongamento da rota executada.",
+      "improvements_needed": "Interpretar separadamente restricoes estruturais obrigatorias."
     },
     {
       "id": "delay_metrics",
-      "name": "Atraso em solo",
-      "formula": "GD_f = max(0, R_f - S_f)",
+      "name": "Aderencia ao horario de criacao em solo",
+      "formula": "max(0,t_primeira_amostra-t_CRE_planejado)",
       "pdf_reference": "Produto 3 v1, secao 4.3.1",
-      "code_reference": "src/uam_dashboard/scenario_parser.py::ground_delay_metrics",
-      "status": "implemented_by_paired_nominal_and_disturbed_scenarios",
-      "data_required": "horarios de criacao nos SCNs nominal e perturbado"
+      "code_reference": "scenario_parser.py::observed_ground_delay_metrics",
+      "status": "Implementada como proxy de criacao, nao como atraso operacional",
+      "availability": "parcial",
+      "data_required": "SCN pareado e primeira amostra",
+      "implemented": "Compara as instancias planejadas e executadas.",
+      "improvements_needed": "Fornecer horarios programado, autorizado, pushback e decolagem."
     },
     {
       "id": "airborne_delay",
       "name": "Atraso no ar",
-      "formula": "AD_f = max(0, (A_f - D_f) - T_f)",
+      "formula": "AD_f=max(0,(A_f-D_f)-T_f)",
       "pdf_reference": "Produto 3 v1, Eq. 4.14",
-      "code_reference": "src/uam_dashboard/metrics.py::airborne_delay_metrics",
-      "status": "implemented_by_paired_off_reference_log",
-      "data_required": "tempos de primeira/ultima amostra do STATELOG avaliado e log OFF equivalente"
+      "code_reference": "metrics.py::airborne_delay_metrics",
+      "status": "Implementada no codigo, mas indisponivel para C1/C2",
+      "availability": "indisponivel",
+      "data_required": "tempo nominal do mesmo modelo, rota e condicoes",
+      "implemented": "O mecanismo existe e nao confunde C1 com C2 como referencia nominal.",
+      "improvements_needed": "Fornecer uma execucao nominal pareada para cada cenario."
     },
     {
       "id": "total_delay",
       "name": "Atraso total",
-      "formula": "TD_f = GD_f + AD_f",
-      "pdf_reference": "Produto 3 v1, eficiencia; atraso total e pontualidade operacional",
-      "code_reference": "src/uam_dashboard/metrics.py::total_delay_metrics",
-      "status": "implemented_mean_ground_plus_airborne",
-      "data_required": "atraso em solo e atraso no ar calculados"
+      "formula": "TD_f=GD_f+AD_f",
+      "pdf_reference": "Produto 3 v1, eficiencia",
+      "code_reference": "metrics.py::total_delay_metrics",
+      "status": "Implementada no codigo, mas indisponivel para C1/C2",
+      "availability": "indisponivel",
+      "data_required": "atrasos operacionais em solo e no ar",
+      "implemented": "So calcula quando ambos os componentes estao disponiveis.",
+      "improvements_needed": "Obter marcos operacionais e referencia nominal."
+    },
+    {
+      "id": "operational_punctuality",
+      "name": "Pontualidade operacional",
+      "formula": "percentual de chegadas dentro da tolerancia planejada",
+      "pdf_reference": "Produto 3 v1, eficiencia",
+      "code_reference": "Ainda nao implementada",
+      "status": "Indisponivel por ausencia de horarios reais de chegada",
+      "availability": "indisponivel",
+      "data_required": "horarios planejado, autorizado e real de chegada",
+      "implemented": "A lacuna e publicada na rastreabilidade.",
+      "improvements_needed": "Adicionar os tres marcos por instancia."
     },
     {
       "id": "trajectory_conformity",
       "name": "Conformidade de trajetoria",
-      "formula": "TC_f = (d_real - d_plan) / d_plan; ED_f = d_real - d_plan",
-      "pdf_reference": "Produto 3 v1, secao 4.3.5, Eq. 4.16-4.17",
-      "code_reference": "src/uam_dashboard/metrics.py::trajectory_conformity",
-      "status": "implemented",
-      "data_required": "STATELOG executado e waypoints planejados do SCN"
+      "formula": "TC_f=(d_real-d_plan)/d_plan; ED_f=d_real-d_plan",
+      "pdf_reference": "Produto 3 v1, Eq. 4.16-4.17",
+      "code_reference": "metrics.py::trajectory_conformity",
+      "status": "Implementada com os SCN C1/C2",
+      "availability": "implementada",
+      "data_required": "STATELOG e waypoints do SCN",
+      "implemented": "Associa por ID/horario e compara distancia e geometria.",
+      "improvements_needed": "Validar tolerancias por classe de rota e fase de voo."
     },
     {
       "id": "spatial_route_adherence",
       "name": "Aderencia espacial a REH",
-      "formula": "amostras executadas dentro dos poligonos oficiais REH / amostras associadas * 100",
-      "pdf_reference": "Produto 3 v1, diagnostico espacial complementar a secao 4.3.5",
-      "code_reference": "src/uam_dashboard/metrics.py::trajectory_conformity",
-      "status": "implemented_official_wfs_gml_polygons",
-      "data_required": "STATELOG executado, SCN para associacao de voo e XML WFS/GML oficial da REH"
+      "formula": "amostras dentro dos poligonos/amostras associadas*100",
+      "pdf_reference": "Produto 3 v1, secao 4.3.5",
+      "code_reference": "metrics.py::trajectory_conformity",
+      "status": "Implementada com XML WFS/GML oficial",
+      "availability": "implementada",
+      "data_required": "STATELOG, SCN e XML REH",
+      "implemented": "Usa poligonos e semilarguras oficiais; em C2 avalia somente helicopteros na REH.",
+      "improvements_needed": "Fornecer a geometria oficial do corredor eVTOL C2 e versionar a vigencia do cadastro."
     },
     {
       "id": "air_traffic_density",
       "name": "Densidade de trafego aereo",
-      "formula": "ATD_dt = N_simultaneo_dt / A",
+      "formula": "ATD_dt=N_simultaneo_dt/A",
       "pdf_reference": "Produto 3 v1, Eq. 4.23",
-      "code_reference": "src/uam_dashboard/capacity.py::capacity_metrics",
-      "status": "implemented_official_reh_polygon_area",
-      "data_required": "STATELOG e poligonos oficiais da REH no XML WFS/GML"
+      "code_reference": "capacity.py::capacity_metrics",
+      "status": "Implementada sobre a area dos poligonos REH",
+      "availability": "implementada",
+      "data_required": "STATELOG e XML REH",
+      "implemented": "Calcula densidade media, pico e hotspots.",
+      "improvements_needed": "Homologar janelas temporais e areas operacionais para comparacao externa."
     },
     {
       "id": "complexity_components",
       "name": "Componentes de complexidade",
-      "formula": "cruzamentos, waypoints, grupos recorrentes, LoWC e fluxos convergentes",
+      "formula": "cruzamentos, waypoints, grupos, LoWC e fluxos",
       "pdf_reference": "Produto 3 v1, secao 4.4.1",
-      "code_reference": "src/uam_dashboard/capacity.py::_complexity_components",
-      "status": "implemented_proxy_components",
-      "data_required": "STATELOG, eixos e poligonos oficiais da REH, trajetorias agrupadas e LoWC"
+      "code_reference": "capacity.py::_complexity_components",
+      "status": "Implementada como proxies sem indice composto validado",
+      "availability": "parcial",
+      "data_required": "STATELOG, SCN, REH, grupos e LoWC",
+      "implemented": "Publica cada componente separadamente.",
+      "improvements_needed": "Definir pesos, normalizacao e validacao do indice agregado."
     },
     {
       "id": "resource_throughput",
       "name": "Throughput por recurso",
-      "formula": "THR_r,dt = N_r,dt / |dt|",
+      "formula": "THR_r,dt=N_r,dt/|dt|",
       "pdf_reference": "Produto 3 v1, Eq. 4.24",
-      "code_reference": "src/uam_dashboard/capacity.py::_resource_throughput",
-      "status": "implemented_one_hour_windows",
-      "data_required": "instancias de voo, pares OD, grupos de trajetoria, SCN e trechos REH oficiais"
+      "code_reference": "capacity.py::_resource_throughput",
+      "status": "Implementada em janelas de uma hora para OD, grupos e REH",
+      "availability": "implementada",
+      "data_required": "instancias, SCN, trajetorias e REH",
+      "implemented": "Calcula throughput por tres familias de recurso.",
+      "improvements_needed": "Homologar janela e definicao operacional dos recursos."
     },
     {
       "id": "resource_utilization",
       "name": "Utilizacao de recurso",
-      "formula": "U_r,dt = N_r,dt / C_r,dt; C_r,dt = P95(THR_r,dt)",
+      "formula": "U=N/C; C=P95(THR)",
       "pdf_reference": "Produto 3 v1, Eq. 4.25",
-      "code_reference": "src/uam_dashboard/capacity.py::_resource_throughput",
-      "status": "implemented_p95_nominal_capacity",
-      "data_required": "throughput horario observado por tipo de recurso"
+      "code_reference": "capacity.py::_resource_throughput",
+      "status": "Implementada como proxy do P95 observado, nao capacidade declarada",
+      "availability": "parcial",
+      "data_required": "throughput e capacidade de referencia",
+      "implemented": "Mede proximidade ao envelope observado.",
+      "improvements_needed": "Fornecer capacidade declarada/homologada por recurso."
     },
     {
       "id": "risk_ratio",
-      "name": "Razao de risco",
-      "formula": "RR_s = MAC_100k_s / MAC_100k_ref",
+      "name": "Razao de risco C2 versus C1",
+      "formula": "RR_C2=MAC_100k_C2/MAC_100k_C1",
       "pdf_reference": "Produto 3 v1, Eq. 4.10",
       "code_reference": "generate_dashboard.py::comparison_payload",
-      "status": "implemented_reference_nominal_off",
-      "data_required": "MAC_100k do cenario avaliado e do cenario sem intervencao/sem perturbacao"
+      "status": "Implementada usando C1 como referencia comparavel",
+      "availability": "parcial",
+      "data_required": "MAC_100k C1/C2 e referencia",
+      "implemented": "Agrupa C1/C2 e calcula a razao.",
+      "improvements_needed": "Herdara validacao de NMAC e parametros probabilisticos."
     }
   ]
 }

@@ -10,7 +10,13 @@ from typing import Any
 from src.uam_dashboard.capacity import capacity_metrics
 from src.uam_dashboard.config import DashboardConfig, SAO_PAULO_CENTER
 from src.uam_dashboard.experiment import experiment_metadata, experiment_sort_key
-from src.uam_dashboard.exports import conflicts_geojson, heatmap_points, planned_routes_geojson, tracks_geojson
+from src.uam_dashboard.exports import (
+    conflicts_geojson,
+    heatmap_points,
+    planned_routes_geojson,
+    tracks_geojson,
+    trajectory_3d_payload,
+)
 from src.uam_dashboard.log_parser import load_state_log
 from src.uam_dashboard.metrics import (
     active_aircraft_series,
@@ -31,7 +37,11 @@ from src.uam_dashboard.plots import (
     plot_trajectory_conformity,
 )
 from src.uam_dashboard.reh_parser import load_reh_network
-from src.uam_dashboard.scenario_parser import ground_delay_metrics, load_bluesky_scenario
+from src.uam_dashboard.scenario_parser import (
+    annotate_aircraft_metadata,
+    load_bluesky_scenario,
+    observed_ground_delay_metrics,
+)
 
 
 def write_json(path: Path, payload: object) -> None:
@@ -80,6 +90,9 @@ def average_dashboard(run_dashboards: list[dict[str, Any]]) -> dict[str, Any]:
         "summary": {
             "records": int(sum(d["summary"]["records"] for d in run_dashboards)),
             "aircraft_count": mean([d["summary"]["aircraft_count"] for d in run_dashboards]),
+            "operation_count": mean([d["summary"]["operation_count"] for d in run_dashboards]),
+            "fleet_mix": run_dashboards[0]["summary"].get("fleet_mix", {}),
+            "kinematics": run_dashboards[0]["summary"].get("kinematics", {}),
             "sim_start_s": mean([d["summary"]["sim_start_s"] for d in run_dashboards]),
             "sim_end_s": mean([d["summary"]["sim_end_s"] for d in run_dashboards]),
             "duration_min": mean([d["summary"]["duration_min"] for d in run_dashboards]),
@@ -124,9 +137,15 @@ def average_dashboard(run_dashboards: list[dict[str, Any]]) -> dict[str, Any]:
             "lowc_events": mean([d["safety"]["lowc_events"] for d in run_dashboards]),
             "nmac_events": mean([d["safety"]["nmac_events"] for d in run_dashboards]),
             "lowc_horizontal_m": run_dashboards[0]["safety"]["lowc_horizontal_m"],
+            "lowc_vertical_m": run_dashboards[0]["safety"].get("lowc_vertical_m"),
             "nmac_horizontal_m": run_dashboards[0]["safety"]["nmac_horizontal_m"],
+            "nmac_vertical_m": run_dashboards[0]["safety"].get("nmac_vertical_m"),
+            "conflict_definition": run_dashboards[0]["safety"].get("conflict_definition"),
+            "operation_count": mean([d["safety"].get("operation_count", 0) for d in run_dashboards]),
+            "events_by_vehicle_pair": run_dashboards[0]["safety"].get("events_by_vehicle_pair", {}),
             "sample_seconds": run_dashboards[0]["safety"]["sample_seconds"],
             "conflict_detection_horizon_s": run_dashboards[0]["safety"]["conflict_detection_horizon_s"],
+            "time_to_conflict_source": run_dashboards[0]["safety"].get("time_to_conflict_source"),
             "separation_samples": int(sum(d["safety"]["separation_samples"] for d in run_dashboards)),
             "lowc_per_100_operations": mean([d["safety"]["lowc_per_100_operations"] for d in run_dashboards]),
             "lowc_per_flight_hour": mean([d["safety"]["lowc_per_flight_hour"] for d in run_dashboards]),
@@ -183,6 +202,8 @@ def _average_conformity(run_dashboards: list[dict[str, Any]]) -> dict[str, Any]:
         "planned_instances": int(sum(item["planned_instances"] for item in conformities)),
         "matched_instances": int(sum(item["matched_instances"] for item in conformities)),
         "spatial_adherence_pct": mean([item["spatial_adherence_pct"] for item in conformities]),
+        "spatial_adherence_scope": "media de cenarios; consultar cada execucao para o escopo aplicavel",
+        "spatial_adherence_by_vehicle_type": conformities[0].get("spatial_adherence_by_vehicle_type", {}),
         "mean_deviation_m": mean([item["mean_deviation_m"] for item in conformities]),
         "p95_deviation_m": mean([item["p95_deviation_m"] for item in conformities]),
         "max_deviation_m": max(item["max_deviation_m"] for item in conformities),
@@ -353,13 +374,16 @@ def comparison_payload(runs: list[dict[str, Any]], average: dict[str, Any]) -> d
         by_day.setdefault(metadata["day_key"], []).append(row)
 
     days = []
-    variant_order = {"disturbed_mvp": 0, "disturbed_off": 1, "nominal_mvp": 2, "nominal_off": 3}
+    variant_order = {"c1": 0, "c2": 1, "disturbed_mvp": 2, "disturbed_off": 3, "nominal_mvp": 4, "nominal_off": 5}
     for rows in by_day.values():
         rows.sort(key=lambda row: variant_order.get(row["variant_key"], 99))
-        risk_reference = next(
-            (row for row in rows if row["mvp_enabled"] is False and row["disturbed"] is False),
-            None,
-        )
+        if rows[0].get("experiment_family") == "produto2":
+            risk_reference = next((row for row in rows if row["variant_key"] == "c1"), None)
+        else:
+            risk_reference = next(
+                (row for row in rows if row["mvp_enabled"] is False and row["disturbed"] is False),
+                None,
+            )
         off_references = {
             row["disturbed"]: row
             for row in rows
@@ -370,12 +394,12 @@ def comparison_payload(runs: list[dict[str, Any]], average: dict[str, Any]) -> d
                 row["expected_mac_per_100k_flight_hours"],
                 risk_reference["expected_mac_per_100k_flight_hours"] if risk_reference else None,
             )
-            reference = off_references.get(row["disturbed"])
-            row["flight_time_delta_vs_off_min"] = _difference_or_none(
+            reference = risk_reference if row.get("experiment_family") == "produto2" else off_references.get(row["disturbed"])
+            row["flight_time_delta_vs_reference_min"] = _difference_or_none(
                 row["flight_time_min"],
                 reference["flight_time_min"] if reference else None,
             )
-            row["distance_delta_vs_off_nm"] = _difference_or_none(
+            row["distance_delta_vs_reference_nm"] = _difference_or_none(
                 row["distance_nm"],
                 reference["distance_nm"] if reference else None,
             )
@@ -403,6 +427,9 @@ def analyze_log(log_path: Path, config: DashboardConfig, charts_dir: Path, run_i
     df = load_state_log(log_path)
 
     print("Computing metrics and sampled LoWC events...")
+    scenario_path = find_matching_scenario(log_path, config.scenario_paths)
+    planned_flights = load_bluesky_scenario(scenario_path) if scenario_path else []
+    df = annotate_aircraft_metadata(df, planned_flights)
     series = active_aircraft_series(df)
     efficiency = efficiency_metrics(
         df,
@@ -410,14 +437,16 @@ def analyze_log(log_path: Path, config: DashboardConfig, charts_dir: Path, run_i
         reset_distance_m=config.flight_instance_reset_distance_m,
         jump_m=config.flight_instance_jump_m,
     )
-    scenario_path = find_matching_scenario(log_path, config.scenario_paths)
-    planned_flights = load_bluesky_scenario(scenario_path) if scenario_path else []
     reh_network = load_reh_network(config.reh_xml_path) if config.reh_xml_path else None
     reh_segments = reh_network["segments"] if reh_network else []
     metadata = experiment_metadata(log_path)
-    nominal_scenario = find_nominal_scenario(metadata, config.scenario_paths)
-    nominal_flights = load_bluesky_scenario(nominal_scenario) if nominal_scenario else None
-    efficiency["ground_delay"] = ground_delay_metrics(planned_flights, nominal_flights)
+    efficiency["ground_delay"] = observed_ground_delay_metrics(
+        df,
+        planned_flights,
+        config.flight_instance_gap_seconds,
+        config.flight_instance_reset_distance_m,
+        config.flight_instance_jump_m,
+    )
     reference_log_path = find_reference_off_log(metadata, config.log_paths)
     reference_df = load_state_log(reference_log_path) if reference_log_path else None
     efficiency["airborne_delay"] = airborne_delay_metrics(
@@ -440,6 +469,12 @@ def analyze_log(log_path: Path, config: DashboardConfig, charts_dir: Path, run_i
         jump_m=config.flight_instance_jump_m,
         reh_segments=reh_segments,
     )
+    if metadata.get("scenario_key") == "C2" and conformity.get("available"):
+        helicopter_adherence = conformity.get("spatial_adherence_by_vehicle_type", {}).get("helicoptero")
+        if helicopter_adherence:
+            conformity["spatial_adherence_all_traffic_pct"] = conformity["spatial_adherence_pct"]
+            conformity["spatial_adherence_pct"] = helicopter_adherence["spatial_adherence_pct"]
+            conformity["spatial_adherence_scope"] = "helicopteros na REH oficial; corredor eVTOL C2 sem geometria oficial"
     efficiency["trajectory_conformity"] = conformity
     lowc_events, separation_samples, safety = detect_lowc_events(
         df,
@@ -454,6 +489,9 @@ def analyze_log(log_path: Path, config: DashboardConfig, charts_dir: Path, run_i
         mac_probability_given_nmac=config.mac_probability_given_nmac,
         tls_target_per_flight_hour=config.tls_target_per_flight_hour,
         tls_epsilon=config.tls_epsilon,
+        lowc_vertical_threshold_m=config.lowc_vertical_m,
+        nmac_vertical_threshold_m=config.nmac_vertical_m,
+        operation_count=efficiency["flight_instances"],
     )
 
     print("Rendering chart images...")
@@ -495,6 +533,14 @@ def analyze_log(log_path: Path, config: DashboardConfig, charts_dir: Path, run_i
         endpoint_tolerance_m=config.trajectory_endpoint_tolerance_m,
         conformity_by_instance=conformity_by_instance,
     )
+    trajectory_3d = trajectory_3d_payload(
+        df,
+        config.visualization_3d_sample_seconds,
+        config.flight_instance_gap_seconds,
+        config.flight_instance_reset_distance_m,
+        config.flight_instance_jump_m,
+        config.visualization_3d_ground_msl_ft,
+    )
     planned_routes = planned_routes_geojson(
         planned_flights,
         conformity_by_instance,
@@ -515,7 +561,7 @@ def analyze_log(log_path: Path, config: DashboardConfig, charts_dir: Path, run_i
         reh_segments=reh_segments,
     )
 
-    summary = build_summary(df)
+    summary = build_summary(df, operation_count=efficiency["flight_instances"])
     dashboard = {
         "source_log": log_path.name,
         "metadata": metadata,
@@ -534,6 +580,7 @@ def analyze_log(log_path: Path, config: DashboardConfig, charts_dir: Path, run_i
         "metadata": metadata,
         "dashboard": dashboard,
         "tracks": tracks,
+        "trajectory_3d": trajectory_3d,
         "planned_routes": planned_routes,
         "official_reh": reh_network["geojson"] if reh_network else {
             "type": "FeatureCollection",
@@ -568,6 +615,7 @@ def build_dashboard(config: DashboardConfig) -> None:
     write_json(data_dir / "official_reh.geojson", primary["official_reh"])
     write_json(data_dir / "conflicts.geojson", primary["conflicts"])
     write_json(data_dir / "heatmap_points.json", primary["heatmap"])
+    write_json(data_dir / "trajectory_3d.json", primary["trajectory_3d"])
     runs_dir = data_dir / "runs"
     for run in runs:
         write_json(runs_dir / f"{run['id']}.json", run)
@@ -606,12 +654,16 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--flight-instance-reset-distance-m", type=float, default=250.0)
     parser.add_argument("--flight-instance-jump-m", type=float, default=5000.0)
     parser.add_argument("--lowc-horizontal-m", type=float, default=500.0)
+    parser.add_argument("--lowc-vertical-m", type=float, default=137.16)
     parser.add_argument("--nmac-horizontal-m", type=float, default=150.0)
+    parser.add_argument("--nmac-vertical-m", type=float, default=30.48)
     parser.add_argument("--mac-beta", type=float, default=5.038e-3)
     parser.add_argument("--mac-probability-given-nmac", type=float, default=0.005)
     parser.add_argument("--tls-target-per-flight-hour", type=float, default=9.4e-6)
     parser.add_argument("--tls-epsilon", type=float, default=1e-15)
-    parser.add_argument("--conflict-sample-seconds", type=int, default=10)
+    parser.add_argument("--conflict-sample-seconds", type=int, default=1)
+    parser.add_argument("--visualization-3d-sample-seconds", type=int, default=5)
+    parser.add_argument("--visualization-3d-ground-msl-ft", type=float, default=2621.0)
     parser.add_argument("--conflict-detection-horizon-seconds", type=float, default=60.0)
     parser.add_argument("--trajectory-shape-points", type=int, default=12)
     parser.add_argument("--trajectory-cluster-distance-m", type=float, default=1200.0)
@@ -677,6 +729,10 @@ def find_nominal_scenario(metadata: dict[str, Any], scenario_paths: tuple[Path, 
 
 
 def find_reference_off_log(metadata: dict[str, Any], log_paths: tuple[Path, ...]) -> Path | None:
+    # C1 and C2 are alternative airspace/vehicle scenarios, not an evaluated
+    # run plus a no-deconfliction reference of the same configuration.
+    if metadata.get("experiment_family") == "produto2":
+        return None
     if metadata.get("day_key") is None or metadata.get("disturbed") is None:
         return None
     return find(
@@ -707,12 +763,16 @@ def main() -> None:
         flight_instance_reset_distance_m=args.flight_instance_reset_distance_m,
         flight_instance_jump_m=args.flight_instance_jump_m,
         lowc_horizontal_m=args.lowc_horizontal_m,
+        lowc_vertical_m=args.lowc_vertical_m,
         nmac_horizontal_m=args.nmac_horizontal_m,
+        nmac_vertical_m=args.nmac_vertical_m,
         mac_beta=args.mac_beta,
         mac_probability_given_nmac=args.mac_probability_given_nmac,
         tls_target_per_flight_hour=args.tls_target_per_flight_hour,
         tls_epsilon=args.tls_epsilon,
         conflict_sample_seconds=args.conflict_sample_seconds,
+        visualization_3d_sample_seconds=args.visualization_3d_sample_seconds,
+        visualization_3d_ground_msl_ft=args.visualization_3d_ground_msl_ft,
         conflict_detection_horizon_seconds=args.conflict_detection_horizon_seconds,
         trajectory_shape_points=args.trajectory_shape_points,
         trajectory_cluster_distance_m=args.trajectory_cluster_distance_m,

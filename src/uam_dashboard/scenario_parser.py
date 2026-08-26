@@ -6,7 +6,7 @@ from typing import Any
 
 import numpy as np
 
-from .metrics import haversine_m
+from .metrics import flight_instance_frame, haversine_m
 
 COMMAND_RE = re.compile(r"^\s*([\d:.]+)>\s+(.+?)\s*$")
 
@@ -42,6 +42,8 @@ def load_bluesky_scenario(path: str | Path) -> list[dict[str, Any]]:
             flight = {
                 "flight_instance": f"{aircraft_id}#{instance_number}",
                 "aircraft_id": aircraft_id,
+                "aircraft_model": parts[2].upper(),
+                "vehicle_type": _vehicle_type(parts[2]),
                 "start_time": timestamp,
                 "start_simt": _timestamp_seconds(timestamp),
                 "coordinates": [[float(parts[4]), float(parts[3])]],
@@ -65,6 +67,26 @@ def load_bluesky_scenario(path: str | Path) -> list[dict[str, Any]]:
                 flight["coordinates"].append(coordinate)
 
     return [flight for flight in flights if len(flight["coordinates"]) >= 2]
+
+
+def annotate_aircraft_metadata(
+    df: Any,
+    planned_flights: list[dict[str, Any]],
+) -> Any:
+    """Attach scenario aircraft model/type metadata to STATELOG rows."""
+
+    model_by_id = {
+        str(flight["aircraft_id"]): str(flight.get("aircraft_model", "DESCONHECIDO"))
+        for flight in planned_flights
+    }
+    type_by_id = {
+        str(flight["aircraft_id"]): str(flight.get("vehicle_type", "desconhecido"))
+        for flight in planned_flights
+    }
+    annotated = df.copy()
+    annotated["aircraft_model"] = annotated["id"].map(model_by_id).fillna("DESCONHECIDO")
+    annotated["vehicle_type"] = annotated["id"].map(type_by_id).fillna("desconhecido")
+    return annotated
 
 
 def planned_route_distance_m(flight: dict[str, Any]) -> float:
@@ -112,12 +134,53 @@ def ground_delay_metrics(
     }
 
 
+def observed_ground_delay_metrics(
+    df: Any,
+    planned_flights: list[dict[str, Any]],
+    gap_seconds: float,
+    reset_distance_m: float,
+    jump_m: float,
+) -> dict[str, Any]:
+    """Estimate departure delay from first STATELOG sample versus SCN CRE time.
+
+    This is schedule adherence at aircraft creation, not an aerodrome movement
+    milestone. The distinction is exposed in the result and traceability layer.
+    """
+
+    if not planned_flights:
+        return {"available": False, "reason": "cenario SCN correspondente ausente"}
+    annotated = flight_instance_frame(df, gap_seconds, reset_distance_m, jump_m)
+    observed = annotated.groupby("flight_instance", sort=True)["simt"].min().to_dict()
+    delays = []
+    for flight in planned_flights:
+        actual_start = observed.get(str(flight["flight_instance"]))
+        if actual_start is None:
+            continue
+        delays.append(max(0.0, float(actual_start) - float(flight["start_simt"])))
+    if not delays:
+        return {"available": False, "reason": "nenhum voo planejado pareado ao STATELOG"}
+    return {
+        "available": True,
+        "source": "primeira amostra do STATELOG versus comando CRE do SCN",
+        "is_operational_proxy": True,
+        "matched_flights": int(len(delays)),
+        "mean_ground_delay_s": float(np.mean(delays)),
+        "median_ground_delay_s": float(np.median(delays)),
+        "p95_ground_delay_s": float(np.quantile(delays, 0.95)),
+        "max_ground_delay_s": float(np.max(delays)),
+    }
+
+
 def _is_number(value: str) -> bool:
     try:
         float(value)
         return True
     except ValueError:
         return False
+
+
+def _vehicle_type(model: str) -> str:
+    return "eVTOL" if model.upper() == "EVTOL" else "helicoptero"
 
 
 def _timestamp_seconds(value: str) -> float:

@@ -20,6 +20,7 @@ EXTENDED_LOG_COLUMNS = [
     "vs",
 ]
 METERS_PER_NM = 1852.0
+FEET_TO_METERS = 0.3048
 SAO_PAULO_CENTER = [-23.5505, -46.6333]
 
 
@@ -36,14 +37,21 @@ class DashboardConfig:
     flight_instance_reset_distance_m: float = 250.0
     flight_instance_jump_m: float = 5000.0
     lowc_horizontal_m: float = 500.0
+    # Valores operacionais configuraveis. Os padroes correspondem a 450 ft
+    # para Well Clear vertical e 100 ft para NMAC, mas ainda precisam ser
+    # validados pelo responsavel operacional do projeto.
+    lowc_vertical_m: float = 137.16
     nmac_horizontal_m: float = 150.0
+    nmac_vertical_m: float = 30.48
     mac_beta: float = 5.038e-3
     mac_probability_given_nmac: float = 0.005
     tls_target_per_flight_hour: float = 9.4e-6
     tls_epsilon: float = 1e-15
-    conflict_sample_seconds: int = 10
+    conflict_sample_seconds: int = 1
     conflict_detection_horizon_seconds: float = 60.0
     track_sample_stride: int = 20
+    visualization_3d_sample_seconds: int = 5
+    visualization_3d_ground_msl_ft: float = 2621.0
     trajectory_shape_points: int = 12
     trajectory_cluster_distance_m: float = 1200.0
     trajectory_endpoint_tolerance_m: float = 2500.0

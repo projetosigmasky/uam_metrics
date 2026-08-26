@@ -12,13 +12,42 @@ EXPERIMENT_RE = re.compile(
 )
 
 HEADLESS_SUFFIX_RE = re.compile(r"_headless(?:_\d{8}_\d{2}-\d{2}-\d{2})?$", re.IGNORECASE)
+PRODUCT2_RE = re.compile(
+    r"^(?:STATELOG_)?produto2_(?P<scenario>C[12])_(?P<date>\d{4}[-_]\d{2}[-_]\d{2})"
+    r"_(?P<mode>mvp|off)(?:_\d{8}_\d{2}-\d{2}-\d{2})?$",
+    re.IGNORECASE,
+)
 
 
 def experiment_metadata(path: str | Path) -> dict[str, Any]:
     stem = HEADLESS_SUFFIX_RE.sub("", Path(path).stem)
+    product2_match = PRODUCT2_RE.match(stem)
+    if product2_match:
+        values = product2_match.groupdict()
+        scenario = values["scenario"].upper()
+        date = values["date"].replace("_", "-")
+        labels = {
+            "C1": "C1 - REH compartilhada",
+            "C2": "C2 - corredor UAM dedicado",
+        }
+        return {
+            "experiment_family": "produto2",
+            "day_key": f"produto2_{date}",
+            "day_label": f"Produto 2 - {date}",
+            "variant_key": scenario.lower(),
+            "variant_label": labels[scenario],
+            "scenario_key": scenario,
+            "reference_variant_key": "c1",
+            "mvp_enabled": values["mode"].lower() == "mvp",
+            "disturbed": False,
+            "rank": int(scenario[-1]),
+            "date": date,
+            "seed": None,
+        }
     match = EXPERIMENT_RE.match(stem)
     if not match:
         return {
+            "experiment_family": "desconhecida",
             "day_key": stem,
             "day_label": stem,
             "variant_key": stem,
@@ -37,6 +66,7 @@ def experiment_metadata(path: str | Path) -> dict[str, Any]:
     mvp_enabled = values["mode"].lower() == "mvp"
     variant_key = f"{'disturbed' if disturbed else 'nominal'}_{'mvp' if mvp_enabled else 'off'}"
     return {
+        "experiment_family": "bimtra",
         "day_key": f"top{rank}_{date}",
         "day_label": f"Dia {rank} - {date}",
         "variant_key": variant_key,
@@ -56,6 +86,8 @@ def experiment_sort_key(path: str | Path) -> tuple[int, int, int]:
     metadata = experiment_metadata(path)
     rank = metadata["rank"] if metadata["rank"] is not None else 999
     variant_order = {
+        "c1": 0,
+        "c2": 1,
         "disturbed_mvp": 0,
         "disturbed_off": 1,
         "nominal_mvp": 2,

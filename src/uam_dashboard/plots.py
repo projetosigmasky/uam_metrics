@@ -116,8 +116,8 @@ def plot_severity_histogram(events: pd.DataFrame, output_path: Path) -> None:
         ax.text(0.5, 0.5, "Sem eventos LoWC", ha="center", va="center", transform=ax.transAxes)
 
     ax.axvline(1.0, color="#111827", linestyle="--", linewidth=1.8, label="Limiar LoWC")
-    ax.set_title("Severidade dos eventos LoWC")
-    ax.set_xlabel("Razao minima de separacao")
+    ax.set_title("Severidade 3D dos eventos LoWC")
+    ax.set_xlabel("Razao combinada minima (horizontal/vertical)")
     ax.set_ylabel("Eventos")
     ax.legend(loc="upper right")
     ax.grid(True, axis="y", linestyle="--", alpha=0.25)

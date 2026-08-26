@@ -485,6 +485,146 @@ input[type="checkbox"] {
   width: 100%;
 }
 
+.viewer3d-section {
+  background: #071326;
+  border: 1px solid #1d3554;
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+  color: #e9f1fb;
+  display: grid;
+  gap: 14px;
+  padding: 18px;
+}
+
+.viewer3d-heading {
+  align-items: end;
+  display: flex;
+  justify-content: space-between;
+}
+
+.viewer3d-heading h2,
+.viewer3d-heading p { margin-bottom: 0; }
+.viewer3d-heading .eyebrow { color: #67e8f9; }
+.viewer3d-note { color: #a9bdd3; font-size: 13px; max-width: 520px; }
+
+.viewer3d-controls {
+  align-items: end;
+  display: grid;
+  gap: 12px;
+  grid-template-columns: auto minmax(240px, 1fr) auto auto auto;
+}
+
+.viewer3d-controls label { display: grid; gap: 6px; }
+.viewer3d-controls label span { color: #b8c9da; font-size: 12px; font-weight: 650; }
+.viewer3d-controls button,
+.viewer3d-controls select {
+  background: #10233c;
+  border: 1px solid #315174;
+  border-radius: 7px;
+  color: #edf6ff;
+  cursor: pointer;
+  font: inherit;
+  min-height: 38px;
+  padding: 8px 11px;
+}
+.viewer3d-controls button:hover,
+.viewer3d-controls select:hover { border-color: #67e8f9; }
+.viewer3d-controls input[type="range"] { accent-color: #22d3ee; width: 100%; }
+
+.viewer3d-stage {
+  background: radial-gradient(circle at 50% 25%, #173052 0, #0a1b30 45%, #050d19 100%);
+  border: 1px solid #274564;
+  border-radius: 8px;
+  min-height: 460px;
+  overflow: hidden;
+  position: relative;
+}
+
+#viewer3d-canvas {
+  cursor: grab;
+  display: block;
+  height: 460px;
+  touch-action: none;
+  width: 100%;
+}
+#viewer3d-canvas:active { cursor: grabbing; }
+
+.viewer3d-status,
+.viewer3d-legend {
+  background: rgba(5, 13, 25, 0.78);
+  border: 1px solid rgba(123, 164, 203, 0.28);
+  border-radius: 7px;
+  color: #c7d7e7;
+  font-size: 12px;
+  padding: 8px 10px;
+  position: absolute;
+  top: 12px;
+}
+.viewer3d-status { left: 12px; }
+.viewer3d-legend { display: flex; gap: 12px; right: 12px; }
+.viewer3d-legend span { align-items: center; display: flex; gap: 5px; }
+.viewer3d-dot { background: #94a3b8; border-radius: 50%; height: 8px; width: 8px; }
+.viewer3d-dot.evtol { background: #22d3ee; }
+.viewer3d-dot.helicopter { background: #a3e635; }
+.viewer3d-dot.lowc { background: #facc15; box-shadow: 0 0 7px #facc15; }
+.viewer3d-dot.nmac { background: #f97316; box-shadow: 0 0 7px #f97316; }
+.viewer3d-dot.mac { background: #dc2626; box-shadow: 0 0 7px #dc2626; }
+
+.conflict-timeline {
+  border-top: 1px solid #274564;
+  display: grid;
+  gap: 10px;
+  padding-top: 14px;
+}
+.conflict-timeline-heading { align-items: baseline; display: flex; justify-content: space-between; }
+.conflict-timeline-heading h3 { margin: 0; }
+.conflict-timeline-heading span, .mac-availability { color: #a9bdd3; font-size: 12px; }
+.conflict-timeline-table { max-height: 360px; overflow: auto; }
+.conflict-timeline table { border-collapse: collapse; font-size: 12px; width: 100%; }
+.conflict-timeline th {
+  background: #071326;
+  color: #a9bdd3;
+  position: sticky;
+  text-align: left;
+  top: 0;
+  z-index: 1;
+}
+.conflict-timeline th, .conflict-timeline td { border-bottom: 1px solid #1d3554; padding: 8px 10px; }
+.conflict-time-button {
+  background: transparent;
+  border: 0;
+  color: #dbeafe;
+  cursor: pointer;
+  font: inherit;
+  padding: 0;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.event-label { align-items: center; display: inline-flex; font-weight: 760; gap: 6px; }
+.event-label::before { border-radius: 50%; content: ""; height: 8px; width: 8px; }
+.event-label.lowc::before { background: #facc15; }
+.event-label.nmac::before { background: #f97316; }
+.event-label.mac::before { background: #dc2626; }
+.mac-availability { margin: 0; }
+
+.map-unavailable {
+  align-items: center;
+  background: #f8fafc;
+  color: var(--muted);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  height: 100%;
+  justify-content: center;
+  padding: 32px;
+  text-align: center;
+}
+
+.map-unavailable strong {
+  color: var(--ink);
+  font-size: 18px;
+}
+
 .map-info {
   background: rgba(255, 255, 255, 0.94);
   border: 1px solid var(--line);
@@ -570,7 +710,7 @@ input[type="checkbox"] {
 }
 
 .traceability-table {
-  min-width: 1080px;
+  min-width: 1850px;
 }
 
 .comparison-table th,
@@ -617,6 +757,11 @@ input[type="checkbox"] {
 .comparison-table tr.average-row {
   background: #f8fafc;
   font-weight: 760;
+}
+
+.comparison-table tr.reference-row {
+  background: #eff6ff;
+  font-weight: 700;
 }
 
 .comparison-table tr.mvp-row {
@@ -673,8 +818,10 @@ input[type="checkbox"] {
 }
 
 .legend-lowc {
-  background: #ef4444;
+  background: #facc15;
 }
+.legend-nmac { background: #f97316; }
+.legend-mac { background: #dc2626; }
 
 .charts {
   display: grid;
@@ -736,6 +883,8 @@ input[type="checkbox"] {
   .side-panel {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+
+  .viewer3d-controls { grid-template-columns: auto minmax(220px, 1fr) auto; }
 }
 
 @media (max-width: 760px) {
@@ -778,4 +927,12 @@ input[type="checkbox"] {
     height: 520px;
     min-height: 520px;
   }
+
+  .viewer3d-heading { align-items: flex-start; flex-direction: column; gap: 8px; }
+  .viewer3d-controls { align-items: stretch; grid-template-columns: 1fr 1fr; }
+  .viewer3d-timeline { grid-column: 1 / -1; }
+  #viewer3d-canvas { height: 400px; }
+  .viewer3d-stage { min-height: 400px; }
+  .viewer3d-legend { bottom: 12px; left: 12px; right: auto; top: auto; }
+  .conflict-timeline-heading { align-items: flex-start; flex-direction: column; gap: 4px; }
 }

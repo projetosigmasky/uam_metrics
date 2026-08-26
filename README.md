@@ -11,11 +11,11 @@ Coloque os arquivos de entrada em:
 ```text
 data/
   logs/
-    bimtra_top1_2025_11_09_mvp.log
-    bimtra_top1_2025_11_09_off.log
+    STATELOG_produto2_C1_2025-11-09_off_<execucao>.log
+    STATELOG_produto2_C2_2025-11-09_off_<execucao>.log
   scenarios/
-    bimtra_top1_2025_11_09_mvp.scn
-    bimtra_top1_2025_11_09_off.scn
+    produto2_C1_2025-11-09_off.scn
+    produto2_C2_2025-11-09_off.scn
 ```
 
 A pasta `data/` fica fora do Git pelo `.gitignore`, entao os logs brutos nao entram no GitHub.
@@ -23,7 +23,7 @@ A pasta `data/` fica fora do Git pelo `.gitignore`, entao os logs brutos nao ent
 O formato esperado pelo parser e:
 
 ```text
-simt,id,lat,lon,distflown,alt,cas,tas,gs
+simt,id,lat,lon,distflown,alt,hdg,trk,cas,tas,gs,vs
 ```
 
 ## 2. Gerar O Dashboard
@@ -37,7 +37,7 @@ Para processar todos os logs em `data/logs/`:
 Para processar logs especificos:
 
 ```powershell
-.\.venv\Scripts\python.exe generate_dashboard.py .\data\logs\bimtra_top1_2025_11_09_mvp.log
+.\.venv\Scripts\python.exe generate_dashboard.py .\data\logs\STATELOG_produto2_C1_2025-11-09_off_<execucao>.log
 ```
 
 Para escolher outra pasta de entrada:
@@ -55,12 +55,16 @@ flight_instance_gap_seconds = 300.0
 flight_instance_reset_distance_m = 250.0
 flight_instance_jump_m = 5000.0
 lowc_horizontal_m = 500.0
+lowc_vertical_m = 137.16
 nmac_horizontal_m = 150.0
+nmac_vertical_m = 30.48
 mac_beta = 5.038e-3
 mac_probability_given_nmac = 0.005
 tls_target_per_flight_hour = 9.4e-6
 tls_epsilon = 1e-15
-conflict_sample_seconds = 10
+conflict_sample_seconds = 1
+visualization_3d_sample_seconds = 5
+visualization_3d_ground_msl_ft = 2621.0
 conflict_detection_horizon_seconds = 60.0
 track_sample_stride = 20
 trajectory_shape_points = 12
@@ -75,8 +79,11 @@ heatmap_sample_stride = 10
 Alguns parametros podem ser alterados pela linha de comando:
 
 ```powershell
-.\.venv\Scripts\python.exe generate_dashboard.py --lowc-horizontal-m 600 --nmac-horizontal-m 150
+.\.venv\Scripts\python.exe generate_dashboard.py --lowc-horizontal-m 600 --lowc-vertical-m 137.16
+.\.venv\Scripts\python.exe generate_dashboard.py --nmac-horizontal-m 150 --nmac-vertical-m 30.48
 .\.venv\Scripts\python.exe generate_dashboard.py --conformity-tolerance-m 250
+.\.venv\Scripts\python.exe generate_dashboard.py --visualization-3d-sample-seconds 5
+.\.venv\Scripts\python.exe generate_dashboard.py --visualization-3d-ground-msl-ft 2621
 ```
 
 ## 4. Saida Gerada
@@ -92,6 +99,7 @@ O gerador publica em `docs/`:
 - `docs/assets/data/planned_routes.geojson`: trajetorias planejadas extraidas dos cenarios BlueSky.
 - `docs/assets/data/conflicts.geojson`: eventos LoWC/NMAC do primeiro log.
 - `docs/assets/data/heatmap_points.json`: pontos de densidade do primeiro log.
+- `docs/assets/data/trajectory_3d.json`: trajetorias temporais amostradas para a visualizacao 3D.
 - `docs/assets/charts/*.png`: graficos estaticos por log.
 
 ## 5. Responsabilidades Dos Modulos
@@ -99,13 +107,13 @@ O gerador publica em `docs/`:
 | Arquivo | Responsabilidade |
 |---|---|
 | `generate_dashboard.py` | Orquestra leitura, metricas, graficos, JSON/GeoJSON e copia `web/` para `docs/`. |
-| `src/uam_dashboard/config.py` | Centraliza colunas, unidades, limiares horizontais LoWC/NMAC, amostragem e coeficientes MAC. |
+| `src/uam_dashboard/config.py` | Centraliza colunas, unidades, limiares 3D LoWC/NMAC, amostragem e coeficientes MAC. |
 | `src/uam_dashboard/log_parser.py` | Le o `STATELOG`, converte campos numericos e ordena os registros. |
-| `src/uam_dashboard/experiment.py` | Classifica automaticamente dia, MVP, distúrbio e variante pela nomenclatura. |
-| `src/uam_dashboard/scenario_parser.py` | Extrai origens e waypoints planejados dos arquivos BlueSky `.scn`. |
+| `src/uam_dashboard/experiment.py` | Agrupa C1/C2 como variantes comparaveis do Produto 2. |
+| `src/uam_dashboard/scenario_parser.py` | Extrai tipo/modelo, horario, origem e waypoints dos `.scn`. |
 | `src/uam_dashboard/metrics.py` | Implementa formulas de seguranca, eficiencia, exposicao e severidade. |
 | `src/uam_dashboard/metric_catalog.py` | Mantem a rastreabilidade entre metrica, formula, PDF, codigo e status. |
-| `src/uam_dashboard/exports.py` | Agrupa trajetorias semelhantes e converte trajetorias planejadas, executadas e eventos para GeoJSON. |
+| `src/uam_dashboard/exports.py` | Agrupa trajetorias e exporta GeoJSON e a serie temporal compacta usada na visualizacao 3D. |
 | `src/uam_dashboard/plots.py` | Gera PNGs de aeronaves simultaneas, separacao, altitude, distancia e severidade. |
 | `web/index.html` | Estrutura estatica da pagina. |
 | `web/assets/dashboard.js` | Renderiza os dados, mapas, comparacoes e metricas previamente processados pelo Python. |
@@ -113,53 +121,50 @@ O gerador publica em `docs/`:
 
 ## 6. Rastreabilidade Das Formulas
 
-| Metrica | Formula implementada | Referencia no PDF | Codigo |
-|---|---|---|---|
-| Frequencia de trajetorias | Contagem de instancias com origem, destino e forma dentro das tolerancias configuradas | Produto 3 v1, secoes 3.2 e 6, apoio visual a volume/utilizacao | `exports.py::tracks_geojson` |
-| LoWC | `Sh(t) < Smin_h` | Produto 3 v1, criterio simplificado para separacao horizontal | `metrics.py::detect_lowc_events` |
-| LoWC por hora de voo | `N_lowc / sum(H_f)` | Produto 3 v1, secao 3.3, Eq. 3.2 | `metrics.py::_safety_summary` |
-| LoWC por 100 operacoes | `N_lowc / N_voos * 100` | Produto 3 v1, secao 3.3 | `metrics.py::_safety_summary` |
-| LoWC por 1000 km | `N_lowc / km_voados * 1000` | Produto 3 v1, secao 3.3 | `metrics.py::_safety_summary` |
-| Severidade | `sev_ij = min_t(Sh/Smin_h)` | Produto 3 v1, criterio horizontal simplificado | `metrics.py::_summarize_lowc_event` |
-| Tempo abaixo do limiar | `amostras consecutivas em LoWC * conflict_sample_seconds` | Produto 3 v1, secao 4.2.3 | `metrics.py::_summarize_lowc_event` |
-| Tempo ate conflito | `TTC = t_conflito - t_deteccao` | Produto 3 v1, metrica de proximidade operacional | `metrics.py::_summarize_lowc_event` |
-| NMAC | `Sh(t) < S_NMAC_h` | Produto 3 v1, criterio horizontal simplificado | `metrics.py::_safety_summary` |
-| MAC esperado | `MAC = 5.038e-3 * 0.005 * N_NMAC`; `MAC_100k = MAC / H_voo * 100000` | Produto 3 v1, seguranca | `metrics.py::_safety_summary` |
-| Margem TLS | `M_TLS = TLS / (lambda_MAC_obs + epsilon)` | Produto 3 v1, Eq. 4.12 | `metrics.py::_safety_summary` |
-| Tempo medio de voo | `mean(max(simt_f) - min(simt_f))` | Produto 3 v1, secao 4.3.4 | `metrics.py::efficiency_metrics` |
-| Distancia media | `mean(max(distflown_f))` | Produto 3 v1, secao 4.3.4 | `metrics.py::efficiency_metrics` |
-| Ineficiencia horizontal executada | `(d_real - d_gc) / d_gc * 100` | Produto 3 v1, secao 4.3.6, Eq. 4.19 | `metrics.py::efficiency_metrics` |
-| Conformidade de trajetoria | `TC_f = (d_real - d_plan) / d_plan`; `ED_f = d_real - d_plan` | Produto 3 v1, secao 4.3.5, Eq. 4.16-4.17 | `metrics.py::trajectory_conformity` |
-| Aderencia espacial a REH | Percentual de amostras dentro da tolerancia configurada | Produto 3 v1, diagnostico complementar a secao 4.3.5 | `metrics.py::trajectory_conformity` |
-| Atraso em solo | `GD_f = max(0, R_f - S_f)` | Produto 3 v1, secao 4.3.1 | `scenario_parser.py::ground_delay_metrics` |
-| Atraso no ar | `AD_f = max(0, (A_f - D_f) - T_f)` | Produto 3 v1, Eq. 4.14 | `metrics.py::airborne_delay_metrics` |
-| Atraso total | `TD_f = GD_f + AD_f` | Produto 3 v1, eficiencia | `metrics.py::total_delay_metrics` |
-| Densidade de trafego aereo | `ATD_dt = N_simultaneo_dt / A` | Produto 3 v1, Eq. 4.23 | `capacity.py::capacity_metrics` |
-| Throughput por recurso | `THR_r,dt = N_r,dt / \|dt\|` | Produto 3 v1, Eq. 4.24 | `capacity.py::_resource_throughput` |
-| Utilizacao de recurso | `U_r,dt = N_r,dt / C_r,dt`; `C_r,dt = P95(THR_r,dt)` | Produto 3 v1, Eq. 4.25 | `capacity.py::_resource_throughput` |
-| Razao de risco | `RR_s = MAC_100k_s / MAC_100k_ref` | Produto 3 v1, Eq. 4.10 | `generate_dashboard.py::comparison_payload` |
+O catalogo executavel em `src/uam_dashboard/metric_catalog.py` e a fonte unica da
+rastreabilidade. Para cada metrica ele publica, em portugues:
 
-O dashboard tambem exporta esta matriz por meio de `metric_catalog.py` e mostra a tabela na propria pagina.
+- formula, referencia e ponto do codigo;
+- status: implementada, parcial ou indisponivel;
+- dados necessarios;
+- o que o software efetivamente calcula hoje;
+- melhorias, parametros a validar e entradas ainda ausentes.
 
-## 7. Metricas Ainda Indisponiveis
+O dashboard renderiza todas essas colunas. LoWC e NMAC usam simultaneamente
+separacao horizontal e vertical. Resultados dependentes de limites operacionais,
+parametros probabilisticos ou capacidade declarada permanecem marcados como
+`parcial`, mesmo quando o calculo ja esta implementado.
 
-O `STATELOG` atual nao contem todos os campos minimos citados no PDF. Por isso, as metricas abaixo ficam documentadas como indisponiveis ate que novos dados sejam fornecidos:
+## 7. Metricas Parciais Ou Indisponiveis
 
-- pontualidade operacional: requer horarios planejados, autorizados e reais de chegada.
+As lacunas completas ficam no catalogo e na tabela do dashboard. As principais sao:
 
-O tempo ate conflito e reportado como proxy configurado pelo horizonte de deteccao da simulacao
-(`conflict_detection_horizon_seconds`, hoje 60 s), nao como tempo de deteccao observado no `STATELOG`.
+- TTC observado: requer instante de alerta/deteccao ou previsao de CPA;
+- atraso no ar: requer execucao nominal pareada para cada cenario;
+- atraso operacional de solo e pontualidade: requerem marcos programados,
+  autorizados e reais de saida/chegada;
+- capacidade real: requer capacidade declarada por recurso;
+- MAC/TLS: requerem validacao dos limites e parametros probabilisticos.
+
+O valor de 60 s continua disponivel somente como horizonte `DTLOOK`; ele nao e
+rotulado como TTC observado.
 
 ## 8. Comparacao Entre Logs
 
-Os nomes `bimtra_topN_DATA_[disturbed_seedX_]mvp|off.log` sao classificados automaticamente.
-Para cada dia, o dashboard compara MVP ligado/desligado, com e sem disturbios.
-
-A tabela diaria apresenta metricas de seguranca e eficiencia, diferencas contra o cenario OFF
-pareado e a razao de risco da Eq. 4.10. A referencia de risco e o cenario sem intervencao e sem perturbacao (`OFF / sem disturbios`). Os seletores `Dia comparado` e `Cenario no mapa` controlam
-a tabela, os cards, o mapa e os graficos exibidos.
+Os nomes `produto2_C1_<data>_off` e `produto2_C2_<data>_off` sao agrupados
+automaticamente como variantes da mesma demanda. C1 e a referencia da comparacao;
+C2 representa o corredor UAM dedicado. A tabela mostra diferencas de tempo e
+distancia contra C1 e a razao de risco da Eq. 4.10.
 
 Todo processamento dos `STATELOGs` acontece em Python durante a execucao de `generate_dashboard.py`. O JavaScript da pagina apenas apresenta os arquivos gerados.
+
+### Visualizacao 3D temporal
+
+A pagina inclui uma representacao 3D em `canvas`, sem dependencia externa. Ela usa o mesmo seletor C1/C2 do restante do painel, mostra as trajetorias completas como contexto e anima as aeronaves com silhuetas vetoriais distintas para eVTOL e helicoptero. LoWC aparece em amarelo e NMAC em laranja no mapa 2D, no 3D e na lista temporal clicavel. A amostragem padrao e de 5 segundos; o usuario pode reproduzir, pausar, percorrer a linha do tempo, alterar a velocidade, girar, aproximar e modificar o exagero vertical. O intervalo pode ser alterado com `--visualization-3d-sample-seconds` caso seja necessario equilibrar fluidez e tamanho do pacote.
+
+NMAC e um subconjunto de LoWC. Para evitar sobreposicao de marcadores, cada evento recebe a classe mais severa: LoWC fora de NMAC em amarelo e NMAC em laranja. Vermelho fica reservado para MAC observado. Os logs atuais nao possuem uma flag nem um timestamp de colisao; portanto, o MAC probabilistico calculado a partir de NMAC nao e desenhado artificialmente como evento vermelho.
+
+O plano horizontal de referencia usa 2.621 pes MSL, equivalentes a 798,8808 m, configuraveis por `--visualization-3d-ground-msl-ft`. Esse plano representa uma elevacao media unica para Sao Paulo; nao substitui um modelo digital de terreno e nao altera as altitudes registradas no `STATELOG`.
 
 ## 9. Como As Trajetorias Sao Agrupadas
 
@@ -203,13 +208,15 @@ planejada nao aparece no `STATELOG`.
 
 ## 11. Diagnostico Da Severidade LoWC
 
-Por aderencia ao Produto 3 v1, nos cenarios em que as aeronaves operam no mesmo nivel ou em corredores
-com separacao vertical fixa, o dashboard usa o criterio simplificado horizontal. Assim, LoWC, NMAC e
-severidade sao calculados apenas por `Sh`.
+LoWC exige simultaneamente `Sh < Smin_h` e `Sv < Smin_v`; NMAC usa os dois
+limites mais restritivos. Os padroes atuais sao 500 m/137,16 m para LoWC e
+150 m/30,48 m para NMAC. Eles sao parametros configuraveis e permanecem
+marcados como pendentes de validacao operacional.
 
-Um evento pode ter severidade proxima de zero quando a distancia horizontal entre duas aeronaves fica
-muito pequena em relacao ao limiar `Smin_h`. NMAC e identificado quando essa distancia tambem cruza o
-limiar horizontal mais restritivo `S_NMAC_h`.
+A severidade de cada amostra e `max(Sh/Smin_h, Sv/Smin_v)`. A severidade do
+evento e o menor valor ao longo de sua duracao. O resultado tambem informa a
+separacao vertical e a combinacao eVTOL-eVTOL, eVTOL-helicoptero ou
+helicoptero-helicoptero.
 
 ## 12. Capacidade, Densidade E Utilizacao
 

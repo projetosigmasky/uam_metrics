@@ -7,8 +7,9 @@ from tempfile import TemporaryDirectory
 import pandas as pd
 
 from src.uam_dashboard.capacity import _resource_throughput, capacity_metrics
-from src.uam_dashboard.exports import tracks_geojson
+from src.uam_dashboard.exports import conflicts_geojson, trajectory_3d_payload, tracks_geojson
 from src.uam_dashboard.experiment import experiment_metadata
+from src.uam_dashboard.log_parser import load_state_log
 from src.uam_dashboard.metrics import (
     airborne_delay_metrics,
     detect_lowc_events,
@@ -16,11 +17,40 @@ from src.uam_dashboard.metrics import (
     total_delay_metrics,
     trajectory_conformity,
 )
-from src.uam_dashboard.scenario_parser import ground_delay_metrics
+from src.uam_dashboard.scenario_parser import (
+    annotate_aircraft_metadata,
+    ground_delay_metrics,
+    load_bluesky_scenario,
+)
 from src.uam_dashboard.reh_parser import load_reh_network
 
 
 class MetricsTest(unittest.TestCase):
+    def test_trajectory_3d_payload_uses_five_second_windows(self) -> None:
+        rows = []
+        for simt in range(11):
+            rows.append(
+                {
+                    "simt": simt,
+                    "id": "EV1",
+                    "lat": -23.55 + simt * 0.0001,
+                    "lon": -46.63,
+                    "distflown": simt * 10,
+                    "alt": 100 + simt,
+                    "vehicle_type": "evtol",
+                    "aircraft_model": "EVE",
+                }
+            )
+        payload = trajectory_3d_payload(pd.DataFrame(rows), 5, 300, 250, 5000)
+
+        self.assertEqual(payload["sample_seconds"], 5)
+        self.assertEqual(payload["point_count"], 3)
+        self.assertEqual([point[0] for point in payload["tracks"][0]["points"]], [0, 5, 10])
+        self.assertEqual(payload["tracks"][0]["vehicle_type"], "evtol")
+        self.assertEqual(payload["altitude_bounds_m"], [100.0, 110.0])
+        self.assertEqual(payload["ground_plane_msl_ft"], 2621.0)
+        self.assertAlmostEqual(payload["ground_plane_msl_m"], 798.8808)
+
     def test_reh_xml_parser_preserves_official_polygon_and_metadata(self) -> None:
         xml = """<?xml version="1.0" encoding="UTF-8"?>
 <wfs:FeatureCollection xmlns:wfs="http://www.opengis.net/wfs" xmlns:gml="http://www.opengis.net/gml" xmlns:ICA="https://geoaisweb.decea.mil.br/geoserver/ICA">
@@ -131,6 +161,31 @@ class MetricsTest(unittest.TestCase):
         self.assertAlmostEqual(events.iloc[0]["severity_ratio"], 0.0)
         self.assertAlmostEqual(events.iloc[0]["time_to_conflict_s"], 60.0)
         self.assertAlmostEqual(safety["mean_time_to_conflict_s"], 60.0)
+        geojson = conflicts_geojson(events)
+        self.assertEqual(geojson["features"][0]["properties"]["event_class"], "nmac")
+        self.assertFalse(geojson["features"][0]["properties"]["is_mac"])
+        self.assertFalse(geojson["properties"]["mac_timestamp_available"])
+
+    def test_lowc_3d_requires_horizontal_and_vertical_penetration(self) -> None:
+        rows = []
+        for simt in (0, 1, 2):
+            rows.extend([
+                {"simt": simt, "id": "EV", "lat": -23.55, "lon": -46.63, "distflown": simt, "alt": 100, "vehicle_type": "eVTOL"},
+                {"simt": simt, "id": "H1", "lat": -23.55, "lon": -46.63, "distflown": simt, "alt": 300, "vehicle_type": "helicoptero"},
+                {"simt": simt, "id": "H2", "lat": -23.55, "lon": -46.63, "distflown": simt, "alt": 110, "vehicle_type": "helicoptero"},
+            ])
+        events, _, safety = detect_lowc_events(
+            pd.DataFrame(rows), 500, 150, 1, 60, 3, 0.01, 1.0,
+            5.038e-3, 0.005, 9.4e-6, 1e-15,
+            lowc_vertical_threshold_m=137.16,
+            nmac_vertical_threshold_m=30.48,
+            operation_count=4,
+        )
+        self.assertEqual(len(events), 1)
+        self.assertEqual(events.iloc[0]["vehicle_pair"], "eVTOL - helicoptero")
+        self.assertAlmostEqual(events.iloc[0]["dist_v_m"], 10.0)
+        self.assertEqual(safety["nmac_events"], 1)
+        self.assertAlmostEqual(safety["lowc_per_100_operations"], 25.0)
 
     def test_similar_trajectories_share_frequency_group(self) -> None:
         rows = []
@@ -194,6 +249,38 @@ class MetricsTest(unittest.TestCase):
         self.assertEqual(metadata["variant_key"], "disturbed_mvp")
         self.assertTrue(metadata["disturbed"])
         self.assertTrue(metadata["mvp_enabled"])
+
+    def test_product2_metadata_groups_c1_and_c2(self) -> None:
+        c1 = experiment_metadata("STATELOG_produto2_C1_2025-11-09_off_20260818_14-48-46.log")
+        c2 = experiment_metadata("produto2_C2_2025-11-09_off.scn")
+        self.assertEqual(c1["day_key"], c2["day_key"])
+        self.assertEqual(c1["variant_key"], "c1")
+        self.assertEqual(c2["variant_key"], "c2")
+        self.assertEqual(c1["reference_variant_key"], "c1")
+
+    def test_extended_log_fields_and_scenario_aircraft_type_are_preserved(self) -> None:
+        with TemporaryDirectory() as directory:
+            directory_path = Path(directory)
+            log_path = directory_path / "STATELOG_test.log"
+            log_path.write_text(
+                "# State log\n# simt,id,lat,lon,distflown,alt,hdg,trk,cas,tas,gs,vs\n"
+                "0,EV1,-23.55,-46.63,0,900,10,11,40,41,42,2\n",
+                encoding="utf-8",
+            )
+            scenario_path = directory_path / "produto2_C1_2025-11-09_off.scn"
+            scenario_path.write_text(
+                "00:00:00.00> CRE EV1 EVTOL -23.55 -46.63 0 3000 40\n"
+                "00:00:00.00> ADDWPT EV1 -23.54 -46.62 3000 40\n",
+                encoding="utf-8",
+            )
+            df = load_state_log(log_path)
+            planned = load_bluesky_scenario(scenario_path)
+            annotated = annotate_aircraft_metadata(df, planned)
+        self.assertIn("hdg", annotated.columns)
+        self.assertIn("trk", annotated.columns)
+        self.assertIn("vs", annotated.columns)
+        self.assertEqual(annotated.iloc[0]["vehicle_type"], "eVTOL")
+        self.assertEqual(annotated.iloc[0]["aircraft_model"], "EVTOL")
 
     def test_ground_delay_uses_nominal_scenario_as_requested_schedule(self) -> None:
         nominal = [

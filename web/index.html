@@ -10,7 +10,7 @@
       integrity="sha256-p4NxAoJBhIINfQd+g9FQXHyzyTAFi+lyLwN2Bja9fM="
       crossorigin=""
     />
-    <link rel="stylesheet" href="assets/dashboard.css?v=0.4.1" />
+    <link rel="stylesheet" href="assets/dashboard.css?v=0.5.0" />
   </head>
   <body>
     <header class="topbar">
@@ -91,9 +91,9 @@
                 <th>Atraso ar</th>
                 <th>Atraso total</th>
                 <th>Tempo medio</th>
-                <th>Δ tempo vs OFF</th>
+                <th>Δ tempo vs referencia</th>
                 <th>Distancia</th>
-                <th>Δ distancia vs OFF</th>
+                <th>Δ distancia vs referencia</th>
                 <th>Conformidade TC</th>
                 <th>Aderencia REH</th>
                 <th>LoWC</th>
@@ -129,7 +129,7 @@
             <label><input type="checkbox" id="layer-heat" /> Densidade</label>
             <label><input type="checkbox" id="layer-atd-hotspots" /> Hotspots ATD</label>
             <label><input type="checkbox" id="layer-complexity" /> Cruzamentos REH</label>
-            <label><input type="checkbox" id="layer-conflicts" checked /> LoWC</label>
+            <label><input type="checkbox" id="layer-conflicts" checked /> Eventos LoWC/NMAC</label>
             <button class="panel-button" id="fit-map" type="button">Reenquadrar mapa</button>
           </div>
         </aside>
@@ -148,8 +148,77 @@
               <span><i class="legend-swatch legend-atd"></i>Hotspot ATD</span>
               <span><i class="legend-swatch legend-complexity"></i>Cruzamento REH</span>
               <span><i class="legend-swatch legend-lowc"></i>LoWC</span>
+              <span><i class="legend-swatch legend-nmac"></i>NMAC</span>
+              <span><i class="legend-swatch legend-mac"></i>MAC, quando observável</span>
             </div>
           </div>
+        </section>
+      </section>
+
+      <section class="viewer3d-section" aria-labelledby="viewer3d-title">
+        <div class="section-heading viewer3d-heading">
+          <div>
+            <p class="eyebrow">Espaço aéreo em três dimensões</p>
+            <h2 id="viewer3d-title">Trajetórias e conflitos ao longo da simulação</h2>
+          </div>
+          <p class="viewer3d-note" id="viewer3d-note">Plano-base a 2.621 pés MSL. Arraste para girar e use a roda para aproximar.</p>
+        </div>
+        <div class="viewer3d-controls" aria-label="Controles da visualização 3D">
+          <button id="viewer3d-play" type="button">Reproduzir</button>
+          <label class="viewer3d-timeline">
+            <span>Tempo <strong id="viewer3d-time-label">--:--:--</strong></span>
+            <input id="viewer3d-time" type="range" min="0" max="0" step="5" value="0" />
+          </label>
+          <label>
+            <span>Velocidade</span>
+            <select id="viewer3d-speed">
+              <option value="1">1×</option>
+              <option value="5">5×</option>
+              <option value="20" selected>20×</option>
+            </select>
+          </label>
+          <label>
+            <span>Exagero vertical</span>
+            <select id="viewer3d-vertical-scale">
+              <option value="1">1×</option>
+              <option value="5" selected>5×</option>
+              <option value="10">10×</option>
+            </select>
+          </label>
+          <button id="viewer3d-reset" type="button">Restaurar vista</button>
+        </div>
+        <div class="viewer3d-stage">
+          <canvas id="viewer3d-canvas" role="img" aria-label="Representação tridimensional animada das trajetórias de aeronaves"></canvas>
+          <div class="viewer3d-status" id="viewer3d-status" aria-live="polite">Carregando dados 3D…</div>
+          <div class="viewer3d-legend" aria-label="Legenda da visualização 3D">
+            <span><i class="viewer3d-dot evtol"></i>eVTOL</span>
+            <span><i class="viewer3d-dot helicopter"></i>Helicóptero</span>
+            <span><i class="viewer3d-dot lowc"></i>LoWC</span>
+            <span><i class="viewer3d-dot nmac"></i>NMAC</span>
+            <span><i class="viewer3d-dot mac"></i>MAC</span>
+          </div>
+        </div>
+        <section class="conflict-timeline" aria-labelledby="conflict-timeline-title">
+          <div class="conflict-timeline-heading">
+            <h3 id="conflict-timeline-title">Linha do tempo de eventos</h3>
+            <span id="conflict-timeline-summary">Carregando eventos…</span>
+          </div>
+          <div class="conflict-timeline-table">
+            <table>
+              <thead>
+                <tr>
+                  <th>Classe</th>
+                  <th>Início</th>
+                  <th>Maior severidade</th>
+                  <th>Fim</th>
+                  <th>Aeronaves</th>
+                  <th>Separação H / V</th>
+                </tr>
+              </thead>
+              <tbody id="conflict-timeline-body"></tbody>
+            </table>
+          </div>
+          <p class="mac-availability" id="mac-availability"></p>
         </section>
       </section>
 
@@ -232,7 +301,7 @@
           <img id="chart-separation" alt="Histograma de separacao horizontal" />
         </article>
         <article class="chart-card">
-          <h2>Severidade LoWC</h2>
+          <h2>Severidade LoWC 3D</h2>
           <img id="chart-severity" alt="Histograma de severidade LoWC" />
         </article>
         </div>
@@ -320,7 +389,7 @@
       <section class="traceability-panel" aria-label="Rastreabilidade das metricas">
         <div>
           <p class="eyebrow">Rastreabilidade</p>
-          <h2>Formulas, codigo e referencia no PDF</h2>
+          <h2>O que esta implementado e o que ainda precisa melhorar</h2>
         </div>
         <div class="table-wrap">
           <table class="comparison-table traceability-table">
@@ -331,6 +400,9 @@
                 <th>PDF</th>
                 <th>Codigo</th>
                 <th>Status</th>
+                <th>Dados necessarios</th>
+                <th>Implementado hoje</th>
+                <th>Melhorias e pendencias</th>
               </tr>
             </thead>
             <tbody id="traceability-table-body"></tbody>
@@ -345,7 +417,7 @@
       crossorigin=""
     ></script>
     <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
-    <script src="assets/data_bundle.js?v=0.4.0"></script>
-    <script src="assets/dashboard.js?v=0.4.1"></script>
+    <script src="assets/data_bundle.js?v=0.5.0"></script>
+    <script src="assets/dashboard.js?v=0.5.0"></script>
   </body>
 </html>

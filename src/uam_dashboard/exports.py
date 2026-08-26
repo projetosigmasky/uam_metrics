@@ -5,7 +5,7 @@ from typing import Any
 import numpy as np
 import pandas as pd
 
-from .config import METERS_PER_NM
+from .config import FEET_TO_METERS, METERS_PER_NM
 from .metrics import flight_instance_frame, haversine_m
 
 
@@ -129,6 +129,8 @@ def tracks_geojson(
                     "type": "Feature",
                     "properties": {
                         "id": instance["aircraft_id"],
+                        "vehicle_type": str(group["vehicle_type"].iloc[0]) if "vehicle_type" in group else "desconhecido",
+                        "aircraft_model": str(group["aircraft_model"].iloc[0]) if "aircraft_model" in group else "DESCONHECIDO",
                         "flight_instance": instance["flight_instance"],
                         "trajectory_group": f"T{cluster_index:03d}",
                         "frequency": int(frequency),
@@ -163,9 +165,15 @@ def tracks_geojson(
 def conflicts_geojson(events: pd.DataFrame) -> dict[str, Any]:
     features = []
     if events.empty:
-        return {"type": "FeatureCollection", "features": features}
+        return {
+            "type": "FeatureCollection",
+            "properties": {"mac_timestamp_available": False},
+            "features": features,
+        }
 
     for row in events.itertuples(index=False):
+        is_mac = bool(getattr(row, "is_mac", False))
+        event_class = "mac" if is_mac else "nmac" if bool(row.is_nmac) else "lowc"
         features.append(
             {
                 "type": "Feature",
@@ -179,18 +187,95 @@ def conflicts_geojson(events: pd.DataFrame) -> dict[str, Any]:
                     "id_a": str(row.id_a),
                     "id_b": str(row.id_b),
                     "dist_h_m": float(row.dist_h_m),
+                    "dist_v_m": float(row.dist_v_m),
                     "horizontal_ratio": float(row.horizontal_ratio),
+                    "vertical_ratio": float(row.vertical_ratio),
+                    "vehicle_type_a": str(row.vehicle_type_a),
+                    "vehicle_type_b": str(row.vehicle_type_b),
+                    "vehicle_pair": str(row.vehicle_pair),
                     "severity_ratio": float(row.severity_ratio),
                     "is_nmac": bool(row.is_nmac),
+                    "is_mac": is_mac,
+                    "event_class": event_class,
                 },
                 "geometry": {
                     "type": "Point",
-                    "coordinates": [float(row.lon), float(row.lat)],
+                    "coordinates": [float(row.lon), float(row.lat), float(row.alt)],
                 },
             }
         )
 
-    return {"type": "FeatureCollection", "features": features}
+    return {
+        "type": "FeatureCollection",
+        "properties": {
+            "mac_timestamp_available": any(
+                feature["properties"]["event_class"] == "mac" for feature in features
+            )
+        },
+        "features": features,
+    }
+
+
+def trajectory_3d_payload(
+    df: pd.DataFrame,
+    sample_seconds: int,
+    instance_gap_seconds: float,
+    instance_reset_distance_m: float,
+    instance_jump_m: float,
+    ground_plane_msl_ft: float = 2621.0,
+) -> dict[str, Any]:
+    """Create a compact, globally aligned time series for the canvas 3D viewer."""
+
+    interval = max(1, int(sample_seconds))
+    annotated = flight_instance_frame(
+        df,
+        gap_seconds=instance_gap_seconds,
+        reset_distance_m=instance_reset_distance_m,
+        jump_m=instance_jump_m,
+    )
+    sampled = annotated[np.isclose(annotated["simt"] % interval, 0)].copy()
+    if sampled.empty:
+        sampled = annotated.iloc[::interval].copy()
+
+    tracks: list[dict[str, Any]] = []
+    for flight_instance, group in sampled.groupby("flight_instance", sort=True):
+        group = group.sort_values("simt")
+        points = [
+            [
+                int(row.simt) if float(row.simt).is_integer() else round(float(row.simt), 3),
+                round(float(row.lon), 6),
+                round(float(row.lat), 6),
+                round(float(row.alt), 1),
+            ]
+            for row in group.itertuples(index=False)
+        ]
+        tracks.append(
+            {
+                "flight_instance": str(flight_instance),
+                "id": str(group["id"].iloc[0]),
+                "vehicle_type": str(group["vehicle_type"].iloc[0]) if "vehicle_type" in group else "desconhecido",
+                "aircraft_model": str(group["aircraft_model"].iloc[0]) if "aircraft_model" in group else "DESCONHECIDO",
+                "points": points,
+            }
+        )
+
+    return {
+        "sample_seconds": interval,
+        "sim_start_s": float(sampled["simt"].min()),
+        "sim_end_s": float(sampled["simt"].max()),
+        "bounds": {
+            "min_lat": float(sampled["lat"].min()),
+            "max_lat": float(sampled["lat"].max()),
+            "min_lon": float(sampled["lon"].min()),
+            "max_lon": float(sampled["lon"].max()),
+        },
+        "altitude_bounds_m": [float(sampled["alt"].min()), float(sampled["alt"].max())],
+        "ground_plane_msl_ft": float(ground_plane_msl_ft),
+        "ground_plane_msl_m": float(ground_plane_msl_ft * FEET_TO_METERS),
+        "track_count": len(tracks),
+        "point_count": int(len(sampled)),
+        "tracks": tracks,
+    }
 
 
 def planned_routes_geojson(

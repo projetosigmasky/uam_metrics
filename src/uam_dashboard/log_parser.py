@@ -24,10 +24,11 @@ def load_state_log(path: str | Path) -> pd.DataFrame:
     column_count = len(first_data.split(","))
     names = EXTENDED_LOG_COLUMNS if column_count >= len(EXTENDED_LOG_COLUMNS) else LOG_COLUMNS
     df = pd.read_csv(StringIO("\n".join(lines)), comment="#", names=names, skipinitialspace=True)
-    df = df[[column for column in LOG_COLUMNS if column in df.columns]]
     df = df.dropna(subset=["simt", "id", "lat", "lon"])
 
-    numeric_columns = [column for column in LOG_COLUMNS if column != "id"]
+    # Preserve every field emitted by the extended STATELOG. Previous versions
+    # silently discarded hdg, trk and vs even though they were present.
+    numeric_columns = [column for column in names if column != "id"]
     for column in numeric_columns:
         df[column] = pd.to_numeric(df[column], errors="coerce")
 

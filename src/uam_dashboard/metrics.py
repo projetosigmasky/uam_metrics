@@ -22,13 +22,33 @@ def haversine_m(lat1: Any, lon1: Any, lat2: Any, lon2: Any) -> Any:
     return 2 * earth_radius_m * np.arctan2(np.sqrt(a), np.sqrt(1 - a))
 
 
-def build_summary(df: pd.DataFrame) -> dict[str, Any]:
+def build_summary(df: pd.DataFrame, operation_count: int | None = None) -> dict[str, Any]:
     active_by_second = df.groupby("simt")["id"].nunique()
     duration_seconds = float(df["simt"].max() - df["simt"].min()) if not df.empty else 0.0
+
+    fleet_mix = {}
+    if "vehicle_type" in df.columns:
+        fleet_mix = {
+            str(vehicle_type): int(group["id"].nunique())
+            for vehicle_type, group in df.groupby("vehicle_type", sort=True)
+        }
+    kinematics = {
+        "min_alt_m": float(df["alt"].min()),
+        "mean_alt_m": float(df["alt"].mean()),
+        "max_alt_m": float(df["alt"].max()),
+    }
+    for column in ("cas", "tas", "gs", "vs", "hdg", "trk"):
+        if column in df.columns:
+            kinematics[f"mean_{column}"] = float(df[column].mean())
+            kinematics[f"min_{column}"] = float(df[column].min())
+            kinematics[f"max_{column}"] = float(df[column].max())
 
     return {
         "records": int(len(df)),
         "aircraft_count": int(df["id"].nunique()),
+        "operation_count": int(operation_count if operation_count is not None else df["id"].nunique()),
+        "fleet_mix": fleet_mix,
+        "kinematics": kinematics,
         "sim_start_s": float(df["simt"].min()),
         "sim_end_s": float(df["simt"].max()),
         "duration_min": duration_seconds / 60.0,
@@ -140,11 +160,16 @@ def total_delay_metrics(ground_delay: dict[str, Any], airborne_delay: dict[str, 
 
     ground_available = bool(ground_delay.get("available"))
     airborne_available = bool(airborne_delay.get("available"))
-    if not ground_available and not airborne_available:
-        return {"available": False}
+    if not ground_available or not airborne_available:
+        return {
+            "available": False,
+            "ground_available": ground_available,
+            "airborne_available": airborne_available,
+            "reason": "atraso total requer simultaneamente os componentes de solo e de voo",
+        }
 
-    mean_ground_s = float(ground_delay.get("mean_ground_delay_s", 0.0)) if ground_available else 0.0
-    mean_airborne_s = float(airborne_delay.get("mean_airborne_delay_s", 0.0)) if airborne_available else 0.0
+    mean_ground_s = float(ground_delay["mean_ground_delay_s"])
+    mean_airborne_s = float(airborne_delay["mean_airborne_delay_s"])
     return {
         "available": True,
         "mean_total_delay_s": mean_ground_s + mean_airborne_s,
@@ -225,6 +250,7 @@ def trajectory_conformity(
     conforming_samples = 0
     planned_line_conforming_samples = 0
     matched_instances = 0
+    adherence_by_vehicle_type: dict[str, dict[str, int]] = {}
 
     for flight_instance, group in annotated.groupby("flight_instance", sort=True):
         aircraft_id = str(group["id"].iloc[0])
@@ -254,6 +280,7 @@ def trajectory_conformity(
             continue
 
         matched_instances += 1
+        vehicle_type = str(group["vehicle_type"].iloc[0]) if "vehicle_type" in group else "desconhecido"
         all_deviations.extend(deviations.tolist())
         planned_line_inside = int(np.sum(deviations <= tolerance_m))
         planned_line_conforming_samples += planned_line_inside
@@ -266,6 +293,13 @@ def trajectory_conformity(
         else:
             inside = planned_line_inside
         conforming_samples += inside
+        vehicle_adherence = adherence_by_vehicle_type.setdefault(
+            vehicle_type,
+            {"matched_instances": 0, "executed_samples": 0, "conforming_samples": 0},
+        )
+        vehicle_adherence["matched_instances"] += 1
+        vehicle_adherence["executed_samples"] += int(len(deviations))
+        vehicle_adherence["conforming_samples"] += inside
         planned_distance_m = _polyline_distance_m(planned_coordinates)
         executed_distance_m = float(group["distflown"].max() - group["distflown"].min())
         additional_distance_m = executed_distance_m - planned_distance_m
@@ -282,6 +316,8 @@ def trajectory_conformity(
         by_instance[str(flight_instance)] = {
             "planned_flight_instance": planned["flight_instance"],
             "planned_start_time": planned["start_time"],
+            "vehicle_type": vehicle_type,
+            "aircraft_model": str(group["aircraft_model"].iloc[0]) if "aircraft_model" in group else "DESCONHECIDO",
             "start_time_delta_s": abs(float(planned["start_simt"]) - start_simt),
             "spatial_adherence_pct": float(inside / len(deviations) * 100.0),
             "planned_line_adherence_pct": float(planned_line_inside / len(deviations) * 100.0),
@@ -299,12 +335,23 @@ def trajectory_conformity(
         }
 
     total_samples = len(all_deviations)
+    adherence_by_type_payload = {
+        vehicle_type: {
+            **values,
+            "spatial_adherence_pct": _safe_rate(
+                values["conforming_samples"], values["executed_samples"], 100.0
+            ),
+        }
+        for vehicle_type, values in adherence_by_vehicle_type.items()
+    }
     summary = {
         "available": bool(total_samples),
         "tolerance_m": float(tolerance_m),
         "planned_instances": int(len(planned_flights)),
         "matched_instances": int(matched_instances),
         "spatial_adherence_pct": _safe_rate(conforming_samples, total_samples, 100.0),
+        "spatial_adherence_scope": "todas as aeronaves",
+        "spatial_adherence_by_vehicle_type": adherence_by_type_payload,
         "planned_line_adherence_pct": _safe_rate(
             planned_line_conforming_samples,
             total_samples,
@@ -399,8 +446,15 @@ def detect_lowc_events(
     mac_probability_given_nmac: float,
     tls_target_per_flight_hour: float,
     tls_epsilon: float,
+    lowc_vertical_threshold_m: float | None = None,
+    nmac_vertical_threshold_m: float | None = None,
+    operation_count: int | None = None,
 ) -> tuple[pd.DataFrame, list[float], dict[str, Any]]:
-    """Detect sampled horizontal Loss of Well Clear events and compute safety rates."""
+    """Detect sampled 3D Loss of Well Clear events and compute safety rates.
+
+    When a vertical threshold is ``None``, the corresponding event remains a
+    horizontal-only diagnostic for backwards compatibility.
+    """
 
     if sample_seconds <= 0:
         sample_seconds = 1
@@ -410,36 +464,59 @@ def detect_lowc_events(
     separation_samples: list[float] = []
 
     for simt, group in sampled.groupby("simt", sort=True):
-        if len(group) < 2:
+        size = len(group)
+        if size < 2:
             continue
-
-        pairs = group.merge(group, how="cross", suffixes=("_a", "_b"))
-        pairs = pairs[pairs["id_a"] < pairs["id_b"]]
-        if pairs.empty:
-            continue
-
-        pairs["dist_h_m"] = haversine_m(
-            pairs["lat_a"].to_numpy(),
-            pairs["lon_a"].to_numpy(),
-            pairs["lat_b"].to_numpy(),
-            pairs["lon_b"].to_numpy(),
+        left, right = np.triu_indices(size, 1)
+        lat = group["lat"].to_numpy(dtype=float)
+        lon = group["lon"].to_numpy(dtype=float)
+        alt = group["alt"].to_numpy(dtype=float)
+        ids = group["id"].astype(str).to_numpy()
+        vehicle_types = (
+            group["vehicle_type"].astype(str).to_numpy()
+            if "vehicle_type" in group.columns
+            else np.repeat("desconhecido", size)
         )
-        separation_samples.extend(pairs["dist_h_m"].tolist())
+        horizontal = haversine_m(lat[left], lon[left], lat[right], lon[right])
+        vertical = np.abs(alt[left] - alt[right])
+        separation_samples.extend(horizontal.tolist())
+        lowc_mask = horizontal < horizontal_threshold_m
+        if lowc_vertical_threshold_m is not None:
+            lowc_mask &= vertical < lowc_vertical_threshold_m
 
-        lowc = pairs[pairs["dist_h_m"] < horizontal_threshold_m]
-        for _, row in lowc.iterrows():
-            horizontal_ratio = _safe_rate(float(row["dist_h_m"]), horizontal_threshold_m)
+        for pair_index in np.flatnonzero(lowc_mask):
+            a = int(left[pair_index])
+            b = int(right[pair_index])
+            dist_h_m = float(horizontal[pair_index])
+            dist_v_m = float(vertical[pair_index])
+            horizontal_ratio = _safe_rate(dist_h_m, horizontal_threshold_m)
+            vertical_ratio = (
+                _safe_rate(dist_v_m, lowc_vertical_threshold_m)
+                if lowc_vertical_threshold_m is not None
+                else 0.0
+            )
+            nmac = dist_h_m < nmac_horizontal_threshold_m
+            if nmac_vertical_threshold_m is not None:
+                nmac = nmac and dist_v_m < nmac_vertical_threshold_m
+            type_a = str(vehicle_types[a])
+            type_b = str(vehicle_types[b])
             pair_samples.append(
                 {
                     "simt": float(simt),
-                    "id_a": str(row["id_a"]),
-                    "id_b": str(row["id_b"]),
-                    "lat": float((row["lat_a"] + row["lat_b"]) / 2),
-                    "lon": float((row["lon_a"] + row["lon_b"]) / 2),
-                    "dist_h_m": float(row["dist_h_m"]),
+                    "id_a": str(ids[a]),
+                    "id_b": str(ids[b]),
+                    "vehicle_type_a": type_a,
+                    "vehicle_type_b": type_b,
+                    "vehicle_pair": " - ".join(sorted((type_a, type_b))),
+                    "lat": float((lat[a] + lat[b]) / 2),
+                    "lon": float((lon[a] + lon[b]) / 2),
+                    "alt": float((alt[a] + alt[b]) / 2),
+                    "dist_h_m": dist_h_m,
+                    "dist_v_m": dist_v_m,
                     "horizontal_ratio": float(horizontal_ratio),
-                    "severity_ratio": float(horizontal_ratio),
-                    "is_nmac": bool(row["dist_h_m"] < nmac_horizontal_threshold_m),
+                    "vertical_ratio": float(vertical_ratio),
+                    "severity_ratio": float(max(horizontal_ratio, vertical_ratio)),
+                    "is_nmac": bool(nmac),
                 }
             )
 
@@ -447,11 +524,13 @@ def detect_lowc_events(
     safety = _safety_summary(
         events,
         pair_sample_count=len(separation_samples),
-        aircraft_count=aircraft_count,
+        aircraft_count=int(operation_count if operation_count is not None else aircraft_count),
         total_flight_hours=total_flight_hours,
         total_distance_km=total_distance_km,
         horizontal_threshold_m=horizontal_threshold_m,
         nmac_horizontal_threshold_m=nmac_horizontal_threshold_m,
+        lowc_vertical_threshold_m=lowc_vertical_threshold_m,
+        nmac_vertical_threshold_m=nmac_vertical_threshold_m,
         sample_seconds=sample_seconds,
         detection_horizon_seconds=detection_horizon_seconds,
         mac_beta=mac_beta,
@@ -511,10 +590,16 @@ def _summarize_lowc_event(
         "sample_count": int(len(samples)),
         "id_a": most_severe["id_a"],
         "id_b": most_severe["id_b"],
+        "vehicle_type_a": most_severe["vehicle_type_a"],
+        "vehicle_type_b": most_severe["vehicle_type_b"],
+        "vehicle_pair": most_severe["vehicle_pair"],
         "lat": float(most_severe["lat"]),
         "lon": float(most_severe["lon"]),
+        "alt": float(most_severe["alt"]),
         "dist_h_m": float(most_severe["dist_h_m"]),
+        "dist_v_m": float(most_severe["dist_v_m"]),
         "horizontal_ratio": float(most_severe["horizontal_ratio"]),
+        "vertical_ratio": float(most_severe["vertical_ratio"]),
         "severity_ratio": float(most_severe["severity_ratio"]),
         "is_nmac": bool(any(sample["is_nmac"] for sample in samples)),
     }
@@ -528,6 +613,8 @@ def _safety_summary(
     total_distance_km: float,
     horizontal_threshold_m: float,
     nmac_horizontal_threshold_m: float,
+    lowc_vertical_threshold_m: float | None,
+    nmac_vertical_threshold_m: float | None,
     sample_seconds: int,
     detection_horizon_seconds: float,
     mac_beta: float,
@@ -543,14 +630,30 @@ def _safety_summary(
     expected_mac = float(nmac_count * mac_beta * mac_probability_given_nmac)
     expected_mac_rate_per_flight_hour = _safe_rate(expected_mac, total_flight_hours)
     tls_margin = float(tls_target_per_flight_hour / (expected_mac_rate_per_flight_hour + tls_epsilon))
+    events_by_vehicle_pair: dict[str, dict[str, int]] = {}
+    for event in events:
+        pair = str(event.get("vehicle_pair", "desconhecido"))
+        item = events_by_vehicle_pair.setdefault(pair, {"lowc_events": 0, "nmac_events": 0})
+        item["lowc_events"] += 1
+        item["nmac_events"] += int(bool(event["is_nmac"]))
 
     return {
         "lowc_events": int(lowc_count),
         "nmac_events": int(nmac_count),
         "lowc_horizontal_m": float(horizontal_threshold_m),
+        "lowc_vertical_m": (
+            float(lowc_vertical_threshold_m) if lowc_vertical_threshold_m is not None else None
+        ),
         "nmac_horizontal_m": float(nmac_horizontal_threshold_m),
+        "nmac_vertical_m": (
+            float(nmac_vertical_threshold_m) if nmac_vertical_threshold_m is not None else None
+        ),
+        "conflict_definition": "3D retangular" if lowc_vertical_threshold_m is not None else "somente horizontal",
+        "operation_count": int(aircraft_count),
+        "events_by_vehicle_pair": events_by_vehicle_pair,
         "sample_seconds": int(sample_seconds),
         "conflict_detection_horizon_s": float(detection_horizon_seconds),
+        "time_to_conflict_source": "horizonte configurado; nao observado no STATELOG",
         "separation_samples": int(pair_sample_count),
         "lowc_per_100_operations": _safe_rate(lowc_count, aircraft_count, 100.0),
         "lowc_per_flight_hour": _safe_rate(lowc_count, total_flight_hours),
