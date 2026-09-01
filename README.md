@@ -73,6 +73,7 @@ trajectory_endpoint_tolerance_m = 2500.0
 conformity_tolerance_m = 250.0
 capacity_window_seconds = 3600
 capacity_reference_percentile = 0.95
+crossing_capture_radius_m = 250.0
 heatmap_sample_stride = 10
 ```
 
@@ -84,6 +85,7 @@ Alguns parametros podem ser alterados pela linha de comando:
 .\.venv\Scripts\python.exe generate_dashboard.py --conformity-tolerance-m 250
 .\.venv\Scripts\python.exe generate_dashboard.py --visualization-3d-sample-seconds 5
 .\.venv\Scripts\python.exe generate_dashboard.py --visualization-3d-ground-msl-ft 2621
+.\.venv\Scripts\python.exe generate_dashboard.py --crossing-capture-radius-m 250
 ```
 
 ## 4. Saida Gerada
@@ -197,6 +199,13 @@ A camada `REH formal` desenha os poligonos WFS/GML do XML, incluindo a semilargu
 trecho. A camada `Planejamento do cenario` conecta a origem e os waypoints definidos por `CRE`,
 `ADDWPT` e `DEFWPT` no arquivo `.scn`.
 
+A geometria oficial do corredor UAM dedicado desta fase fica em
+`data/corridors/scenario_horizontal_3000ft_expanded_displaced.csv`. Ela representa a rede completa
+entre tres aeroportos e seis vertiportos (`VP-001` a `VP-006`), com 36 pares OD e duas trilhas
+paralelas por par. O gerador a descobre automaticamente; `--uam-corridor-csv` permite informar uma
+copia equivalente. Arquivos com outra quantidade de vertiportos sao rejeitados enquanto o escopo
+do estudo permanecer limitado aos seis pontos UAM.
+
 A conformidade formal segue as Eq. 4.16-4.17 do PDF, comparando distancia executada e planejada.
 Separadamente, a aderencia espacial informa o percentual de amostras executadas que estao dentro
 de algum poligono oficial da REH. O parametro `conformity_tolerance_m` continua sendo usado apenas
@@ -225,15 +234,24 @@ diretamente da geometria WFS/GML; a semilargura deixa de ser imposta globalmente
 cadastro oficial (100 m ou 250 m, conforme o trecho). Os hotspots ATD tambem passam a ser agregados
 por trecho oficial.
 
-O throughput da Eq. 4.24 e calculado em janelas de 1 hora para tres tipos de recurso:
+O throughput da Eq. 4.24 e calculado em janelas de 1 hora para quatro tipos de recurso:
 
 - pares origem-destino observados;
 - grupos de trajetoria executada;
-- trechos REH oficiais atravessados pelo planejamento de cada voo.
+- trechos REH oficiais atravessados pelo planejamento de cada voo;
+- waypoints virtuais de cruzamento entre corredor UAM e REH.
 
-Os cruzamentos REH sao calculados pelas intersecoes entre os poligonos oficiais dos trechos no XML.
-O ponto exibido representa o centro aproximado da area de sobreposicao. Encontros em um mesmo fixo
-terminal sao tratados como continuidade da malha e nao como cruzamento.
+Nos cenarios dedicados C2--C6, os waypoints de cruzamento sao calculados pela sobreposicao horizontal
+entre os corredores UAM oficiais do CSV de seis vertiportos e os poligonos oficiais dos trechos REH no
+XML. Nos demais cenarios, permanece o fallback para as rotas planejadas do `.scn`. Cada ponto virtual
+representa o centro aproximado da area de sobreposicao e recebe um identificador `XUAMREHnnn`.
+O resultado e explicitamente 2D: uma classificacao volumetrica depende dos envelopes verticais oficiais
+do corredor UAM e da REH.
+
+Para cada waypoint, o processamento conta uma passagem por instancia de voo dentro do raio configurado,
+agrega as passagens nas janelas de capacidade e usa `P95(THR)` como limite operacional observado. Esse
+limite e uma referencia interna, nao uma capacidade declarada ou homologada. A tabela ordena os pontos
+mais criticos e permite destaca-los no mapa, assim como pares OD, grupos de trajetoria e trechos REH.
 
 Como ainda nao ha capacidade declarada externa, a utilizacao da Eq. 4.25 usa uma referencia nominal
 interna: `C_r,dt = P95(THR_r,dt)` por tipo de recurso. Assim, a utilizacao informa quao proximo o recurso

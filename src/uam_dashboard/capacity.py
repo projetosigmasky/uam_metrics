@@ -9,6 +9,7 @@ from .metrics import (
     _point_to_polyline_distances_m,
     _polyline_distance_m,
     flight_instance_frame,
+    haversine_m,
 )
 from .reh_parser import points_in_polygons
 
@@ -26,12 +27,26 @@ def capacity_metrics(
     reset_distance_m: float,
     jump_m: float,
     reh_segments: list[dict[str, Any]] | None = None,
+    official_uam_routes: list[dict[str, Any]] | None = None,
+    crossing_capture_radius_m: float = 250.0,
 ) -> dict[str, Any]:
-    """Compute capacity proxies based on REH corridors and observed resources."""
+    """Compute capacity proxies and 2D UAM-corridor/REH crossing resources."""
 
     annotated = flight_instance_frame(df, gap_seconds, reset_distance_m, jump_m)
     instances = _flight_instances(annotated)
-    scenario_route_groups, planned_to_scenario_route = _planned_route_groups(planned_flights)
+    scenario_route_groups, planned_to_scenario_route = _planned_route_groups(
+        planned_flights, route_prefix="SCN"
+    )
+    if official_uam_routes:
+        uam_route_groups = _official_uam_route_groups(official_uam_routes)
+        uam_geometry_source = "product2_uam_corridor_csv_6_vertiports"
+    else:
+        uam_route_groups, _ = _planned_route_groups(
+            [flight for flight in planned_flights if flight.get("vehicle_type") == "eVTOL"],
+            route_prefix="UAM",
+        )
+        uam_geometry_source = "scenario_route_buffers"
+    uam_corridors = _buffered_route_groups(uam_route_groups, corridor_width_m)
     if reh_segments:
         route_groups = _official_route_groups(reh_segments)
         planned_to_route = _planned_to_official_routes(planned_flights, route_groups)
@@ -52,18 +67,41 @@ def capacity_metrics(
         window_seconds,
         capacity_percentile,
     )
-    complexity = _complexity_components(route_groups, tracks, lowc_event_count)
+    complexity = _complexity_components(
+        uam_corridors,
+        _official_route_groups(reh_segments or []),
+        annotated,
+        tracks,
+        lowc_event_count,
+        window_seconds,
+        capacity_percentile,
+        crossing_capture_radius_m,
+    )
+    throughput["crossing_waypoints"] = _crossing_throughput(complexity)
     return {
         "available": bool(instances),
         "window_seconds": int(window_seconds),
         "capacity_percentile": float(capacity_percentile),
         "corridor_width_m": float(corridor_width_m),
+        "crossing_capture_radius_m": float(crossing_capture_radius_m),
         "geometry_source": geometry_source,
+        "uam_geometry_source": uam_geometry_source,
         "official_reh_segment_count": int(len(reh_segments or [])),
         "density": density,
         "throughput": throughput,
         "complexity": complexity,
     }
+
+
+def _official_uam_route_groups(routes: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    return [
+        {
+            **route,
+            "coordinates": np.asarray(route["coordinates"], dtype=float),
+            "waypoint_count": int(route.get("waypoint_count", len(route["coordinates"]))),
+        }
+        for route in routes
+    ]
 
 
 def _official_route_groups(reh_segments: list[dict[str, Any]]) -> list[dict[str, Any]]:
@@ -131,6 +169,7 @@ def _flight_instances(annotated: pd.DataFrame) -> list[dict[str, Any]]:
 
 def _planned_route_groups(
     planned_flights: list[dict[str, Any]],
+    route_prefix: str = "REH",
 ) -> tuple[list[dict[str, Any]], dict[str, str]]:
     grouped: dict[tuple[tuple[float, float], ...], dict[str, Any]] = {}
     planned_to_route: dict[str, str] = {}
@@ -138,7 +177,7 @@ def _planned_route_groups(
     for flight in planned_flights:
         signature = tuple((round(float(lon), 4), round(float(lat), 4)) for lon, lat in flight["coordinates"])
         if signature not in grouped:
-            route_id = f"REH{len(grouped) + 1:03d}"
+            route_id = f"{route_prefix}{len(grouped) + 1:03d}"
             coordinates = np.asarray([[lat, lon] for lon, lat in flight["coordinates"]], dtype=float)
             grouped[signature] = {
                 "resource_id": route_id,
@@ -151,6 +190,25 @@ def _planned_route_groups(
         planned_to_route[flight["flight_instance"]] = grouped[signature]["resource_id"]
 
     return list(grouped.values()), planned_to_route
+
+
+def _buffered_route_groups(
+    route_groups: list[dict[str, Any]], corridor_width_m: float
+) -> list[dict[str, Any]]:
+    buffered = []
+    for route in route_groups:
+        semi_width_m = float(route.get("semi_width_m", corridor_width_m))
+        ring = _corridor_polygon_coordinates(route["coordinates"], semi_width_m)
+        buffered.append(
+            {
+                **route,
+                "polygons": [ring],
+                "area_m2": _corridor_area_m2(route["coordinates"], semi_width_m),
+                "semi_width_m": semi_width_m,
+                "resource_type": "uam_corridor",
+            }
+        )
+    return buffered
 
 
 def _corridor_density(
@@ -326,17 +384,31 @@ def _throughput_metrics(
     }
 
     for instance in instances:
+        origin = instance["origin"]
+        destination = instance["destination"]
         resources["od_pairs"].append(
             {
-                "resource_id": _od_pair_id(instance["origin"], instance["destination"]),
-                "label": _od_pair_label(instance["origin"], instance["destination"]),
+                "resource_id": _od_pair_id(origin, destination),
+                "label": _od_pair_label(origin, destination),
                 "time_s": instance["start_s"],
+                "map_target": {
+                    "type": "od_pair",
+                    "coordinates": [
+                        [float(origin[1]), float(origin[0])],
+                        [float(destination[1]), float(destination[0])],
+                    ],
+                },
             }
         )
         group = track_group_by_instance.get(instance["flight_instance"])
         if group:
             resources["trajectory_groups"].append(
-                {"resource_id": group, "label": group, "time_s": instance["start_s"]}
+                {
+                    "resource_id": group,
+                    "label": group,
+                    "time_s": instance["start_s"],
+                    "map_target": {"type": "trajectory_group", "resource_id": group},
+                }
             )
         planned = conformity_by_instance.get(instance["flight_instance"], {}).get("planned_flight_instance")
         route_ids = planned_to_route.get(planned, [])
@@ -346,6 +418,7 @@ def _throughput_metrics(
                     "resource_id": route_id,
                     "label": route_labels.get(route_id, route_id),
                     "time_s": instance["start_s"],
+                    "map_target": {"type": "reh_segment", "resource_id": route_id},
                 }
             )
 
@@ -373,12 +446,15 @@ def _resource_throughput(
     counts: dict[tuple[str, int], int] = {}
     labels: dict[str, str] = {}
     totals: dict[str, int] = {}
+    map_targets: dict[str, dict[str, Any]] = {}
     for item in items:
         window_index = int((item["time_s"] - start_s) // max(window_seconds, 1))
         key = (item["resource_id"], window_index)
         counts[key] = counts.get(key, 0) + 1
         labels[item["resource_id"]] = item["label"]
         totals[item["resource_id"]] = totals.get(item["resource_id"], 0) + 1
+        if item.get("map_target"):
+            map_targets[item["resource_id"]] = item["map_target"]
 
     throughputs = [count / window_hours for count in counts.values()]
     capacity = float(np.quantile(throughputs, capacity_percentile)) if throughputs else 0.0
@@ -400,6 +476,7 @@ def _resource_throughput(
                 "peak_throughput_per_hour": float(peak),
                 "utilization_peak": float(peak / capacity) if capacity > 0 else 0.0,
                 "utilization_mean": float(mean / capacity) if capacity > 0 else 0.0,
+                "map_target": map_targets.get(resource_id),
             }
         )
 
@@ -413,9 +490,14 @@ def _resource_throughput(
 
 
 def _complexity_components(
-    route_groups: list[dict[str, Any]],
+    uam_corridors: list[dict[str, Any]],
+    reh_routes: list[dict[str, Any]],
+    annotated: pd.DataFrame,
     tracks: dict[str, Any],
     lowc_event_count: int,
+    window_seconds: int,
+    capacity_percentile: float,
+    crossing_capture_radius_m: float,
 ) -> dict[str, Any]:
     trajectory_groups = tracks.get("properties", {}).get("trajectory_group_count", 0)
     repeated_groups = len(
@@ -425,16 +507,193 @@ def _complexity_components(
             if feature["properties"].get("frequency", 0) > 1
         }
     )
-    crossings = _route_crossing_features(route_groups)
+    crossings = _uam_reh_crossing_features(uam_corridors, reh_routes)
+    crossing_capacity = _annotate_crossing_criticality(
+        crossings,
+        annotated,
+        window_seconds,
+        capacity_percentile,
+        crossing_capture_radius_m,
+    )
     return {
-        "available": bool(route_groups),
-        "planned_route_count": int(len(route_groups)),
-        "planned_waypoint_count": int(sum(route["waypoint_count"] for route in route_groups)),
+        "available": bool(uam_corridors and reh_routes),
+        "crossing_definition": "sobreposicao horizontal 2D entre corredor UAM planejado e poligono REH oficial",
+        "geometry_dimension": "2D",
+        "uam_corridor_count": int(len(uam_corridors)),
+        "reh_segment_count": int(len(reh_routes)),
+        "planned_route_count": int(len(reh_routes)),
+        "planned_waypoint_count": int(sum(route["waypoint_count"] for route in uam_corridors)),
         "planned_route_crossings": int(len(crossings)),
         "trajectory_group_count": int(trajectory_groups),
         "repeated_trajectory_group_count": int(repeated_groups),
         "lowc_event_count": int(lowc_event_count),
         "crossings": {"type": "FeatureCollection", "features": crossings},
+        "crossing_capacity": crossing_capacity,
+    }
+
+
+def _uam_reh_crossing_features(
+    uam_corridors: list[dict[str, Any]],
+    reh_routes: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    """Return virtual crossing waypoints for UAM corridor/official REH overlaps."""
+    if not uam_corridors or not reh_routes:
+        return []
+    all_lats = [
+        coordinate[1]
+        for route in (*uam_corridors, *reh_routes)
+        for ring in route.get("polygons", [])
+        for coordinate in ring
+    ]
+    reference_lat = float(np.mean(all_lats))
+    by_location: dict[tuple[int, int], dict[str, Any]] = {}
+    for uam_route in uam_corridors:
+        for reh_route in reh_routes:
+            overlap_points = _polygon_overlap_points(uam_route, reh_route, reference_lat)
+            if not overlap_points:
+                continue
+            point = np.mean(np.asarray(overlap_points, dtype=float), axis=0)
+            key = (round(float(point[0]) / 20.0), round(float(point[1]) / 20.0))
+            feature = by_location.get(key)
+            if feature is None:
+                feature = {
+                    "type": "Feature",
+                    "properties": {
+                        "method": "uam_buffer_official_reh_overlap",
+                        "geometry_dimension": "2D",
+                        "uam_route_ids": [],
+                        "uam_route_labels": [],
+                        "reh_resource_ids": [],
+                        "reh_labels": [],
+                    },
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": _unproject_xy(point, reference_lat),
+                    },
+                }
+                by_location[key] = feature
+            properties = feature["properties"]
+            for target, value in (
+                ("uam_route_ids", uam_route["resource_id"]),
+                ("uam_route_labels", uam_route["label"]),
+                ("reh_resource_ids", reh_route["resource_id"]),
+                ("reh_labels", reh_route["label"]),
+            ):
+                if value not in properties[target]:
+                    properties[target].append(value)
+
+    features = sorted(
+        by_location.values(),
+        key=lambda feature: tuple(feature["geometry"]["coordinates"]),
+    )
+    for index, feature in enumerate(features, start=1):
+        crossing_id = f"XUAMREH{index:03d}"
+        feature["properties"]["resource_id"] = crossing_id
+        feature["properties"]["label"] = f"Cruzamento UAM × REH {index:03d}"
+    return features
+
+
+def _annotate_crossing_criticality(
+    crossings: list[dict[str, Any]],
+    annotated: pd.DataFrame,
+    window_seconds: int,
+    capacity_percentile: float,
+    capture_radius_m: float,
+) -> dict[str, Any]:
+    if not crossings or annotated.empty:
+        return {
+            "available": False,
+            "capture_radius_m": float(capture_radius_m),
+            "top_resources": [],
+        }
+
+    start_s = float(annotated["simt"].min())
+    end_s = float(annotated["simt"].max())
+    window_count = max(1, int(np.floor((end_s - start_s) / max(window_seconds, 1))) + 1)
+    window_hours = max(window_seconds, 1) / 3600.0
+    summaries = []
+    points = annotated[["lat", "lon"]].to_numpy(dtype=float)
+    for feature in crossings:
+        lon, lat = feature["geometry"]["coordinates"]
+        distances = haversine_m(points[:, 0], points[:, 1], lat, lon)
+        nearby = annotated.loc[distances <= capture_radius_m]
+        passages: list[float] = []
+        if not nearby.empty:
+            passages = [
+                float(group["simt"].min())
+                for _, group in nearby.groupby("flight_instance", sort=False)
+            ]
+        counts = np.zeros(window_count, dtype=float)
+        for passage_time in passages:
+            index = min(
+                window_count - 1,
+                max(0, int((passage_time - start_s) // max(window_seconds, 1))),
+            )
+            counts[index] += 1.0
+        throughputs = counts / window_hours
+        p95 = float(np.quantile(throughputs, capacity_percentile))
+        peak = float(np.max(throughputs)) if len(throughputs) else 0.0
+        mean = float(np.mean(throughputs)) if len(throughputs) else 0.0
+        utilization_peak = float(peak / p95) if p95 > 0 else 0.0
+        properties = feature["properties"]
+        properties.update(
+            {
+                "capture_radius_m": float(capture_radius_m),
+                "operations": int(len(passages)),
+                "mean_throughput_per_hour": mean,
+                "peak_throughput_per_hour": peak,
+                "operational_limit_p95_per_hour": p95,
+                "utilization_peak": utilization_peak,
+            }
+        )
+        summaries.append(
+            {
+                "resource_id": properties["resource_id"],
+                "label": properties["label"],
+                "operations": int(len(passages)),
+                "mean_throughput_per_hour": mean,
+                "peak_throughput_per_hour": peak,
+                "capacity_reference_per_hour": p95,
+                "utilization_peak": utilization_peak,
+                "utilization_mean": float(mean / p95) if p95 > 0 else 0.0,
+                "map_target": {
+                    "type": "crossing_waypoint",
+                    "resource_id": properties["resource_id"],
+                    "coordinates": feature["geometry"]["coordinates"],
+                },
+            }
+        )
+    summaries.sort(
+        key=lambda item: (
+            item["utilization_peak"],
+            item["capacity_reference_per_hour"],
+            item["operations"],
+        ),
+        reverse=True,
+    )
+    return {
+        "available": True,
+        "capacity_percentile": float(capacity_percentile),
+        "capture_radius_m": float(capture_radius_m),
+        "resource_count": len(summaries),
+        "top_resources": summaries[:5],
+    }
+
+
+def _crossing_throughput(complexity: dict[str, Any]) -> dict[str, Any]:
+    crossing_capacity = complexity.get("crossing_capacity", {})
+    if not crossing_capacity.get("available"):
+        return {
+            "available": False,
+            "capacity_reference_per_hour": 0.0,
+            "top_resources": [],
+            "resource_count": 0,
+        }
+    top_resources = crossing_capacity.get("top_resources", [])
+    references = [item["capacity_reference_per_hour"] for item in top_resources]
+    return {
+        **crossing_capacity,
+        "capacity_reference_per_hour": max(references, default=0.0),
     }
 
 

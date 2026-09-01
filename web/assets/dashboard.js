@@ -7,15 +7,20 @@ const state = {
   atdHotspotLayer: null,
   complexityLayer: null,
   conflictLayer: null,
+  resourceHighlightLayer: null,
   baseLayers: {},
   overlayLayers: {},
   lastTracks: null,
   lastConflicts: null,
+  lastOfficialReh: null,
+  lastCapacity: null,
   runs: [],
   comparison: null,
   activeRunIndex: 0,
   activeDayKey: null,
   trajectoryVolumeFilter: "all",
+  conflictPairFilter: "all",
+  activeKpa: "overview",
 };
 
 const viewer3d = {
@@ -39,6 +44,9 @@ const viewer3d = {
 document.addEventListener("DOMContentLoaded", () => {
   bindLayerControls();
   bind3DControls();
+  bindConflictPairControls();
+  bindKpaTabs();
+  bindCapacityResourceLinks();
   if (typeof window.L !== "undefined") {
     initMap();
   } else {
@@ -277,7 +285,7 @@ function render3DVisualization(data, conflicts) {
   viewer3d.data = data || null;
   viewer3d.conflicts = conflicts?.features || [];
   viewer3d.macTimestampAvailable = Boolean(conflicts?.properties?.mac_timestamp_available);
-  renderConflictTimeline(viewer3d.conflicts, viewer3d.macTimestampAvailable);
+  renderConflictTimeline(filteredConflictFeatures(viewer3d.conflicts), viewer3d.macTimestampAvailable);
   if (!data?.tracks?.length) {
     setText("viewer3d-status", "Sem trajetórias 3D para este cenário.");
     update3DControls();
@@ -355,6 +363,85 @@ function conflictEventColor(feature) {
   return eventClass === "mac" ? "#dc2626" : eventClass === "nmac" ? "#f97316" : "#facc15";
 }
 
+function conflictPairKey(feature) {
+  const pair = String(feature?.properties?.vehicle_pair || "").toLowerCase();
+  const hasEvtol = pair.includes("evtol");
+  const helicopterCount = (pair.match(/helicoptero/g) || []).length;
+  if (hasEvtol && helicopterCount) return "evtol-helicoptero";
+  if (hasEvtol) return "evtol-evtol";
+  if (helicopterCount >= 2) return "helicoptero-helicoptero";
+  return "desconhecido";
+}
+
+function filteredConflictFeatures(features) {
+  if (state.conflictPairFilter === "all") return features || [];
+  return (features || []).filter((feature) => conflictPairKey(feature) === state.conflictPairFilter);
+}
+
+function filteredConflictCollection(conflicts) {
+  return {
+    ...(conflicts || emptyFeatureCollection()),
+    features: filteredConflictFeatures(conflicts?.features || []),
+  };
+}
+
+function bindConflictPairControls() {
+  document.querySelectorAll("[data-conflict-pair]").forEach((button) => {
+    button.addEventListener("click", () => {
+      state.conflictPairFilter = button.dataset.conflictPair;
+      document.querySelectorAll("[data-conflict-pair]").forEach((item) => {
+        const active = item.dataset.conflictPair === state.conflictPairFilter;
+        item.classList.toggle("active", active);
+        item.setAttribute("aria-pressed", String(active));
+      });
+      renderConflictTimeline(filteredConflictFeatures(viewer3d.conflicts), viewer3d.macTimestampAvailable);
+      draw3D();
+      const run = state.runs[state.activeRunIndex] || state.runs[0];
+      if (run && state.map) {
+        renderMapLayers(run.tracks, run.planned_routes, run.official_reh, run.conflicts, run.heatmap, run.dashboard.capacity);
+      }
+    });
+  });
+}
+
+function bindKpaTabs() {
+  document.querySelectorAll("[data-kpa-tab]").forEach((button) => {
+    button.addEventListener("click", () => activateKpa(button.dataset.kpaTab));
+  });
+  activateKpa(state.activeKpa);
+}
+
+function activateKpa(kpa) {
+  state.activeKpa = kpa || "overview";
+  document.querySelectorAll("[data-kpa-tab]").forEach((button) => {
+    const active = button.dataset.kpaTab === state.activeKpa;
+    button.classList.toggle("active", active);
+    button.setAttribute("aria-selected", String(active));
+    button.tabIndex = active ? 0 : -1;
+  });
+  document.querySelectorAll("[data-kpa-panel]").forEach((panel) => {
+    panel.hidden = !String(panel.dataset.kpaPanel).split(/\s+/).includes(state.activeKpa);
+  });
+  document.querySelectorAll("[data-kpa-child]").forEach((child) => {
+    child.hidden = child.dataset.kpaChild !== state.activeKpa;
+  });
+  if (state.activeKpa === "overview" && state.map) {
+    window.setTimeout(() => state.map.invalidateSize(true), 0);
+  }
+}
+
+function bindCapacityResourceLinks() {
+  document.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-map-target]");
+    if (!button) return;
+    try {
+      highlightMapResource(JSON.parse(button.dataset.mapTarget));
+    } catch (error) {
+      console.error("Invalid map target", error);
+    }
+  });
+}
+
 function renderConflictTimeline(features, macTimestampAvailable) {
   const body = document.getElementById("conflict-timeline-body");
   if (!body) return;
@@ -376,10 +463,11 @@ function renderConflictTimeline(features, macTimestampAvailable) {
           <td>${timeButton(p.simt)}</td>
           <td>${timeButton(p.end_simt)}</td>
           <td>${escapeHtml(p.id_a)} / ${escapeHtml(p.id_b)}</td>
+          <td>${escapeHtml(p.vehicle_pair || "tipos desconhecidos")}</td>
           <td>${formatNumber(p.dist_h_m, 1)} m / ${formatNumber(p.dist_v_m, 1)} m</td>
         </tr>`;
       }).join("")
-    : `<tr><td colspan="6">Nenhum evento LoWC/NMAC observado neste cenário.</td></tr>`;
+    : `<tr><td colspan="7">Nenhum evento LoWC/NMAC observado para esta combinação.</td></tr>`;
   body.querySelectorAll("[data-simt]").forEach((button) => {
     button.addEventListener("click", () => {
       viewer3d.playing = false;
@@ -470,7 +558,7 @@ function draw3D() {
       angle: Math.atan2(position.y - previousPosition.y, position.x - previousPosition.x),
     });
   }
-  const activeConflicts = viewer3d.conflicts.filter((feature) => {
+  const activeConflicts = filteredConflictFeatures(viewer3d.conflicts).filter((feature) => {
     const p = feature.properties;
     return p.start_simt <= viewer3d.currentTime && p.end_simt >= viewer3d.currentTime;
   });
@@ -733,8 +821,9 @@ function renderCapacity(dashboard) {
   setText(
     "capacity-complexity",
     complexity.available
-      ? `${formatNumber(complexity.planned_route_count, 0)} trechos REH formais, ` +
-          `${formatNumber(complexity.planned_waypoint_count, 0)} pontos de eixo, ` +
+      ? `${formatNumber(complexity.uam_corridor_count, 0)} corredores UAM planejados × ` +
+          `${formatNumber(complexity.reh_segment_count, 0)} trechos REH formais, ` +
+          `${formatNumber(complexity.planned_route_crossings, 0)} waypoints de cruzamento 2D, ` +
           `${formatNumber(complexity.trajectory_group_count, 0)} grupos de trajetoria, ` +
           `${formatNumber(complexity.repeated_trajectory_group_count, 0)} grupos recorrentes e ` +
           `${formatNumber(complexity.lowc_event_count, 0)} eventos LoWC.`
@@ -749,13 +838,14 @@ function renderCapacityTable(throughput) {
     ["od_pairs", "Par OD"],
     ["trajectory_groups", "Grupo trajetoria"],
     ["planned_reh", "Trecho REH formal"],
+    ["crossing_waypoints", "Waypoint UAM × REH"],
   ]) {
     const group = throughput[type];
     if (!group?.available) continue;
     for (const resource of group.top_resources || []) {
       rows.push({
         type: label,
-        capacity: group.capacity_reference_per_hour,
+        capacity: resource.capacity_reference_per_hour ?? group.capacity_reference_per_hour,
         ...resource,
       });
     }
@@ -766,7 +856,9 @@ function renderCapacityTable(throughput) {
           (row) => `
         <tr>
           <td>${escapeHtml(row.type)}</td>
-          <td title="${escapeHtml(row.resource_id)}">${escapeHtml(row.label)}</td>
+          <td title="${escapeHtml(row.resource_id)}">${row.map_target
+            ? `<button class="resource-map-link" type="button" data-map-target="${escapeHtml(JSON.stringify(row.map_target))}">${escapeHtml(row.label)}</button>`
+            : escapeHtml(row.label)}</td>
           <td>${formatNumber(row.operations, 0)}</td>
           <td>${formatNumber(row.peak_throughput_per_hour, 1)} ops/h</td>
           <td>${formatNumber(row.capacity, 1)} ops/h</td>
@@ -786,6 +878,9 @@ function renderMapLayers(tracks, plannedRoutes, officialReh, conflicts, heatmap,
   if (!state.map || typeof window.L === "undefined") return;
   state.lastTracks = tracks;
   state.lastConflicts = conflicts;
+  state.lastOfficialReh = officialReh;
+  state.lastCapacity = capacity;
+  const visibleConflicts = filteredConflictCollection(conflicts);
   const visibleTracks = filterTracksByVolume(tracks, state.trajectoryVolumeFilter);
   clearLayer("tracksLayer");
   clearLayer("officialRehLayer");
@@ -794,6 +889,7 @@ function renderMapLayers(tracks, plannedRoutes, officialReh, conflicts, heatmap,
   clearLayer("atdHotspotLayer");
   clearLayer("complexityLayer");
   clearLayer("conflictLayer");
+  clearLayer("resourceHighlightLayer");
 
   const routeHalo = L.geoJSON(visibleTracks, {
     interactive: false,
@@ -895,7 +991,7 @@ function renderMapLayers(tracks, plannedRoutes, officialReh, conflicts, heatmap,
     },
   });
 
-  const conflictMarkers = L.geoJSON(conflicts, {
+  const conflictMarkers = L.geoJSON(visibleConflicts, {
     pane: "conflictPane",
     pointToLayer: (feature, latlng) =>
       L.circleMarker(latlng, {
@@ -924,7 +1020,7 @@ function renderMapLayers(tracks, plannedRoutes, officialReh, conflicts, heatmap,
     },
   });
 
-  const conflictPulse = L.geoJSON(conflicts, {
+  const conflictPulse = L.geoJSON(visibleConflicts, {
     interactive: false,
     pane: "conflictPane",
     pointToLayer: (feature, latlng) =>
@@ -1008,15 +1104,17 @@ function renderMapLayers(tracks, plannedRoutes, officialReh, conflicts, heatmap,
       }),
     onEachFeature: (feature, layer) => {
       const p = feature.properties || {};
-      layer.bindTooltip(`Cruzamento ${escapeHtml(p.route_a_label || p.route_a)} / ${escapeHtml(p.route_b_label || p.route_b)}`, {
+      layer.bindTooltip(`${escapeHtml(p.label || "Cruzamento UAM × REH")} · P95 ${formatNumber(p.operational_limit_p95_per_hour, 1)} ops/h`, {
         sticky: true,
       });
       layer.bindPopup(
-        `<strong>Cruzamento REH</strong><br>` +
-          `${escapeHtml(p.route_a_label || p.route_a)} / ${escapeHtml(p.route_b_label || p.route_b)}<br>` +
-          (p.method === "official_polygon_overlap"
-            ? "Sobreposicao entre corredores oficiais"
-            : `Segmentos ${formatNumber(p.segment_a, 0)} e ${formatNumber(p.segment_b, 0)}`)
+        `<strong>${escapeHtml(p.label || "Cruzamento UAM × REH")}</strong><br>` +
+          `Corredor UAM: ${escapeHtml((p.uam_route_labels || []).join(", "))}<br>` +
+          `REH: ${escapeHtml((p.reh_labels || []).join(", "))}<br>` +
+          `${formatNumber(p.operations, 0)} passagens dentro de ${formatNumber(p.capture_radius_m, 0)} m<br>` +
+          `P95 operacional ${formatNumber(p.operational_limit_p95_per_hour, 1)} ops/h · pico ${formatNumber(p.peak_throughput_per_hour, 1)} ops/h<br>` +
+          `Utilizacao de pico ${formatPercentRatio(p.utilization_peak)}<br>` +
+          `Intersecao horizontal 2D; envelope vertical nao disponivel.`
       );
     },
   });
@@ -1029,8 +1127,8 @@ function renderMapLayers(tracks, plannedRoutes, officialReh, conflicts, heatmap,
   applyCheckedLayer("layer-planned", state.plannedLayer);
   applyCheckedLayer("layer-conflicts", state.conflictLayer);
 
-  fitMapToOperationalArea(visibleTracks, conflicts);
-  updateMapInfo(tracks, visibleTracks, plannedRoutes, officialReh, conflicts, heatmap, capacity);
+  fitMapToOperationalArea(visibleTracks, visibleConflicts);
+  updateMapInfo(tracks, visibleTracks, plannedRoutes, officialReh, visibleConflicts, heatmap, capacity);
 }
 
 function buildEndpointLayer(tracks) {
@@ -1122,8 +1220,57 @@ function updateMapInfo(tracks, visibleTracks, plannedRoutes, officialReh, confli
   setText("map-info-title", "Mapa operacional");
   setText(
     "map-info-text",
-    `${formatNumber(visible)} de ${formatNumber(trajectories)} trajetorias executadas visiveis, ${formatNumber(officialSegments)} trechos REH oficiais e ${formatNumber(planned)} planejamentos de voo; ${formatNumber(density)} pontos de densidade, ${formatNumber(atdHotspots)} corredores ATD, ${formatNumber(crossings)} cruzamentos REH, ${formatNumber(lowc)} LoWC fora de NMAC, ${formatNumber(nmac)} NMAC e ${formatNumber(mac)} MAC observados.`
+    `${formatNumber(visible)} de ${formatNumber(trajectories)} trajetorias executadas visiveis, ${formatNumber(officialSegments)} trechos REH oficiais e ${formatNumber(planned)} planejamentos de voo; ${formatNumber(density)} pontos de densidade, ${formatNumber(atdHotspots)} corredores ATD, ${formatNumber(crossings)} waypoints UAM × REH, ${formatNumber(lowc)} LoWC fora de NMAC, ${formatNumber(nmac)} NMAC e ${formatNumber(mac)} MAC observados.`
   );
+}
+
+function highlightMapResource(target) {
+  if (!state.map || typeof window.L === "undefined" || !target) return;
+  activateKpa("overview");
+  clearLayer("resourceHighlightLayer");
+  let geojson = emptyFeatureCollection();
+  if (target.type === "od_pair" && target.coordinates?.length === 2) {
+    geojson = {
+      type: "FeatureCollection",
+      features: [{ type: "Feature", properties: {}, geometry: { type: "LineString", coordinates: target.coordinates } }],
+    };
+  } else if (target.type === "trajectory_group") {
+    geojson = {
+      ...(state.lastTracks || emptyFeatureCollection()),
+      features: (state.lastTracks?.features || []).filter(
+        (feature) => feature.properties?.trajectory_group === target.resource_id
+      ),
+    };
+  } else if (target.type === "reh_segment") {
+    geojson = {
+      ...(state.lastOfficialReh || emptyFeatureCollection()),
+      features: (state.lastOfficialReh?.features || []).filter(
+        (feature) => feature.properties?.resource_id === target.resource_id
+      ),
+    };
+  } else if (target.type === "crossing_waypoint") {
+    const matchingFeatures = (state.lastCapacity?.complexity?.crossings?.features || []).filter(
+      (feature) => feature.properties?.resource_id === target.resource_id
+    );
+    geojson = {
+      type: "FeatureCollection",
+      features: matchingFeatures.length
+        ? matchingFeatures
+        : target.coordinates?.length === 2
+          ? [{ type: "Feature", properties: { resource_id: target.resource_id }, geometry: { type: "Point", coordinates: target.coordinates } }]
+          : [],
+    };
+  }
+  state.resourceHighlightLayer = L.geoJSON(geojson, {
+    pane: "conflictPane",
+    style: { color: "#db2777", fillColor: "#f472b6", fillOpacity: 0.34, weight: 7, opacity: 1 },
+    pointToLayer: (_feature, latlng) => L.circleMarker(latlng, {
+      pane: "conflictPane", radius: 13, color: "#831843", fillColor: "#f472b6", weight: 4, fillOpacity: 0.92,
+    }),
+  }).addTo(state.map);
+  const bounds = state.resourceHighlightLayer.getBounds();
+  if (bounds.isValid()) state.map.fitBounds(bounds.pad(0.35), { maxZoom: 15 });
+  document.querySelector(".workspace")?.scrollIntoView({ behavior: "smooth", block: "center" });
 }
 
 function filterTracksByVolume(tracks, filter) {

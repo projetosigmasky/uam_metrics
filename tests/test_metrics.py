@@ -23,9 +23,27 @@ from src.uam_dashboard.scenario_parser import (
     load_bluesky_scenario,
 )
 from src.uam_dashboard.reh_parser import load_reh_network
+from src.uam_dashboard.uam_corridor_parser import load_uam_corridor_network
 
 
 class MetricsTest(unittest.TestCase):
+    def test_product2_uam_csv_is_the_six_vertiport_network(self) -> None:
+        network = load_uam_corridor_network(
+            Path("data/corridors/scenario_horizontal_3000ft_expanded_displaced.csv")
+        )
+
+        self.assertEqual(network["scope"], "product2_6_vertiports")
+        self.assertEqual(network["vertiports"], [f"VP-{index:03d}" for index in range(1, 7)])
+        self.assertEqual(network["route_count"], 72)
+        self.assertEqual(network["od_pair_count"], 36)
+        self.assertEqual({route["parallel_track"] for route in network["routes"]}, {1, 2})
+        self.assertEqual({route["width_m"] for route in network["routes"]}, {457.0})
+        self.assertEqual({route["height_m"] for route in network["routes"]}, {305.0})
+        self.assertEqual(
+            {altitude for route in network["routes"] for altitude in route["altitudes_m"]},
+            {760.0, 914.4, 1219.0},
+        )
+
     def test_trajectory_3d_payload_uses_five_second_windows(self) -> None:
         rows = []
         for simt in range(11):
@@ -258,6 +276,18 @@ class MetricsTest(unittest.TestCase):
         self.assertEqual(c2["variant_key"], "c2")
         self.assertEqual(c1["reference_variant_key"], "c1")
 
+    def test_product2_p95_metadata_groups_and_orders_ten_scenarios(self) -> None:
+        c2 = experiment_metadata(
+            "STATELOG_produto2_C2_p95_off_headless_20260901_11-53-31.log"
+        )
+        c10 = experiment_metadata("produto2_C10_p95_off.scn")
+
+        self.assertEqual(c2["day_key"], "produto2_p95")
+        self.assertEqual(c10["day_key"], "produto2_p95")
+        self.assertEqual(c2["scenario_key"], "C2")
+        self.assertEqual(c10["scenario_key"], "C10")
+        self.assertEqual(c10["rank"], 10)
+
     def test_extended_log_fields_and_scenario_aircraft_type_are_preserved(self) -> None:
         with TemporaryDirectory() as directory:
             directory_path = Path(directory)
@@ -374,6 +404,56 @@ class MetricsTest(unittest.TestCase):
 
         self.assertEqual(metrics["resource_count"], 8)
         self.assertEqual(len(metrics["top_resources"]), 5)
+
+    def test_capacity_uses_uam_reh_crossings_and_ranks_crossing_waypoints(self) -> None:
+        df = pd.DataFrame([
+            {"simt": 0, "id": "EV1", "lat": -23.55, "lon": -46.64, "distflown": 0, "alt": 800},
+            {"simt": 60, "id": "EV1", "lat": -23.55, "lon": -46.63, "distflown": 1000, "alt": 800},
+            {"simt": 120, "id": "EV1", "lat": -23.55, "lon": -46.62, "distflown": 2000, "alt": 800},
+        ])
+        planned = [{
+            "flight_instance": "EV1#0",
+            "aircraft_id": "EV1",
+            "vehicle_type": "eVTOL",
+            "start_time": "00:00:00.00",
+            "start_simt": 0.0,
+            "coordinates": [[-46.64, -23.55], [-46.62, -23.55]],
+        }]
+        conformity = {"EV1#0": {"planned_flight_instance": "EV1#0"}}
+        tracks = tracks_geojson(df, 1, 300, 250, 5000, 8, 1200, 2500, conformity)
+        reh_segments = [{
+            "resource_id": "REH-1",
+            "label": "REH vertical",
+            "name": "REH vertical",
+            "section": "1",
+            "route_type": "Obrig",
+            "semi_width_m": 100.0,
+            "area_m2": 400000.0,
+            "coordinates": [[-23.56, -46.63], [-23.54, -46.63]],
+            "polygons": [[
+                [-46.631, -23.56], [-46.629, -23.56], [-46.629, -23.54],
+                [-46.631, -23.54], [-46.631, -23.56],
+            ]],
+        }]
+
+        metrics = capacity_metrics(
+            df, planned, tracks, conformity, 0, 250, 3600, 0.95,
+            300, 250, 5000, reh_segments, crossing_capture_radius_m=300,
+        )
+
+        complexity = metrics["complexity"]
+        self.assertEqual(complexity["geometry_dimension"], "2D")
+        self.assertEqual(complexity["planned_route_crossings"], 1)
+        crossing = complexity["crossings"]["features"][0]
+        self.assertEqual(crossing["properties"]["resource_id"], "XUAMREH001")
+        self.assertEqual(crossing["properties"]["operations"], 1)
+        self.assertGreater(crossing["properties"]["operational_limit_p95_per_hour"], 0)
+        crossing_resources = metrics["throughput"]["crossing_waypoints"]
+        self.assertTrue(crossing_resources["available"])
+        self.assertEqual(
+            crossing_resources["top_resources"][0]["map_target"]["type"],
+            "crossing_waypoint",
+        )
 
 
 if __name__ == "__main__":

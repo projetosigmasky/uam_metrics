@@ -17,10 +17,33 @@ PRODUCT2_RE = re.compile(
     r"_(?P<mode>mvp|off)(?:_\d{8}_\d{2}-\d{2}-\d{2})?$",
     re.IGNORECASE,
 )
+PRODUCT2_P95_RE = re.compile(
+    r"^(?:STATELOG_)?produto2_(?P<scenario>C\d+)_p95_(?P<mode>mvp|off)$",
+    re.IGNORECASE,
+)
 
 
 def experiment_metadata(path: str | Path) -> dict[str, Any]:
     stem = HEADLESS_SUFFIX_RE.sub("", Path(path).stem)
+    product2_p95_match = PRODUCT2_P95_RE.match(stem)
+    if product2_p95_match:
+        values = product2_p95_match.groupdict()
+        scenario = values["scenario"].upper()
+        rank = int(scenario[1:])
+        return {
+            "experiment_family": "produto2",
+            "day_key": "produto2_p95",
+            "day_label": "Produto 2 - demanda P95",
+            "variant_key": scenario.lower(),
+            "variant_label": f"{scenario} - cenário P95",
+            "scenario_key": scenario,
+            "reference_variant_key": "c1",
+            "mvp_enabled": values["mode"].lower() == "mvp",
+            "disturbed": False,
+            "rank": rank,
+            "date": None,
+            "seed": None,
+        }
     product2_match = PRODUCT2_RE.match(stem)
     if product2_match:
         values = product2_match.groupdict()

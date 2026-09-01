@@ -42,6 +42,7 @@ from src.uam_dashboard.scenario_parser import (
     load_bluesky_scenario,
     observed_ground_delay_metrics,
 )
+from src.uam_dashboard.uam_corridor_parser import load_uam_corridor_network
 
 
 def write_json(path: Path, payload: object) -> None:
@@ -305,7 +306,9 @@ def _average_capacity(run_dashboards: list[dict[str, Any]]) -> dict[str, Any]:
         "window_seconds": first["window_seconds"],
         "capacity_percentile": first["capacity_percentile"],
         "corridor_width_m": first["corridor_width_m"],
+        "crossing_capture_radius_m": first.get("crossing_capture_radius_m", 250.0),
         "geometry_source": first.get("geometry_source", "scenario_route_buffers"),
+        "uam_geometry_source": first.get("uam_geometry_source", "scenario_route_buffers"),
         "official_reh_segment_count": first.get("official_reh_segment_count", 0),
         "density": {
             "available": bool(density_values),
@@ -325,6 +328,10 @@ def _average_capacity(run_dashboards: list[dict[str, Any]]) -> dict[str, Any]:
         "throughput": first["throughput"],
         "complexity": {
             "available": bool(complexity_values),
+            "crossing_definition": first.get("complexity", {}).get("crossing_definition"),
+            "geometry_dimension": first.get("complexity", {}).get("geometry_dimension", "2D"),
+            "uam_corridor_count": mean([item.get("uam_corridor_count", 0) for item in complexity_values]),
+            "reh_segment_count": mean([item.get("reh_segment_count", 0) for item in complexity_values]),
             "planned_route_count": mean([item["planned_route_count"] for item in complexity_values]),
             "planned_waypoint_count": mean([item["planned_waypoint_count"] for item in complexity_values]),
             "planned_route_crossings": mean([item["planned_route_crossings"] for item in complexity_values]),
@@ -334,6 +341,7 @@ def _average_capacity(run_dashboards: list[dict[str, Any]]) -> dict[str, Any]:
             ),
             "lowc_event_count": mean([item["lowc_event_count"] for item in complexity_values]),
             "crossings": first.get("complexity", {}).get("crossings", {"type": "FeatureCollection", "features": []}),
+            "crossing_capacity": first.get("complexity", {}).get("crossing_capacity", {"available": False}),
         },
     }
 
@@ -440,6 +448,13 @@ def analyze_log(log_path: Path, config: DashboardConfig, charts_dir: Path, run_i
     reh_network = load_reh_network(config.reh_xml_path) if config.reh_xml_path else None
     reh_segments = reh_network["segments"] if reh_network else []
     metadata = experiment_metadata(log_path)
+    dedicated_uam_scenarios = {"C2", "C3", "C4", "C5", "C6"}
+    uam_network = (
+        load_uam_corridor_network(config.uam_corridor_csv_path)
+        if config.uam_corridor_csv_path
+        and metadata.get("scenario_key") in dedicated_uam_scenarios
+        else None
+    )
     efficiency["ground_delay"] = observed_ground_delay_metrics(
         df,
         planned_flights,
@@ -559,6 +574,8 @@ def analyze_log(log_path: Path, config: DashboardConfig, charts_dir: Path, run_i
         reset_distance_m=config.flight_instance_reset_distance_m,
         jump_m=config.flight_instance_jump_m,
         reh_segments=reh_segments,
+        official_uam_routes=uam_network["routes"] if uam_network else None,
+        crossing_capture_radius_m=config.crossing_capture_radius_m,
     )
 
     summary = build_summary(df, operation_count=efficiency["flight_instances"])
@@ -650,6 +667,11 @@ def parse_args() -> argparse.Namespace:
         default=None,
         help="WFS/GML XML with the official Sao Paulo REH polygons.",
     )
+    parser.add_argument(
+        "--uam-corridor-csv",
+        default=None,
+        help="Product II dedicated UAM corridor CSV (current scope: six vertiports).",
+    )
     parser.add_argument("--flight-instance-gap-seconds", type=float, default=300.0)
     parser.add_argument("--flight-instance-reset-distance-m", type=float, default=250.0)
     parser.add_argument("--flight-instance-jump-m", type=float, default=5000.0)
@@ -671,6 +693,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--conformity-tolerance-m", type=float, default=250.0)
     parser.add_argument("--capacity-window-seconds", type=int, default=3600)
     parser.add_argument("--capacity-reference-percentile", type=float, default=0.95)
+    parser.add_argument("--crossing-capture-radius-m", type=float, default=250.0)
     return parser.parse_args()
 
 
@@ -704,6 +727,17 @@ def find_reh_xml(data_dir: Path, explicit: str | None) -> Path | None:
     ]
     candidates.extend(sorted(data_dir.glob("**/CV_REH_XP_SAO_PAULO.xml")))
     return next((path for path in candidates if path.exists()), None)
+
+
+def find_uam_corridor_csv(data_dir: Path, explicit: str | None) -> Path | None:
+    if explicit:
+        path = Path(explicit)
+        if not path.exists():
+            raise FileNotFoundError(f"UAM corridor CSV not found: {path}")
+        return path
+
+    candidate = data_dir / "corridors" / "scenario_horizontal_3000ft_expanded_displaced.csv"
+    return candidate if candidate.exists() else None
 
 
 def find_matching_scenario(log_path: Path, scenario_paths: tuple[Path, ...]) -> Path | None:
@@ -753,12 +787,14 @@ def main() -> None:
     log_paths = tuple(Path(log) for log in args.logs) if args.logs else find_default_logs(data_dir)
     scenario_paths = find_scenarios(Path(args.scenario_dir), args.scenarios)
     reh_xml_path = find_reh_xml(data_dir, args.reh_xml)
+    uam_corridor_csv_path = find_uam_corridor_csv(data_dir, args.uam_corridor_csv)
     config = DashboardConfig(
         log_paths=log_paths,
         scenario_paths=scenario_paths,
         output_dir=Path(args.output),
         data_dir=data_dir,
         reh_xml_path=reh_xml_path,
+        uam_corridor_csv_path=uam_corridor_csv_path,
         flight_instance_gap_seconds=args.flight_instance_gap_seconds,
         flight_instance_reset_distance_m=args.flight_instance_reset_distance_m,
         flight_instance_jump_m=args.flight_instance_jump_m,
@@ -780,6 +816,7 @@ def main() -> None:
         conformity_tolerance_m=args.conformity_tolerance_m,
         capacity_window_seconds=args.capacity_window_seconds,
         capacity_reference_percentile=args.capacity_reference_percentile,
+        crossing_capture_radius_m=args.crossing_capture_radius_m,
     )
     build_dashboard(config)
 

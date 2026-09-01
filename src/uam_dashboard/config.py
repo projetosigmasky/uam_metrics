@@ -33,6 +33,7 @@ class DashboardConfig:
     output_dir: Path = Path("docs")
     data_dir: Path = Path("data")
     reh_xml_path: Path | None = None
+    uam_corridor_csv_path: Path | None = None
     flight_instance_gap_seconds: float = 300.0
     flight_instance_reset_distance_m: float = 250.0
     flight_instance_jump_m: float = 5000.0
@@ -58,4 +59,5 @@ class DashboardConfig:
     conformity_tolerance_m: float = 250.0
     capacity_window_seconds: int = 3600
     capacity_reference_percentile: float = 0.95
+    crossing_capture_radius_m: float = 250.0
     heatmap_sample_stride: int = 10
