@@ -134,43 +134,6 @@ def ground_delay_metrics(
     }
 
 
-def observed_ground_delay_metrics(
-    df: Any,
-    planned_flights: list[dict[str, Any]],
-    gap_seconds: float,
-    reset_distance_m: float,
-    jump_m: float,
-) -> dict[str, Any]:
-    """Estimate departure delay from first STATELOG sample versus SCN CRE time.
-
-    This is schedule adherence at aircraft creation, not an aerodrome movement
-    milestone. The distinction is exposed in the result and traceability layer.
-    """
-
-    if not planned_flights:
-        return {"available": False, "reason": "cenario SCN correspondente ausente"}
-    annotated = flight_instance_frame(df, gap_seconds, reset_distance_m, jump_m)
-    observed = annotated.groupby("flight_instance", sort=True)["simt"].min().to_dict()
-    delays = []
-    for flight in planned_flights:
-        actual_start = observed.get(str(flight["flight_instance"]))
-        if actual_start is None:
-            continue
-        delays.append(max(0.0, float(actual_start) - float(flight["start_simt"])))
-    if not delays:
-        return {"available": False, "reason": "nenhum voo planejado pareado ao STATELOG"}
-    return {
-        "available": True,
-        "source": "primeira amostra do STATELOG versus comando CRE do SCN",
-        "is_operational_proxy": True,
-        "matched_flights": int(len(delays)),
-        "mean_ground_delay_s": float(np.mean(delays)),
-        "median_ground_delay_s": float(np.median(delays)),
-        "p95_ground_delay_s": float(np.quantile(delays, 0.95)),
-        "max_ground_delay_s": float(np.max(delays)),
-    }
-
-
 def _is_number(value: str) -> bool:
     try:
         float(value)

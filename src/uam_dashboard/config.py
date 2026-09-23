@@ -44,12 +44,13 @@ class DashboardConfig:
     lowc_vertical_m: float = 137.16
     nmac_horizontal_m: float = 150.0
     nmac_vertical_m: float = 30.48
-    mac_beta: float = 5.038e-3
-    mac_probability_given_nmac: float = 0.005
+    # Produto 3, Eqs. 4.2 e 4.5: beta é o fator ACAS X; a probabilidade
+    # condicional provisória vem da calibração de Chen et al. (2024).
+    mac_beta: float = 0.005
+    mac_probability_given_nmac: float = 5.038e-3
     tls_target_per_flight_hour: float = 9.4e-6
     tls_epsilon: float = 1e-15
     conflict_sample_seconds: int = 1
-    conflict_detection_horizon_seconds: float = 60.0
     track_sample_stride: int = 20
     visualization_3d_sample_seconds: int = 5
     visualization_3d_ground_msl_ft: float = 2621.0

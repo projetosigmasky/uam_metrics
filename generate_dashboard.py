@@ -15,7 +15,6 @@ from src.uam_dashboard.exports import (
     heatmap_points,
     planned_routes_geojson,
     tracks_geojson,
-    trajectory_3d_payload,
 )
 from src.uam_dashboard.log_parser import load_state_log
 from src.uam_dashboard.metrics import (
@@ -40,7 +39,6 @@ from src.uam_dashboard.reh_parser import load_reh_network
 from src.uam_dashboard.scenario_parser import (
     annotate_aircraft_metadata,
     load_bluesky_scenario,
-    observed_ground_delay_metrics,
 )
 from src.uam_dashboard.uam_corridor_parser import load_uam_corridor_network
 
@@ -122,9 +120,6 @@ def average_dashboard(run_dashboards: list[dict[str, Any]]) -> dict[str, Any]:
             "mean_great_circle_distance_nm": mean(
                 [d["efficiency"]["mean_great_circle_distance_nm"] for d in run_dashboards]
             ),
-            "mean_route_efficiency_pct": mean(
-                [d["efficiency"]["mean_route_efficiency_pct"] for d in run_dashboards]
-            ),
             "mean_horizontal_inefficiency_pct": mean(
                 [d["efficiency"]["mean_horizontal_inefficiency_pct"] for d in run_dashboards]
             ),
@@ -145,15 +140,11 @@ def average_dashboard(run_dashboards: list[dict[str, Any]]) -> dict[str, Any]:
             "operation_count": mean([d["safety"].get("operation_count", 0) for d in run_dashboards]),
             "events_by_vehicle_pair": run_dashboards[0]["safety"].get("events_by_vehicle_pair", {}),
             "sample_seconds": run_dashboards[0]["safety"]["sample_seconds"],
-            "conflict_detection_horizon_s": run_dashboards[0]["safety"]["conflict_detection_horizon_s"],
-            "time_to_conflict_source": run_dashboards[0]["safety"].get("time_to_conflict_source"),
             "separation_samples": int(sum(d["safety"]["separation_samples"] for d in run_dashboards)),
             "lowc_per_100_operations": mean([d["safety"]["lowc_per_100_operations"] for d in run_dashboards]),
             "lowc_per_flight_hour": mean([d["safety"]["lowc_per_flight_hour"] for d in run_dashboards]),
-            "lowc_per_1000_km": mean([d["safety"]["lowc_per_1000_km"] for d in run_dashboards]),
             "nmac_per_100_operations": mean([d["safety"]["nmac_per_100_operations"] for d in run_dashboards]),
             "nmac_per_flight_hour": mean([d["safety"]["nmac_per_flight_hour"] for d in run_dashboards]),
-            "nmac_per_1000_km": mean([d["safety"]["nmac_per_1000_km"] for d in run_dashboards]),
             "monitored_pair_samples": int(sum(d["safety"]["monitored_pair_samples"] for d in run_dashboards)),
             "min_severity_ratio": min(d["safety"]["min_severity_ratio"] for d in run_dashboards),
             "p05_severity_ratio": mean([d["safety"]["p05_severity_ratio"] for d in run_dashboards]),
@@ -168,8 +159,6 @@ def average_dashboard(run_dashboards: list[dict[str, Any]]) -> dict[str, Any]:
             "max_time_below_threshold_s": max(
                 d["safety"]["max_time_below_threshold_s"] for d in run_dashboards
             ),
-            "mean_time_to_conflict_s": mean([d["safety"]["mean_time_to_conflict_s"] for d in run_dashboards]),
-            "min_time_to_conflict_s": min(d["safety"]["min_time_to_conflict_s"] for d in run_dashboards),
             "mac_beta": run_dashboards[0]["safety"]["mac_beta"],
             "mac_probability_given_nmac": run_dashboards[0]["safety"]["mac_probability_given_nmac"],
             "expected_mac": mean([d["safety"]["expected_mac"] for d in run_dashboards]),
@@ -202,9 +191,6 @@ def _average_conformity(run_dashboards: list[dict[str, Any]]) -> dict[str, Any]:
         "tolerance_m": conformities[0]["tolerance_m"],
         "planned_instances": int(sum(item["planned_instances"] for item in conformities)),
         "matched_instances": int(sum(item["matched_instances"] for item in conformities)),
-        "spatial_adherence_pct": mean([item["spatial_adherence_pct"] for item in conformities]),
-        "spatial_adherence_scope": "media de cenarios; consultar cada execucao para o escopo aplicavel",
-        "spatial_adherence_by_vehicle_type": conformities[0].get("spatial_adherence_by_vehicle_type", {}),
         "mean_deviation_m": mean([item["mean_deviation_m"] for item in conformities]),
         "p95_deviation_m": mean([item["p95_deviation_m"] for item in conformities]),
         "max_deviation_m": max(item["max_deviation_m"] for item in conformities),
@@ -364,7 +350,6 @@ def comparison_payload(runs: list[dict[str, Any]], average: dict[str, Any]) -> d
                 d["efficiency"]["trajectory_conformity"].get("mean_trajectory_conformity_ratio", 0.0)
                 * 100.0
             ),
-            "spatial_adherence_pct": d["efficiency"]["trajectory_conformity"].get("spatial_adherence_pct"),
             "ground_delay_s": d["efficiency"]["ground_delay"].get("mean_ground_delay_s"),
             "airborne_delay_s": d["efficiency"]["airborne_delay"].get("mean_airborne_delay_s"),
             "total_delay_s": d["efficiency"]["total_delay"].get("mean_total_delay_s"),
@@ -455,13 +440,10 @@ def analyze_log(log_path: Path, config: DashboardConfig, charts_dir: Path, run_i
         and metadata.get("scenario_key") in dedicated_uam_scenarios
         else None
     )
-    efficiency["ground_delay"] = observed_ground_delay_metrics(
-        df,
-        planned_flights,
-        config.flight_instance_gap_seconds,
-        config.flight_instance_reset_distance_m,
-        config.flight_instance_jump_m,
-    )
+    efficiency["ground_delay"] = {
+        "available": False,
+        "reason": "requer horários solicitado (S_f) e autorizado/reprogramado (R_f)",
+    }
     reference_log_path = find_reference_off_log(metadata, config.log_paths)
     reference_df = load_state_log(reference_log_path) if reference_log_path else None
     efficiency["airborne_delay"] = airborne_delay_metrics(
@@ -484,19 +466,13 @@ def analyze_log(log_path: Path, config: DashboardConfig, charts_dir: Path, run_i
         jump_m=config.flight_instance_jump_m,
         reh_segments=reh_segments,
     )
-    if metadata.get("scenario_key") == "C2" and conformity.get("available"):
-        helicopter_adherence = conformity.get("spatial_adherence_by_vehicle_type", {}).get("helicoptero")
-        if helicopter_adherence:
-            conformity["spatial_adherence_all_traffic_pct"] = conformity["spatial_adherence_pct"]
-            conformity["spatial_adherence_pct"] = helicopter_adherence["spatial_adherence_pct"]
-            conformity["spatial_adherence_scope"] = "helicopteros na REH oficial; corredor eVTOL C2 sem geometria oficial"
     efficiency["trajectory_conformity"] = conformity
     lowc_events, separation_samples, safety = detect_lowc_events(
         df,
         horizontal_threshold_m=config.lowc_horizontal_m,
         nmac_horizontal_threshold_m=config.nmac_horizontal_m,
         sample_seconds=config.conflict_sample_seconds,
-        detection_horizon_seconds=config.conflict_detection_horizon_seconds,
+        detection_horizon_seconds=0.0,
         aircraft_count=int(df["id"].nunique()),
         total_flight_hours=efficiency["total_flight_hours"],
         total_distance_km=efficiency["total_distance_km"],
@@ -548,14 +524,6 @@ def analyze_log(log_path: Path, config: DashboardConfig, charts_dir: Path, run_i
         endpoint_tolerance_m=config.trajectory_endpoint_tolerance_m,
         conformity_by_instance=conformity_by_instance,
     )
-    trajectory_3d = trajectory_3d_payload(
-        df,
-        config.visualization_3d_sample_seconds,
-        config.flight_instance_gap_seconds,
-        config.flight_instance_reset_distance_m,
-        config.flight_instance_jump_m,
-        config.visualization_3d_ground_msl_ft,
-    )
     planned_routes = planned_routes_geojson(
         planned_flights,
         conformity_by_instance,
@@ -597,7 +565,6 @@ def analyze_log(log_path: Path, config: DashboardConfig, charts_dir: Path, run_i
         "metadata": metadata,
         "dashboard": dashboard,
         "tracks": tracks,
-        "trajectory_3d": trajectory_3d,
         "planned_routes": planned_routes,
         "official_reh": reh_network["geojson"] if reh_network else {
             "type": "FeatureCollection",
@@ -632,7 +599,6 @@ def build_dashboard(config: DashboardConfig) -> None:
     write_json(data_dir / "official_reh.geojson", primary["official_reh"])
     write_json(data_dir / "conflicts.geojson", primary["conflicts"])
     write_json(data_dir / "heatmap_points.json", primary["heatmap"])
-    write_json(data_dir / "trajectory_3d.json", primary["trajectory_3d"])
     runs_dir = data_dir / "runs"
     for run in runs:
         write_json(runs_dir / f"{run['id']}.json", run)
@@ -679,8 +645,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--lowc-vertical-m", type=float, default=137.16)
     parser.add_argument("--nmac-horizontal-m", type=float, default=150.0)
     parser.add_argument("--nmac-vertical-m", type=float, default=30.48)
-    parser.add_argument("--mac-beta", type=float, default=5.038e-3)
-    parser.add_argument("--mac-probability-given-nmac", type=float, default=0.005)
+    parser.add_argument("--mac-beta", type=float, default=0.005)
+    parser.add_argument("--mac-probability-given-nmac", type=float, default=5.038e-3)
     parser.add_argument("--tls-target-per-flight-hour", type=float, default=9.4e-6)
     parser.add_argument("--tls-epsilon", type=float, default=1e-15)
     parser.add_argument("--conflict-sample-seconds", type=int, default=1)
@@ -809,7 +775,6 @@ def main() -> None:
         conflict_sample_seconds=args.conflict_sample_seconds,
         visualization_3d_sample_seconds=args.visualization_3d_sample_seconds,
         visualization_3d_ground_msl_ft=args.visualization_3d_ground_msl_ft,
-        conflict_detection_horizon_seconds=args.conflict_detection_horizon_seconds,
         trajectory_shape_points=args.trajectory_shape_points,
         trajectory_cluster_distance_m=args.trajectory_cluster_distance_m,
         trajectory_endpoint_tolerance_m=args.trajectory_endpoint_tolerance_m,

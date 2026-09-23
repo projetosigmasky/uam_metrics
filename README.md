@@ -264,13 +264,3 @@ Rode os testes unitarios com:
 ```powershell
 .\.venv\Scripts\python.exe -m unittest discover -s tests
 ```
-
-## 14. Publicacao No GitHub Pages
-
-Configure o GitHub Pages para publicar a pasta:
-
-```text
-docs/
-```
-
-Depois de gerar novamente o dashboard, faca commit dos arquivos de `docs/` e envie para o GitHub. Os logs brutos continuam apenas em `data/`.

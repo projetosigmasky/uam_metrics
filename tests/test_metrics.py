@@ -92,7 +92,7 @@ class MetricsTest(unittest.TestCase):
         self.assertGreater(network["segments"][0]["area_m2"], 0.0)
         self.assertEqual(network["geojson"]["features"][0]["geometry"]["type"], "MultiPolygon")
 
-    def test_spatial_adherence_uses_official_reh_polygon_when_available(self) -> None:
+    def test_trajectory_conformity_does_not_publish_spatial_reh_adherence(self) -> None:
         df = pd.DataFrame(
             [
                 {"simt": 0, "id": "A", "lat": -23.55, "lon": -46.63, "distflown": 0, "alt": 800},
@@ -115,9 +115,8 @@ class MetricsTest(unittest.TestCase):
 
         summary, _ = trajectory_conformity(df, planned, 50, 300, 250, 5000, reh_segments)
 
-        self.assertEqual(summary["planned_line_adherence_pct"], 100.0)
-        self.assertEqual(summary["spatial_adherence_pct"], 0.0)
-        self.assertEqual(summary["adherence_reference"], "official_reh_polygons")
+        self.assertNotIn("spatial_adherence_pct", summary)
+        self.assertTrue(summary["available"])
 
     def test_efficiency_exposure_metrics(self) -> None:
         df = pd.DataFrame(
@@ -177,8 +176,8 @@ class MetricsTest(unittest.TestCase):
         self.assertAlmostEqual(safety["tls_margin"], 9.4e-6 / (expected_rate + 1e-15))
         self.assertFalse(safety["tls_compliant"])
         self.assertAlmostEqual(events.iloc[0]["severity_ratio"], 0.0)
-        self.assertAlmostEqual(events.iloc[0]["time_to_conflict_s"], 60.0)
-        self.assertAlmostEqual(safety["mean_time_to_conflict_s"], 60.0)
+        self.assertNotIn("time_to_conflict_s", events.columns)
+        self.assertNotIn("mean_time_to_conflict_s", safety)
         geojson = conflicts_geojson(events)
         self.assertEqual(geojson["features"][0]["properties"]["event_class"], "nmac")
         self.assertFalse(geojson["features"][0]["properties"]["is_mac"])
@@ -256,7 +255,7 @@ class MetricsTest(unittest.TestCase):
 
         summary, by_instance = trajectory_conformity(df, planned, 50, 300, 250, 5000)
 
-        self.assertAlmostEqual(summary["spatial_adherence_pct"], 100.0)
+        self.assertNotIn("spatial_adherence_pct", summary)
         self.assertLess(abs(summary["mean_trajectory_conformity_ratio"]), 0.03)
         self.assertAlmostEqual(by_instance["A#0"]["mean_deviation_m"], 0.0, places=4)
 
@@ -389,7 +388,8 @@ class MetricsTest(unittest.TestCase):
         self.assertGreater(metrics["density"]["air_traffic_density_per_km2"], 0)
         self.assertEqual(len(metrics["density"]["hotspots"]["features"]), 1)
         self.assertTrue(metrics["throughput"]["od_pairs"]["available"])
-        self.assertGreater(metrics["throughput"]["od_pairs"]["capacity_reference_per_hour"], 0)
+        self.assertIsNone(metrics["throughput"]["od_pairs"]["capacity_declared_per_hour"])
+        self.assertFalse(metrics["throughput"]["od_pairs"]["utilization_available"])
         self.assertLessEqual(len(metrics["throughput"]["od_pairs"]["top_resources"]), 5)
         self.assertTrue(metrics["throughput"]["planned_reh"]["available"])
         self.assertIn("crossings", metrics["complexity"])
@@ -447,7 +447,7 @@ class MetricsTest(unittest.TestCase):
         crossing = complexity["crossings"]["features"][0]
         self.assertEqual(crossing["properties"]["resource_id"], "XUAMREH001")
         self.assertEqual(crossing["properties"]["operations"], 1)
-        self.assertGreater(crossing["properties"]["operational_limit_p95_per_hour"], 0)
+        self.assertIsNone(crossing["properties"]["capacity_declared_per_hour"])
         crossing_resources = metrics["throughput"]["crossing_waypoints"]
         self.assertTrue(crossing_resources["available"])
         self.assertEqual(

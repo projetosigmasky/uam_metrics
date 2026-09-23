@@ -436,7 +436,9 @@ def _resource_throughput(
     if not items:
         return {
             "available": False,
-            "capacity_reference_per_hour": 0.0,
+            "capacity_declared_per_hour": None,
+            "utilization_available": False,
+            "violation_available": False,
             "top_resources": [],
             "resource_count": 0,
         }
@@ -456,8 +458,10 @@ def _resource_throughput(
         if item.get("map_target"):
             map_targets[item["resource_id"]] = item["map_target"]
 
-    throughputs = [count / window_hours for count in counts.values()]
-    capacity = float(np.quantile(throughputs, capacity_percentile)) if throughputs else 0.0
+    # Eq. 4.25 requires a declared or saturation-tested capacity C_r,dt.
+    # A percentile of the observed demand is not capacity and must not be used
+    # as a utilization denominator.
+    capacity = None
     summaries = []
     for resource_id, total in totals.items():
         resource_values = [
@@ -474,8 +478,8 @@ def _resource_throughput(
                 "operations": int(total),
                 "mean_throughput_per_hour": mean,
                 "peak_throughput_per_hour": float(peak),
-                "utilization_peak": float(peak / capacity) if capacity > 0 else 0.0,
-                "utilization_mean": float(mean / capacity) if capacity > 0 else 0.0,
+                "utilization_peak": None,
+                "utilization_mean": None,
                 "map_target": map_targets.get(resource_id),
             }
         )
@@ -483,7 +487,9 @@ def _resource_throughput(
     summaries.sort(key=lambda item: (item["peak_throughput_per_hour"], item["operations"]), reverse=True)
     return {
         "available": True,
-        "capacity_reference_per_hour": capacity,
+        "capacity_declared_per_hour": capacity,
+        "utilization_available": False,
+        "violation_available": False,
         "resource_count": len(totals),
         "top_resources": summaries[:5],
     }
@@ -631,10 +637,8 @@ def _annotate_crossing_criticality(
             )
             counts[index] += 1.0
         throughputs = counts / window_hours
-        p95 = float(np.quantile(throughputs, capacity_percentile))
         peak = float(np.max(throughputs)) if len(throughputs) else 0.0
         mean = float(np.mean(throughputs)) if len(throughputs) else 0.0
-        utilization_peak = float(peak / p95) if p95 > 0 else 0.0
         properties = feature["properties"]
         properties.update(
             {
@@ -642,8 +646,8 @@ def _annotate_crossing_criticality(
                 "operations": int(len(passages)),
                 "mean_throughput_per_hour": mean,
                 "peak_throughput_per_hour": peak,
-                "operational_limit_p95_per_hour": p95,
-                "utilization_peak": utilization_peak,
+                "capacity_declared_per_hour": None,
+                "utilization_peak": None,
             }
         )
         summaries.append(
@@ -653,9 +657,9 @@ def _annotate_crossing_criticality(
                 "operations": int(len(passages)),
                 "mean_throughput_per_hour": mean,
                 "peak_throughput_per_hour": peak,
-                "capacity_reference_per_hour": p95,
-                "utilization_peak": utilization_peak,
-                "utilization_mean": float(mean / p95) if p95 > 0 else 0.0,
+                "capacity_declared_per_hour": None,
+                "utilization_peak": None,
+                "utilization_mean": None,
                 "map_target": {
                     "type": "crossing_waypoint",
                     "resource_id": properties["resource_id"],
@@ -666,14 +670,15 @@ def _annotate_crossing_criticality(
     summaries.sort(
         key=lambda item: (
             item["utilization_peak"],
-            item["capacity_reference_per_hour"],
+            item["peak_throughput_per_hour"],
             item["operations"],
         ),
         reverse=True,
     )
     return {
         "available": True,
-        "capacity_percentile": float(capacity_percentile),
+        "utilization_available": False,
+        "violation_available": False,
         "capture_radius_m": float(capture_radius_m),
         "resource_count": len(summaries),
         "top_resources": summaries[:5],
@@ -685,15 +690,14 @@ def _crossing_throughput(complexity: dict[str, Any]) -> dict[str, Any]:
     if not crossing_capacity.get("available"):
         return {
             "available": False,
-            "capacity_reference_per_hour": 0.0,
+            "capacity_declared_per_hour": None,
             "top_resources": [],
             "resource_count": 0,
         }
     top_resources = crossing_capacity.get("top_resources", [])
-    references = [item["capacity_reference_per_hour"] for item in top_resources]
     return {
         **crossing_capacity,
-        "capacity_reference_per_hour": max(references, default=0.0),
+        "capacity_declared_per_hour": None,
     }
 
 

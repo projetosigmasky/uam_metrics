@@ -5,8 +5,6 @@ from typing import Any
 import numpy as np
 import pandas as pd
 
-from .reh_parser import points_in_reh_network
-
 from .config import METERS_PER_NM
 
 
@@ -83,7 +81,6 @@ def efficiency_metrics(
     durations_s = grouped["simt"].max() - grouped["simt"].min()
     distances_m = grouped["distflown"].max() - grouped["distflown"].min()
 
-    route_efficiencies = []
     horizontal_inefficiencies = []
     great_circle_distances_m = []
     for _, group in grouped:
@@ -92,8 +89,6 @@ def efficiency_metrics(
         straight_m = haversine_m(first["lat"], first["lon"], last["lat"], last["lon"])
         flown_m = float(group["distflown"].max() - group["distflown"].min())
         great_circle_distances_m.append(float(straight_m))
-        if flown_m > 0:
-            route_efficiencies.append(float(straight_m / flown_m))
         if straight_m > 0:
             horizontal_inefficiencies.append(float((flown_m - straight_m) / straight_m))
 
@@ -108,9 +103,6 @@ def efficiency_metrics(
         "total_flight_hours": float(durations_s.sum() / 3600.0),
         "mean_great_circle_distance_nm": float(np.mean(great_circle_distances_m) / METERS_PER_NM)
         if great_circle_distances_m
-        else 0.0,
-        "mean_route_efficiency_pct": float(np.mean(route_efficiencies) * 100.0)
-        if route_efficiencies
         else 0.0,
         "mean_horizontal_inefficiency_pct": float(np.mean(horizontal_inefficiencies) * 100.0)
         if horizontal_inefficiencies
@@ -247,10 +239,7 @@ def trajectory_conformity(
     additional_distances_m: list[float] = []
     planned_horizontal_inefficiencies: list[float] = []
     executed_horizontal_inefficiencies: list[float] = []
-    conforming_samples = 0
-    planned_line_conforming_samples = 0
     matched_instances = 0
-    adherence_by_vehicle_type: dict[str, dict[str, int]] = {}
 
     for flight_instance, group in annotated.groupby("flight_instance", sort=True):
         aircraft_id = str(group["id"].iloc[0])
@@ -282,24 +271,6 @@ def trajectory_conformity(
         matched_instances += 1
         vehicle_type = str(group["vehicle_type"].iloc[0]) if "vehicle_type" in group else "desconhecido"
         all_deviations.extend(deviations.tolist())
-        planned_line_inside = int(np.sum(deviations <= tolerance_m))
-        planned_line_conforming_samples += planned_line_inside
-        if reh_segments:
-            official_inside_mask = points_in_reh_network(
-                group[["lat", "lon"]].to_numpy(dtype=float),
-                reh_segments,
-            )
-            inside = int(np.sum(official_inside_mask))
-        else:
-            inside = planned_line_inside
-        conforming_samples += inside
-        vehicle_adherence = adherence_by_vehicle_type.setdefault(
-            vehicle_type,
-            {"matched_instances": 0, "executed_samples": 0, "conforming_samples": 0},
-        )
-        vehicle_adherence["matched_instances"] += 1
-        vehicle_adherence["executed_samples"] += int(len(deviations))
-        vehicle_adherence["conforming_samples"] += inside
         planned_distance_m = _polyline_distance_m(planned_coordinates)
         executed_distance_m = float(group["distflown"].max() - group["distflown"].min())
         additional_distance_m = executed_distance_m - planned_distance_m
@@ -319,9 +290,6 @@ def trajectory_conformity(
             "vehicle_type": vehicle_type,
             "aircraft_model": str(group["aircraft_model"].iloc[0]) if "aircraft_model" in group else "DESCONHECIDO",
             "start_time_delta_s": abs(float(planned["start_simt"]) - start_simt),
-            "spatial_adherence_pct": float(inside / len(deviations) * 100.0),
-            "planned_line_adherence_pct": float(planned_line_inside / len(deviations) * 100.0),
-            "adherence_reference": "official_reh_polygons" if reh_segments else "planned_line_tolerance",
             "mean_deviation_m": float(np.mean(deviations)),
             "p95_deviation_m": _percentile(deviations.tolist(), 0.95),
             "max_deviation_m": float(np.max(deviations)),
@@ -335,30 +303,11 @@ def trajectory_conformity(
         }
 
     total_samples = len(all_deviations)
-    adherence_by_type_payload = {
-        vehicle_type: {
-            **values,
-            "spatial_adherence_pct": _safe_rate(
-                values["conforming_samples"], values["executed_samples"], 100.0
-            ),
-        }
-        for vehicle_type, values in adherence_by_vehicle_type.items()
-    }
     summary = {
         "available": bool(total_samples),
         "tolerance_m": float(tolerance_m),
         "planned_instances": int(len(planned_flights)),
         "matched_instances": int(matched_instances),
-        "spatial_adherence_pct": _safe_rate(conforming_samples, total_samples, 100.0),
-        "spatial_adherence_scope": "todas as aeronaves",
-        "spatial_adherence_by_vehicle_type": adherence_by_type_payload,
-        "planned_line_adherence_pct": _safe_rate(
-            planned_line_conforming_samples,
-            total_samples,
-            100.0,
-        ),
-        "adherence_reference": "official_reh_polygons" if reh_segments else "planned_line_tolerance",
-        "official_reh_segment_count": int(len(reh_segments or [])),
         "mean_deviation_m": float(np.mean(all_deviations)) if all_deviations else 0.0,
         "p95_deviation_m": _percentile(all_deviations, 0.95),
         "max_deviation_m": max(all_deviations) if all_deviations else 0.0,
@@ -515,7 +464,12 @@ def detect_lowc_events(
                     "dist_v_m": dist_v_m,
                     "horizontal_ratio": float(horizontal_ratio),
                     "vertical_ratio": float(vertical_ratio),
-                    "severity_ratio": float(max(horizontal_ratio, vertical_ratio)),
+                    # Eq. 4.9: the most critical normalized separation governs.
+                    "severity_ratio": float(
+                        min(horizontal_ratio, vertical_ratio)
+                        if lowc_vertical_threshold_m is not None
+                        else horizontal_ratio
+                    ),
                     "is_nmac": bool(nmac),
                 }
             )
@@ -584,8 +538,6 @@ def _summarize_lowc_event(
         "simt": float(most_severe["simt"]),
         "start_simt": start_simt,
         "end_simt": float(samples[-1]["simt"]),
-        "detection_simt": max(0.0, start_simt - float(detection_horizon_seconds)),
-        "time_to_conflict_s": float(detection_horizon_seconds),
         "duration_s": float(len(samples) * sample_seconds),
         "sample_count": int(len(samples)),
         "id_a": most_severe["id_a"],
@@ -626,7 +578,6 @@ def _safety_summary(
     nmac_count = sum(1 for event in events if event["is_nmac"])
     severities = [event["severity_ratio"] for event in events]
     durations = [event["duration_s"] for event in events]
-    time_to_conflict_values = [event["time_to_conflict_s"] for event in events]
     expected_mac = float(nmac_count * mac_beta * mac_probability_given_nmac)
     expected_mac_rate_per_flight_hour = _safe_rate(expected_mac, total_flight_hours)
     tls_margin = float(tls_target_per_flight_hour / (expected_mac_rate_per_flight_hour + tls_epsilon))
@@ -652,15 +603,11 @@ def _safety_summary(
         "operation_count": int(aircraft_count),
         "events_by_vehicle_pair": events_by_vehicle_pair,
         "sample_seconds": int(sample_seconds),
-        "conflict_detection_horizon_s": float(detection_horizon_seconds),
-        "time_to_conflict_source": "horizonte configurado; nao observado no STATELOG",
         "separation_samples": int(pair_sample_count),
         "lowc_per_100_operations": _safe_rate(lowc_count, aircraft_count, 100.0),
         "lowc_per_flight_hour": _safe_rate(lowc_count, total_flight_hours),
-        "lowc_per_1000_km": _safe_rate(lowc_count, total_distance_km, 1000.0),
         "nmac_per_100_operations": _safe_rate(nmac_count, aircraft_count, 100.0),
         "nmac_per_flight_hour": _safe_rate(nmac_count, total_flight_hours),
-        "nmac_per_1000_km": _safe_rate(nmac_count, total_distance_km, 1000.0),
         "monitored_pair_samples": int(pair_sample_count),
         "min_severity_ratio": min(severities) if severities else 0.0,
         "p05_severity_ratio": _percentile(severities, 0.05),
@@ -669,10 +616,6 @@ def _safety_summary(
         "total_time_below_threshold_s": float(sum(durations)),
         "mean_time_below_threshold_s": float(np.mean(durations)) if durations else 0.0,
         "max_time_below_threshold_s": max(durations) if durations else 0.0,
-        "mean_time_to_conflict_s": float(np.mean(time_to_conflict_values))
-        if time_to_conflict_values
-        else 0.0,
-        "min_time_to_conflict_s": min(time_to_conflict_values) if time_to_conflict_values else 0.0,
         "mac_beta": float(mac_beta),
         "mac_probability_given_nmac": float(mac_probability_given_nmac),
         "expected_mac": expected_mac,
