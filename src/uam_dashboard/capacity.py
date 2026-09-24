@@ -444,6 +444,7 @@ def _resource_throughput(
             "utilization_available": False,
             "violation_available": False,
             "top_resources": [],
+            "resources": [],
             "resource_count": 0,
         }
 
@@ -495,6 +496,7 @@ def _resource_throughput(
         "utilization_available": True,
         "violation_available": False,
         "resource_count": len(totals),
+        "resources": summaries,
         "top_resources": summaries[:5],
     }
 
@@ -661,6 +663,7 @@ def _annotate_crossing_criticality(
             "available": False,
             "capture_radius_m": float(capture_radius_m),
             "top_resources": [],
+            "resources": [],
         }
 
     start_s = float(annotated["simt"].min())
@@ -737,6 +740,7 @@ def _annotate_crossing_criticality(
         "violation_available": False,
         "capture_radius_m": float(capture_radius_m),
         "resource_count": len(summaries),
+        "resources": summaries,
         "top_resources": summaries[:5],
     }
 
@@ -748,6 +752,7 @@ def _crossing_throughput(complexity: dict[str, Any]) -> dict[str, Any]:
             "available": False,
             "capacity_declared_per_hour": None,
             "top_resources": [],
+            "resources": [],
             "resource_count": 0,
         }
     top_resources = crossing_capacity.get("top_resources", [])

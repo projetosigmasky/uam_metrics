@@ -26,6 +26,7 @@ from src.uam_dashboard.scenario_parser import (
 from src.uam_dashboard.reh_parser import load_reh_network
 from src.uam_dashboard.uam_corridor_parser import load_uam_corridor_network
 from generate_uam_projection import write_uam_projection_asset
+from src.uam_dashboard.aggregation import average_resource_group
 from src.uam_dashboard.metric_catalog import METRIC_CATALOG, SOURCE_DOCUMENT, SOURCE_VERSION
 
 
@@ -295,7 +296,10 @@ class MetricsTest(unittest.TestCase):
     def test_product2_metadata_groups_c1_and_c2(self) -> None:
         c1 = experiment_metadata("STATELOG_produto2_C1_2025-11-09_off_20260818_14-48-46.log")
         c2 = experiment_metadata("produto2_C2_2025-11-09_off.scn")
+        replica = experiment_metadata("STATELOG_produto2_C1_2025-11-09_off_seed42.log")
         self.assertEqual(c1["day_key"], c2["day_key"])
+        self.assertEqual(c1["day_key"], replica["day_key"])
+        self.assertEqual(replica["scenario_key"], "C1")
         self.assertEqual(c1["variant_key"], "c1")
         self.assertEqual(c2["variant_key"], "c2")
         self.assertEqual(c1["reference_variant_key"], "c1")
@@ -440,6 +444,18 @@ class MetricsTest(unittest.TestCase):
         self.assertEqual(resource["peak_throughput_per_hour"], 4.0)
         self.assertAlmostEqual(resource["capacity_reference_per_hour"], 3.2)
         self.assertAlmostEqual(resource["utilization_peak"], 1.25)
+
+    def test_replica_resource_average_includes_zero_for_absent_resource(self) -> None:
+        first = {"resources": [{"resource_id": "R1", "label": "R1", "operations": 2,
+                               "mean_throughput_per_hour": 4, "peak_throughput_per_hour": 8,
+                               "capacity_reference_per_hour": 6}]}
+        second = {"resources": []}
+        group = average_resource_group([first, second])
+        resource = group["top_resources"][0]
+        self.assertEqual(group["replica_count"], 2)
+        self.assertEqual(resource["operations"], 1)
+        self.assertEqual(resource["mean_throughput_per_hour"], 2)
+        self.assertEqual(resource["capacity_reference_per_hour"], 3)
 
     def test_capacity_uses_uam_reh_crossings_and_ranks_crossing_waypoints(self) -> None:
         df = pd.DataFrame([

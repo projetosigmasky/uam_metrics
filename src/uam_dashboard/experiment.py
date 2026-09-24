@@ -14,11 +14,11 @@ EXPERIMENT_RE = re.compile(
 HEADLESS_SUFFIX_RE = re.compile(r"_headless(?:_\d{8}_\d{2}-\d{2}-\d{2})?$", re.IGNORECASE)
 PRODUCT2_RE = re.compile(
     r"^(?:STATELOG_)?produto2_(?P<scenario>C[12])_(?P<date>\d{4}[-_]\d{2}[-_]\d{2})"
-    r"_(?P<mode>mvp|off)(?:_\d{8}_\d{2}-\d{2}-\d{2})?$",
+    r"_(?P<mode>mvp|off)(?:_.+)?$",
     re.IGNORECASE,
 )
 PRODUCT2_P95_RE = re.compile(
-    r"^(?:STATELOG_)?produto2_(?P<scenario>C\d+)_p95_(?P<mode>mvp|off)$",
+    r"^(?:STATELOG_)?produto2_(?P<scenario>C\d+)_p95_(?P<mode>mvp|off)(?:_.+)?$",
     re.IGNORECASE,
 )
 

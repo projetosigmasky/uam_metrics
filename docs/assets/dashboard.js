@@ -696,6 +696,10 @@ function draw3DGround(ctx, project, bounds, altitude, width, altitudeFt) {
 
 function renderComparison(model) {
   const days = model.comparison?.days || [];
+  const replicaCount = model.runs.reduce((total, run) => total + (run.replica_count || 1), 0);
+  const isC1C2 = model.runs.length === 2
+    && new Set(model.runs.map((run) => run.metadata?.scenario_key)).size === 2
+    && model.runs.every((run) => ["C1", "C2"].includes(run.metadata?.scenario_key));
   state.activeDayKey = state.activeDayKey || days[0]?.day_key || null;
   const daySelect = document.getElementById("day-select");
   daySelect.innerHTML = days
@@ -705,8 +709,8 @@ function renderComparison(model) {
   populateRunSelect();
   setText(
     "comparison-summary",
-    days[0]?.rows?.[0]?.experiment_family === "produto2"
-      ? `${formatNumber(model.runs.length)} simulacoes C1/C2 comparaveis. C1 e a referencia; cards, mapa e graficos mostram o cenario escolhido.`
+    isC1C2
+      ? `${formatNumber(replicaCount)} réplicas em ${formatNumber(model.runs.length)} cenários C1/C2. Os indicadores dos cards e da tabela são médias por cenário; mapa, eventos e gráficos mostram uma réplica representativa. C1 é a referência.`
       : `${formatNumber(model.runs.length)} simulacoes organizadas em ${formatNumber(days.length)} grupos; cards, mapa e graficos mostram a variante escolhida.`
   );
   renderDayComparison();

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import copy
 import json
 import shutil
 import re
@@ -8,12 +9,14 @@ from pathlib import Path
 from typing import Any
 
 from src.uam_dashboard.capacity import capacity_metrics
+from src.uam_dashboard.aggregation import average_resource_group
 from src.uam_dashboard.config import DashboardConfig, SAO_PAULO_CENTER
 from src.uam_dashboard.experiment import experiment_metadata, experiment_sort_key
 from src.uam_dashboard.exports import (
     conflicts_geojson,
     heatmap_points,
     planned_routes_geojson,
+    trajectory_3d_payload,
     tracks_geojson,
 )
 from src.uam_dashboard.log_parser import load_state_log
@@ -91,7 +94,7 @@ def average_dashboard(run_dashboards: list[dict[str, Any]]) -> dict[str, Any]:
         "metric_catalog_version": SOURCE_VERSION,
         "map_center": SAO_PAULO_CENTER,
         "summary": {
-            "records": int(sum(d["summary"]["records"] for d in run_dashboards)),
+            "records": mean([d["summary"]["records"] for d in run_dashboards]),
             "aircraft_count": mean([d["summary"]["aircraft_count"] for d in run_dashboards]),
             "operation_count": mean([d["summary"]["operation_count"] for d in run_dashboards]),
             "fleet_mix": run_dashboards[0]["summary"].get("fleet_mix", {}),
@@ -119,8 +122,8 @@ def average_dashboard(run_dashboards: list[dict[str, Any]]) -> dict[str, Any]:
             "mean_distance_nm": mean([d["efficiency"]["mean_distance_nm"] for d in run_dashboards]),
             "median_distance_nm": mean([d["efficiency"]["median_distance_nm"] for d in run_dashboards]),
             "p95_distance_nm": mean([d["efficiency"]["p95_distance_nm"] for d in run_dashboards]),
-            "total_distance_km": sum(d["efficiency"]["total_distance_km"] for d in run_dashboards),
-            "total_flight_hours": sum(d["efficiency"]["total_flight_hours"] for d in run_dashboards),
+            "total_distance_km": mean([d["efficiency"]["total_distance_km"] for d in run_dashboards]),
+            "total_flight_hours": mean([d["efficiency"]["total_flight_hours"] for d in run_dashboards]),
             "mean_great_circle_distance_nm": mean(
                 [d["efficiency"]["mean_great_circle_distance_nm"] for d in run_dashboards]
             ),
@@ -144,24 +147,24 @@ def average_dashboard(run_dashboards: list[dict[str, Any]]) -> dict[str, Any]:
             "operation_count": mean([d["safety"].get("operation_count", 0) for d in run_dashboards]),
             "events_by_vehicle_pair": run_dashboards[0]["safety"].get("events_by_vehicle_pair", {}),
             "sample_seconds": run_dashboards[0]["safety"]["sample_seconds"],
-            "separation_samples": int(sum(d["safety"]["separation_samples"] for d in run_dashboards)),
+            "separation_samples": mean([d["safety"]["separation_samples"] for d in run_dashboards]),
             "lowc_per_100_operations": mean([d["safety"]["lowc_per_100_operations"] for d in run_dashboards]),
             "lowc_per_flight_hour": mean([d["safety"]["lowc_per_flight_hour"] for d in run_dashboards]),
             "nmac_per_100_operations": mean([d["safety"]["nmac_per_100_operations"] for d in run_dashboards]),
             "nmac_per_flight_hour": mean([d["safety"]["nmac_per_flight_hour"] for d in run_dashboards]),
-            "monitored_pair_samples": int(sum(d["safety"]["monitored_pair_samples"] for d in run_dashboards)),
-            "min_severity_ratio": min(d["safety"]["min_severity_ratio"] for d in run_dashboards),
+            "monitored_pair_samples": mean([d["safety"]["monitored_pair_samples"] for d in run_dashboards]),
+            "min_severity_ratio": mean([d["safety"]["min_severity_ratio"] for d in run_dashboards]),
             "p05_severity_ratio": mean([d["safety"]["p05_severity_ratio"] for d in run_dashboards]),
             "median_severity_ratio": mean([d["safety"]["median_severity_ratio"] for d in run_dashboards]),
             "p95_severity_ratio": mean([d["safety"]["p95_severity_ratio"] for d in run_dashboards]),
-            "total_time_below_threshold_s": sum(
-                d["safety"]["total_time_below_threshold_s"] for d in run_dashboards
+            "total_time_below_threshold_s": mean(
+                [d["safety"]["total_time_below_threshold_s"] for d in run_dashboards]
             ),
             "mean_time_below_threshold_s": mean(
                 [d["safety"]["mean_time_below_threshold_s"] for d in run_dashboards]
             ),
-            "max_time_below_threshold_s": max(
-                d["safety"]["max_time_below_threshold_s"] for d in run_dashboards
+            "max_time_below_threshold_s": mean(
+                [d["safety"]["max_time_below_threshold_s"] for d in run_dashboards]
             ),
             "mac_beta": run_dashboards[0]["safety"]["mac_beta"],
             "mac_probability_given_nmac": run_dashboards[0]["safety"]["mac_probability_given_nmac"],
@@ -174,8 +177,13 @@ def average_dashboard(run_dashboards: list[dict[str, Any]]) -> dict[str, Any]:
             ),
             "tls_target_per_flight_hour": run_dashboards[0]["safety"]["tls_target_per_flight_hour"],
             "tls_epsilon": run_dashboards[0]["safety"]["tls_epsilon"],
-            "tls_margin": mean([d["safety"]["tls_margin"] for d in run_dashboards]),
-            "tls_compliant": all(d["safety"]["tls_compliant"] for d in run_dashboards),
+            "tls_margin": run_dashboards[0]["safety"]["tls_target_per_flight_hour"] / (
+                mean([d["safety"]["expected_mac_rate_per_flight_hour"] for d in run_dashboards])
+                + run_dashboards[0]["safety"]["tls_epsilon"]
+            ),
+            "tls_compliant": mean(
+                [d["safety"]["expected_mac_rate_per_flight_hour"] for d in run_dashboards]
+            ) <= run_dashboards[0]["safety"]["tls_target_per_flight_hour"],
         },
         "charts": run_dashboards[0]["charts"],
         "metric_catalog": metric_catalog_payload(),
@@ -193,11 +201,11 @@ def _average_conformity(run_dashboards: list[dict[str, Any]]) -> dict[str, Any]:
     return {
         "available": True,
         "tolerance_m": conformities[0]["tolerance_m"],
-        "planned_instances": int(sum(item["planned_instances"] for item in conformities)),
-        "matched_instances": int(sum(item["matched_instances"] for item in conformities)),
+        "planned_instances": mean([item["planned_instances"] for item in conformities]),
+        "matched_instances": mean([item["matched_instances"] for item in conformities]),
         "mean_deviation_m": mean([item["mean_deviation_m"] for item in conformities]),
         "p95_deviation_m": mean([item["p95_deviation_m"] for item in conformities]),
-        "max_deviation_m": max(item["max_deviation_m"] for item in conformities),
+        "max_deviation_m": mean([item["max_deviation_m"] for item in conformities]),
         "mean_trajectory_conformity_ratio": mean(
             [item["mean_trajectory_conformity_ratio"] for item in conformities]
         ),
@@ -210,8 +218,8 @@ def _average_conformity(run_dashboards: list[dict[str, Any]]) -> dict[str, Any]:
         "mean_additional_distance_m": mean(
             [item["mean_additional_distance_m"] for item in conformities]
         ),
-        "total_additional_distance_m": sum(
-            item["total_additional_distance_m"] for item in conformities
+        "total_additional_distance_m": mean(
+            [item["total_additional_distance_m"] for item in conformities]
         ),
         "mean_planned_horizontal_inefficiency_ratio": mean(
             [item["mean_planned_horizontal_inefficiency_ratio"] for item in conformities]
@@ -219,7 +227,7 @@ def _average_conformity(run_dashboards: list[dict[str, Any]]) -> dict[str, Any]:
         "mean_executed_horizontal_inefficiency_ratio": mean(
             [item["mean_executed_horizontal_inefficiency_ratio"] for item in conformities]
         ),
-        "executed_samples": int(sum(item["executed_samples"] for item in conformities)),
+        "executed_samples": mean([item["executed_samples"] for item in conformities]),
     }
 
 
@@ -233,11 +241,11 @@ def _average_ground_delay(run_dashboards: list[dict[str, Any]]) -> dict[str, Any
         return {"available": False}
     return {
         "available": True,
-        "matched_flights": int(sum(item["matched_flights"] for item in values)),
+        "matched_flights": mean([item["matched_flights"] for item in values]),
         "mean_ground_delay_s": mean([item["mean_ground_delay_s"] for item in values]),
         "median_ground_delay_s": mean([item["median_ground_delay_s"] for item in values]),
         "p95_ground_delay_s": mean([item["p95_ground_delay_s"] for item in values]),
-        "max_ground_delay_s": max(item["max_ground_delay_s"] for item in values),
+        "max_ground_delay_s": mean([item["max_ground_delay_s"] for item in values]),
     }
 
 
@@ -251,12 +259,12 @@ def _average_airborne_delay(run_dashboards: list[dict[str, Any]]) -> dict[str, A
         return {"available": False}
     return {
         "available": True,
-        "matched_flights": int(sum(item["matched_flights"] for item in values)),
+        "matched_flights": mean([item["matched_flights"] for item in values]),
         "mean_airborne_delay_s": mean([item["mean_airborne_delay_s"] for item in values]),
         "median_airborne_delay_s": mean([item["median_airborne_delay_s"] for item in values]),
         "p95_airborne_delay_s": mean([item["p95_airborne_delay_s"] for item in values]),
-        "max_airborne_delay_s": max(item["max_airborne_delay_s"] for item in values),
-        "total_airborne_delay_s": sum(item["total_airborne_delay_s"] for item in values),
+        "max_airborne_delay_s": mean([item["max_airborne_delay_s"] for item in values]),
+        "total_airborne_delay_s": mean([item["total_airborne_delay_s"] for item in values]),
     }
 
 
@@ -291,8 +299,22 @@ def _average_capacity(run_dashboards: list[dict[str, Any]]) -> dict[str, Any]:
         item["complexity"] for item in capacities if item.get("complexity", {}).get("available")
     ]
     first = capacities[0]
+    crossings = copy.deepcopy(first.get("complexity", {}).get("crossings", {"type": "FeatureCollection", "features": []}))
+    crossing_samples = [
+        {feature["properties"]["resource_id"]: feature["properties"] for feature in item.get("complexity", {}).get("crossings", {}).get("features", [])}
+        for item in capacities
+    ]
+    for feature in crossings.get("features", []):
+        properties = feature["properties"]
+        resource_id = properties["resource_id"]
+        for field in ("operations", "mean_throughput_per_hour", "peak_throughput_per_hour", "capacity_reference_per_hour"):
+            properties[field] = mean([sample.get(resource_id, {}).get(field, 0) or 0 for sample in crossing_samples])
+        capacity_reference = properties["capacity_reference_per_hour"]
+        properties["utilization_peak"] = properties["peak_throughput_per_hour"] / capacity_reference if capacity_reference > 0 else None
+        properties["replica_count"] = len(capacities)
     return {
         "available": True,
+        "replica_count": len(capacities),
         "window_seconds": first["window_seconds"],
         "capacity_percentile": first["capacity_percentile"],
         "corridor_width_m": first["corridor_width_m"],
@@ -306,8 +328,8 @@ def _average_capacity(run_dashboards: list[dict[str, Any]]) -> dict[str, Any]:
             "mean_simultaneous_aircraft": mean(
                 [item["mean_simultaneous_aircraft"] for item in density_values]
             ),
-            "peak_simultaneous_aircraft": max(
-                [item["peak_simultaneous_aircraft"] for item in density_values], default=0
+            "peak_simultaneous_aircraft": mean(
+                [item["peak_simultaneous_aircraft"] for item in density_values]
             ),
             "air_traffic_density_per_km2": mean(
                 [item["air_traffic_density_per_km2"] for item in density_values]
@@ -315,7 +337,10 @@ def _average_capacity(run_dashboards: list[dict[str, Any]]) -> dict[str, Any]:
             "hotspot_density_per_km2": mean([item["hotspot_density_per_km2"] for item in density_values]),
             "hotspots": first.get("density", {}).get("hotspots", {"type": "FeatureCollection", "features": []}),
         },
-        "throughput": first["throughput"],
+        "throughput": {
+            resource_type: average_resource_group([item.get("throughput", {}).get(resource_type, {}) for item in capacities])
+            for resource_type in first["throughput"]
+        },
         "complexity": {
             "available": bool(complexity_values),
             "crossing_definition": first.get("complexity", {}).get("crossing_definition"),
@@ -330,8 +355,8 @@ def _average_capacity(run_dashboards: list[dict[str, Any]]) -> dict[str, Any]:
                 [item["repeated_trajectory_group_count"] for item in complexity_values]
             ),
             "lowc_event_count": mean([item["lowc_event_count"] for item in complexity_values]),
-            "crossings": first.get("complexity", {}).get("crossings", {"type": "FeatureCollection", "features": []}),
-            "crossing_capacity": first.get("complexity", {}).get("crossing_capacity", {"available": False}),
+            "crossings": crossings,
+            "crossing_capacity": average_resource_group([item.get("complexity", {}).get("crossing_capacity", {}) for item in capacities]),
         },
     }
 
@@ -418,7 +443,7 @@ def _difference_or_none(value: float | None, reference: float | None) -> float |
     return float(value - reference)
 
 
-def analyze_log(log_path: Path, config: DashboardConfig, charts_dir: Path, run_index: int) -> dict[str, Any]:
+def analyze_log(log_path: Path, config: DashboardConfig, charts_dir: Path, run_index: int, render_charts: bool = True) -> dict[str, Any]:
     chart_prefix = f"{run_index + 1:02d}_{slugify(log_path.stem)}"
     print(f"Loading log: {log_path}")
     df = load_state_log(log_path)
@@ -489,7 +514,6 @@ def analyze_log(log_path: Path, config: DashboardConfig, charts_dir: Path, run_i
         operation_count=efficiency["flight_instances"],
     )
 
-    print("Rendering chart images...")
     chart_paths = {
         "active_aircraft": f"assets/charts/{chart_prefix}_active_aircraft.png",
         "separation_histogram": f"assets/charts/{chart_prefix}_separation_histogram.png",
@@ -498,25 +522,23 @@ def analyze_log(log_path: Path, config: DashboardConfig, charts_dir: Path, run_i
         "severity_histogram": f"assets/charts/{chart_prefix}_severity_histogram.png",
         "trajectory_conformity": f"assets/charts/{chart_prefix}_trajectory_conformity.png",
     }
-    plot_active_aircraft(series, charts_dir / Path(chart_paths["active_aircraft"]).name)
-    plot_separation_histogram(
-        separation_samples,
-        config.lowc_horizontal_m,
-        charts_dir / Path(chart_paths["separation_histogram"]).name,
-    )
-    plot_altitude_histogram(
-        df,
-        None,
-        charts_dir / Path(chart_paths["altitude_histogram"]).name,
-        title="Distribuicao de altitude",
-        xlabel="Altitude MSL (m)",
-    )
-    plot_route_distance_histogram(df, charts_dir / Path(chart_paths["distance_histogram"]).name)
-    plot_severity_histogram(lowc_events, charts_dir / Path(chart_paths["severity_histogram"]).name)
-    plot_trajectory_conformity(
-        conformity_by_instance,
-        charts_dir / Path(chart_paths["trajectory_conformity"]).name,
-    )
+    if render_charts:
+        print("Rendering representative chart images...")
+        plot_active_aircraft(series, charts_dir / Path(chart_paths["active_aircraft"]).name)
+        plot_separation_histogram(
+            separation_samples,
+            config.lowc_horizontal_m,
+            charts_dir / Path(chart_paths["separation_histogram"]).name,
+        )
+        plot_altitude_histogram(
+            df, None, charts_dir / Path(chart_paths["altitude_histogram"]).name,
+            title="Distribuicao de altitude", xlabel="Altitude MSL (m)",
+        )
+        plot_route_distance_histogram(df, charts_dir / Path(chart_paths["distance_histogram"]).name)
+        plot_severity_histogram(lowc_events, charts_dir / Path(chart_paths["severity_histogram"]).name)
+        plot_trajectory_conformity(
+            conformity_by_instance, charts_dir / Path(chart_paths["trajectory_conformity"]).name,
+        )
     tracks = tracks_geojson(
         df,
         config.track_sample_stride,
@@ -578,6 +600,11 @@ def analyze_log(log_path: Path, config: DashboardConfig, charts_dir: Path, run_i
         },
         "conflicts": conflicts_geojson(lowc_events),
         "heatmap": heatmap_points(df, config.heatmap_sample_stride),
+        "trajectory_3d": trajectory_3d_payload(
+            df, config.visualization_3d_sample_seconds,
+            config.flight_instance_gap_seconds, config.flight_instance_reset_distance_m,
+            config.flight_instance_jump_m, config.visualization_3d_ground_msl_ft,
+        ) if render_charts else None,
     }
 
 
@@ -595,7 +622,32 @@ def build_dashboard(config: DashboardConfig) -> None:
     charts_dir.mkdir(parents=True, exist_ok=True)
     data_dir.mkdir(parents=True, exist_ok=True)
 
-    runs = [analyze_log(log_path, config, charts_dir, index) for index, log_path in enumerate(config.log_paths)]
+    # Keep only per-replica metrics in memory. Geometry, timelines and charts
+    # are published from one representative replica per scenario, preventing
+    # a 50-replica GitHub Pages bundle from duplicating large tracks 50 times.
+    dashboards_by_group: dict[tuple[str, str, bool | None], list[dict[str, Any]]] = {}
+    representatives: dict[tuple[str, str, bool | None], dict[str, Any]] = {}
+    for index, log_path in enumerate(sorted(config.log_paths, key=experiment_sort_key)):
+        metadata = experiment_metadata(log_path)
+        group_key = (
+            str(metadata.get("day_key")),
+            str(metadata.get("scenario_key") or log_path.stem),
+            metadata.get("mvp_enabled"),
+        )
+        run = analyze_log(log_path, config, charts_dir, index, render_charts=group_key not in representatives)
+        dashboards_by_group.setdefault(group_key, []).append(run["dashboard"])
+        if group_key not in representatives:
+            representatives[group_key] = run
+    runs = []
+    for group_key, run in representatives.items():
+        count = len(dashboards_by_group[group_key])
+        if count > 1:
+            run["dashboard"] = average_dashboard(dashboards_by_group[group_key])
+            run["dashboard"]["source_log"] = f"Média de {count} réplicas ({run['metadata'].get('scenario_key', group_key[1])})"
+            run["metadata"] = {**run["metadata"], "variant_label": f"{run['metadata']['variant_label']} · média de {count} réplicas"}
+        run["replica_count"] = count
+        run["representative_log"] = run["name"]
+        runs.append(run)
     dashboard = average_dashboard([run["dashboard"] for run in runs])
     comparison = comparison_payload(runs, dashboard)
     primary = runs[0]
@@ -608,6 +660,7 @@ def build_dashboard(config: DashboardConfig) -> None:
     write_json(data_dir / "official_reh.geojson", primary["official_reh"])
     write_json(data_dir / "conflicts.geojson", primary["conflicts"])
     write_json(data_dir / "heatmap_points.json", primary["heatmap"])
+    write_json(data_dir / "trajectory_3d.json", primary["trajectory_3d"])
     runs_dir = data_dir / "runs"
     for run in runs:
         write_json(runs_dir / f"{run['id']}.json", run)

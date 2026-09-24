@@ -18,7 +18,7 @@ data/
     produto2_C2_2025-11-09_off.scn
 ```
 
-A pasta `data/` fica fora do Git pelo `.gitignore`, entao os logs brutos nao entram no GitHub.
+Somente `data/logs/` e ignorada pelo Git. Os cenarios e o CSV dos corredores em `data/` sao versionados.
 
 O formato esperado pelo parser e:
 
@@ -33,6 +33,59 @@ Para processar todos os logs em `data/logs/`:
 ```powershell
 .\.venv\Scripts\python.exe generate_dashboard.py
 ```
+
+As replicas de cada cenario C1/C2 sao agrupadas pelo identificador do cenario, data e modo (`off`/`mvp`). Cada valor numerico publicado para o cenario e a media dos resultados calculados separadamente por replica, inclusive contagens, totais e picos. No caso de P95, publica-se a media dos P95 de cada replica. O mapa, os eventos, os graficos e a visualizacao 3D usam a primeira replica do grupo em ordem de nome como ilustracao. O seletor mostra um item por cenario, com a quantidade de replicas no nome. Para evitar um pacote excessivo, as trajetorias das demais replicas nao entram em `docs/`.
+
+### Executar no Lessonia e publicar somente os resultados
+
+No servidor, apos publicar estas alteracoes de codigo, use o repositorio atualizado e um diretorio que contenha **somente** as replicas que devem participar da media. Ajuste `LOG_DIR` e `REH_XML` para os caminhos reais. Os nomes dos logs precisam comecar com `STATELOG_produto2_C1_...` ou `STATELOG_produto2_C2_...` e incluir `off` ou `mvp` como nos cenarios versionados.
+
+```bash
+cd ~/post-processing
+git pull --ff-only
+python3 -m venv .venv
+.venv/bin/python -m pip install -r requirements.txt
+LOG_DIR=/caminho/para/as/replicas
+REH_XML=/caminho/para/CV_REH_XP_SAO_PAULO.xml
+mapfile -d '' -t logs < <(find "$LOG_DIR" -maxdepth 1 -type f -iname 'STATELOG*.log' -print0 | sort -z)
+printf 'Arquivos selecionados: %s\n' "${#logs[@]}"
+test "${#logs[@]}" -gt 0 || { echo 'Nenhum STATELOG encontrado' >&2; exit 1; }
+.venv/bin/python - "${logs[@]}" <<'PY'
+from collections import Counter
+from pathlib import Path
+import sys
+from src.uam_dashboard.experiment import experiment_metadata
+
+groups = Counter((item['day_key'], item.get('scenario_key'), item['mvp_enabled'])
+                 for item in map(experiment_metadata, sys.argv[1:]))
+print('Replicas por grupo:', dict(groups))
+if len(groups) != 2 or {key[1] for key in groups} != {'C1', 'C2'}:
+    raise SystemExit('Esperados exatamente dois grupos: C1 e C2. Revise nomes e selecao dos logs.')
+scenarios = [path.stem.lower() for path in Path('data/scenarios').glob('*.scn')]
+missing = [path for path in sys.argv[1:] if not any(name in Path(path).stem.lower() for name in scenarios)]
+if missing:
+    raise SystemExit(f'Logs sem cenario .scn correspondente: {missing[:5]}')
+PY
+.venv/bin/python generate_dashboard.py "${logs[@]}" --scenario-dir data/scenarios --reh-xml "$REH_XML" --uam-corridor-csv data/corridors/scenario_horizontal_3000ft_expanded_displaced.csv --output docs
+```
+
+Antes de publicar, confira as contagens por cenario e o tamanho do pacote. Se `data_bundle.js` ficar grande demais para publicar, reduza a resolucao das camadas ilustrativas. Publique apenas a saida processada:
+
+```bash
+.venv/bin/python - <<'PY'
+import json
+from pathlib import Path
+runs = [json.loads(path.read_text()) for path in Path('docs/assets/data/runs').glob('*.json')]
+print([(run['metadata'].get('scenario_key'), run['replica_count']) for run in runs])
+print('Total de replicas:', sum(run['replica_count'] for run in runs))
+PY
+du -h docs/assets/data_bundle.js
+git add docs
+git commit -m "Atualiza dashboard com medias das replicas C1 e C2"
+git push
+```
+
+Depois, no computador local, execute `git pull --ff-only`. Os STATELOGs brutos permanecem no Lessonia.
 
 Para processar logs especificos:
 
@@ -96,7 +149,7 @@ O gerador publica em `docs/`:
 - `docs/assets/data_bundle.js`: pacote de dados usado pela pagina.
 - `docs/assets/data/dashboard.json`: metricas agregadas ou medias.
 - `docs/assets/data/comparison.json`: tabela comparativa.
-- `docs/assets/data/runs/*.json`: dados por log processado.
+- `docs/assets/data/runs/*.json`: dados por cenario, com metricas medias das replicas e uma trajetoria ilustrativa.
 - `docs/assets/data/tracks.geojson`: trajetorias executadas do primeiro log, com grupos e frequencias.
 - `docs/assets/data/planned_routes.geojson`: trajetorias planejadas extraidas dos cenarios BlueSky.
 - `docs/assets/data/conflicts.geojson`: eventos LoWC/NMAC do primeiro log.
