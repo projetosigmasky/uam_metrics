@@ -334,7 +334,7 @@
         "source_identifier": "AIC N32/25",
         "axis_key": "cd5aa8f4d94674f7927993d485795957",
         "waypoint_count": 2,
-        "area_m2": 705563.703125
+        "area_m2": 705563.7109375
       },
       "geometry": {
         "type": "MultiPolygon",
@@ -474,7 +474,7 @@
         "source_identifier": "AIC N32/25",
         "axis_key": "921638ce91db37e7c1de04fd9599fba4",
         "waypoint_count": 2,
-        "area_m2": 5344369.8984375
+        "area_m2": 5344369.9140625
       },
       "geometry": {
         "type": "MultiPolygon",
@@ -534,7 +534,7 @@
         "source_identifier": "AIC N32/25",
         "axis_key": "475506cd6702a2872a0543f938b2fef7",
         "waypoint_count": 2,
-        "area_m2": 6471905.828125
+        "area_m2": 6471905.8359375
       },
       "geometry": {
         "type": "MultiPolygon",
@@ -658,7 +658,7 @@
         "source_identifier": "AIC N32/25",
         "axis_key": "c9520a25ed0d293423bf5f771addf9b2",
         "waypoint_count": 2,
-        "area_m2": 5503870.9375
+        "area_m2": 5503870.9296875
       },
       "geometry": {
         "type": "MultiPolygon",
@@ -718,7 +718,7 @@
         "source_identifier": "AIC N32/25",
         "axis_key": "4d5cd5b16286e2ab28bb4aecc7f061da",
         "waypoint_count": 2,
-        "area_m2": 1074541.9609375
+        "area_m2": 1074541.9453125
       },
       "geometry": {
         "type": "MultiPolygon",
@@ -778,7 +778,7 @@
         "source_identifier": "AIC N32/25",
         "axis_key": "a5d85ad5c1874c6bf6f666d76f70ae28",
         "waypoint_count": 2,
-        "area_m2": 727271.453125
+        "area_m2": 727271.4609375
       },
       "geometry": {
         "type": "MultiPolygon",
@@ -838,7 +838,7 @@
         "source_identifier": "AIC N32/25",
         "axis_key": "1852be49886fc91a5b8dadf80b80ce36",
         "waypoint_count": 2,
-        "area_m2": 1294653.2578125
+        "area_m2": 1294653.265625
       },
       "geometry": {
         "type": "MultiPolygon",
@@ -898,7 +898,7 @@
         "source_identifier": "AIC N32/25",
         "axis_key": "edc6e1326e104292d2a09f37a853dd14",
         "waypoint_count": 2,
-        "area_m2": 2333714.8125
+        "area_m2": 2333714.8046875
       },
       "geometry": {
         "type": "MultiPolygon",
@@ -1154,7 +1154,7 @@
         "source_identifier": "AIC N32/25",
         "axis_key": "8976582ab87aae09eed6b8969cb9c0ab",
         "waypoint_count": 2,
-        "area_m2": 993964.2890625
+        "area_m2": 993964.28125
       },
       "geometry": {
         "type": "MultiPolygon",
@@ -1214,7 +1214,7 @@
         "source_identifier": "AIC N32/25",
         "axis_key": "80da0bf560291bb303c01517b99a3103",
         "waypoint_count": 2,
-        "area_m2": 2957150.40625
+        "area_m2": 2957150.4140625
       },
       "geometry": {
         "type": "MultiPolygon",
@@ -1274,7 +1274,7 @@
         "source_identifier": "AIC N32/25",
         "axis_key": "8e7a1634628ac7e41d2b28fabcdb186c",
         "waypoint_count": 2,
-        "area_m2": 2055230.2421875
+        "area_m2": 2055230.234375
       },
       "geometry": {
         "type": "MultiPolygon",
@@ -1334,7 +1334,7 @@
         "source_identifier": "AIC N32/25",
         "axis_key": "baf12473e9ad8a93c4fcf2ffa69cb391",
         "waypoint_count": 2,
-        "area_m2": 1255241.21875
+        "area_m2": 1255241.2265625
       },
       "geometry": {
         "type": "MultiPolygon",
@@ -1394,7 +1394,7 @@
         "source_identifier": "AIC N32/25",
         "axis_key": "b515b5c263bb1a855d2de002da1f305c",
         "waypoint_count": 2,
-        "area_m2": 2461562.578125
+        "area_m2": 2461562.5625
       },
       "geometry": {
         "type": "MultiPolygon",
@@ -1454,7 +1454,7 @@
         "source_identifier": "AIC N32/25",
         "axis_key": "2e0827481922dcccf809add770486829",
         "waypoint_count": 2,
-        "area_m2": 3877166.34375
+        "area_m2": 3877166.3359375
       },
       "geometry": {
         "type": "MultiPolygon",
@@ -1574,7 +1574,7 @@
         "source_identifier": "AIC N32/25",
         "axis_key": "cc269f3688cda1a36c0213857ccfe018",
         "waypoint_count": 2,
-        "area_m2": 4425088.46875
+        "area_m2": 4425088.484375
       },
       "geometry": {
         "type": "MultiPolygon",
@@ -1674,7 +1674,7 @@
         "source_identifier": "AIC N32/25",
         "axis_key": "62fab7b873696d24661803439b06422f",
         "waypoint_count": 2,
-        "area_m2": 1274680.109375
+        "area_m2": 1274680.125
       },
       "geometry": {
         "type": "MultiPolygon",
@@ -1742,7 +1742,7 @@
         "source_identifier": "AIC N32/25",
         "axis_key": "7adf55f2fac3ebb521f576a4d882321b",
         "waypoint_count": 2,
-        "area_m2": 1299694.359375
+        "area_m2": 1299694.375
       },
       "geometry": {
         "type": "MultiPolygon",
@@ -2282,7 +2282,7 @@
         "source_identifier": "AIC N32/25",
         "axis_key": "d7b31ed59ab37e98e4e7617eeb4389fe",
         "waypoint_count": 2,
-        "area_m2": 1296174.578125
+        "area_m2": 1296174.5859375
       },
       "geometry": {
         "type": "MultiPolygon",
@@ -2358,7 +2358,7 @@
         "source_identifier": "AIC N32/25",
         "axis_key": "eb8a2a27f23f50e28ef7503ca05617db",
         "waypoint_count": 2,
-        "area_m2": 3047848.7109375
+        "area_m2": 3047848.703125
       },
       "geometry": {
         "type": "MultiPolygon",
@@ -2426,7 +2426,7 @@
         "source_identifier": "AIC N32/25",
         "axis_key": "cc139dc8e3ab0233776dc3b860a7717a",
         "waypoint_count": 2,
-        "area_m2": 5468213.9375
+        "area_m2": 5468213.96875
       },
       "geometry": {
         "type": "MultiPolygon",
@@ -2634,7 +2634,7 @@
         "source_identifier": "AIC N32/25",
         "axis_key": "f8b347227d55194b5bca1bc819d098e5",
         "waypoint_count": 2,
-        "area_m2": 4187935.578125
+        "area_m2": 4187935.59375
       },
       "geometry": {
         "type": "MultiPolygon",
@@ -2718,7 +2718,7 @@
         "source_identifier": "AIC N32/25",
         "axis_key": "7689ca00c1555cf2525db4c7b969bf7a",
         "waypoint_count": 2,
-        "area_m2": 980976.4921875
+        "area_m2": 980976.5
       },
       "geometry": {
         "type": "MultiPolygon",
@@ -2846,7 +2846,7 @@
         "source_identifier": "AIC N32/25",
         "axis_key": "e08f85a33ff06a5943b3bb3ef88737fa",
         "waypoint_count": 2,
-        "area_m2": 891393.2578125
+        "area_m2": 891393.25
       },
       "geometry": {
         "type": "MultiPolygon",
@@ -3186,7 +3186,7 @@
         "source_identifier": "AIC N32/25",
         "axis_key": "0ab608585059ca3a8381db4dc718dd9a",
         "waypoint_count": 2,
-        "area_m2": 5596013.109375
+        "area_m2": 5596013.09375
       },
       "geometry": {
         "type": "MultiPolygon",
@@ -3386,7 +3386,7 @@
         "source_identifier": "AIC N32/25",
         "axis_key": "18e6aff2b38d843ff22aae43ce2c02c7",
         "waypoint_count": 2,
-        "area_m2": 13827765.5
+        "area_m2": 13827765.46875
       },
       "geometry": {
         "type": "MultiPolygon",
@@ -3858,7 +3858,7 @@
         "source_identifier": "AIC N32/25",
         "axis_key": "92722464855af3a9fe6ae1911affef0d",
         "waypoint_count": 2,
-        "area_m2": 8733981.859375
+        "area_m2": 8733981.84375
       },
       "geometry": {
         "type": "MultiPolygon",
@@ -4482,7 +4482,7 @@
         "source_identifier": "AIC N32/25",
         "axis_key": "bf9712a45195c51d9a26d0bdeb119233",
         "waypoint_count": 2,
-        "area_m2": 8438203.6015625
+        "area_m2": 8438203.609375
       },
       "geometry": {
         "type": "MultiPolygon",
@@ -4542,7 +4542,7 @@
         "source_identifier": "AIC N32/25",
         "axis_key": "50b9672d783c785a774d3001beebb411",
         "waypoint_count": 2,
-        "area_m2": 3605571.28125
+        "area_m2": 3605571.265625
       },
       "geometry": {
         "type": "MultiPolygon",
@@ -5174,7 +5174,7 @@
         "source_identifier": "AIC N32/25",
         "axis_key": "86f8bd2ce067fe43c3333d956e1adbdd",
         "waypoint_count": 2,
-        "area_m2": 290529.3125
+        "area_m2": 290529.3203125
       },
       "geometry": {
         "type": "MultiPolygon",
@@ -5234,7 +5234,7 @@
         "source_identifier": "AIC N32/25",
         "axis_key": "c4bff141374b63aa65a0594358448b17",
         "waypoint_count": 2,
-        "area_m2": 5456649.34375
+        "area_m2": 5456649.4375
       },
       "geometry": {
         "type": "MultiPolygon",
@@ -5442,7 +5442,7 @@
         "source_identifier": "AIC N32/25",
         "axis_key": "4d5e91dee9ecabbf5e260714a2751553",
         "waypoint_count": 2,
-        "area_m2": 2796855.7265625
+        "area_m2": 2796855.734375
       },
       "geometry": {
         "type": "MultiPolygon",
@@ -5510,7 +5510,7 @@
         "source_identifier": "AIC N32/25",
         "axis_key": "54dcbedbbe3b2e6d9dfa1af8deda6f20",
         "waypoint_count": 2,
-        "area_m2": 3908055.90625
+        "area_m2": 3908055.8984375
       },
       "geometry": {
         "type": "MultiPolygon",
@@ -5774,7 +5774,7 @@
         "source_identifier": "AIC N32/25",
         "axis_key": "a0ab1df49a727bf9339ffd5fb9c0f918",
         "waypoint_count": 2,
-        "area_m2": 1201452.6796875
+        "area_m2": 1201452.6875
       },
       "geometry": {
         "type": "MultiPolygon",
@@ -5958,7 +5958,7 @@
         "source_identifier": "AIC N32/25",
         "axis_key": "39f6244abe5ddbc482139421854e698e",
         "waypoint_count": 2,
-        "area_m2": 1429986.875
+        "area_m2": 1429986.8828125
       },
       "geometry": {
         "type": "MultiPolygon",
@@ -6034,7 +6034,7 @@
         "source_identifier": "AIC N32/25",
         "axis_key": "8e3e33adfc4a633e1db8c4caaae0b699",
         "waypoint_count": 2,
-        "area_m2": 2855636.796875
+        "area_m2": 2855636.8125
       },
       "geometry": {
         "type": "MultiPolygon",
@@ -6270,7 +6270,7 @@
         "source_identifier": "AIC N32/25",
         "axis_key": "074631862083c7b144f2c83f2211b376",
         "waypoint_count": 2,
-        "area_m2": 873263.0625
+        "area_m2": 873263.046875
       },
       "geometry": {
         "type": "MultiPolygon",
@@ -6454,7 +6454,7 @@
         "source_identifier": "AIC N32/25",
         "axis_key": "80237b2e4af6b0fdfa610095c88cb9d3",
         "waypoint_count": 2,
-        "area_m2": 230077.0625
+        "area_m2": 230077.0703125
       },
       "geometry": {
         "type": "MultiPolygon",
@@ -6514,7 +6514,7 @@
         "source_identifier": "AIC N32/25",
         "axis_key": "5613e1eedf5f8199d831a702fdf60ad0",
         "waypoint_count": 2,
-        "area_m2": 444006.6796875
+        "area_m2": 444006.6875
       },
       "geometry": {
         "type": "MultiPolygon",
@@ -6574,7 +6574,7 @@
         "source_identifier": "AIC N32/25",
         "axis_key": "5cc52a06a9b9ded50dcae76d545ceb08",
         "waypoint_count": 2,
-        "area_m2": 179696.8359375
+        "area_m2": 179696.828125
       },
       "geometry": {
         "type": "MultiPolygon",
@@ -6694,7 +6694,7 @@
         "source_identifier": "AIC N32/25",
         "axis_key": "ffa0d87ca9a25a2bdaa248e66769fd69",
         "waypoint_count": 2,
-        "area_m2": 1106156.9921875
+        "area_m2": 1106157.0
       },
       "geometry": {
         "type": "MultiPolygon",
@@ -6754,7 +6754,7 @@
         "source_identifier": "AIC N32/25",
         "axis_key": "3c331351a1bb604281e9a20230862857",
         "waypoint_count": 2,
-        "area_m2": 474454.5390625
+        "area_m2": 474454.546875
       },
       "geometry": {
         "type": "MultiPolygon",
@@ -6986,7 +6986,7 @@
         "source_identifier": "AIC N32/25",
         "axis_key": "70761a10d39859c393af64cf08e3eb6a",
         "waypoint_count": 2,
-        "area_m2": 320776.2109375
+        "area_m2": 320776.2265625
       },
       "geometry": {
         "type": "MultiPolygon",
@@ -7114,7 +7114,7 @@
         "source_identifier": "AIC N32/25",
         "axis_key": "d4460b8842759c78809d71b033838c94",
         "waypoint_count": 2,
-        "area_m2": 503064.4375
+        "area_m2": 503064.4296875
       },
       "geometry": {
         "type": "MultiPolygon",
@@ -7446,7 +7446,7 @@
         "source_identifier": "AIC N32/25",
         "axis_key": "b94a3b75d1f0a497d94d8064bb7db3a5",
         "waypoint_count": 2,
-        "area_m2": 267515.203125
+        "area_m2": 267515.1953125
       },
       "geometry": {
         "type": "MultiPolygon",
@@ -7506,7 +7506,7 @@
         "source_identifier": "AIC N32/25",
         "axis_key": "e76c59e633a4077102b9d71bb3b6ffc5",
         "waypoint_count": 2,
-        "area_m2": 420546.609375
+        "area_m2": 420546.625
       },
       "geometry": {
         "type": "MultiPolygon",
@@ -7658,7 +7658,7 @@
         "source_identifier": "AIC N32/25",
         "axis_key": "989288eaae3df8596cd14054dc5f5486",
         "waypoint_count": 2,
-        "area_m2": 3642172.234375
+        "area_m2": 3642172.2265625
       },
       "geometry": {
         "type": "MultiPolygon",
@@ -7734,7 +7734,7 @@
         "source_identifier": "AIC N32/25",
         "axis_key": "67ff0a2a3d28494d97d6b77cfaba5889",
         "waypoint_count": 2,
-        "area_m2": 1203502.5625
+        "area_m2": 1203502.546875
       },
       "geometry": {
         "type": "MultiPolygon",
@@ -7894,7 +7894,7 @@
         "source_identifier": "AIC N32/25",
         "axis_key": "3390f47ba1887731d67357afd68f4f79",
         "waypoint_count": 2,
-        "area_m2": 3218729.8046875
+        "area_m2": 3218729.796875
       },
       "geometry": {
         "type": "MultiPolygon",
@@ -8022,7 +8022,7 @@
         "source_identifier": "AIC N32/25",
         "axis_key": "7b2bd2fc4f0484fe723535da31fe02c4",
         "waypoint_count": 2,
-        "area_m2": 847513.640625
+        "area_m2": 847513.6484375
       },
       "geometry": {
         "type": "MultiPolygon",
@@ -8082,7 +8082,7 @@
         "source_identifier": "AIC N32/25",
         "axis_key": "ecf21586338bea6e98937f00ae1e3887",
         "waypoint_count": 2,
-        "area_m2": 2208436.9375
+        "area_m2": 2208436.96875
       },
       "geometry": {
         "type": "MultiPolygon",
@@ -8238,7 +8238,7 @@
         "source_identifier": "AIC N32/25",
         "axis_key": "7a7cbc46aa2d641825836fec53693375",
         "waypoint_count": 2,
-        "area_m2": 2384546.546875
+        "area_m2": 2384546.5625
       },
       "geometry": {
         "type": "MultiPolygon",
@@ -8322,7 +8322,7 @@
         "source_identifier": "AIC N32/25",
         "axis_key": "15fc52750bc5da5e95e9229c84c22c11",
         "waypoint_count": 2,
-        "area_m2": 3627782.4375
+        "area_m2": 3627782.453125
       },
       "geometry": {
         "type": "MultiPolygon",
