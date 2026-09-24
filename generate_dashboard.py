@@ -40,6 +40,7 @@ from src.uam_dashboard.scenario_parser import (
     annotate_aircraft_metadata,
     load_bluesky_scenario,
 )
+from src.uam_dashboard.topology import write_candidate_node_assets
 from src.uam_dashboard.uam_corridor_parser import load_uam_corridor_network
 
 
@@ -580,6 +581,7 @@ def build_dashboard(config: DashboardConfig) -> None:
     output_dir = config.output_dir
     print("Copying HTML/CSS/JS...")
     copy_static_assets(output_dir)
+    write_candidate_node_assets(output_dir, config.uam_corridor_csv_path, config.reh_xml_path)
 
     charts_dir = output_dir / "assets" / "charts"
     data_dir = output_dir / "assets" / "data"

@@ -6,6 +6,7 @@ const state = {
   heatLayer: null,
   atdHotspotLayer: null,
   complexityLayer: null,
+  candidateNodeLayer: null,
   conflictLayer: null,
   resourceHighlightLayer: null,
   baseLayers: {},
@@ -14,6 +15,7 @@ const state = {
   lastConflicts: null,
   lastOfficialReh: null,
   lastCapacity: null,
+  candidateNodes: window.__UAM_CANDIDATE_NODES__ || { type: "FeatureCollection", features: [] },
   runs: [],
   comparison: null,
   activeRunIndex: 0,
@@ -148,6 +150,7 @@ function bindLayerControls() {
   document.getElementById("layer-heat").addEventListener("change", (event) => toggleLayer("heatLayer", event));
   document.getElementById("layer-atd-hotspots").addEventListener("change", (event) => toggleLayer("atdHotspotLayer", event));
   document.getElementById("layer-complexity").addEventListener("change", (event) => toggleLayer("complexityLayer", event));
+  document.getElementById("layer-candidate-nodes").addEventListener("change", (event) => toggleLayer("candidateNodeLayer", event));
   document.getElementById("layer-conflicts").addEventListener("change", (event) => toggleLayer("conflictLayer", event));
   document.getElementById("trajectory-volume-filter").addEventListener("change", (event) => {
     state.trajectoryVolumeFilter = event.target.value;
@@ -830,6 +833,28 @@ function renderCapacity(dashboard) {
       : "Sem dados de capacidade."
   );
   renderCapacityTable(capacity.throughput || {});
+  renderCandidateNodes();
+}
+
+function renderCandidateNodes() {
+  const features = state.candidateNodes.features || [];
+  const uam = features.filter((feature) => feature.properties?.criterion === "uam_junction").length;
+  const reh = features.filter((feature) => feature.properties?.criterion === "reh_junction").length;
+  setText("candidate-node-summary", `${formatNumber(uam)} nós UAM e ${formatNumber(reh)} nós REH candidatos.`);
+  const body = document.getElementById("candidate-node-table-body");
+  body.innerHTML = features.length ? features.map((feature) => {
+    const p = feature.properties || {};
+    const network = p.criterion === "reh_junction" ? "REH" : "UAM";
+    const connected = p.criterion === "reh_junction" ? p.reh_labels : p.uam_route_labels;
+    const target = { type: "candidate_node", resource_id: p.resource_id };
+    const [lon, lat] = feature.geometry?.coordinates || [];
+    return `<tr>
+      <td>${network}</td>
+      <td><button class="resource-map-link" type="button" data-map-target="${escapeHtml(JSON.stringify(target))}">${escapeHtml(p.label || p.resource_id)}</button><br><small>${escapeHtml(p.resource_id)} · ${formatNumber(lat, 5)}, ${formatNumber(lon, 5)}</small></td>
+      <td>${formatNumber(p.network_degree, 0)}</td>
+      <td>${escapeHtml((connected || []).join(", "))}</td>
+    </tr>`;
+  }).join("") : `<tr><td colspan="4">Geometria dos nós candidatos indisponível.</td></tr>`;
 }
 
 function renderCapacityTable(throughput) {
@@ -888,6 +913,7 @@ function renderMapLayers(tracks, plannedRoutes, officialReh, conflicts, heatmap,
   clearLayer("heatLayer");
   clearLayer("atdHotspotLayer");
   clearLayer("complexityLayer");
+  clearLayer("candidateNodeLayer");
   clearLayer("conflictLayer");
   clearLayer("resourceHighlightLayer");
 
@@ -1119,10 +1145,34 @@ function renderMapLayers(tracks, plannedRoutes, officialReh, conflicts, heatmap,
     },
   });
 
+  state.candidateNodeLayer = L.geoJSON(state.candidateNodes, {
+    pane: "conflictPane",
+    pointToLayer: (feature, latlng) => {
+      const reh = feature.properties?.criterion === "reh_junction";
+      return L.circleMarker(latlng, {
+        radius: 6, color: reh ? "#92400e" : "#0e7490", weight: 2,
+        fillColor: reh ? "#f59e0b" : "#22d3ee", fillOpacity: 0.9,
+      });
+    },
+    onEachFeature: (feature, layer) => {
+      const p = feature.properties || {};
+      const network = p.criterion === "reh_junction" ? "REH" : "UAM";
+      const connected = p.criterion === "reh_junction" ? p.reh_labels : p.uam_route_labels;
+      layer.bindTooltip(`${escapeHtml(p.label || p.resource_id)} · nó ${network} candidato`, { sticky: true });
+      layer.bindPopup(
+        `<strong>${escapeHtml(p.label || p.resource_id)}</strong><br>` +
+        `Rede ${network} · ${formatNumber(p.network_degree, 0)} arestas distintas<br>` +
+        `Trechos: ${escapeHtml((connected || []).join(", "))}<br>` +
+        `Candidato geométrico; movimento a confirmar por simulação.`
+      );
+    },
+  });
+
   applyCheckedLayer("layer-heat", state.heatLayer);
   applyCheckedLayer("layer-official-reh", state.officialRehLayer);
   applyCheckedLayer("layer-atd-hotspots", state.atdHotspotLayer);
   applyCheckedLayer("layer-complexity", state.complexityLayer);
+  applyCheckedLayer("layer-candidate-nodes", state.candidateNodeLayer);
   applyCheckedLayer("layer-tracks", state.tracksLayer);
   applyCheckedLayer("layer-planned", state.plannedLayer);
   applyCheckedLayer("layer-conflicts", state.conflictLayer);
@@ -1217,10 +1267,11 @@ function updateMapInfo(tracks, visibleTracks, plannedRoutes, officialReh, confli
   const density = heatmap.length || 0;
   const atdHotspots = capacity?.density?.hotspots?.features?.length || 0;
   const crossings = capacity?.complexity?.crossings?.features?.length || 0;
+  const candidates = state.candidateNodes.features?.length || 0;
   setText("map-info-title", "Mapa operacional");
   setText(
     "map-info-text",
-    `${formatNumber(visible)} de ${formatNumber(trajectories)} trajetorias executadas visiveis, ${formatNumber(officialSegments)} trechos REH oficiais e ${formatNumber(planned)} planejamentos de voo; ${formatNumber(density)} pontos de densidade, ${formatNumber(atdHotspots)} corredores ATD, ${formatNumber(crossings)} waypoints UAM × REH, ${formatNumber(lowc)} LoWC fora de NMAC, ${formatNumber(nmac)} NMAC e ${formatNumber(mac)} MAC observados.`
+    `${formatNumber(visible)} de ${formatNumber(trajectories)} trajetorias executadas visiveis, ${formatNumber(officialSegments)} trechos REH oficiais e ${formatNumber(planned)} planejamentos de voo; ${formatNumber(density)} pontos de densidade, ${formatNumber(atdHotspots)} corredores ATD, ${formatNumber(crossings)} cruzamentos UAM × REH, ${formatNumber(candidates)} nós candidatos, ${formatNumber(lowc)} LoWC fora de NMAC, ${formatNumber(nmac)} NMAC e ${formatNumber(mac)} MAC observados.`
   );
 }
 
@@ -1259,6 +1310,13 @@ function highlightMapResource(target) {
         : target.coordinates?.length === 2
           ? [{ type: "Feature", properties: { resource_id: target.resource_id }, geometry: { type: "Point", coordinates: target.coordinates } }]
           : [],
+    };
+  } else if (target.type === "candidate_node") {
+    geojson = {
+      type: "FeatureCollection",
+      features: (state.candidateNodes.features || []).filter(
+        (feature) => feature.properties?.resource_id === target.resource_id
+      ),
     };
   }
   state.resourceHighlightLayer = L.geoJSON(geojson, {

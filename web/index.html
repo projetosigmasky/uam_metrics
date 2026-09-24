@@ -102,6 +102,7 @@
                 <th>Distancia</th>
                 <th>Δ distancia vs referencia</th>
                 <th>Conformidade TC</th>
+                <th>Aderencia REH</th>
                 <th>LoWC</th>
                 <th>LoWC/h</th>
                 <th>MAC/100k h</th>
@@ -135,6 +136,7 @@
             <label><input type="checkbox" id="layer-heat" /> Densidade</label>
             <label><input type="checkbox" id="layer-atd-hotspots" /> Hotspots ATD</label>
             <label><input type="checkbox" id="layer-complexity" checked /> Waypoints UAM × REH</label>
+            <label><input type="checkbox" id="layer-candidate-nodes" checked /> Nós candidatos UAM/REH</label>
             <label><input type="checkbox" id="layer-conflicts" checked /> Eventos LoWC/NMAC</label>
             <button class="panel-button" id="fit-map" type="button">Reenquadrar mapa</button>
           </div>
@@ -153,6 +155,8 @@
               <span><i class="legend-swatch legend-heat"></i>Densidade</span>
               <span><i class="legend-swatch legend-atd"></i>Hotspot ATD</span>
               <span><i class="legend-swatch legend-complexity"></i>Waypoint UAM × REH</span>
+              <span><i class="legend-swatch legend-uam-node"></i>Nó UAM candidato</span>
+              <span><i class="legend-swatch legend-reh-node"></i>Nó REH candidato</span>
               <span><i class="legend-swatch legend-lowc"></i>LoWC</span>
               <span><i class="legend-swatch legend-nmac"></i>NMAC</span>
               <span><i class="legend-swatch legend-mac"></i>MAC, quando observável</span>
@@ -254,6 +258,10 @@
                 <dd id="kpa-conformity">-</dd>
               </div>
               <div>
+                <dt>Aderencia espacial a REH</dt>
+                <dd id="kpa-spatial-adherence">-</dd>
+              </div>
+              <div>
                 <dt>Atraso medio em solo</dt>
                 <dd id="kpa-ground-delay">-</dd>
               </div>
@@ -286,6 +294,10 @@
               <div>
                 <dt>Tempo abaixo do limiar</dt>
                 <dd id="kpa-time-below">-</dd>
+              </div>
+              <div>
+                <dt>Tempo ate conflito</dt>
+                <dd id="kpa-time-to-conflict">-</dd>
               </div>
               <div>
                 <dt>Amostragem LoWC</dt>
@@ -382,14 +394,26 @@
                 <th>Recurso</th>
                 <th>Operacoes</th>
                 <th>THR pico</th>
-                <th>Capacidade declarada</th>
-                <th>Utilizacao</th>
+                <th>Capacidade P95</th>
+                <th>Utilizacao pico</th>
               </tr>
             </thead>
             <tbody id="capacity-table-body"></tbody>
           </table>
         </div>
         <div id="capacity-complexity" class="comparison-summary">-</div>
+        <div class="section-heading">
+          <p class="eyebrow">Candidatos geométricos</p>
+          <h3>Nós UAM e REH com mais de duas arestas</h3>
+          <p id="candidate-node-summary">Aguardando geometria da rede.</p>
+          <p>Estes pontos são candidatos. A simulação das réplicas definirá quais têm maior movimento.</p>
+        </div>
+        <div class="table-wrap candidate-node-table-wrap">
+          <table class="comparison-table capacity-table">
+            <thead><tr><th>Rede</th><th>Nó</th><th>Arestas</th><th>Trechos conectados</th></tr></thead>
+            <tbody id="candidate-node-table-body"></tbody>
+          </table>
+        </div>
       </section>
 
       <section class="traceability-panel" data-kpa-panel="overview" aria-label="Rastreabilidade das metricas">
@@ -424,6 +448,7 @@
     ></script>
     <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
     <script src="assets/data_bundle.js?v=0.6.0"></script>
-    <script src="assets/dashboard.js?v=0.6.0"></script>
+    <script src="assets/candidate_nodes.js?v=0.7.0"></script>
+    <script src="assets/dashboard.js?v=0.7.0"></script>
   </body>
 </html>

@@ -264,3 +264,75 @@ Rode os testes unitarios com:
 ```powershell
 .\.venv\Scripts\python.exe -m unittest discover -s tests
 ```
+
+## 14. Waypoints criticos em todas as replicas C1/C2 no Lessonia
+
+Execute `critical_waypoints.py` **no Lessonia**, no diretorio deste repositorio.
+Os logs brutos permanecem no servidor; cada processo le uma replica em fluxo.
+Ele combina dois criterios para selecionar os pontos candidatos:
+
+- cruzamentos virtuais 2D: sobreposicao entre o corredor UAM do CSV e os poligonos REH do XML;
+- nos do corredor UAM com mais de duas arestas fisicas distintas conectadas.
+- fixes da REH oficial com mais de duas arestas distintas da linha central conectadas.
+
+Para o segundo criterio, cada par consecutivo de pontos de uma rota forma uma
+aresta nao direcionada. Arestas repetidas em diferentes rotas contam apenas uma
+vez. Os nos sao identificados pelas coordenadas do CSV arredondadas a seis casas
+decimais, evitando unir trilhas paralelas ou pontos de mesmo nome em locais
+distintos. Somente pontos do tipo `Waypoint` ou `Geometric Node` entram pelo
+criterio topologico; aeroportos e vertiportos nao entram por esse criterio.
+No CSV atual, essa regra identifica 52 nos UAM; no XML REH oficial disponivel
+no projeto irmao, identifica 31 nos REH. A geometria candidata e unica para
+C1 e C2, permitindo comparar os mesmos pontos. Cada voo e contado uma vez por
+waypoint dentro do raio de 250 m. Todos os veiculos no STATELOG sao incluidos.
+
+```bash
+python3 -m venv .venv
+.venv/bin/pip install -r requirements.txt
+.venv/bin/python critical_waypoints.py \
+  --logs-root /caminho/no/lessonia/replicas \
+  --reh-xml /caminho/no/lessonia/CV_REH_XP_SAO_PAULO.xml \
+  --uam-csv data/corridors/scenario_horizontal_3000ft_expanded_displaced.csv \
+  --output-dir /caminho/no/lessonia/resultados_waypoints \
+  --workers 4
+```
+
+O descobridor aceita arquivos `STATELOG` `.log` ou `.csv` cujos nomes contenham
+`_C1_` ou `_C2_` (inclusive nas subpastas). Para nomes diferentes, ou para
+selecionar explicitamente as replicas, use um manifesto CSV com cabecalho
+`scenario,path` e troque `--logs-root` por `--manifest manifesto.csv`. Caminhos
+relativos no manifesto sao resolvidos a partir da pasta do manifesto.
+
+O ranking em `critical_waypoints.csv` inclui **todos** os pontos candidatos para
+cada cenario. A coluna `criterion` identifica `uam_reh_crossing` ou
+`uam_junction` ou `reh_junction`; `network_degree` informa o grau dos nos. A coluna
+`mean_throughput_per_hour` e a media, com peso igual entre replicas, do
+throughput medio por janela de uma hora de cada replica. O ranking decresce por
+essa coluna; em caso de empate, usa a media dos picos horarios. Uma replica sem
+passagens em um waypoint contribui com zero. `waypoints_by_replica.csv` permite
+auditar os valores de cada execucao. `critical_waypoints.geojson` contem todos os
+pontos e identificadores; `crossing_waypoints.geojson` preserva apenas os
+cruzamentos UAM-REH. `run_metadata.json` registra parametros e arquivos processados.
+Os valores sao fluxos observados em pontos definidos pela geometria horizontal
+2D, nao capacidades declaradas nem uma avaliacao de separacao vertical.
+
+O dashboard mostra os nos UAM e REH candidatos em uma camada propria do mapa
+e em uma tabela na secao Capacidade. A listagem e puramente geometrica; a
+classificacao por movimento depende das replicas. Ao gerar o dashboard completo,
+`generate_dashboard.py` produz `assets/data/candidate_nodes.geojson` e
+`assets/candidate_nodes.js`. Para atualizar apenas esses dois arquivos, sem
+reprocessar logs, execute:
+
+```bash
+python generate_candidate_nodes.py \
+  --uam-csv data/corridors/scenario_horizontal_3000ft_expanded_displaced.csv \
+  --reh-xml /caminho/CV_REH_XP_SAO_PAULO.xml \
+  --output-dir docs
+```
+
+Para trazer somente os resultados ao computador local, execute localmente,
+substituindo usuario e diretorios:
+
+```bash
+scp -r usuario@lessonia:/caminho/no/lessonia/resultados_waypoints ./resultados_waypoints
+```

@@ -897,6 +897,10 @@ input[type="checkbox"] {
   background: #a855f7;
 }
 
+.legend-uam-node { background: #22d3ee; }
+.legend-reh-node { background: #f59e0b; }
+.candidate-node-table-wrap { max-height: 430px; overflow: auto; }
+
 .legend-lowc {
   background: #facc15;
 }
