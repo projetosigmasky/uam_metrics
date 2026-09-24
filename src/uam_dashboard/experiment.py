@@ -17,26 +17,29 @@ PRODUCT2_RE = re.compile(
     r"_(?P<mode>mvp|off)(?:_.+)?$",
     re.IGNORECASE,
 )
-PRODUCT2_P95_RE = re.compile(
-    r"^(?:STATELOG_)?produto2_(?P<scenario>C\d+)_p95_(?P<mode>mvp|off)(?:_.+)?$",
+PRODUCT2_PERCENTILE_RE = re.compile(
+    r"(?:^|_)produto2_(?P<scenario>C\d+)_p(?P<percentile>\d+)"
+    r"(?:_r(?P<replica>\d+))?_(?P<mode>mvp|off)(?:_|$)",
     re.IGNORECASE,
 )
 
 
 def experiment_metadata(path: str | Path) -> dict[str, Any]:
     stem = HEADLESS_SUFFIX_RE.sub("", Path(path).stem)
-    product2_p95_match = PRODUCT2_P95_RE.match(stem)
-    if product2_p95_match:
-        values = product2_p95_match.groupdict()
+    product2_percentile_match = PRODUCT2_PERCENTILE_RE.search(stem)
+    if product2_percentile_match:
+        values = product2_percentile_match.groupdict()
         scenario = values["scenario"].upper()
         rank = int(scenario[1:])
+        percentile = int(values["percentile"])
         return {
             "experiment_family": "produto2",
-            "day_key": "produto2_p95",
-            "day_label": "Produto 2 - demanda P95",
+            "day_key": f"produto2_p{percentile}",
+            "day_label": f"Produto 2 - demanda P{percentile}",
             "variant_key": scenario.lower(),
-            "variant_label": f"{scenario} - cenário P95",
+            "variant_label": f"{scenario} - cenário P{percentile}",
             "scenario_key": scenario,
+            "replica": int(values["replica"]) if values["replica"] else None,
             "reference_variant_key": "c1",
             "mvp_enabled": values["mode"].lower() == "mvp",
             "disturbed": False,
@@ -103,6 +106,51 @@ def experiment_metadata(path: str | Path) -> dict[str, Any]:
         "date": date,
         "seed": int(values["seed"]) if values["seed"] else None,
     }
+
+
+def matching_scenario(path: str | Path, scenario_paths: tuple[Path, ...]) -> Path | None:
+    log_path = Path(path)
+    stem = log_path.stem.lower()
+    metadata = experiment_metadata(log_path)
+    candidates = list(scenario_paths)
+    if metadata["experiment_family"] == "produto2":
+        candidates = [
+            scenario for scenario in candidates
+            if (scenario_metadata := experiment_metadata(scenario)).get("scenario_key") == metadata.get("scenario_key")
+            and scenario_metadata["day_key"] == metadata["day_key"]
+            and scenario_metadata["mvp_enabled"] == metadata["mvp_enabled"]
+        ]
+        replica = metadata.get("replica")
+        if replica is not None:
+            replica_matches = [
+                scenario for scenario in candidates
+                if experiment_metadata(scenario).get("replica") == replica
+            ]
+            if replica_matches:
+                candidates = replica_matches
+    named_matches = [scenario for scenario in candidates if scenario.stem.lower() in stem]
+    if named_matches:
+        return max(named_matches, key=lambda scenario: len(scenario.stem))
+
+    # Orchestrator replicas may use an opaque filename but live in output/C1
+    # or output/C2. Only infer the scenario when exactly one SCN matches that
+    # folder; choosing between multiple versions would silently corrupt KPIs.
+    scenario_key = log_path.parent.name.upper()
+    if not re.fullmatch(r"C\d+", scenario_key):
+        return None
+    folder_matches = [
+        scenario for scenario in candidates
+        if experiment_metadata(scenario).get("scenario_key") == scenario_key
+    ]
+    return folder_matches[0] if len(folder_matches) == 1 else None
+
+
+def log_experiment_metadata(path: str | Path, scenario_paths: tuple[Path, ...]) -> dict[str, Any]:
+    metadata = experiment_metadata(path)
+    if metadata["experiment_family"] != "desconhecida":
+        return metadata
+    scenario = matching_scenario(path, scenario_paths)
+    return experiment_metadata(scenario) if scenario is not None else metadata
 
 
 def experiment_sort_key(path: str | Path) -> tuple[int, int, int]:

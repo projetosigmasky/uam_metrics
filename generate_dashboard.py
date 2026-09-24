@@ -11,7 +11,7 @@ from typing import Any
 from src.uam_dashboard.capacity import capacity_metrics
 from src.uam_dashboard.aggregation import average_resource_group
 from src.uam_dashboard.config import DashboardConfig, SAO_PAULO_CENTER
-from src.uam_dashboard.experiment import experiment_metadata, experiment_sort_key
+from src.uam_dashboard.experiment import experiment_metadata, experiment_sort_key, log_experiment_metadata, matching_scenario
 from src.uam_dashboard.exports import (
     conflicts_geojson,
     heatmap_points,
@@ -461,7 +461,7 @@ def analyze_log(log_path: Path, config: DashboardConfig, charts_dir: Path, run_i
     )
     reh_network = load_reh_network(config.reh_xml_path) if config.reh_xml_path else None
     reh_segments = reh_network["segments"] if reh_network else []
-    metadata = experiment_metadata(log_path)
+    metadata = log_experiment_metadata(log_path, config.scenario_paths)
     dedicated_uam_scenarios = {"C1", "C2", "C3", "C4", "C5", "C6"}
     uam_network = (
         load_uam_corridor_network(config.uam_corridor_csv_path)
@@ -610,6 +610,19 @@ def analyze_log(log_path: Path, config: DashboardConfig, charts_dir: Path, run_i
 
 def build_dashboard(config: DashboardConfig) -> None:
     output_dir = config.output_dir
+    for log_path in config.log_paths:
+        metadata = log_experiment_metadata(log_path, config.scenario_paths)
+        if metadata["experiment_family"] == "produto2" and metadata["day_key"] != "produto2_p100":
+            raise ValueError(
+                f"{log_path} pertence a {metadata['day_label']}. "
+                "Esta fase publica somente réplicas de demanda P100."
+            )
+        if re.fullmatch(r"C\d+", log_path.parent.name, re.IGNORECASE) and matching_scenario(log_path, config.scenario_paths) is None:
+            raise ValueError(
+                f"Não foi possível associar {log_path} a um único cenário SCN. "
+                "Confira a demanda P100, a réplica e --scenario-dir, "
+                "ou informe --scenarios explicitamente."
+            )
     print("Copying HTML/CSS/JS...")
     copy_static_assets(output_dir)
     write_candidate_node_assets(output_dir, config.uam_corridor_csv_path, config.reh_xml_path)
@@ -628,7 +641,7 @@ def build_dashboard(config: DashboardConfig) -> None:
     dashboards_by_group: dict[tuple[str, str, bool | None], list[dict[str, Any]]] = {}
     representatives: dict[tuple[str, str, bool | None], dict[str, Any]] = {}
     for index, log_path in enumerate(sorted(config.log_paths, key=experiment_sort_key)):
-        metadata = experiment_metadata(log_path)
+        metadata = log_experiment_metadata(log_path, config.scenario_paths)
         group_key = (
             str(metadata.get("day_key")),
             str(metadata.get("scenario_key") or log_path.stem),
@@ -739,7 +752,7 @@ def find_default_logs(data_dir: Path) -> tuple[Path, ...]:
 def find_scenarios(scenario_dir: Path, explicit: list[str] | None) -> tuple[Path, ...]:
     if explicit:
         return tuple(Path(path) for path in explicit)
-    return tuple(sorted(scenario_dir.glob("*.scn"))) if scenario_dir.exists() else ()
+    return tuple(sorted(scenario_dir.rglob("*.scn"))) if scenario_dir.exists() else ()
 
 
 def find_reh_xml(data_dir: Path, explicit: str | None) -> Path | None:
@@ -769,9 +782,7 @@ def find_uam_corridor_csv(data_dir: Path, explicit: str | None) -> Path | None:
 
 
 def find_matching_scenario(log_path: Path, scenario_paths: tuple[Path, ...]) -> Path | None:
-    log_stem = log_path.stem.lower()
-    matches = [path for path in scenario_paths if path.stem.lower() in log_stem]
-    return max(matches, key=lambda path: len(path.stem)) if matches else None
+    return matching_scenario(log_path, scenario_paths)
 
 
 def find_nominal_scenario(metadata: dict[str, Any], scenario_paths: tuple[Path, ...]) -> Path | None:

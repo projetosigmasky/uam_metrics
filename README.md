@@ -6,19 +6,15 @@ Este repositorio vincula as metricas ao `Produto3_vfinal_ProjetoSIGMASky.pdf` (P
 
 ## 1. Preparar Os Logs
 
-Coloque os arquivos de entrada em:
+Os STATELOGs desta fase estao no Lessonia, na execucao P100 do orquestrador:
 
 ```text
-data/
-  logs/
-    STATELOG_produto2_C1_2025-11-09_off_<execucao>.log
-    STATELOG_produto2_C2_2025-11-09_off_<execucao>.log
-  scenarios/
-    produto2_C1_2025-11-09_off.scn
-    produto2_C2_2025-11-09_off.scn
+bluesky-orchestrator/runs/20260924_104519_aba5878d/
+  output/C1/ e output/C2/      # 50 STATELOGs por cenario
+  scenario/C1/ e scenario/C2/  # planejamento .scn de cada replica
 ```
 
-Somente `data/logs/` e ignorada pelo Git. Os cenarios e o CSV dos corredores em `data/` sao versionados.
+O `data/scenarios/` versionado contem cenarios P95 historicos e nao e entrada desta fase. Os logs P100 usam todos os outliers dos bins horarios como referencia da simulacao. Somente `data/logs/` e ignorada pelo Git; o CSV dos corredores em `data/` e versionado.
 
 O formato esperado pelo parser e:
 
@@ -28,45 +24,47 @@ simt,id,lat,lon,distflown,alt,hdg,trk,cas,tas,gs,vs
 
 ## 2. Gerar O Dashboard
 
-Para processar todos os logs em `data/logs/`:
+Execute o lote P100 com caminhos explicitos para os STATELOGs e para o diretorio `scenario/` do mesmo run, conforme as instrucoes abaixo. O gerador rejeita entradas Produto 2 de demanda diferente de P100 antes de alterar `docs/`.
 
-```powershell
-.\.venv\Scripts\python.exe generate_dashboard.py
-```
+As replicas de cada cenario C1/C2 sao agrupadas pelo identificador do cenario, demanda e modo (`off`/`mvp`). Cada valor numerico publicado para o cenario e a media dos resultados calculados separadamente por replica, inclusive contagens, totais e picos. O P95 que aparece em algumas metricas e um percentil **dos resultados simulados**, nao um perfil de demanda P95. O mapa, os eventos, os graficos e a visualizacao 3D usam a primeira replica do grupo em ordem de nome como ilustracao. O seletor mostra um item por cenario, com a quantidade de replicas no nome. Para evitar um pacote excessivo, as trajetorias das demais replicas nao entram em `docs/`.
 
-As replicas de cada cenario C1/C2 sao agrupadas pelo identificador do cenario, data e modo (`off`/`mvp`). Cada valor numerico publicado para o cenario e a media dos resultados calculados separadamente por replica, inclusive contagens, totais e picos. No caso de P95, publica-se a media dos P95 de cada replica. O mapa, os eventos, os graficos e a visualizacao 3D usam a primeira replica do grupo em ordem de nome como ilustracao. O seletor mostra um item por cenario, com a quantidade de replicas no nome. Para evitar um pacote excessivo, as trajetorias das demais replicas nao entram em `docs/`.
+Nos logs do orquestrador, o gerador reconhece a demanda P100, o cenario e a replica (`r022`, por exemplo), associando cada STATELOG ao respectivo `.scn`. Se o nome for opaco, pode usar a pasta pai `output/C1` ou `output/C2`, mas somente quando houver um unico `.scn` compativel. A geracao para estas pastas para antes de modificar `docs/` caso nao consiga associar um planejamento sem ambiguidade.
 
 ### Executar no Lessonia e publicar somente os resultados
 
-No servidor, apos publicar estas alteracoes de codigo, use o repositorio atualizado e um diretorio que contenha **somente** as replicas que devem participar da media. Ajuste `LOG_DIR` e `REH_XML` para os caminhos reais. Os nomes dos logs precisam comecar com `STATELOG_produto2_C1_...` ou `STATELOG_produto2_C2_...` e incluir `off` ou `mvp` como nos cenarios versionados.
+Para o lote P100 de 24/09/2026, o planejamento de cada replica fica em `scenario/C1` ou `scenario/C2` na mesma execucao do orquestrador. O `data/scenarios/` versionado contem P95 e **nao** deve ser usado com os logs P100. Apos publicar as alteracoes de codigo, execute no Lessonia:
 
 ```bash
 cd ~/post-processing
 git pull --ff-only
-python3 -m venv .venv
-.venv/bin/python -m pip install -r requirements.txt
-LOG_DIR=/caminho/para/as/replicas
+RUN="$HOME/bluesky-orchestrator/runs/20260924_104519_aba5878d"
 REH_XML=/caminho/para/CV_REH_XP_SAO_PAULO.xml
-mapfile -d '' -t logs < <(find "$LOG_DIR" -maxdepth 1 -type f -iname 'STATELOG*.log' -print0 | sort -z)
+mapfile -d '' -t logs < <(find "$RUN/output/C1" "$RUN/output/C2" -maxdepth 1 -type f -iname 'STATELOG*.log' -print0 | sort -z)
 printf 'Arquivos selecionados: %s\n' "${#logs[@]}"
-test "${#logs[@]}" -gt 0 || { echo 'Nenhum STATELOG encontrado' >&2; exit 1; }
-.venv/bin/python - "${logs[@]}" <<'PY'
+test "${#logs[@]}" -eq 100 || { echo 'Esperados 100 STATELOGs' >&2; exit 1; }
+.venv/bin/python - "$RUN/scenario" "${logs[@]}" <<'PY'
 from collections import Counter
 from pathlib import Path
 import sys
-from src.uam_dashboard.experiment import experiment_metadata
+from src.uam_dashboard.experiment import experiment_metadata, log_experiment_metadata, matching_scenario
 
+scenarios = tuple(Path(sys.argv[1]).rglob('*.scn'))
+logs = sys.argv[2:]
 groups = Counter((item['day_key'], item.get('scenario_key'), item['mvp_enabled'])
-                 for item in map(experiment_metadata, sys.argv[1:]))
+                 for item in (log_experiment_metadata(path, scenarios) for path in logs))
 print('Replicas por grupo:', dict(groups))
-if len(groups) != 2 or {key[1] for key in groups} != {'C1', 'C2'}:
-    raise SystemExit('Esperados exatamente dois grupos: C1 e C2. Revise nomes e selecao dos logs.')
-scenarios = [path.stem.lower() for path in Path('data/scenarios').glob('*.scn')]
-missing = [path for path in sys.argv[1:] if not any(name in Path(path).stem.lower() for name in scenarios)]
-if missing:
-    raise SystemExit(f'Logs sem cenario .scn correspondente: {missing[:5]}')
+if groups != {('produto2_p100', 'C1', False): 50, ('produto2_p100', 'C2', False): 50}:
+    raise SystemExit('Contagem ou classificacao inesperada.')
+pairs = [(path, matching_scenario(path, scenarios)) for path in logs]
+if any(scenario is None for _, scenario in pairs):
+    raise SystemExit('Ha STATELOG sem .scn P100 correspondente.')
+if len({scenario for _, scenario in pairs}) != 100:
+    raise SystemExit('O pareamento STATELOG/.scn nao e unico para cada replica.')
+if any(experiment_metadata(path)['replica'] != experiment_metadata(scenario)['replica'] for path, scenario in pairs):
+    raise SystemExit('Numero de replica diferente entre STATELOG e .scn.')
+print('100 STATELOGs associados aos 100 planejamentos P100.')
 PY
-.venv/bin/python generate_dashboard.py "${logs[@]}" --scenario-dir data/scenarios --reh-xml "$REH_XML" --uam-corridor-csv data/corridors/scenario_horizontal_3000ft_expanded_displaced.csv --output docs
+.venv/bin/python generate_dashboard.py "${logs[@]}" --scenario-dir "$RUN/scenario" --reh-xml "$REH_XML" --uam-corridor-csv data/corridors/scenario_horizontal_3000ft_expanded_displaced.csv --output docs
 ```
 
 Antes de publicar, confira as contagens por cenario e o tamanho do pacote. Se `data_bundle.js` ficar grande demais para publicar, reduza a resolucao das camadas ilustrativas. Publique apenas a saida processada:
@@ -86,18 +84,6 @@ git push
 ```
 
 Depois, no computador local, execute `git pull --ff-only`. Os STATELOGs brutos permanecem no Lessonia.
-
-Para processar logs especificos:
-
-```powershell
-.\.venv\Scripts\python.exe generate_dashboard.py .\data\logs\STATELOG_produto2_C1_2025-11-09_off_<execucao>.log
-```
-
-Para escolher outra pasta de entrada:
-
-```powershell
-.\.venv\Scripts\python.exe generate_dashboard.py --data-dir logs_brutos
-```
 
 ## 3. Parametros E Hiperparametros
 

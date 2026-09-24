@@ -9,7 +9,7 @@ import pandas as pd
 
 from src.uam_dashboard.capacity import _resource_throughput, capacity_metrics
 from src.uam_dashboard.exports import conflicts_geojson, trajectory_3d_payload, tracks_geojson
-from src.uam_dashboard.experiment import experiment_metadata
+from src.uam_dashboard.experiment import experiment_metadata, log_experiment_metadata, matching_scenario
 from src.uam_dashboard.log_parser import load_state_log
 from src.uam_dashboard.metrics import (
     airborne_delay_metrics,
@@ -315,6 +315,33 @@ class MetricsTest(unittest.TestCase):
         self.assertEqual(c2["scenario_key"], "C2")
         self.assertEqual(c10["scenario_key"], "C10")
         self.assertEqual(c10["rank"], 10)
+
+    def test_orchestrator_replica_uses_unique_scenario_from_parent_folder(self) -> None:
+        scenarios = (
+            Path("data/scenarios/produto2_C1_p95_off.scn"),
+            Path("data/scenarios/produto2_C2_p95_off.scn"),
+        )
+        c1 = Path("runs/20260924/output/C1/STATELOG_replica_001.log")
+        c2 = Path("runs/20260924/output/C2/STATELOG_replica_001.log")
+        self.assertEqual(matching_scenario(c1, scenarios), scenarios[0])
+        self.assertEqual(log_experiment_metadata(c1, scenarios)["scenario_key"], "C1")
+        self.assertEqual(log_experiment_metadata(c2, scenarios)["scenario_key"], "C2")
+        ambiguous = scenarios + (Path("other/produto2_C1_2025-11-09_off.scn"),)
+        self.assertIsNone(matching_scenario(c1, ambiguous))
+
+    def test_p100_orchestrator_replica_does_not_use_p95_planning(self) -> None:
+        log = Path(
+            "runs/20260924/output/C1/"
+            "STATELOG_orch_20260924_104519_aba5878d_043_produto2_C1_p100_r022_off_20260924_11-00-49.log"
+        )
+        p95 = Path("data/scenarios/produto2_C1_p95_off.scn")
+        p100_r021 = Path("run/scenario/C1/041_produto2_C1_p100_r021_off.scn")
+        p100_r022 = Path("run/scenario/C1/043_produto2_C1_p100_r022_off.scn")
+        metadata = experiment_metadata(log)
+        self.assertEqual(metadata["day_key"], "produto2_p100")
+        self.assertEqual(metadata["replica"], 22)
+        self.assertIsNone(matching_scenario(log, (p95,)))
+        self.assertEqual(matching_scenario(log, (p95, p100_r021, p100_r022)), p100_r022)
 
     def test_extended_log_fields_and_scenario_aircraft_type_are_preserved(self) -> None:
         with TemporaryDirectory() as directory:
