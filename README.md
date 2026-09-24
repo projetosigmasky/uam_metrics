@@ -205,6 +205,12 @@ entre tres aeroportos e seis vertiportos (`VP-001` a `VP-006`), com 36 pares OD 
 paralelas por par. O gerador a descobre automaticamente; `--uam-corridor-csv` permite informar uma
 copia equivalente. Arquivos com outra quantidade de vertiportos sao rejeitados enquanto o escopo
 do estudo permanecer limitado aos seis pontos UAM.
+No mapa, `Corredores UAM (projeção 2D)` mostra a pegada horizontal desses 72 corredores,
+com a largura do CSV. A camada usa contorno rosa tracejado e preenchimento translúcido
+para contrastar com os polígonos azuis e verdes da REH. O painel informa a faixa de
+altitude e a altura original de cada corredor ao clicar; a projeção não representa
+seu volume vertical. `generate_uam_projection.py` atualiza o arquivo estático
+`assets/uam_projection.js` diretamente do CSV.
 
 A conformidade formal segue as Eq. 4.16-4.17 do PDF, comparando distancia executada e planejada.
 Separadamente, a aderencia espacial informa o percentual de amostras executadas que estao dentro
@@ -241,17 +247,15 @@ O throughput da Eq. 4.24 e calculado em janelas de 1 hora para quatro tipos de r
 - trechos REH oficiais atravessados pelo planejamento de cada voo;
 - waypoints virtuais de cruzamento entre corredor UAM e REH.
 
-Nos cenarios dedicados C2--C6, os waypoints de cruzamento sao calculados pela sobreposicao horizontal
-entre os corredores UAM oficiais do CSV de seis vertiportos e os poligonos oficiais dos trechos REH no
-XML. Nos demais cenarios, permanece o fallback para as rotas planejadas do `.scn`. Cada ponto virtual
-representa o centro aproximado da area de sobreposicao e recebe um identificador `XUAMREHnnn`.
-O resultado e explicitamente 2D: uma classificacao volumetrica depende dos envelopes verticais oficiais
-do corredor UAM e da REH.
+Em C1--C6, os cruzamentos candidatos exigem sobreposicao horizontal entre o corredor UAM do CSV e
+o poligono REH do XML **e** sobreposicao vertical de seus envelopes. A altitude central e a altura
+total do CSV estao em metros; os limites e altitudes compulsorias da REH sao convertidos de pes para
+metros. Os dois conjuntos sao tratados como MSL. Trechos REH sem envelope vertical completo nao
+geram cruzamentos 3D confirmados. Cada ponto virtual recebe `XUAMREHnnn` e uma altitude em metros.
 
-Para cada waypoint, o processamento conta uma passagem por instancia de voo dentro do raio configurado,
-agrega as passagens nas janelas de capacidade e usa `P95(THR)` como limite operacional observado. Esse
-limite e uma referencia interna, nao uma capacidade declarada ou homologada. A tabela ordena os pontos
-mais criticos e permite destaca-los no mapa, assim como pares OD, grupos de trajetoria e trechos REH.
+Para cada waypoint, o processamento conta uma passagem por instancia de voo dentro de uma **esfera**
+de raio configurado em metros, combinando distancia horizontal e vertical. Os resultados por janela
+e a media entre replicas ordenam os pontos mais movimentados. Nao ha capacidade declarada para eles.
 
 Como ainda nao ha capacidade declarada externa, a utilizacao da Eq. 4.25 usa uma referencia nominal
 interna: `C_r,dt = P95(THR_r,dt)` por tipo de recurso. Assim, a utilizacao informa quao proximo o recurso
@@ -271,20 +275,22 @@ Execute `critical_waypoints.py` **no Lessonia**, no diretorio deste repositorio.
 Os logs brutos permanecem no servidor; cada processo le uma replica em fluxo.
 Ele combina dois criterios para selecionar os pontos candidatos:
 
-- cruzamentos virtuais 2D: sobreposicao entre o corredor UAM do CSV e os poligonos REH do XML;
+- cruzamentos virtuais 3D: sobreposicao horizontal e vertical entre o volume UAM do CSV e a REH do XML;
 - nos do corredor UAM com mais de duas arestas fisicas distintas conectadas.
 - fixes da REH oficial com mais de duas arestas distintas da linha central conectadas.
 
 Para o segundo criterio, cada par consecutivo de pontos de uma rota forma uma
 aresta nao direcionada. Arestas repetidas em diferentes rotas contam apenas uma
-vez. Os nos sao identificados pelas coordenadas do CSV arredondadas a seis casas
-decimais, evitando unir trilhas paralelas ou pontos de mesmo nome em locais
+vez. Os nos UAM usam latitude e longitude arredondadas a seis casas decimais e
+altitude arredondada a 0,1 m, evitando unir trilhas paralelas ou niveis diferentes em locais
 distintos. Somente pontos do tipo `Waypoint` ou `Geometric Node` entram pelo
 criterio topologico; aeroportos e vertiportos nao entram por esse criterio.
 No CSV atual, essa regra identifica 52 nos UAM; no XML REH oficial disponivel
 no projeto irmao, identifica 31 nos REH. A geometria candidata e unica para
 C1 e C2, permitindo comparar os mesmos pontos. Cada voo e contado uma vez por
-waypoint dentro do raio de 250 m. Todos os veiculos no STATELOG sao incluidos.
+waypoint dentro da esfera de 250 m. Todos os veiculos no STATELOG sao incluidos.
+Nos REH sem uma faixa de altitude comum conhecida continuam listados como candidatos,
+mas as colunas de movimento ficam vazias e eles nao recebem posicao no ranking.
 
 ```bash
 python3 -m venv .venv
@@ -313,8 +319,11 @@ passagens em um waypoint contribui com zero. `waypoints_by_replica.csv` permite
 auditar os valores de cada execucao. `critical_waypoints.geojson` contem todos os
 pontos e identificadores; `crossing_waypoints.geojson` preserva apenas os
 cruzamentos UAM-REH. `run_metadata.json` registra parametros e arquivos processados.
-Os valores sao fluxos observados em pontos definidos pela geometria horizontal
-2D, nao capacidades declaradas nem uma avaliacao de separacao vertical.
+Os valores sao fluxos observados em esferas 3D, nao capacidades declaradas.
+O mapa estatico usa os candidatos 3D do arquivo `assets/crossing_waypoints_3d.js`;
+para atualiza-lo sem logs, rode `generate_crossing_waypoints.py` com `--uam-csv`,
+`--reh-xml` e `--output-dir docs`. O throughput no dashboard depende de regenerar
+o painel com os STATELOGs; contagens antigas em 2D nao sao mostradas como 3D.
 
 O dashboard mostra os nos UAM e REH candidatos em uma camada propria do mapa
 e em uma tabela na secao Capacidade. A listagem e puramente geometrica; a

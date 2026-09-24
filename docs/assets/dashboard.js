@@ -2,6 +2,7 @@ const state = {
   map: null,
   tracksLayer: null,
   officialRehLayer: null,
+  uamProjectionLayer: null,
   plannedLayer: null,
   heatLayer: null,
   atdHotspotLayer: null,
@@ -16,6 +17,8 @@ const state = {
   lastOfficialReh: null,
   lastCapacity: null,
   candidateNodes: window.__UAM_CANDIDATE_NODES__ || { type: "FeatureCollection", features: [] },
+  uamProjection: window.__UAM_CORRIDOR_PROJECTION__ || { type: "FeatureCollection", features: [] },
+  crossingCandidates: window.__UAM_CROSSINGS_3D__ || { type: "FeatureCollection", features: [] },
   runs: [],
   comparison: null,
   activeRunIndex: 0,
@@ -146,6 +149,7 @@ function initMap() {
 function bindLayerControls() {
   document.getElementById("layer-tracks").addEventListener("change", (event) => toggleLayer("tracksLayer", event));
   document.getElementById("layer-official-reh").addEventListener("change", (event) => toggleLayer("officialRehLayer", event));
+  document.getElementById("layer-uam-corridors").addEventListener("change", (event) => toggleLayer("uamProjectionLayer", event));
   document.getElementById("layer-planned").addEventListener("change", (event) => toggleLayer("plannedLayer", event));
   document.getElementById("layer-heat").addEventListener("change", (event) => toggleLayer("heatLayer", event));
   document.getElementById("layer-atd-hotspots").addEventListener("change", (event) => toggleLayer("atdHotspotLayer", event));
@@ -173,12 +177,16 @@ function bindLayerControls() {
 
 function toggleLayer(layerName, event) {
   const layer = state[layerName];
-  if (!layer || !state.map) return;
+  if (!layer || !state.map) {
+    updateMapLegend();
+    return;
+  }
   if (event.target.checked) {
     layer.addTo(state.map);
   } else {
     state.map.removeLayer(layer);
   }
+  updateMapLegend();
 }
 
 function renderDashboard(model) {
@@ -808,6 +816,7 @@ function renderCapacity(dashboard) {
   const capacity = dashboard.capacity || {};
   const density = capacity.density || {};
   const complexity = capacity.complexity || {};
+  const crossings3d = crossingCollection(capacity);
   setText(
     "capacity-atd",
     density.available ? formatNumber(density.air_traffic_density_per_km2, 3) : "-"
@@ -819,20 +828,20 @@ function renderCapacity(dashboard) {
   setText("capacity-area", density.available ? formatNumber(density.corridor_area_km2, 2) : "-");
   setText(
     "capacity-crossings",
-    complexity.available ? formatNumber(complexity.planned_route_crossings, 0) : "-"
+    formatNumber(crossings3d.features?.length || 0, 0)
   );
   setText(
     "capacity-complexity",
     complexity.available
       ? `${formatNumber(complexity.uam_corridor_count, 0)} corredores UAM planejados × ` +
           `${formatNumber(complexity.reh_segment_count, 0)} trechos REH formais, ` +
-          `${formatNumber(complexity.planned_route_crossings, 0)} waypoints de cruzamento 2D, ` +
+          `${formatNumber(crossings3d.features?.length || 0)} cruzamentos 3D candidatos, ` +
           `${formatNumber(complexity.trajectory_group_count, 0)} grupos de trajetoria, ` +
           `${formatNumber(complexity.repeated_trajectory_group_count, 0)} grupos recorrentes e ` +
           `${formatNumber(complexity.lowc_event_count, 0)} eventos LoWC.`
       : "Sem dados de capacidade."
   );
-  renderCapacityTable(capacity.throughput || {});
+  renderCapacityTable(capacity.throughput || {}, complexity.geometry_dimension === "3D");
   renderCandidateNodes();
 }
 
@@ -857,7 +866,7 @@ function renderCandidateNodes() {
   }).join("") : `<tr><td colspan="4">Geometria dos nós candidatos indisponível.</td></tr>`;
 }
 
-function renderCapacityTable(throughput) {
+function renderCapacityTable(throughput, crossingsHave3dThroughput) {
   const rows = [];
   for (const [type, label] of [
     ["od_pairs", "Par OD"],
@@ -865,6 +874,7 @@ function renderCapacityTable(throughput) {
     ["planned_reh", "Trecho REH formal"],
     ["crossing_waypoints", "Waypoint UAM × REH"],
   ]) {
+    if (type === "crossing_waypoints" && !crossingsHave3dThroughput) continue;
     const group = throughput[type];
     if (!group?.available) continue;
     for (const resource of group.top_resources || []) {
@@ -909,6 +919,7 @@ function renderMapLayers(tracks, plannedRoutes, officialReh, conflicts, heatmap,
   const visibleTracks = filterTracksByVolume(tracks, state.trajectoryVolumeFilter);
   clearLayer("tracksLayer");
   clearLayer("officialRehLayer");
+  clearLayer("uamProjectionLayer");
   clearLayer("plannedLayer");
   clearLayer("heatLayer");
   clearLayer("atdHotspotLayer");
@@ -987,6 +998,28 @@ function renderMapLayers(tracks, plannedRoutes, officialReh, conflicts, heatmap,
               ? `<br>Altitude compulsoria ${formatNumber(p.altitude_compulsory_ft, 0)} ft`
               : "") +
           (p.source_identifier ? `<br>Fonte ${escapeHtml(p.source_identifier)}` : "")
+      );
+    },
+  });
+
+  state.uamProjectionLayer = L.geoJSON(state.uamProjection, {
+    pane: "routePane",
+    style: () => ({
+      color: "#be185d",
+      fillColor: "#f472b6",
+      opacity: 0.9,
+      fillOpacity: 0.13,
+      weight: 1.7,
+      dashArray: "6 4",
+    }),
+    onEachFeature: (feature, layer) => {
+      const p = feature.properties || {};
+      layer.bindTooltip(`${escapeHtml(p.label || "Corredor UAM")} · projeção 2D`, { sticky: true });
+      layer.bindPopup(
+        `<strong>${escapeHtml(p.label || "Corredor UAM")}</strong><br>` +
+        `Projeção horizontal do corredor 3D<br>` +
+        `Largura ${formatNumber(p.width_m, 0)} m · altura ${formatNumber(p.height_m, 0)} m<br>` +
+        `Altitude do eixo ${formatNumber(p.altitude_min_m, 0)}–${formatNumber(p.altitude_max_m, 0)} m MSL`
       );
     },
   });
@@ -1118,7 +1151,7 @@ function renderMapLayers(tracks, plannedRoutes, officialReh, conflicts, heatmap,
     },
   });
 
-  state.complexityLayer = L.geoJSON(capacity?.complexity?.crossings || emptyFeatureCollection(), {
+  state.complexityLayer = L.geoJSON(crossingCollection(capacity), {
     pane: "conflictPane",
     pointToLayer: (_feature, latlng) =>
       L.circleMarker(latlng, {
@@ -1130,17 +1163,15 @@ function renderMapLayers(tracks, plannedRoutes, officialReh, conflicts, heatmap,
       }),
     onEachFeature: (feature, layer) => {
       const p = feature.properties || {};
-      layer.bindTooltip(`${escapeHtml(p.label || "Cruzamento UAM × REH")} · P95 ${formatNumber(p.operational_limit_p95_per_hour, 1)} ops/h`, {
+      layer.bindTooltip(`${escapeHtml(p.label || "Cruzamento UAM × REH")} · ${formatNumber(p.altitude_m, 0)} m MSL`, {
         sticky: true,
       });
       layer.bindPopup(
         `<strong>${escapeHtml(p.label || "Cruzamento UAM × REH")}</strong><br>` +
           `Corredor UAM: ${escapeHtml((p.uam_route_labels || []).join(", "))}<br>` +
           `REH: ${escapeHtml((p.reh_labels || []).join(", "))}<br>` +
-          `${formatNumber(p.operations, 0)} passagens dentro de ${formatNumber(p.capture_radius_m, 0)} m<br>` +
-          `P95 operacional ${formatNumber(p.operational_limit_p95_per_hour, 1)} ops/h · pico ${formatNumber(p.peak_throughput_per_hour, 1)} ops/h<br>` +
-          `Utilizacao de pico ${formatPercentRatio(p.utilization_peak)}<br>` +
-          `Intersecao horizontal 2D; envelope vertical nao disponivel.`
+          `Altitude de interseção: ${formatNumber(p.altitude_m, 1)} m MSL<br>` +
+          `${p.operations == null ? "Candidato geométrico; movimento a confirmar por simulação." : `${formatNumber(p.operations, 0)} passagens em esfera de ${formatNumber(p.capture_radius_m, 0)} m · pico ${formatNumber(p.peak_throughput_per_hour, 1)} ops/h`}`
       );
     },
   });
@@ -1162,6 +1193,7 @@ function renderMapLayers(tracks, plannedRoutes, officialReh, conflicts, heatmap,
       layer.bindPopup(
         `<strong>${escapeHtml(p.label || p.resource_id)}</strong><br>` +
         `Rede ${network} · ${formatNumber(p.network_degree, 0)} arestas distintas<br>` +
+        `${p.altitude_m == null ? "Altitude comum indisponível<br>" : `Altitude do nó: ${formatNumber(p.altitude_m, 1)} m MSL<br>`}` +
         `Trechos: ${escapeHtml((connected || []).join(", "))}<br>` +
         `Candidato geométrico; movimento a confirmar por simulação.`
       );
@@ -1170,6 +1202,7 @@ function renderMapLayers(tracks, plannedRoutes, officialReh, conflicts, heatmap,
 
   applyCheckedLayer("layer-heat", state.heatLayer);
   applyCheckedLayer("layer-official-reh", state.officialRehLayer);
+  applyCheckedLayer("layer-uam-corridors", state.uamProjectionLayer);
   applyCheckedLayer("layer-atd-hotspots", state.atdHotspotLayer);
   applyCheckedLayer("layer-complexity", state.complexityLayer);
   applyCheckedLayer("layer-candidate-nodes", state.candidateNodeLayer);
@@ -1226,6 +1259,13 @@ function fitMapToOperationalArea(tracks, conflicts) {
     const coordinate = feature.geometry?.coordinates;
     if (coordinate) bounds.extend([coordinate[1], coordinate[0]]);
   }
+  if (document.getElementById("layer-uam-corridors")?.checked) {
+    for (const feature of state.uamProjection.features || []) {
+      for (const ring of feature.geometry?.coordinates || []) {
+        for (const [lon, lat] of ring) bounds.extend([lat, lon]);
+      }
+    }
+  }
 
   state.map.invalidateSize(true);
   if (bounds.isValid()) {
@@ -1264,15 +1304,39 @@ function updateMapInfo(tracks, visibleTracks, plannedRoutes, officialReh, confli
   const mac = conflictFeatures.filter((feature) => conflictEventClass(feature) === "mac").length;
   const planned = plannedRoutes?.features?.length || 0;
   const officialSegments = officialReh?.features?.length || 0;
+  const uamCorridors = state.uamProjection.features?.length || 0;
   const density = heatmap.length || 0;
   const atdHotspots = capacity?.density?.hotspots?.features?.length || 0;
-  const crossings = capacity?.complexity?.crossings?.features?.length || 0;
+  const crossings = crossingCollection(capacity).features?.length || 0;
   const candidates = state.candidateNodes.features?.length || 0;
   setText("map-info-title", "Mapa operacional");
   setText(
     "map-info-text",
-    `${formatNumber(visible)} de ${formatNumber(trajectories)} trajetorias executadas visiveis, ${formatNumber(officialSegments)} trechos REH oficiais e ${formatNumber(planned)} planejamentos de voo; ${formatNumber(density)} pontos de densidade, ${formatNumber(atdHotspots)} corredores ATD, ${formatNumber(crossings)} cruzamentos UAM × REH, ${formatNumber(candidates)} nós candidatos, ${formatNumber(lowc)} LoWC fora de NMAC, ${formatNumber(nmac)} NMAC e ${formatNumber(mac)} MAC observados.`
+    `${formatNumber(visible)} de ${formatNumber(trajectories)} trajetorias executadas visiveis, ${formatNumber(officialSegments)} trechos REH oficiais, ${formatNumber(uamCorridors)} corredores UAM e ${formatNumber(planned)} planejamentos de voo; ${formatNumber(density)} pontos de densidade, ${formatNumber(atdHotspots)} corredores ATD, ${formatNumber(crossings)} cruzamentos UAM × REH, ${formatNumber(candidates)} nós candidatos, ${formatNumber(lowc)} LoWC fora de NMAC, ${formatNumber(nmac)} NMAC e ${formatNumber(mac)} MAC observados.`
   );
+  updateMapLegend();
+}
+
+function updateMapLegend() {
+  const volume = document.getElementById("trajectory-volume-filter")?.value || "all";
+  const classes = new Set((state.lastConflicts?.features || []).map(conflictEventClass));
+  let visible = 0;
+  document.querySelectorAll(".map-legend [data-legend-layer]").forEach((item) => {
+    const layer = item.dataset.legendLayer;
+    const checked = Boolean(document.getElementById(`layer-${layer}`)?.checked);
+    const showVolume = !item.dataset.volume || volume === "all" || item.dataset.volume === volume;
+    const showConflict = !item.dataset.conflict || classes.has(item.dataset.conflict);
+    item.hidden = !(checked && showVolume && showConflict);
+    if (!item.hidden) visible += 1;
+  });
+  const panel = document.querySelector(".map-info");
+  if (panel) panel.hidden = visible === 0;
+}
+
+function crossingCollection(capacity) {
+  return capacity?.complexity?.geometry_dimension === "3D"
+    ? capacity.complexity.crossings || emptyFeatureCollection()
+    : state.crossingCandidates;
 }
 
 function highlightMapResource(target) {
@@ -1300,7 +1364,7 @@ function highlightMapResource(target) {
       ),
     };
   } else if (target.type === "crossing_waypoint") {
-    const matchingFeatures = (state.lastCapacity?.complexity?.crossings?.features || []).filter(
+    const matchingFeatures = (crossingCollection(state.lastCapacity).features || []).filter(
       (feature) => feature.properties?.resource_id === target.resource_id
     );
     geojson = {

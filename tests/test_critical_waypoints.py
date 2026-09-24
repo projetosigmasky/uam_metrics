@@ -8,10 +8,10 @@ from critical_waypoints import discover_logs, process_replica
 from src.uam_dashboard.topology import network_junction_features, reh_junction_features
 
 
-def feature(identifier: str, lon: float, lat: float) -> dict:
+def feature(identifier: str, lon: float, lat: float, altitude_m: float = 0) -> dict:
     return {
         "type": "Feature",
-        "properties": {"resource_id": identifier},
+        "properties": {"resource_id": identifier, "altitude_m": altitude_m},
         "geometry": {"type": "Point", "coordinates": [lon, lat]},
     }
 
@@ -93,6 +93,13 @@ class CriticalWaypointTests(unittest.TestCase):
             self.assertEqual(results[0]["mean_throughput_per_hour"], 1.0)
             self.assertEqual(results[0]["peak_throughput_per_hour"], 1.0)
             self.assertEqual(results[1]["operations"], 0)
+
+    def test_vertical_separation_excludes_passage_inside_horizontal_radius(self):
+        with tempfile.TemporaryDirectory() as directory:
+            log = Path(directory) / "STATELOG_C1_seed1.log"
+            log.write_text("0,A,-23.0,-46.0,0,1000,0,0,0\n", encoding="utf-8")
+            results = process_replica(log, [feature("X1", -46.0, -23.0, 1000), feature("X2", -46.0, -23.0, 1500)], 250, 3600, 300, 250, 5000)
+            self.assertEqual([row["operations"] for row in results], [1, 0])
 
     def test_discovery_selects_only_c1_and_c2(self):
         with tempfile.TemporaryDirectory() as directory:

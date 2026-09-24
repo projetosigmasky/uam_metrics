@@ -19,6 +19,7 @@ from pathlib import Path
 from src.uam_dashboard.capacity import (
     _buffered_route_groups,
     _official_route_groups,
+    _official_uam_route_groups,
     _uam_reh_crossing_features,
 )
 from src.uam_dashboard.config import EXTENDED_LOG_COLUMNS, LOG_COLUMNS
@@ -56,7 +57,7 @@ def manifest_logs(path: Path) -> list[tuple[str, Path]]:
 
 
 def state_rows(path: Path):
-    """Yield time, id, position and flown distance from 9/12-column STATELOGs."""
+    """Yield time, id, 3D position and flown distance from STATELOGs."""
     with path.open(encoding="utf-8-sig", errors="replace", newline="") as stream:
         for line_number, line in enumerate(stream, 1):
             parts = [part.strip() for part in line.split(",")]
@@ -69,10 +70,10 @@ def state_rows(path: Path):
             names = EXTENDED_LOG_COLUMNS if len(parts) >= len(EXTENDED_LOG_COLUMNS) else LOG_COLUMNS
             try:
                 fields = dict(zip(names, parts))
-                row = (simt, fields["id"], float(fields["lat"]), float(fields["lon"]), float(fields["distflown"]))
+                row = (simt, fields["id"], float(fields["lat"]), float(fields["lon"]), float(fields["alt"]), float(fields["distflown"]))
             except ValueError as exc:
                 raise ValueError(f"Invalid STATELOG row in {path}:{line_number}") from exc
-            if not all(math.isfinite(value) for value in (row[0], row[2], row[3], row[4])):
+            if not all(math.isfinite(value) for value in (row[0], row[2], row[3], row[4], row[5])):
                 raise ValueError(f"Non-finite STATELOG value in {path}:{line_number}")
             yield row
 
@@ -88,6 +89,8 @@ def crossing_index(features: list[dict], radius_m: float):
     cell_deg = radius_m / 111000.0
     grid = defaultdict(list)
     for index, feature in enumerate(features):
+        if feature["properties"].get("altitude_m") is None:
+            continue
         lon, lat = feature["geometry"]["coordinates"]
         lat_cell = math.floor(lat / cell_deg)
         lon_span = radius_m / (111000.0 * max(0.1, math.cos(math.radians(lat))))
@@ -107,7 +110,7 @@ def process_replica(path: Path, features: list[dict], radius_m: float, window_s:
     counts = defaultdict(lambda: defaultdict(int))
     start = end = None
     samples = 0
-    for simt, aircraft, lat, lon, distance in state_rows(path):
+    for simt, aircraft, lat, lon, altitude, distance in state_rows(path):
         if start is None:
             start = simt
         if end is not None and simt < end:
@@ -128,7 +131,8 @@ def process_replica(path: Path, features: list[dict], radius_m: float, window_s:
             if key in seen:
                 continue
             point_lon, point_lat = features[index]["geometry"]["coordinates"]
-            if haversine(lat, lon, point_lat, point_lon) <= radius_m:
+            point_altitude = features[index]["properties"]["altitude_m"]
+            if math.hypot(haversine(lat, lon, point_lat, point_lon), altitude - point_altitude) <= radius_m:
                 seen.add(key)
                 counts[index][int((simt - start) // window_s)] += 1
     if not samples:
@@ -138,13 +142,15 @@ def process_replica(path: Path, features: list[dict], radius_m: float, window_s:
     for index, feature in enumerate(features):
         bins = counts[index]
         operations = sum(bins.values())
+        altitude_available = feature["properties"].get("altitude_m") is not None
         rows.append({
             "waypoint_id": feature["properties"]["resource_id"],
             "criterion": feature["properties"].get("criterion", "uam_reh_crossing"),
             "network_degree": feature["properties"].get("network_degree"),
-            "operations": operations,
-            "mean_throughput_per_hour": operations / (windows * window_s / 3600),
-            "peak_throughput_per_hour": max(bins.values(), default=0) * 3600 / window_s,
+            "altitude_m": feature["properties"].get("altitude_m"),
+            "operations": operations if altitude_available else None,
+            "mean_throughput_per_hour": operations / (windows * window_s / 3600) if altitude_available else None,
+            "peak_throughput_per_hour": max(bins.values(), default=0) * 3600 / window_s if altitude_available else None,
             "window_count": windows,
             "sample_count": samples,
         })
@@ -187,7 +193,7 @@ def main() -> int:
     reh = load_reh_network(args.reh_xml)["segments"]
     uam = load_uam_corridor_network(args.uam_csv)["routes"]
     crossing_features = _uam_reh_crossing_features(
-        _buffered_route_groups(uam, 250.0), _official_route_groups(reh)
+        _buffered_route_groups(_official_uam_route_groups(uam), 250.0), _official_route_groups(reh)
     )
     junction_features = network_junction_features(uam)
     reh_junctions = reh_junction_features(reh)
@@ -228,6 +234,7 @@ def main() -> int:
             properties = feature["properties"]
             waypoint_id = properties["resource_id"]
             rows = grouped[scenario, waypoint_id]
+            altitude_available = properties.get("altitude_m") is not None
             lon, lat = feature["geometry"]["coordinates"]
             summary.append({
                 "scenario": scenario,
@@ -237,19 +244,23 @@ def main() -> int:
                 "network_degree": properties["network_degree"],
                 "latitude": lat,
                 "longitude": lon,
+                "altitude_m": properties.get("altitude_m"),
                 "replica_count": len(rows),
-                "mean_operations_per_replica": sum(r["operations"] for r in rows) / len(rows),
-                "mean_throughput_per_hour": sum(r["mean_throughput_per_hour"] for r in rows) / len(rows),
-                "mean_peak_throughput_per_hour": sum(r["peak_throughput_per_hour"] for r in rows) / len(rows),
+                "mean_operations_per_replica": sum(r["operations"] for r in rows) / len(rows) if altitude_available else None,
+                "mean_throughput_per_hour": sum(r["mean_throughput_per_hour"] for r in rows) / len(rows) if altitude_available else None,
+                "mean_peak_throughput_per_hour": sum(r["peak_throughput_per_hour"] for r in rows) / len(rows) if altitude_available else None,
                 "uam_route_ids": ";".join(properties["uam_route_ids"]),
                 "reh_resource_ids": ";".join(properties["reh_resource_ids"]),
             })
-    summary.sort(key=lambda row: (row["scenario"], -row["mean_throughput_per_hour"],
-                                  -row["mean_peak_throughput_per_hour"], row["waypoint_id"]))
+    summary.sort(key=lambda row: (row["scenario"], -row["mean_throughput_per_hour"] if row["mean_throughput_per_hour"] is not None else float("inf"),
+                                  -row["mean_peak_throughput_per_hour"] if row["mean_peak_throughput_per_hour"] is not None else float("inf"), row["waypoint_id"]))
     ranks = defaultdict(int)
     for row in summary:
-        ranks[row["scenario"]] += 1
-        row["rank"] = ranks[row["scenario"]]
+        if row["mean_throughput_per_hour"] is not None:
+            ranks[row["scenario"]] += 1
+            row["rank"] = ranks[row["scenario"]]
+        else:
+            row["rank"] = None
     args.output_dir.mkdir(parents=True, exist_ok=True)
     write_csv(args.output_dir / "critical_waypoints.csv", summary)
     write_csv(args.output_dir / "waypoints_by_replica.csv", replica_rows)
@@ -270,10 +281,12 @@ def main() -> int:
         "workers": args.workers,
         "ranking": "descending mean of per-replica mean hourly throughput",
         "critical_waypoint_definition": [
-            "2D overlap of UAM corridor buffer and official REH polygon",
+            "3D overlap of UAM corridor volume and official REH polygon/altitude envelope",
             "planned UAM waypoint or geometric node incident to at least 3 distinct edges",
             "official REH fix incident to at least 3 distinct centerline edges",
         ],
+        "altitude_reference": "metres MSL; REH feet converted to metres",
+        "junctions_without_complete_altitude": sum(feature["properties"].get("altitude_m") is None for feature in junction_features + reh_junctions),
         "logs": [{"scenario": scenario, "path": str(path)} for scenario, path in logs],
     }, ensure_ascii=False, indent=2), encoding="utf-8")
     print(f"Results: {args.output_dir}", file=sys.stderr)

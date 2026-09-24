@@ -8,16 +8,17 @@ from pathlib import Path
 from typing import Any
 
 from .reh_parser import load_reh_network
+from .capacity import _reh_vertical_interval_m
 from .uam_corridor_parser import load_uam_corridor_network
 
 
 ELIGIBLE_NODE_TYPES = {"waypoint", "geometric node"}
 
 
-def _coordinate_key(point: dict[str, Any]) -> tuple[float, float]:
-    # Six decimal places are roughly 0.1 m here: enough to absorb CSV noise
-    # without conflating the two displaced parallel tracks.
-    return round(float(point["lat"]), 6), round(float(point["lon"]), 6)
+def _coordinate_key(point: dict[str, Any]) -> tuple[float, float, float]:
+    # Position and altitude identify a physical UAM node; different levels
+    # at the same map location must remain separate.
+    return round(float(point["lat"]), 6), round(float(point["lon"]), 6), round(float(point.get("altitude_m", 0)), 1)
 
 
 def network_junction_features(routes: list[dict[str, Any]]) -> list[dict[str, Any]]:
@@ -26,9 +27,9 @@ def network_junction_features(routes: list[dict[str, Any]]) -> list[dict[str, An
     Routes may reuse the same physical segment. Edges are therefore undirected
     coordinate pairs in a set, and an edge contributes only once to node degree.
     """
-    adjacency: dict[tuple[float, float], set[tuple[float, float]]] = defaultdict(set)
-    node_points: dict[tuple[float, float], list[dict[str, Any]]] = defaultdict(list)
-    node_routes: dict[tuple[float, float], set[str]] = defaultdict(set)
+    adjacency: dict[tuple[float, float, float], set[tuple[float, float, float]]] = defaultdict(set)
+    node_points: dict[tuple[float, float, float], list[dict[str, Any]]] = defaultdict(list)
+    node_routes: dict[tuple[float, float, float], set[str]] = defaultdict(set)
     for route in routes:
         points = route["points"]
         keys = [_coordinate_key(point) for point in points]
@@ -53,7 +54,8 @@ def network_junction_features(routes: list[dict[str, Any]]) -> list[dict[str, An
             "type": "Feature",
             "properties": {
                 "method": "uam_network_distinct_edge_degree",
-                "geometry_dimension": "2D",
+                "geometry_dimension": "3D" if chosen.get("altitude_m") is not None else "2D",
+                "altitude_m": chosen.get("altitude_m"),
                 "node_name": str(chosen["name"]),
                 "node_type": str(chosen["type"]),
                 "network_degree": len(neighbors),
@@ -86,6 +88,7 @@ def reh_junction_features(segments: list[dict[str, Any]]) -> list[dict[str, Any]
     adjacency: dict[tuple[float, float], set[tuple[float, float]]] = defaultdict(set)
     node_segments: dict[tuple[float, float], set[str]] = defaultdict(set)
     node_labels: dict[tuple[float, float], set[str]] = defaultdict(set)
+    node_intervals: dict[tuple[float, float], list[tuple[float, float] | None]] = defaultdict(list)
     segment_labels = {str(segment["resource_id"]): str(segment["label"]) for segment in segments}
     for segment in segments:
         coordinates = segment.get("coordinates", [])
@@ -99,6 +102,7 @@ def reh_junction_features(segments: list[dict[str, Any]]) -> list[dict[str, Any]
         adjacency[right].add(left)
         for key, name in ((left, segment.get("fix_a_name")), (right, segment.get("fix_b_name"))):
             node_segments[key].add(str(segment["resource_id"]))
+            node_intervals[key].append(_reh_vertical_interval_m(segment))
             if name:
                 node_labels[key].add(str(name))
 
@@ -110,11 +114,16 @@ def reh_junction_features(segments: list[dict[str, Any]]) -> list[dict[str, Any]
         names = sorted(node_labels[key])
         label = names[0] if names else f"Fix REH {lat:.6f}, {lon:.6f}"
         segment_ids = sorted(node_segments[key])
+        intervals = node_intervals[key]
+        lower = max(item[0] for item in intervals if item is not None) if all(item is not None for item in intervals) else None
+        upper = min(item[1] for item in intervals if item is not None) if all(item is not None for item in intervals) else None
+        altitude_m = (lower + upper) / 2 if lower is not None and lower <= upper else None
         junctions.append({
             "type": "Feature",
             "properties": {
                 "method": "reh_centerline_distinct_edge_degree",
-                "geometry_dimension": "2D",
+                "geometry_dimension": "3D" if altitude_m is not None else "2D",
+                "altitude_m": altitude_m,
                 "node_name": label,
                 "node_type": "REH fix",
                 "network_degree": len(neighbors),

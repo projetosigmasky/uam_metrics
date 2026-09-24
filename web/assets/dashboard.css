@@ -407,6 +407,18 @@ main {
   color: var(--blue);
 }
 
+.map-summary {
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.45;
+  margin-top: 16px;
+  padding-top: 14px;
+}
+
+.map-summary strong { color: var(--ink); font-size: 13px; }
+.map-summary p { margin: 6px 0 0; }
+
 input[type="checkbox"] {
   accent-color: var(--blue);
 }
@@ -860,6 +872,12 @@ input[type="checkbox"] {
   display: inline-flex;
   gap: 6px;
   white-space: nowrap;
+}
+
+.map-legend span[hidden] { display: none; }
+.legend-official-reh { background: #64748b; }
+.legend-uam-corridors {
+  background: repeating-linear-gradient(90deg, #db2777 0 6px, #fbcfe8 6px 10px);
 }
 
 .legend-swatch {

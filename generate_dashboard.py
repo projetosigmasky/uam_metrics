@@ -41,6 +41,8 @@ from src.uam_dashboard.scenario_parser import (
     load_bluesky_scenario,
 )
 from src.uam_dashboard.topology import write_candidate_node_assets
+from generate_crossing_waypoints import write_crossing_waypoint_asset
+from generate_uam_projection import write_uam_projection_asset
 from src.uam_dashboard.uam_corridor_parser import load_uam_corridor_network
 
 
@@ -316,7 +318,7 @@ def _average_capacity(run_dashboards: list[dict[str, Any]]) -> dict[str, Any]:
         "complexity": {
             "available": bool(complexity_values),
             "crossing_definition": first.get("complexity", {}).get("crossing_definition"),
-            "geometry_dimension": first.get("complexity", {}).get("geometry_dimension", "2D"),
+            "geometry_dimension": first.get("complexity", {}).get("geometry_dimension", "3D"),
             "uam_corridor_count": mean([item.get("uam_corridor_count", 0) for item in complexity_values]),
             "reh_segment_count": mean([item.get("reh_segment_count", 0) for item in complexity_values]),
             "planned_route_count": mean([item["planned_route_count"] for item in complexity_values]),
@@ -434,7 +436,7 @@ def analyze_log(log_path: Path, config: DashboardConfig, charts_dir: Path, run_i
     reh_network = load_reh_network(config.reh_xml_path) if config.reh_xml_path else None
     reh_segments = reh_network["segments"] if reh_network else []
     metadata = experiment_metadata(log_path)
-    dedicated_uam_scenarios = {"C2", "C3", "C4", "C5", "C6"}
+    dedicated_uam_scenarios = {"C1", "C2", "C3", "C4", "C5", "C6"}
     uam_network = (
         load_uam_corridor_network(config.uam_corridor_csv_path)
         if config.uam_corridor_csv_path
@@ -582,6 +584,8 @@ def build_dashboard(config: DashboardConfig) -> None:
     print("Copying HTML/CSS/JS...")
     copy_static_assets(output_dir)
     write_candidate_node_assets(output_dir, config.uam_corridor_csv_path, config.reh_xml_path)
+    write_crossing_waypoint_asset(config.uam_corridor_csv_path, config.reh_xml_path, output_dir)
+    write_uam_projection_asset(config.uam_corridor_csv_path, output_dir)
 
     charts_dir = output_dir / "assets" / "charts"
     data_dir = output_dir / "assets" / "data"

@@ -30,7 +30,7 @@ def capacity_metrics(
     official_uam_routes: list[dict[str, Any]] | None = None,
     crossing_capture_radius_m: float = 250.0,
 ) -> dict[str, Any]:
-    """Compute capacity proxies and 2D UAM-corridor/REH crossing resources."""
+    """Compute capacity proxies and altitude-aware UAM/REH crossings."""
 
     annotated = flight_instance_frame(df, gap_seconds, reset_distance_m, jump_m)
     instances = _flight_instances(annotated)
@@ -523,8 +523,9 @@ def _complexity_components(
     )
     return {
         "available": bool(uam_corridors and reh_routes),
-        "crossing_definition": "sobreposicao horizontal 2D entre corredor UAM planejado e poligono REH oficial",
-        "geometry_dimension": "2D",
+        "crossing_definition": "sobreposicao horizontal dos poligonos e vertical dos envelopes UAM/REH em metros MSL",
+        "geometry_dimension": "3D",
+        "reh_segments_without_altitude": sum(_reh_vertical_interval_m(route) is None for route in reh_routes),
         "uam_corridor_count": int(len(uam_corridors)),
         "reh_segment_count": int(len(reh_routes)),
         "planned_route_count": int(len(reh_routes)),
@@ -542,7 +543,7 @@ def _uam_reh_crossing_features(
     uam_corridors: list[dict[str, Any]],
     reh_routes: list[dict[str, Any]],
 ) -> list[dict[str, Any]]:
-    """Return virtual crossing waypoints for UAM corridor/official REH overlaps."""
+    """Return crossing waypoints where horizontal and vertical volumes overlap."""
     if not uam_corridors or not reh_routes:
         return []
     all_lats = [
@@ -552,21 +553,37 @@ def _uam_reh_crossing_features(
         for coordinate in ring
     ]
     reference_lat = float(np.mean(all_lats))
-    by_location: dict[tuple[int, int], dict[str, Any]] = {}
+    located: list[tuple[np.ndarray, dict[str, Any]]] = []
     for uam_route in uam_corridors:
+        altitudes = uam_route.get("altitudes_m")
+        reh_height = float(uam_route.get("height_m", 0))
+        if altitudes is None or len(altitudes) != len(uam_route["coordinates"]) or reh_height <= 0:
+            continue
         for reh_route in reh_routes:
+            reh_interval = _reh_vertical_interval_m(reh_route)
+            if reh_interval is None:
+                continue
             overlap_points = _polygon_overlap_points(uam_route, reh_route, reference_lat)
             if not overlap_points:
                 continue
             point = np.mean(np.asarray(overlap_points, dtype=float), axis=0)
-            key = (round(float(point[0]) / 20.0), round(float(point[1]) / 20.0))
-            feature = by_location.get(key)
+            center_alt = _uam_altitude_at_xy(uam_route, point, reference_lat)
+            low = max(center_alt - reh_height / 2, reh_interval[0])
+            high = min(center_alt + reh_height / 2, reh_interval[1])
+            if low > high:
+                continue
+            altitude_m = (low + high) / 2
+            location_3d = np.asarray([point[0], point[1], altitude_m], dtype=float)
+            feature = next((candidate for location, candidate in located if np.linalg.norm(location - location_3d) <= 20.0), None)
             if feature is None:
                 feature = {
                     "type": "Feature",
                     "properties": {
                         "method": "uam_buffer_official_reh_overlap",
-                        "geometry_dimension": "2D",
+                        "geometry_dimension": "3D",
+                        "altitude_m": altitude_m,
+                        "altitude_min_m": low,
+                        "altitude_max_m": high,
                         "uam_route_ids": [],
                         "uam_route_labels": [],
                         "reh_resource_ids": [],
@@ -577,8 +594,10 @@ def _uam_reh_crossing_features(
                         "coordinates": _unproject_xy(point, reference_lat),
                     },
                 }
-                by_location[key] = feature
+                located.append((location_3d, feature))
             properties = feature["properties"]
+            properties["altitude_min_m"] = max(properties["altitude_min_m"], low)
+            properties["altitude_max_m"] = min(properties["altitude_max_m"], high)
             for target, value in (
                 ("uam_route_ids", uam_route["resource_id"]),
                 ("uam_route_labels", uam_route["label"]),
@@ -589,7 +608,7 @@ def _uam_reh_crossing_features(
                     properties[target].append(value)
 
     features = sorted(
-        by_location.values(),
+        (feature for _, feature in located),
         key=lambda feature: tuple(feature["geometry"]["coordinates"]),
     )
     for index, feature in enumerate(features, start=1):
@@ -597,6 +616,33 @@ def _uam_reh_crossing_features(
         feature["properties"]["resource_id"] = crossing_id
         feature["properties"]["label"] = f"Cruzamento UAM × REH {index:03d}"
     return features
+
+
+def _reh_vertical_interval_m(route: dict[str, Any]) -> tuple[float, float] | None:
+    minimum = route.get("altitude_min_ft")
+    maximum = route.get("altitude_max_ft")
+    compulsory = route.get("altitude_compulsory_ft")
+    if minimum is not None and maximum is not None:
+        return float(minimum) * 0.3048, float(maximum) * 0.3048
+    if compulsory is not None:
+        altitude = float(compulsory) * 0.3048
+        return altitude, altitude
+    return None
+
+
+def _uam_altitude_at_xy(route: dict[str, Any], point: np.ndarray, reference_lat: float) -> float:
+    xy = _project_with_reference(np.asarray(route["coordinates"], dtype=float), reference_lat)
+    altitudes = np.asarray(route["altitudes_m"], dtype=float)
+    best_distance = float("inf")
+    best_altitude = float(altitudes[0])
+    for start, end, z0, z1 in zip(xy[:-1], xy[1:], altitudes[:-1], altitudes[1:]):
+        vector = end - start
+        fraction = float(np.clip(np.dot(point - start, vector) / max(np.dot(vector, vector), 1e-12), 0, 1))
+        distance = float(np.linalg.norm(point - (start + fraction * vector)))
+        if distance < best_distance:
+            best_distance = distance
+            best_altitude = float(z0 + fraction * (z1 - z0))
+    return best_altitude
 
 
 def _annotate_crossing_criticality(
@@ -618,10 +664,11 @@ def _annotate_crossing_criticality(
     window_count = max(1, int(np.floor((end_s - start_s) / max(window_seconds, 1))) + 1)
     window_hours = max(window_seconds, 1) / 3600.0
     summaries = []
-    points = annotated[["lat", "lon"]].to_numpy(dtype=float)
+    points = annotated[["lat", "lon", "alt"]].to_numpy(dtype=float)
     for feature in crossings:
         lon, lat = feature["geometry"]["coordinates"]
-        distances = haversine_m(points[:, 0], points[:, 1], lat, lon)
+        altitude_m = feature["properties"]["altitude_m"]
+        distances = np.hypot(haversine_m(points[:, 0], points[:, 1], lat, lon), points[:, 2] - altitude_m)
         nearby = annotated.loc[distances <= capture_radius_m]
         passages: list[float] = []
         if not nearby.empty:

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import unittest
+import json
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
@@ -24,6 +25,7 @@ from src.uam_dashboard.scenario_parser import (
 )
 from src.uam_dashboard.reh_parser import load_reh_network
 from src.uam_dashboard.uam_corridor_parser import load_uam_corridor_network
+from generate_uam_projection import write_uam_projection_asset
 
 
 class MetricsTest(unittest.TestCase):
@@ -43,6 +45,20 @@ class MetricsTest(unittest.TestCase):
             {altitude for route in network["routes"] for altitude in route["altitudes_m"]},
             {760.0, 914.4, 1219.0},
         )
+
+    def test_uam_projection_exports_buffered_route_footprints(self) -> None:
+        with TemporaryDirectory() as directory:
+            count = write_uam_projection_asset(
+                Path("data/corridors/scenario_horizontal_3000ft_expanded_displaced.csv"), Path(directory)
+            )
+            script = (Path(directory) / "assets/uam_projection.js").read_text(encoding="utf-8")
+            collection = json.loads(script.removeprefix("window.__UAM_CORRIDOR_PROJECTION__ = ").removesuffix(";\n"))
+            self.assertEqual(count, 72)
+            self.assertEqual(len(collection["features"]), 72)
+            first = collection["features"][0]
+            self.assertEqual(first["geometry"]["type"], "Polygon")
+            self.assertEqual(first["geometry"]["coordinates"][0][0], first["geometry"]["coordinates"][0][-1])
+            self.assertEqual(first["properties"]["width_m"], 457.0)
 
     def test_trajectory_3d_payload_uses_five_second_windows(self) -> None:
         rows = []
@@ -428,6 +444,8 @@ class MetricsTest(unittest.TestCase):
             "section": "1",
             "route_type": "Obrig",
             "semi_width_m": 100.0,
+            "altitude_min_ft": 2500.0,
+            "altitude_max_ft": 3000.0,
             "area_m2": 400000.0,
             "coordinates": [[-23.56, -46.63], [-23.54, -46.63]],
             "polygons": [[
@@ -435,18 +453,23 @@ class MetricsTest(unittest.TestCase):
                 [-46.631, -23.54], [-46.631, -23.56],
             ]],
         }]
+        official_uam = [{
+            "resource_id": "UAM001", "label": "UAM test", "coordinates": [[-23.55, -46.64], [-23.55, -46.62]],
+            "altitudes_m": [800.0, 800.0], "height_m": 200.0, "semi_width_m": 100.0,
+        }]
 
         metrics = capacity_metrics(
             df, planned, tracks, conformity, 0, 250, 3600, 0.95,
-            300, 250, 5000, reh_segments, crossing_capture_radius_m=300,
+            300, 250, 5000, reh_segments, official_uam, crossing_capture_radius_m=300,
         )
 
         complexity = metrics["complexity"]
-        self.assertEqual(complexity["geometry_dimension"], "2D")
+        self.assertEqual(complexity["geometry_dimension"], "3D")
         self.assertEqual(complexity["planned_route_crossings"], 1)
         crossing = complexity["crossings"]["features"][0]
         self.assertEqual(crossing["properties"]["resource_id"], "XUAMREH001")
         self.assertEqual(crossing["properties"]["operations"], 1)
+        self.assertAlmostEqual(crossing["properties"]["altitude_m"], 831.0)
         self.assertIsNone(crossing["properties"]["capacity_declared_per_hour"])
         crossing_resources = metrics["throughput"]["crossing_waypoints"]
         self.assertTrue(crossing_resources["available"])
@@ -454,6 +477,14 @@ class MetricsTest(unittest.TestCase):
             crossing_resources["top_resources"][0]["map_target"]["type"],
             "crossing_waypoint",
         )
+
+        reh_segments[0]["altitude_min_ft"] = 5000.0
+        reh_segments[0]["altitude_max_ft"] = 5500.0
+        separated = capacity_metrics(
+            df, planned, tracks, conformity, 0, 250, 3600, 0.95,
+            300, 250, 5000, reh_segments, official_uam, crossing_capture_radius_m=300,
+        )
+        self.assertEqual(separated["complexity"]["planned_route_crossings"], 0)
 
 
 if __name__ == "__main__":

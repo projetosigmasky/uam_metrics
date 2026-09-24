@@ -10,7 +10,7 @@
       integrity="sha256-p4NxAoJBhIINfQd+g9FQXHyzyTAFi+lyLwN2Bja9fM="
       crossorigin=""
     />
-    <link rel="stylesheet" href="assets/dashboard.css?v=0.6.0" />
+    <link rel="stylesheet" href="assets/dashboard.css?v=0.9.0" />
   </head>
   <body>
     <header class="topbar">
@@ -123,6 +123,7 @@
             <h2>Camadas</h2>
             <label><input type="checkbox" id="layer-tracks" checked /> Trajetorias</label>
             <label><input type="checkbox" id="layer-official-reh" checked /> REH formal</label>
+            <label><input type="checkbox" id="layer-uam-corridors" /> Corredores UAM (projeção 2D)</label>
             <label><input type="checkbox" id="layer-planned" /> Planejamento do cenario</label>
             <label class="stacked-control">
               <span>Volume das trajetorias</span>
@@ -135,31 +136,35 @@
             </label>
             <label><input type="checkbox" id="layer-heat" /> Densidade</label>
             <label><input type="checkbox" id="layer-atd-hotspots" /> Hotspots ATD</label>
-            <label><input type="checkbox" id="layer-complexity" checked /> Waypoints UAM × REH</label>
+            <label><input type="checkbox" id="layer-complexity" checked /> Cruzamentos UAM × REH 3D</label>
             <label><input type="checkbox" id="layer-candidate-nodes" checked /> Nós candidatos UAM/REH</label>
             <label><input type="checkbox" id="layer-conflicts" checked /> Eventos LoWC/NMAC</label>
             <button class="panel-button" id="fit-map" type="button">Reenquadrar mapa</button>
+            <div class="map-summary" aria-live="polite">
+              <strong id="map-info-title">Mapa operacional</strong>
+              <p id="map-info-text">Trajetorias, densidade e eventos LoWC georreferenciados.</p>
+            </div>
           </div>
         </aside>
 
         <section class="map-stage" aria-label="Mapa georreferenciado">
           <div id="map"></div>
           <div class="map-info" aria-live="polite">
-            <strong id="map-info-title">Mapa operacional</strong>
-            <span id="map-info-text">Trajetorias, densidade e eventos LoWC georreferenciados.</span>
             <div class="map-legend">
-              <span><i class="legend-swatch legend-volume-low"></i>Menor volume</span>
-              <span><i class="legend-swatch legend-volume-medium"></i>Volume intermediario</span>
-              <span><i class="legend-swatch legend-volume-high"></i>Maior volume</span>
-              <span><i class="legend-swatch legend-planned"></i>Planejamento do cenario</span>
-              <span><i class="legend-swatch legend-heat"></i>Densidade</span>
-              <span><i class="legend-swatch legend-atd"></i>Hotspot ATD</span>
-              <span><i class="legend-swatch legend-complexity"></i>Waypoint UAM × REH</span>
-              <span><i class="legend-swatch legend-uam-node"></i>Nó UAM candidato</span>
-              <span><i class="legend-swatch legend-reh-node"></i>Nó REH candidato</span>
-              <span><i class="legend-swatch legend-lowc"></i>LoWC</span>
-              <span><i class="legend-swatch legend-nmac"></i>NMAC</span>
-              <span><i class="legend-swatch legend-mac"></i>MAC, quando observável</span>
+              <span data-legend-layer="tracks" data-volume="low"><i class="legend-swatch legend-volume-low"></i>Menor volume</span>
+              <span data-legend-layer="tracks" data-volume="medium"><i class="legend-swatch legend-volume-medium"></i>Volume intermediario</span>
+              <span data-legend-layer="tracks" data-volume="high"><i class="legend-swatch legend-volume-high"></i>Maior volume</span>
+              <span data-legend-layer="official-reh"><i class="legend-swatch legend-official-reh"></i>REH formal</span>
+              <span data-legend-layer="uam-corridors"><i class="legend-swatch legend-uam-corridors"></i>Corredor UAM · projeção 2D</span>
+              <span data-legend-layer="planned"><i class="legend-swatch legend-planned"></i>Planejamento do cenario</span>
+              <span data-legend-layer="heat"><i class="legend-swatch legend-heat"></i>Densidade</span>
+              <span data-legend-layer="atd-hotspots"><i class="legend-swatch legend-atd"></i>Hotspot ATD</span>
+              <span data-legend-layer="complexity"><i class="legend-swatch legend-complexity"></i>Cruzamento UAM × REH 3D</span>
+              <span data-legend-layer="candidate-nodes"><i class="legend-swatch legend-uam-node"></i>Nó UAM candidato</span>
+              <span data-legend-layer="candidate-nodes"><i class="legend-swatch legend-reh-node"></i>Nó REH candidato</span>
+              <span data-legend-layer="conflicts" data-conflict="lowc"><i class="legend-swatch legend-lowc"></i>LoWC</span>
+              <span data-legend-layer="conflicts" data-conflict="nmac"><i class="legend-swatch legend-nmac"></i>NMAC</span>
+              <span data-legend-layer="conflicts" data-conflict="mac"><i class="legend-swatch legend-mac"></i>MAC</span>
             </div>
           </div>
         </section>
@@ -383,7 +388,7 @@
           <article class="metric">
             <span>Waypoints UAM × REH</span>
             <strong id="capacity-crossings">-</strong>
-            <small>interseções horizontais 2D</small>
+            <small>interseções geométricas 3D candidatas</small>
           </article>
         </div>
         <div class="table-wrap">
@@ -448,7 +453,9 @@
     ></script>
     <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
     <script src="assets/data_bundle.js?v=0.6.0"></script>
-    <script src="assets/candidate_nodes.js?v=0.7.0"></script>
-    <script src="assets/dashboard.js?v=0.7.0"></script>
+    <script src="assets/candidate_nodes.js?v=0.8.0"></script>
+    <script src="assets/crossing_waypoints_3d.js?v=0.8.0"></script>
+    <script src="assets/uam_projection.js?v=0.9.0"></script>
+    <script src="assets/dashboard.js?v=0.9.0"></script>
   </body>
 </html>
