@@ -15,21 +15,21 @@ from src.uam_dashboard.run_config import load_run_selection
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--config", type=Path, default=Path("run_config.json"))
-    parser.add_argument("--workers", type=int, default=4, help="Parallel workers for waypoint ranking")
+    parser.add_argument("--workers", type=int, default=None, help="Override both worker counts from the JSON")
     args = parser.parse_args()
-    if args.workers <= 0:
+    if args.workers is not None and args.workers <= 0:
         parser.error("--workers must be positive")
     repository = Path(__file__).resolve().parent
     config_path = args.config.resolve()
     selection = load_run_selection(config_path)
     print(f"Generating P100 reports from {selection.run_dir}", flush=True)
-    subprocess.run(
-        [sys.executable, str(repository / "generate_dashboard.py"), "--config", str(config_path)],
-        cwd=repository, check=True,
-    )
+    dashboard_command = [sys.executable, str(repository / "generate_dashboard.py"), "--config", str(config_path)]
+    if args.workers is not None:
+        dashboard_command.extend(("--workers", str(args.workers)))
+    subprocess.run(dashboard_command, cwd=repository, check=True)
     subprocess.run(
         [sys.executable, str(repository / "critical_waypoints.py"), "--config", str(config_path),
-         "--workers", str(args.workers)],
+         "--workers", str(args.workers if args.workers is not None else selection.ranking_workers)],
         cwd=repository, check=True,
     )
     index_path = repository / "docs" / "index.html"

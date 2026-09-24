@@ -5,6 +5,7 @@ import copy
 import json
 import shutil
 import re
+from concurrent.futures import ProcessPoolExecutor, as_completed
 from pathlib import Path
 from typing import Any
 
@@ -587,6 +588,9 @@ def analyze_log(log_path: Path, config: DashboardConfig, charts_dir: Path, run_i
         "metric_catalog": metric_catalog_payload(),
     }
 
+    if not render_charts:
+        return {"dashboard": dashboard}
+
     return {
         "id": chart_prefix,
         "name": log_path.name,
@@ -639,8 +643,10 @@ def build_dashboard(config: DashboardConfig) -> None:
     # Keep only per-replica metrics in memory. Geometry, timelines and charts
     # are published from one representative replica per scenario, preventing
     # a 50-replica GitHub Pages bundle from duplicating large tracks 50 times.
-    dashboards_by_group: dict[tuple[str, str, bool | None], list[dict[str, Any]]] = {}
+    dashboards_by_group: dict[tuple[str, str, bool | None], list[tuple[int, dict[str, Any]]]] = {}
     representatives: dict[tuple[str, str, bool | None], dict[str, Any]] = {}
+    group_order: list[tuple[str, str, bool | None]] = []
+    tasks = []
     for index, log_path in enumerate(sorted(config.log_paths, key=experiment_sort_key)):
         metadata = log_experiment_metadata(log_path, config.scenario_paths)
         group_key = (
@@ -648,15 +654,41 @@ def build_dashboard(config: DashboardConfig) -> None:
             str(metadata.get("scenario_key") or log_path.stem),
             metadata.get("mvp_enabled"),
         )
-        run = analyze_log(log_path, config, charts_dir, index, render_charts=group_key not in representatives)
-        dashboards_by_group.setdefault(group_key, []).append(run["dashboard"])
-        if group_key not in representatives:
+        representative = group_key not in group_order
+        if representative:
+            group_order.append(group_key)
+        tasks.append((index, log_path, group_key, representative))
+
+    def record_result(index: int, group_key: tuple[str, str, bool | None], representative: bool, run: dict[str, Any]) -> None:
+        dashboards_by_group.setdefault(group_key, []).append((index, run["dashboard"]))
+        if representative:
             representatives[group_key] = run
+
+    worker_count = min(config.workers, len(tasks))
+    if worker_count < 1:
+        raise ValueError("At least one STATELOG and one worker are required")
+    print(f"Analyzing {len(tasks)} STATELOGs with {worker_count} worker processes...", flush=True)
+    if worker_count == 1:
+        for index, log_path, group_key, representative in tasks:
+            record_result(index, group_key, representative, analyze_log(log_path, config, charts_dir, index, representative))
+    else:
+        with ProcessPoolExecutor(max_workers=worker_count) as pool:
+            futures = {
+                pool.submit(analyze_log, log_path, config, charts_dir, index, representative): (index, log_path, group_key, representative)
+                for index, log_path, group_key, representative in tasks
+            }
+            for completed, future in enumerate(as_completed(futures), 1):
+                index, log_path, group_key, representative = futures.pop(future)
+                record_result(index, group_key, representative, future.result())
+                print(f"Completed {completed}/{len(tasks)}: {log_path.name}", flush=True)
     runs = []
-    for group_key, run in representatives.items():
+    for group_key in group_order:
+        run = representatives[group_key]
         count = len(dashboards_by_group[group_key])
         if count > 1:
-            run["dashboard"] = average_dashboard(dashboards_by_group[group_key])
+            run["dashboard"] = average_dashboard([
+                dashboard for _, dashboard in sorted(dashboards_by_group[group_key])
+            ])
             run["dashboard"]["source_log"] = f"Média de {count} réplicas ({run['metadata'].get('scenario_key', group_key[1])})"
             run["metadata"] = {**run["metadata"], "variant_label": f"{run['metadata']['variant_label']} · média de {count} réplicas"}
         run["replica_count"] = count
@@ -701,6 +733,7 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Generate a static UAM KPI/KPA dashboard.")
     parser.add_argument("logs", nargs="*", default=None, help="One or more STATELOG files.")
     parser.add_argument("--config", default=None, help="JSON selecting an orchestrator RUN; default: run_config.json when no logs are passed.")
+    parser.add_argument("--workers", type=int, default=None, help="Worker processes for per-replica metrics; overrides the JSON setting.")
     parser.add_argument("--output", default="docs", help="Output folder for GitHub Pages.")
     parser.add_argument("--data-dir", default="data", help="Folder searched when no log is passed.")
     parser.add_argument("--scenario-dir", default="data/scenarios", help="Folder searched for BlueSky SCN files.")
@@ -827,14 +860,19 @@ def main() -> None:
         selection = load_run_selection(config_path)
         log_paths = selection.log_paths
         scenario_paths = selection.scenario_paths
+        worker_count = args.workers if args.workers is not None else selection.dashboard_workers
         print(f"Using orchestrator RUN: {selection.run_dir}")
     else:
         log_paths = tuple(Path(log) for log in args.logs) if args.logs else find_default_logs(data_dir)
         scenario_paths = find_scenarios(Path(args.scenario_dir), args.scenarios)
+        worker_count = args.workers if args.workers is not None else 1
+    if worker_count < 1:
+        raise ValueError("--workers must be a positive integer")
     reh_xml_path = find_reh_xml(args.reh_xml)
     uam_corridor_csv_path = find_uam_corridor_csv(data_dir, args.uam_corridor_csv)
     config = DashboardConfig(
         log_paths=log_paths,
+        workers=worker_count,
         scenario_paths=scenario_paths,
         output_dir=Path(args.output),
         data_dir=data_dir,

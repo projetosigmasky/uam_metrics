@@ -31,6 +31,7 @@ class DashboardConfig:
     """Analysis settings used by the static dashboard generator."""
 
     log_paths: tuple[Path, ...]
+    workers: int = 1
     scenario_paths: tuple[Path, ...] = ()
     output_dir: Path = Path("docs")
     data_dir: Path = Path("data")

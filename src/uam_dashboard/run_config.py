@@ -15,6 +15,8 @@ class RunSelection:
     run_dir: Path
     log_paths: tuple[Path, ...]
     scenario_paths: tuple[Path, ...]
+    dashboard_workers: int
+    ranking_workers: int
 
 
 def load_run_selection(config_path: Path) -> RunSelection:
@@ -34,6 +36,11 @@ def load_run_selection(config_path: Path) -> RunSelection:
     expected = settings.get("expected_replicas_per_scenario", 50)
     if not isinstance(expected, int) or isinstance(expected, bool) or expected <= 0:
         raise ValueError("expected_replicas_per_scenario must be a positive integer")
+    dashboard_workers = settings.get("dashboard_workers", 1)
+    ranking_workers = settings.get("ranking_workers", 1)
+    for name, value in (("dashboard_workers", dashboard_workers), ("ranking_workers", ranking_workers)):
+        if not isinstance(value, int) or isinstance(value, bool) or value <= 0:
+            raise ValueError(f"{name} must be a positive integer")
     log_paths = []
     for scenario_key in ("C1", "C2"):
         output_dir = run_dir / "output" / scenario_key
@@ -60,4 +67,4 @@ def load_run_selection(config_path: Path) -> RunSelection:
         matched_scenarios.append(scenario)
     if len(set(matched_scenarios)) != len(log_paths):
         raise ValueError("Each STATELOG must match a distinct SCN from the same orchestrator run")
-    return RunSelection(run_dir, tuple(log_paths), scenario_paths)
+    return RunSelection(run_dir, tuple(log_paths), scenario_paths, dashboard_workers, ranking_workers)

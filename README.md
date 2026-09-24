@@ -32,7 +32,7 @@ Nos logs do orquestrador, o gerador reconhece a demanda P100, o cenario e a repl
 
 ### Executar no Lessonia e publicar somente os resultados
 
-O arquivo `run_config.json` guarda a raiz das execucoes, o nome da RUN e o numero esperado de replicas por cenario. Para processar outra RUN, altere apenas `run_name`. O gerador localiza automaticamente `output/C1`, `output/C2`, `scenario/C1` e `scenario/C2` dentro dessa RUN. Cada log e pareado a seu `.scn` P100. O XML oficial da REH esta versionado em `data/xml/CV_REH_XP_SAO_PAULO.xml`; nao e necessario informar um caminho no comando. O `data/scenarios/` versionado contem P95 historico e **nao** e usado com os logs P100.
+O arquivo `run_config.json` guarda a raiz das execucoes, o nome da RUN, o numero esperado de replicas e `dashboard_workers`/`ranking_workers`. Para processar outra RUN equivalente, altere apenas `run_name`. Os workers usam **processos** para aproveitar CPUs diferentes; o dashboard e o ranking rodam em sequencia, cada um com 25 processos por padrao no Lessonia de 32 CPUs. O gerador localiza automaticamente `output/C1`, `output/C2`, `scenario/C1` e `scenario/C2` dentro dessa RUN. Cada log e pareado a seu `.scn` P100. O XML oficial da REH esta versionado em `data/xml/CV_REH_XP_SAO_PAULO.xml`; nao e necessario informar um caminho no comando. O `data/scenarios/` versionado contem P95 historico e **nao** e usado com os logs P100.
 
 Apos publicar as alteracoes de codigo, execute no Lessonia:
 

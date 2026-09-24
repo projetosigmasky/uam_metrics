@@ -356,10 +356,12 @@ class MetricsTest(unittest.TestCase):
                 (run / "scenario" / scenario_key / f"produto2_{scenario_key}_p100_r001_off.scn").touch()
             config = root / "run_config.json"
             config.write_text(json.dumps({"runs_root": str(root / "runs"), "run_name": "run_001",
-                                          "expected_replicas_per_scenario": 1}), encoding="utf-8")
+                                          "expected_replicas_per_scenario": 1,
+                                          "dashboard_workers": 3, "ranking_workers": 4}), encoding="utf-8")
             selected = load_run_selection(config)
             self.assertEqual(len(selected.log_paths), 2)
             self.assertEqual(len(selected.scenario_paths), 2)
+            self.assertEqual((selected.dashboard_workers, selected.ranking_workers), (3, 4))
             c1_log = selected.log_paths[0]
             c1_log.rename(c1_log.with_name(c1_log.name.replace("p100", "p95")))
             with self.assertRaisesRegex(ValueError, "P100"):

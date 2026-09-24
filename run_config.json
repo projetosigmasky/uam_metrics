@@ -1,5 +1,7 @@
 {
   "runs_root": "~/bluesky-orchestrator/runs",
   "run_name": "20260924_104519_aba5878d",
-  "expected_replicas_per_scenario": 50
+  "expected_replicas_per_scenario": 50,
+  "dashboard_workers": 25,
+  "ranking_workers": 25
 }
