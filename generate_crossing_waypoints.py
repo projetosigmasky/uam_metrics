@@ -7,6 +7,7 @@ import json
 from pathlib import Path
 
 from src.uam_dashboard.capacity import _buffered_route_groups, _official_route_groups, _official_uam_route_groups, _uam_reh_crossing_features
+from src.uam_dashboard.config import DEFAULT_REH_XML_PATH
 from src.uam_dashboard.reh_parser import load_reh_network
 from src.uam_dashboard.uam_corridor_parser import load_uam_corridor_network
 
@@ -25,7 +26,7 @@ def write_crossing_waypoint_asset(uam_csv: Path, reh_xml: Path, output_dir: Path
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--uam-csv", type=Path, required=True)
-    parser.add_argument("--reh-xml", type=Path, required=True)
+    parser.add_argument("--reh-xml", type=Path, default=DEFAULT_REH_XML_PATH)
     parser.add_argument("--output-dir", type=Path, default=Path("docs"))
     args = parser.parse_args()
     count = write_crossing_waypoint_asset(args.uam_csv, args.reh_xml, args.output_dir)

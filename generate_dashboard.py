@@ -10,7 +10,7 @@ from typing import Any
 
 from src.uam_dashboard.capacity import capacity_metrics
 from src.uam_dashboard.aggregation import average_resource_group
-from src.uam_dashboard.config import DashboardConfig, SAO_PAULO_CENTER
+from src.uam_dashboard.config import DEFAULT_REH_XML_PATH, DashboardConfig, SAO_PAULO_CENTER
 from src.uam_dashboard.experiment import experiment_metadata, experiment_sort_key, log_experiment_metadata, matching_scenario
 from src.uam_dashboard.exports import (
     conflicts_geojson,
@@ -39,6 +39,7 @@ from src.uam_dashboard.plots import (
     plot_trajectory_conformity,
 )
 from src.uam_dashboard.reh_parser import load_reh_network
+from src.uam_dashboard.run_config import load_run_selection
 from src.uam_dashboard.scenario_parser import (
     annotate_aircraft_metadata,
     load_bluesky_scenario,
@@ -699,6 +700,7 @@ def build_dashboard(config: DashboardConfig) -> None:
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Generate a static UAM KPI/KPA dashboard.")
     parser.add_argument("logs", nargs="*", default=None, help="One or more STATELOG files.")
+    parser.add_argument("--config", default=None, help="JSON selecting an orchestrator RUN; default: run_config.json when no logs are passed.")
     parser.add_argument("--output", default="docs", help="Output folder for GitHub Pages.")
     parser.add_argument("--data-dir", default="data", help="Folder searched when no log is passed.")
     parser.add_argument("--scenario-dir", default="data/scenarios", help="Folder searched for BlueSky SCN files.")
@@ -755,19 +757,14 @@ def find_scenarios(scenario_dir: Path, explicit: list[str] | None) -> tuple[Path
     return tuple(sorted(scenario_dir.rglob("*.scn"))) if scenario_dir.exists() else ()
 
 
-def find_reh_xml(data_dir: Path, explicit: str | None) -> Path | None:
-    if explicit:
-        path = Path(explicit)
-        if not path.exists():
-            raise FileNotFoundError(f"REH XML not found: {path}")
-        return path
-
-    candidates = [
-        data_dir / "xml" / "CV_REH_XP_SAO_PAULO.xml",
-        Path("../rmsp-uam-simulations/data/xml/CV_REH_XP_SAO_PAULO.xml"),
-    ]
-    candidates.extend(sorted(data_dir.glob("**/CV_REH_XP_SAO_PAULO.xml")))
-    return next((path for path in candidates if path.exists()), None)
+def find_reh_xml(explicit: str | None) -> Path:
+    path = Path(explicit) if explicit else DEFAULT_REH_XML_PATH
+    if not path.is_file():
+        raise FileNotFoundError(
+            f"REH XML not found: {path}. Restore the versioned file in data/xml/"
+            " or pass --reh-xml."
+        )
+    return path
 
 
 def find_uam_corridor_csv(data_dir: Path, explicit: str | None) -> Path | None:
@@ -823,9 +820,18 @@ def find(paths: tuple[Path, ...], predicate: Any) -> Path | None:
 def main() -> None:
     args = parse_args()
     data_dir = Path(args.data_dir)
-    log_paths = tuple(Path(log) for log in args.logs) if args.logs else find_default_logs(data_dir)
-    scenario_paths = find_scenarios(Path(args.scenario_dir), args.scenarios)
-    reh_xml_path = find_reh_xml(data_dir, args.reh_xml)
+    if args.config and args.logs:
+        raise ValueError("Pass either --config or positional STATELOG paths, not both")
+    config_path = Path(args.config or "run_config.json")
+    if args.config or (not args.logs and config_path.is_file()):
+        selection = load_run_selection(config_path)
+        log_paths = selection.log_paths
+        scenario_paths = selection.scenario_paths
+        print(f"Using orchestrator RUN: {selection.run_dir}")
+    else:
+        log_paths = tuple(Path(log) for log in args.logs) if args.logs else find_default_logs(data_dir)
+        scenario_paths = find_scenarios(Path(args.scenario_dir), args.scenarios)
+    reh_xml_path = find_reh_xml(args.reh_xml)
     uam_corridor_csv_path = find_uam_corridor_csv(data_dir, args.uam_corridor_csv)
     config = DashboardConfig(
         log_paths=log_paths,

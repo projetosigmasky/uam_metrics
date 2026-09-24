@@ -24,7 +24,7 @@ simt,id,lat,lon,distflown,alt,hdg,trk,cas,tas,gs,vs
 
 ## 2. Gerar O Dashboard
 
-Execute o lote P100 com caminhos explicitos para os STATELOGs e para o diretorio `scenario/` do mesmo run, conforme as instrucoes abaixo. O gerador rejeita entradas Produto 2 de demanda diferente de P100 antes de alterar `docs/`.
+Execute o lote P100 com `run_config.json`, conforme as instrucoes abaixo. O gerador rejeita entradas Produto 2 de demanda diferente de P100 antes de alterar `docs/`.
 
 As replicas de cada cenario C1/C2 sao agrupadas pelo identificador do cenario, demanda e modo (`off`/`mvp`). Cada valor numerico publicado para o cenario e a media dos resultados calculados separadamente por replica, inclusive contagens, totais e picos. O P95 que aparece em algumas metricas e um percentil **dos resultados simulados**, nao um perfil de demanda P95. O mapa, os eventos, os graficos e a visualizacao 3D usam a primeira replica do grupo em ordem de nome como ilustracao. O seletor mostra um item por cenario, com a quantidade de replicas no nome. Para evitar um pacote excessivo, as trajetorias das demais replicas nao entram em `docs/`.
 
@@ -32,53 +32,37 @@ Nos logs do orquestrador, o gerador reconhece a demanda P100, o cenario e a repl
 
 ### Executar no Lessonia e publicar somente os resultados
 
-Para o lote P100 de 24/09/2026, o planejamento de cada replica fica em `scenario/C1` ou `scenario/C2` na mesma execucao do orquestrador. O `data/scenarios/` versionado contem P95 e **nao** deve ser usado com os logs P100. Apos publicar as alteracoes de codigo, execute no Lessonia:
+O arquivo `run_config.json` guarda a raiz das execucoes, o nome da RUN e o numero esperado de replicas por cenario. Para processar outra RUN, altere apenas `run_name`. O gerador localiza automaticamente `output/C1`, `output/C2`, `scenario/C1` e `scenario/C2` dentro dessa RUN. Cada log e pareado a seu `.scn` P100. O XML oficial da REH esta versionado em `data/xml/CV_REH_XP_SAO_PAULO.xml`; nao e necessario informar um caminho no comando. O `data/scenarios/` versionado contem P95 historico e **nao** e usado com os logs P100.
+
+Apos publicar as alteracoes de codigo, execute no Lessonia:
 
 ```bash
 cd ~/post-processing
 git pull --ff-only
-RUN="$HOME/bluesky-orchestrator/runs/20260924_104519_aba5878d"
-REH_XML=/caminho/para/CV_REH_XP_SAO_PAULO.xml
-mapfile -d '' -t logs < <(find "$RUN/output/C1" "$RUN/output/C2" -maxdepth 1 -type f -iname 'STATELOG*.log' -print0 | sort -z)
-printf 'Arquivos selecionados: %s\n' "${#logs[@]}"
-test "${#logs[@]}" -eq 100 || { echo 'Esperados 100 STATELOGs' >&2; exit 1; }
-.venv/bin/python - "$RUN/scenario" "${logs[@]}" <<'PY'
-from collections import Counter
-from pathlib import Path
-import sys
-from src.uam_dashboard.experiment import experiment_metadata, log_experiment_metadata, matching_scenario
-
-scenarios = tuple(Path(sys.argv[1]).rglob('*.scn'))
-logs = sys.argv[2:]
-groups = Counter((item['day_key'], item.get('scenario_key'), item['mvp_enabled'])
-                 for item in (log_experiment_metadata(path, scenarios) for path in logs))
-print('Replicas por grupo:', dict(groups))
-if groups != {('produto2_p100', 'C1', False): 50, ('produto2_p100', 'C2', False): 50}:
-    raise SystemExit('Contagem ou classificacao inesperada.')
-pairs = [(path, matching_scenario(path, scenarios)) for path in logs]
-if any(scenario is None for _, scenario in pairs):
-    raise SystemExit('Ha STATELOG sem .scn P100 correspondente.')
-if len({scenario for _, scenario in pairs}) != 100:
-    raise SystemExit('O pareamento STATELOG/.scn nao e unico para cada replica.')
-if any(experiment_metadata(path)['replica'] != experiment_metadata(scenario)['replica'] for path, scenario in pairs):
-    raise SystemExit('Numero de replica diferente entre STATELOG e .scn.')
-print('100 STATELOGs associados aos 100 planejamentos P100.')
-PY
-.venv/bin/python generate_dashboard.py "${logs[@]}" --scenario-dir "$RUN/scenario" --reh-xml "$REH_XML" --uam-corridor-csv data/corridors/scenario_horizontal_3000ft_expanded_displaced.csv --output docs
+.venv/bin/python -m pip install -r requirements.txt
+.venv/bin/python generate_reports.py
 ```
+
+`generate_reports.py` valida as 50 replicas C1 e 50 C2, os 100 pareamentos STATELOG/SCN e a demanda P100 antes de calcular. Ele gera o dashboard e o ranking de waypoints em `docs/`. O ranking e calculado pela media do throughput de cada replica, separadamente para C1 e C2, e aparece no painel de capacidade.
 
 Antes de publicar, confira as contagens por cenario e o tamanho do pacote. Se `data_bundle.js` ficar grande demais para publicar, reduza a resolucao das camadas ilustrativas. Publique apenas a saida processada:
 
 ```bash
 .venv/bin/python - <<'PY'
+import csv
 import json
 from pathlib import Path
 runs = [json.loads(path.read_text()) for path in Path('docs/assets/data/runs').glob('*.json')]
-print([(run['metadata'].get('scenario_key'), run['replica_count']) for run in runs])
-print('Total de replicas:', sum(run['replica_count'] for run in runs))
+counts = {run['metadata'].get('scenario_key'): run['replica_count'] for run in runs}
+print('Replicas no dashboard:', counts)
+assert counts == {'C1': 50, 'C2': 50}
+with Path('docs/assets/data/critical_waypoints/critical_waypoints.csv').open(newline='', encoding='utf-8') as stream:
+    ranking = list(csv.DictReader(stream))
+print('Waypoints avaliados:', len(ranking))
+assert {row['scenario'] for row in ranking} == {'C1', 'C2'}
 PY
 du -h docs/assets/data_bundle.js
-git add docs
+git add docs run_config.json
 git commit -m "Atualiza dashboard com medias das replicas C1 e C2"
 git push
 ```
@@ -136,6 +120,9 @@ O gerador publica em `docs/`:
 - `docs/assets/data/dashboard.json`: metricas agregadas ou medias.
 - `docs/assets/data/comparison.json`: tabela comparativa.
 - `docs/assets/data/runs/*.json`: dados por cenario, com metricas medias das replicas e uma trajetoria ilustrativa.
+- `docs/assets/data/critical_waypoints/critical_waypoints.csv`: ranking C1/C2 pelo throughput medio entre replicas.
+- `docs/assets/data/critical_waypoints/waypoints_by_replica.csv`: valores individuais para auditoria.
+- `docs/assets/waypoint_rankings.js`: ranking exibido na secao Capacidade do dashboard.
 - `docs/assets/data/tracks.geojson`: trajetorias executadas do primeiro log, com grupos e frequencias.
 - `docs/assets/data/planned_routes.geojson`: trajetorias planejadas extraidas dos cenarios BlueSky.
 - `docs/assets/data/conflicts.geojson`: eventos LoWC/NMAC do primeiro log.
@@ -229,12 +216,10 @@ Esse agrupamento e uma aproximacao configuravel baseada nas trajetorias observad
 
 ## 10. REH Formal, Planejamento E Conformidade
 
-Coloque os arquivos BlueSky `.scn` em `data/scenarios/`. O gerador associa automaticamente cada
-log ao cenario de mesmo nome-base.
-
-Coloque `CV_REH_XP_SAO_PAULO.xml` em `data/xml/` ou informe seu caminho com
-`--reh-xml caminho/para/CV_REH_XP_SAO_PAULO.xml`. O gerador tambem procura automaticamente o XML
-no projeto irmao `../rmsp-uam-simulations/data/xml/`.
+O gerador associa cada STATELOG P100 ao `.scn` da mesma replica no diretorio `scenario/`
+da RUN escolhida. O XML `data/xml/CV_REH_XP_SAO_PAULO.xml` e uma copia versionada da REH oficial;
+todos os scripts usam essa mesma referencia por padrao. `--reh-xml` permanece disponivel para uma
+substituicao explicita.
 
 A camada `REH formal` desenha os poligonos WFS/GML do XML, incluindo a semilargura oficial de cada
 trecho. A camada `Planejamento do cenario` conecta a origem e os waypoints definidos por `CRE`,
@@ -334,15 +319,13 @@ Nos REH sem uma faixa de altitude comum conhecida continuam listados como candid
 mas as colunas de movimento ficam vazias e eles nao recebem posicao no ranking.
 
 ```bash
-python3 -m venv .venv
-.venv/bin/pip install -r requirements.txt
 .venv/bin/python critical_waypoints.py \
-  --logs-root /caminho/no/lessonia/replicas \
-  --reh-xml /caminho/no/lessonia/CV_REH_XP_SAO_PAULO.xml \
-  --uam-csv data/corridors/scenario_horizontal_3000ft_expanded_displaced.csv \
-  --output-dir /caminho/no/lessonia/resultados_waypoints \
+  --config run_config.json \
   --workers 4
 ```
+
+O comando `generate_reports.py` ja executa esse ranking apos gerar o dashboard. Rode
+`critical_waypoints.py` separadamente apenas se quiser recalcular somente o ranking.
 
 O descobridor aceita arquivos `STATELOG` `.log` ou `.csv` cujos nomes contenham
 `_C1_` ou `_C2_` (inclusive nas subpastas). Para nomes diferentes, ou para
@@ -363,7 +346,7 @@ cruzamentos UAM-REH. `run_metadata.json` registra parametros e arquivos processa
 Os valores sao fluxos observados em esferas 3D, nao capacidades declaradas.
 O mapa estatico usa os candidatos 3D do arquivo `assets/crossing_waypoints_3d.js`;
 para atualiza-lo sem logs, rode `generate_crossing_waypoints.py` com `--uam-csv`,
-`--reh-xml` e `--output-dir docs`. O throughput no dashboard depende de regenerar
+e `--output-dir docs`. O throughput no dashboard depende de regenerar
 o painel com os STATELOGs; contagens antigas em 2D nao sao mostradas como 3D.
 
 O dashboard mostra os nos UAM e REH candidatos em uma camada propria do mapa
@@ -376,7 +359,6 @@ reprocessar logs, execute:
 ```bash
 python generate_candidate_nodes.py \
   --uam-csv data/corridors/scenario_horizontal_3000ft_expanded_displaced.csv \
-  --reh-xml /caminho/CV_REH_XP_SAO_PAULO.xml \
   --output-dir docs
 ```
 
@@ -384,5 +366,5 @@ Para trazer somente os resultados ao computador local, execute localmente,
 substituindo usuario e diretorios:
 
 ```bash
-scp -r usuario@lessonia:/caminho/no/lessonia/resultados_waypoints ./resultados_waypoints
+scp -r usuario@lessonia:~/post-processing/docs/assets/data/critical_waypoints ./critical_waypoints
 ```

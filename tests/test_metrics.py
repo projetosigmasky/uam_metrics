@@ -8,9 +8,11 @@ from tempfile import TemporaryDirectory
 import pandas as pd
 
 from src.uam_dashboard.capacity import _resource_throughput, capacity_metrics
+from src.uam_dashboard.config import DEFAULT_REH_XML_PATH
 from src.uam_dashboard.exports import conflicts_geojson, trajectory_3d_payload, tracks_geojson
 from src.uam_dashboard.experiment import experiment_metadata, log_experiment_metadata, matching_scenario
 from src.uam_dashboard.log_parser import load_state_log
+from src.uam_dashboard.run_config import load_run_selection
 from src.uam_dashboard.metrics import (
     airborne_delay_metrics,
     detect_lowc_events,
@@ -342,6 +344,30 @@ class MetricsTest(unittest.TestCase):
         self.assertEqual(metadata["replica"], 22)
         self.assertIsNone(matching_scenario(log, (p95,)))
         self.assertEqual(matching_scenario(log, (p95, p100_r021, p100_r022)), p100_r022)
+
+    def test_run_config_pairs_each_p100_log_with_its_scenario(self) -> None:
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            run = root / "runs" / "run_001"
+            for scenario_key in ("C1", "C2"):
+                (run / "output" / scenario_key).mkdir(parents=True)
+                (run / "scenario" / scenario_key).mkdir(parents=True)
+                (run / "output" / scenario_key / f"STATELOG_orch_produto2_{scenario_key}_p100_r001_off.log").touch()
+                (run / "scenario" / scenario_key / f"produto2_{scenario_key}_p100_r001_off.scn").touch()
+            config = root / "run_config.json"
+            config.write_text(json.dumps({"runs_root": str(root / "runs"), "run_name": "run_001",
+                                          "expected_replicas_per_scenario": 1}), encoding="utf-8")
+            selected = load_run_selection(config)
+            self.assertEqual(len(selected.log_paths), 2)
+            self.assertEqual(len(selected.scenario_paths), 2)
+            c1_log = selected.log_paths[0]
+            c1_log.rename(c1_log.with_name(c1_log.name.replace("p100", "p95")))
+            with self.assertRaisesRegex(ValueError, "P100"):
+                load_run_selection(config)
+
+    def test_versioned_reh_xml_is_available_to_the_generator(self) -> None:
+        self.assertTrue(DEFAULT_REH_XML_PATH.is_file())
+        self.assertGreater(len(load_reh_network(DEFAULT_REH_XML_PATH)["segments"]), 0)
 
     def test_extended_log_fields_and_scenario_aircraft_type_are_preserved(self) -> None:
         with TemporaryDirectory() as directory:

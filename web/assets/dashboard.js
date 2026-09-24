@@ -17,6 +17,7 @@ const state = {
   lastOfficialReh: null,
   lastCapacity: null,
   candidateNodes: window.__UAM_CANDIDATE_NODES__ || { type: "FeatureCollection", features: [] },
+  waypointRankings: window.__UAM_WAYPOINT_RANKINGS__ || [],
   uamProjection: window.__UAM_CORRIDOR_PROJECTION__ || { type: "FeatureCollection", features: [] },
   crossingCandidates: window.__UAM_CROSSINGS_3D__ || { type: "FeatureCollection", features: [] },
   runs: [],
@@ -700,6 +701,7 @@ function renderComparison(model) {
   const isC1C2 = model.runs.length === 2
     && new Set(model.runs.map((run) => run.metadata?.scenario_key)).size === 2
     && model.runs.every((run) => ["C1", "C2"].includes(run.metadata?.scenario_key));
+  const legacyDemand = model.runs.some((run) => run.metadata?.day_key === "produto2_p95");
   state.activeDayKey = state.activeDayKey || days[0]?.day_key || null;
   const daySelect = document.getElementById("day-select");
   daySelect.innerHTML = days
@@ -709,7 +711,9 @@ function renderComparison(model) {
   populateRunSelect();
   setText(
     "comparison-summary",
-    isC1C2
+    legacyDemand
+      ? "Os resultados publicados ainda usam a demanda P95 antiga. Execute generate_reports.py com a RUN P100 para atualizar as métricas e o ranking."
+      : isC1C2
       ? `${formatNumber(replicaCount)} réplicas em ${formatNumber(model.runs.length)} cenários C1/C2. Os indicadores dos cards e da tabela são médias por cenário; mapa, eventos e gráficos mostram uma réplica representativa. C1 é a referência.`
       : `${formatNumber(model.runs.length)} simulacoes organizadas em ${formatNumber(days.length)} grupos; cards, mapa e graficos mostram a variante escolhida.`
   );
@@ -859,6 +863,7 @@ function renderCapacity(dashboard) {
   );
   renderCapacityTable(capacity.throughput || {}, complexity.geometry_dimension === "3D");
   renderCandidateNodes();
+  renderWaypointRanking();
 }
 
 function renderCandidateNodes() {
@@ -880,6 +885,34 @@ function renderCandidateNodes() {
       <td>${escapeHtml((connected || []).join(", "))}</td>
     </tr>`;
   }).join("") : `<tr><td colspan="4">Geometria dos nós candidatos indisponível.</td></tr>`;
+}
+
+function renderWaypointRanking() {
+  const run = state.runs[state.activeRunIndex] || state.runs[0];
+  const scenario = run?.metadata?.scenario_key;
+  const rows = state.waypointRankings.filter((row) => row.scenario === scenario);
+  const rankedCount = rows.filter((row) => row.rank != null).length;
+  const body = document.getElementById("waypoint-ranking-table-body");
+  if (!body) return;
+  setText("waypoint-ranking-summary", rows.length
+    ? `${formatNumber(rankedCount)} de ${formatNumber(rows.length)} candidatos classificados com ${formatNumber(run.replica_count || 1)} réplicas de ${scenario}. Nós sem altitude 3D completa permanecem sem posição.`
+    : "Execute generate_reports.py para calcular o ranking com as réplicas P100.");
+  body.innerHTML = rows.length ? rows.map((row) => {
+    const type = row.criterion === "uam_reh_crossing" ? "UAM × REH"
+      : row.criterion === "reh_junction" ? "Nó REH" : "Nó UAM";
+    const target = {
+      type: row.criterion === "uam_reh_crossing" ? "crossing_waypoint" : "candidate_node",
+      resource_id: row.waypoint_id,
+      coordinates: [row.longitude, row.latitude],
+    };
+    return `<tr>
+      <td>${row.rank ?? "—"}</td>
+      <td>${escapeHtml(type)}</td>
+      <td><button class="resource-map-link" type="button" data-map-target="${escapeHtml(JSON.stringify(target))}">${escapeHtml(row.label)}</button><br><small>${escapeHtml(row.waypoint_id)}</small></td>
+      <td>${row.mean_operations_per_replica == null ? "—" : formatNumber(row.mean_operations_per_replica, 1)}</td>
+      <td>${row.mean_throughput_per_hour == null ? "—" : `${formatNumber(row.mean_throughput_per_hour, 2)} ops/h`}</td>
+    </tr>`;
+  }).join("") : `<tr><td colspan="5">Ranking ainda não calculado para este cenário.</td></tr>`;
 }
 
 function renderCapacityTable(throughput, crossingsHave3dThroughput) {

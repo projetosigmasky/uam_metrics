@@ -22,7 +22,8 @@ from src.uam_dashboard.capacity import (
     _official_uam_route_groups,
     _uam_reh_crossing_features,
 )
-from src.uam_dashboard.config import EXTENDED_LOG_COLUMNS, LOG_COLUMNS
+from src.uam_dashboard.config import DEFAULT_REH_XML_PATH, DEFAULT_UAM_CSV_PATH, EXTENDED_LOG_COLUMNS, LOG_COLUMNS
+from src.uam_dashboard.run_config import load_run_selection
 from src.uam_dashboard.reh_parser import load_reh_network
 from src.uam_dashboard.topology import network_junction_features, reh_junction_features
 from src.uam_dashboard.uam_corridor_parser import load_uam_corridor_network
@@ -171,9 +172,11 @@ def main() -> int:
     source = parser.add_mutually_exclusive_group(required=True)
     source.add_argument("--logs-root", type=Path, help="Recursively discover C1/C2 STATELOG files")
     source.add_argument("--manifest", type=Path, help="CSV with scenario,path columns")
-    parser.add_argument("--reh-xml", type=Path, required=True)
-    parser.add_argument("--uam-csv", type=Path, required=True)
-    parser.add_argument("--output-dir", type=Path, required=True)
+    source.add_argument("--config", type=Path, help="JSON selecting a validated P100 orchestrator run")
+    parser.add_argument("--reh-xml", type=Path, default=DEFAULT_REH_XML_PATH)
+    parser.add_argument("--uam-csv", type=Path, default=DEFAULT_UAM_CSV_PATH)
+    parser.add_argument("--output-dir", type=Path)
+    parser.add_argument("--dashboard-assets", type=Path, help="Also publish waypoint ranking JS in this dashboard assets directory")
     parser.add_argument("--capture-radius-m", type=float, default=250.0)
     parser.add_argument("--window-seconds", type=int, default=900)
     parser.add_argument("--gap-seconds", type=float, default=300.0)
@@ -183,7 +186,15 @@ def main() -> int:
     args = parser.parse_args()
     if args.capture_radius_m <= 0 or args.window_seconds <= 0 or args.workers <= 0:
         parser.error("capture radius, window and workers must be positive")
-    logs = manifest_logs(args.manifest) if args.manifest else discover_logs(args.logs_root)
+    if args.config:
+        selection = load_run_selection(args.config)
+        logs = [(path.parent.name, path) for path in selection.log_paths]
+        args.output_dir = args.output_dir or Path("docs/assets/data/critical_waypoints")
+        args.dashboard_assets = args.dashboard_assets or Path("docs/assets")
+    else:
+        logs = manifest_logs(args.manifest) if args.manifest else discover_logs(args.logs_root)
+        if args.output_dir is None:
+            parser.error("--output-dir is required without --config")
     if not logs or {scenario for scenario, _ in logs} != {"C1", "C2"}:
         parser.error("At least one C1 and one C2 STATELOG are required")
     for _, path in logs:
@@ -218,7 +229,7 @@ def main() -> int:
         ) for _, path in logs]
         for (scenario, path), future in zip(logs, futures):
             for row in future.result():
-                replica_rows.append({"scenario": scenario, "replica": str(path), **row})
+                replica_rows.append({"scenario": scenario, "replica": f"{scenario}/{path.name}", **row})
             print(f"Completed {scenario}: {path}", file=sys.stderr, flush=True)
 
     by_scenario = defaultdict(list)
@@ -264,6 +275,12 @@ def main() -> int:
     args.output_dir.mkdir(parents=True, exist_ok=True)
     write_csv(args.output_dir / "critical_waypoints.csv", summary)
     write_csv(args.output_dir / "waypoints_by_replica.csv", replica_rows)
+    if args.dashboard_assets is not None:
+        args.dashboard_assets.mkdir(parents=True, exist_ok=True)
+        (args.dashboard_assets / "waypoint_rankings.js").write_text(
+            "window.__UAM_WAYPOINT_RANKINGS__ = " + json.dumps(summary, ensure_ascii=False, separators=(",", ":")) + ";\n",
+            encoding="utf-8",
+        )
     (args.output_dir / "crossing_waypoints.geojson").write_text(
         json.dumps({"type": "FeatureCollection", "features": crossing_features}, ensure_ascii=False), encoding="utf-8"
     )
@@ -271,6 +288,7 @@ def main() -> int:
         json.dumps({"type": "FeatureCollection", "features": features}, ensure_ascii=False), encoding="utf-8"
     )
     (args.output_dir / "run_metadata.json").write_text(json.dumps({
+        "source_run": selection.run_dir.name if args.config else None,
         "replica_counts": replica_counts,
         "crossing_count": len(crossing_features),
         "uam_reh_crossing_count": len(crossing_features),
@@ -287,7 +305,7 @@ def main() -> int:
         ],
         "altitude_reference": "metres MSL; REH feet converted to metres",
         "junctions_without_complete_altitude": sum(feature["properties"].get("altitude_m") is None for feature in junction_features + reh_junctions),
-        "logs": [{"scenario": scenario, "path": str(path)} for scenario, path in logs],
+        "logs": [{"scenario": scenario, "file": path.name} for scenario, path in logs],
     }, ensure_ascii=False, indent=2), encoding="utf-8")
     print(f"Results: {args.output_dir}", file=sys.stderr)
     return 0

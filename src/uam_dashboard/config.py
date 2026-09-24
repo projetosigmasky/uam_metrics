@@ -22,6 +22,8 @@ EXTENDED_LOG_COLUMNS = [
 METERS_PER_NM = 1852.0
 FEET_TO_METERS = 0.3048
 SAO_PAULO_CENTER = [-23.5505, -46.6333]
+DEFAULT_REH_XML_PATH = Path(__file__).resolve().parents[2] / "data" / "xml" / "CV_REH_XP_SAO_PAULO.xml"
+DEFAULT_UAM_CSV_PATH = Path(__file__).resolve().parents[2] / "data" / "corridors" / "scenario_horizontal_3000ft_expanded_displaced.csv"
 
 
 @dataclass(frozen=True)
