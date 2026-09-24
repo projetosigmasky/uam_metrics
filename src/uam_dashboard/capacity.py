@@ -422,8 +422,10 @@ def _throughput_metrics(
                 }
             )
 
+    observation_start_s = min((item["start_s"] for item in instances), default=None)
+    observation_end_s = max((item["end_s"] for item in instances), default=None)
     return {
-        resource_type: _resource_throughput(items, window_seconds, capacity_percentile)
+        resource_type: _resource_throughput(items, window_seconds, capacity_percentile, observation_start_s, observation_end_s)
         for resource_type, items in resources.items()
     }
 
@@ -432,6 +434,8 @@ def _resource_throughput(
     items: list[dict[str, Any]],
     window_seconds: int,
     capacity_percentile: float,
+    observation_start_s: float | None = None,
+    observation_end_s: float | None = None,
 ) -> dict[str, Any]:
     if not items:
         return {
@@ -443,7 +447,9 @@ def _resource_throughput(
             "resource_count": 0,
         }
 
-    start_s = min(item["time_s"] for item in items)
+    start_s = observation_start_s if observation_start_s is not None else min(item["time_s"] for item in items)
+    end_s = observation_end_s if observation_end_s is not None else max(item["time_s"] for item in items)
+    window_count = max(1, int((end_s - start_s) // max(window_seconds, 1)) + 1)
     window_hours = max(window_seconds, 1) / 3600.0
     counts: dict[tuple[str, int], int] = {}
     labels: dict[str, str] = {}
@@ -458,19 +464,14 @@ def _resource_throughput(
         if item.get("map_target"):
             map_targets[item["resource_id"]] = item["map_target"]
 
-    # Eq. 4.25 requires a declared or saturation-tested capacity C_r,dt.
-    # A percentile of the observed demand is not capacity and must not be used
-    # as a utilization denominator.
-    capacity = None
+    # Produto 3 final, Eqs. 3.16-3.17: empirical practical capacity is P95
+    # of observed throughput across all scenario windows, including zeros.
     summaries = []
     for resource_id, total in totals.items():
-        resource_values = [
-            count / window_hours
-            for (item_resource_id, _), count in counts.items()
-            if item_resource_id == resource_id
-        ]
+        resource_values = [counts.get((resource_id, index), 0) / window_hours for index in range(window_count)]
         peak = max(resource_values) if resource_values else 0.0
         mean = float(np.mean(resource_values)) if resource_values else 0.0
+        practical_capacity = float(np.percentile(resource_values, capacity_percentile * 100)) if resource_values else 0.0
         summaries.append(
             {
                 "resource_id": resource_id,
@@ -478,8 +479,9 @@ def _resource_throughput(
                 "operations": int(total),
                 "mean_throughput_per_hour": mean,
                 "peak_throughput_per_hour": float(peak),
-                "utilization_peak": None,
-                "utilization_mean": None,
+                "capacity_reference_per_hour": practical_capacity,
+                "utilization_peak": float(peak / practical_capacity) if practical_capacity > 0 else None,
+                "utilization_mean": float(mean / practical_capacity) if practical_capacity > 0 else None,
                 "map_target": map_targets.get(resource_id),
             }
         )
@@ -487,8 +489,10 @@ def _resource_throughput(
     summaries.sort(key=lambda item: (item["peak_throughput_per_hour"], item["operations"]), reverse=True)
     return {
         "available": True,
-        "capacity_declared_per_hour": capacity,
-        "utilization_available": False,
+        "capacity_declared_per_hour": None,
+        "capacity_method": "P95_observed_throughput",
+        "capacity_reference_per_hour": None,
+        "utilization_available": True,
         "violation_available": False,
         "resource_count": len(totals),
         "top_resources": summaries[:5],
@@ -686,6 +690,8 @@ def _annotate_crossing_criticality(
         throughputs = counts / window_hours
         peak = float(np.max(throughputs)) if len(throughputs) else 0.0
         mean = float(np.mean(throughputs)) if len(throughputs) else 0.0
+        practical_capacity = float(np.percentile(throughputs, capacity_percentile * 100)) if len(throughputs) else 0.0
+        utilization_peak = peak / practical_capacity if practical_capacity > 0 else None
         properties = feature["properties"]
         properties.update(
             {
@@ -693,8 +699,9 @@ def _annotate_crossing_criticality(
                 "operations": int(len(passages)),
                 "mean_throughput_per_hour": mean,
                 "peak_throughput_per_hour": peak,
+                "capacity_reference_per_hour": practical_capacity,
                 "capacity_declared_per_hour": None,
-                "utilization_peak": None,
+                "utilization_peak": utilization_peak,
             }
         )
         summaries.append(
@@ -704,9 +711,10 @@ def _annotate_crossing_criticality(
                 "operations": int(len(passages)),
                 "mean_throughput_per_hour": mean,
                 "peak_throughput_per_hour": peak,
+                "capacity_reference_per_hour": practical_capacity,
                 "capacity_declared_per_hour": None,
-                "utilization_peak": None,
-                "utilization_mean": None,
+                "utilization_peak": utilization_peak,
+                "utilization_mean": mean / practical_capacity if practical_capacity > 0 else None,
                 "map_target": {
                     "type": "crossing_waypoint",
                     "resource_id": properties["resource_id"],
@@ -716,7 +724,7 @@ def _annotate_crossing_criticality(
         )
     summaries.sort(
         key=lambda item: (
-            item["utilization_peak"],
+            item["utilization_peak"] or 0,
             item["peak_throughput_per_hour"],
             item["operations"],
         ),
@@ -724,7 +732,8 @@ def _annotate_crossing_criticality(
     )
     return {
         "available": True,
-        "utilization_available": False,
+        "capacity_method": "P95_observed_throughput",
+        "utilization_available": True,
         "violation_available": False,
         "capture_radius_m": float(capture_radius_m),
         "resource_count": len(summaries),

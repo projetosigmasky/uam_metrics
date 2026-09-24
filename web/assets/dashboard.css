@@ -419,6 +419,15 @@ main {
 .map-summary strong { color: var(--ink); font-size: 13px; }
 .map-summary p { margin: 6px 0 0; }
 
+.protocol-note {
+  background: #fff7ed;
+  border-bottom: 1px solid #fdba74;
+  color: #7c2d12;
+  font-size: 13px;
+  margin: 0;
+  padding: 10px 20px;
+}
+
 input[type="checkbox"] {
   accent-color: var(--blue);
 }

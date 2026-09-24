@@ -26,9 +26,18 @@ from src.uam_dashboard.scenario_parser import (
 from src.uam_dashboard.reh_parser import load_reh_network
 from src.uam_dashboard.uam_corridor_parser import load_uam_corridor_network
 from generate_uam_projection import write_uam_projection_asset
+from src.uam_dashboard.metric_catalog import METRIC_CATALOG, SOURCE_DOCUMENT, SOURCE_VERSION
 
 
 class MetricsTest(unittest.TestCase):
+    def test_metric_catalog_references_final_product_three(self) -> None:
+        self.assertEqual({metric["kpa"] for metric in METRIC_CATALOG}, {
+            "Segurança", "Eficiência", "Capacidade", "Previsibilidade", "Equidade", "Diagnóstico complementar",
+        })
+        self.assertTrue(all(metric["source_document"] == SOURCE_DOCUMENT for metric in METRIC_CATALOG))
+        self.assertTrue(all(SOURCE_VERSION in metric["pdf_reference"] for metric in METRIC_CATALOG))
+        self.assertFalse(any("Eq. 4." in metric["pdf_reference"] for metric in METRIC_CATALOG))
+
     def test_product2_uam_csv_is_the_six_vertiport_network(self) -> None:
         network = load_uam_corridor_network(
             Path("data/corridors/scenario_horizontal_3000ft_expanded_displaced.csv")
@@ -405,7 +414,9 @@ class MetricsTest(unittest.TestCase):
         self.assertEqual(len(metrics["density"]["hotspots"]["features"]), 1)
         self.assertTrue(metrics["throughput"]["od_pairs"]["available"])
         self.assertIsNone(metrics["throughput"]["od_pairs"]["capacity_declared_per_hour"])
-        self.assertFalse(metrics["throughput"]["od_pairs"]["utilization_available"])
+        self.assertTrue(metrics["throughput"]["od_pairs"]["utilization_available"])
+        self.assertEqual(metrics["throughput"]["od_pairs"]["top_resources"][0]["capacity_reference_per_hour"], 2.0)
+        self.assertEqual(metrics["throughput"]["od_pairs"]["top_resources"][0]["utilization_peak"], 1.0)
         self.assertLessEqual(len(metrics["throughput"]["od_pairs"]["top_resources"]), 5)
         self.assertTrue(metrics["throughput"]["planned_reh"]["available"])
         self.assertIn("crossings", metrics["complexity"])
@@ -420,6 +431,15 @@ class MetricsTest(unittest.TestCase):
 
         self.assertEqual(metrics["resource_count"], 8)
         self.assertEqual(len(metrics["top_resources"]), 5)
+
+    def test_practical_capacity_uses_all_observation_windows(self) -> None:
+        items = [{"resource_id": "R1", "label": "R1", "time_s": 0}]
+        metrics = _resource_throughput(items, 900, 0.95, 0, 3600)
+        resource = metrics["top_resources"][0]
+        self.assertEqual(resource["operations"], 1)
+        self.assertEqual(resource["peak_throughput_per_hour"], 4.0)
+        self.assertAlmostEqual(resource["capacity_reference_per_hour"], 3.2)
+        self.assertAlmostEqual(resource["utilization_peak"], 1.25)
 
     def test_capacity_uses_uam_reh_crossings_and_ranks_crossing_waypoints(self) -> None:
         df = pd.DataFrame([

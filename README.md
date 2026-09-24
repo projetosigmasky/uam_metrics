@@ -2,7 +2,7 @@
 
 Dashboard estatico para analisar logs `STATELOG` do BlueSky em cenarios de corredor aereo urbano na RMSP.
 
-Este repositorio implementa, em codigo, metricas de seguranca e eficiencia descritas no estudo `Projeto_SIGMA_Sky_Produto_3_Versao_1.pdf`. A saida principal e a pasta `docs/`, pronta para GitHub Pages.
+Este repositorio vincula as metricas ao `Produto3_vfinal_ProjetoSIGMASky.pdf` (Produto 3, versao 2.0, 31/07/2026). A saida principal e a pasta `docs/`, pronta para GitHub Pages. O PDF local e ignorado pelo Git; o catalogo versionado registra suas paginas e equacoes.
 
 ## 1. Preparar Os Logs
 
@@ -56,11 +56,11 @@ flight_instance_reset_distance_m = 250.0
 flight_instance_jump_m = 5000.0
 lowc_horizontal_m = 500.0
 lowc_vertical_m = 137.16
-nmac_horizontal_m = 150.0
-nmac_vertical_m = 30.48
-mac_beta = 5.038e-3
-mac_probability_given_nmac = 0.005
-tls_target_per_flight_hour = 9.4e-6
+nmac_horizontal_m = 152.0
+nmac_vertical_m = 30.0
+mac_beta = 0.005
+mac_probability_given_nmac = 5.038e-3
+tls_target_per_flight_hour = 8.9e-6
 tls_epsilon = 1e-15
 conflict_sample_seconds = 1
 visualization_3d_sample_seconds = 5
@@ -71,7 +71,7 @@ trajectory_shape_points = 12
 trajectory_cluster_distance_m = 1200.0
 trajectory_endpoint_tolerance_m = 2500.0
 conformity_tolerance_m = 250.0
-capacity_window_seconds = 3600
+capacity_window_seconds = 900
 capacity_reference_percentile = 0.95
 crossing_capture_radius_m = 250.0
 heatmap_sample_stride = 10
@@ -81,7 +81,7 @@ Alguns parametros podem ser alterados pela linha de comando:
 
 ```powershell
 .\.venv\Scripts\python.exe generate_dashboard.py --lowc-horizontal-m 600 --lowc-vertical-m 137.16
-.\.venv\Scripts\python.exe generate_dashboard.py --nmac-horizontal-m 150 --nmac-vertical-m 30.48
+.\.venv\Scripts\python.exe generate_dashboard.py --nmac-horizontal-m 152 --nmac-vertical-m 30
 .\.venv\Scripts\python.exe generate_dashboard.py --conformity-tolerance-m 250
 .\.venv\Scripts\python.exe generate_dashboard.py --visualization-3d-sample-seconds 5
 .\.venv\Scripts\python.exe generate_dashboard.py --visualization-3d-ground-msl-ft 2621
@@ -132,31 +132,33 @@ rastreabilidade. Para cada metrica ele publica, em portugues:
 - o que o software efetivamente calcula hoje;
 - melhorias, parametros a validar e entradas ainda ausentes.
 
-O dashboard renderiza todas essas colunas. LoWC e NMAC usam simultaneamente
-separacao horizontal e vertical. Resultados dependentes de limites operacionais,
-parametros probabilisticos ou capacidade declarada permanecem marcados como
-`parcial`, mesmo quando o calculo ja esta implementado.
+O dashboard renderiza as cinco KPAs do Produto 3 final: seguranca, eficiencia,
+capacidade, previsibilidade e equidade. Densidade e cruzamentos espaciais sao
+identificados como diagnosticos complementares. O arquivo
+`docs/assets/metric_catalog.js` atualiza a rastreabilidade sem reprocessar logs;
+o painel avisa quando os numeros publicados ainda pertencem ao protocolo anterior.
 
 ## 7. Metricas Parciais Ou Indisponiveis
 
 As lacunas completas ficam no catalogo e na tabela do dashboard. As principais sao:
 
-- TTC observado: requer instante de alerta/deteccao ou previsao de CPA;
 - atraso no ar: requer execucao nominal pareada para cada cenario;
 - atraso operacional de solo e pontualidade: requerem marcos programados,
   autorizados e reais de saida/chegada;
-- capacidade real: requer capacidade declarada por recurso;
+- capacidade pratica P95: calculada a partir do throughput observado; sua estabilidade requer varias janelas e replicas;
 - MAC/TLS: requerem validacao dos limites e parametros probabilisticos.
 
-O valor de 60 s continua disponivel somente como horizonte `DTLOOK`; ele nao e
-rotulado como TTC observado.
+Previsibilidade por OD, degradacao relativa off-nominal e equidade entre grupos
+continuam parciais ou indisponiveis, conforme a tabela de rastreabilidade.
+
+O horizonte `DTLOOK` e um parametro de diagnostico, nao um KPI formal do Produto 3 final.
 
 ## 8. Comparacao Entre Logs
 
 Os nomes `produto2_C1_<data>_off` e `produto2_C2_<data>_off` sao agrupados
 automaticamente como variantes da mesma demanda. C1 e a referencia da comparacao;
 C2 representa o corredor UAM dedicado. A tabela mostra diferencas de tempo e
-distancia contra C1 e a razao de risco da Eq. 4.10.
+distancia contra C1 e a razao de risco da Eq. 3.5.
 
 Todo processamento dos `STATELOGs` acontece em Python durante a execucao de `generate_dashboard.py`. O JavaScript da pagina apenas apresenta os arquivos gerados.
 
@@ -212,7 +214,7 @@ altitude e a altura original de cada corredor ao clicar; a projeção não repre
 seu volume vertical. `generate_uam_projection.py` atualiza o arquivo estático
 `assets/uam_projection.js` diretamente do CSV.
 
-A conformidade formal segue as Eq. 4.16-4.17 do PDF, comparando distancia executada e planejada.
+A conformidade da trajetoria segue as Eqs. 3.13-3.14 do PDF final, comparando distancia executada e planejada.
 Separadamente, a aderencia espacial informa o percentual de amostras executadas que estao dentro
 de algum poligono oficial da REH. O parametro `conformity_tolerance_m` continua sendo usado apenas
 no diagnostico de proximidade da linha planejada quando o XML nao esta disponivel.
@@ -225,22 +227,22 @@ planejada nao aparece no `STATELOG`.
 
 LoWC exige simultaneamente `Sh < Smin_h` e `Sv < Smin_v`; NMAC usa os dois
 limites mais restritivos. Os padroes atuais sao 500 m/137,16 m para LoWC e
-150 m/30,48 m para NMAC. Eles sao parametros configuraveis e permanecem
+152 m/30 m para NMAC. Eles sao parametros configuraveis e permanecem
 marcados como pendentes de validacao operacional.
 
-A severidade de cada amostra e `max(Sh/Smin_h, Sv/Smin_v)`. A severidade do
+A severidade diagnostica de cada amostra e `min(Sh/Smin_h, Sv/Smin_v)`. A severidade do
 evento e o menor valor ao longo de sua duracao. O resultado tambem informa a
 separacao vertical e a combinacao eVTOL-eVTOL, eVTOL-helicoptero ou
 helicoptero-helicoptero.
 
 ## 12. Capacidade, Densidade E Utilizacao
 
-A densidade formal usa os poligonos oficiais de cada trecho REH. A area `A` da Eq. 4.23 e calculada
+A densidade complementar usa os poligonos oficiais de cada trecho REH. A area e calculada
 diretamente da geometria WFS/GML; a semilargura deixa de ser imposta globalmente e passa a ser a do
 cadastro oficial (100 m ou 250 m, conforme o trecho). Os hotspots ATD tambem passam a ser agregados
 por trecho oficial.
 
-O throughput da Eq. 4.24 e calculado em janelas de 1 hora para quatro tipos de recurso:
+O throughput da Eq. 3.15 e calculado em janelas padrao de 15 minutos e expresso em operacoes/hora para quatro tipos de recurso:
 
 - pares origem-destino observados;
 - grupos de trajetoria executada;
@@ -257,9 +259,9 @@ Para cada waypoint, o processamento conta uma passagem por instancia de voo dent
 de raio configurado em metros, combinando distancia horizontal e vertical. Os resultados por janela
 e a media entre replicas ordenam os pontos mais movimentados. Nao ha capacidade declarada para eles.
 
-Como ainda nao ha capacidade declarada externa, a utilizacao da Eq. 4.25 usa uma referencia nominal
-interna: `C_r,dt = P95(THR_r,dt)` por tipo de recurso. Assim, a utilizacao informa quao proximo o recurso
-ficou do envelope operacional observado no proprio conjunto de simulacoes.
+A capacidade pratica da Eq. 3.16 e o P95 do throughput observado em todas as janelas,
+incluindo janelas vazias. A utilizacao da Eq. 3.17 divide o throughput por esse P95
+quando positivo. A capacidade empirica nao equivale a uma capacidade declarada pelo DECEA.
 
 ## 13. Testes
 
@@ -313,7 +315,7 @@ O ranking em `critical_waypoints.csv` inclui **todos** os pontos candidatos para
 cada cenario. A coluna `criterion` identifica `uam_reh_crossing` ou
 `uam_junction` ou `reh_junction`; `network_degree` informa o grau dos nos. A coluna
 `mean_throughput_per_hour` e a media, com peso igual entre replicas, do
-throughput medio por janela de uma hora de cada replica. O ranking decresce por
+throughput medio por janela de 15 minutos de cada replica. O ranking decresce por
 essa coluna; em caso de empate, usa a media dos picos horarios. Uma replica sem
 passagens em um waypoint contribui com zero. `waypoints_by_replica.csv` permite
 auditar os valores de cada execucao. `critical_waypoints.geojson` contem todos os

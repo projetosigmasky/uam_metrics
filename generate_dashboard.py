@@ -26,7 +26,7 @@ from src.uam_dashboard.metrics import (
     total_delay_metrics,
     trajectory_conformity,
 )
-from src.uam_dashboard.metric_catalog import metric_catalog_payload
+from src.uam_dashboard.metric_catalog import SOURCE_VERSION, metric_catalog_payload, write_metric_catalog_asset
 from src.uam_dashboard.plots import (
     plot_active_aircraft,
     plot_altitude_histogram,
@@ -88,6 +88,7 @@ def average_dashboard(run_dashboards: list[dict[str, Any]]) -> dict[str, Any]:
 
     return {
         "source_log": f"Media de {count} STATELOGs",
+        "metric_catalog_version": SOURCE_VERSION,
         "map_center": SAO_PAULO_CENTER,
         "summary": {
             "records": int(sum(d["summary"]["records"] for d in run_dashboards)),
@@ -552,6 +553,7 @@ def analyze_log(log_path: Path, config: DashboardConfig, charts_dir: Path, run_i
     summary = build_summary(df, operation_count=efficiency["flight_instances"])
     dashboard = {
         "source_log": log_path.name,
+        "metric_catalog_version": SOURCE_VERSION,
         "metadata": metadata,
         "map_center": SAO_PAULO_CENTER,
         "summary": summary,
@@ -586,6 +588,7 @@ def build_dashboard(config: DashboardConfig) -> None:
     write_candidate_node_assets(output_dir, config.uam_corridor_csv_path, config.reh_xml_path)
     write_crossing_waypoint_asset(config.uam_corridor_csv_path, config.reh_xml_path, output_dir)
     write_uam_projection_asset(config.uam_corridor_csv_path, output_dir)
+    write_metric_catalog_asset(output_dir)
 
     charts_dir = output_dir / "assets" / "charts"
     data_dir = output_dir / "assets" / "data"
@@ -649,11 +652,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--flight-instance-jump-m", type=float, default=5000.0)
     parser.add_argument("--lowc-horizontal-m", type=float, default=500.0)
     parser.add_argument("--lowc-vertical-m", type=float, default=137.16)
-    parser.add_argument("--nmac-horizontal-m", type=float, default=150.0)
-    parser.add_argument("--nmac-vertical-m", type=float, default=30.48)
+    parser.add_argument("--nmac-horizontal-m", type=float, default=152.0)
+    parser.add_argument("--nmac-vertical-m", type=float, default=30.0)
     parser.add_argument("--mac-beta", type=float, default=0.005)
     parser.add_argument("--mac-probability-given-nmac", type=float, default=5.038e-3)
-    parser.add_argument("--tls-target-per-flight-hour", type=float, default=9.4e-6)
+    parser.add_argument("--tls-target-per-flight-hour", type=float, default=8.9e-6)
     parser.add_argument("--tls-epsilon", type=float, default=1e-15)
     parser.add_argument("--conflict-sample-seconds", type=int, default=1)
     parser.add_argument("--visualization-3d-sample-seconds", type=int, default=5)
@@ -663,7 +666,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--trajectory-cluster-distance-m", type=float, default=1200.0)
     parser.add_argument("--trajectory-endpoint-tolerance-m", type=float, default=2500.0)
     parser.add_argument("--conformity-tolerance-m", type=float, default=250.0)
-    parser.add_argument("--capacity-window-seconds", type=int, default=3600)
+    parser.add_argument("--capacity-window-seconds", type=int, default=900)
     parser.add_argument("--capacity-reference-percentile", type=float, default=0.95)
     parser.add_argument("--crossing-capture-radius-m", type=float, default=250.0)
     return parser.parse_args()

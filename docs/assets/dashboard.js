@@ -196,7 +196,19 @@ function renderDashboard(model) {
   state.activeRunIndex = Math.min(state.activeRunIndex, state.runs.length - 1);
 
   renderComparison(normalized);
-  renderTraceability(normalized.metric_catalog || normalized.dashboard.metric_catalog || []);
+  const source = window.__UAM_METRIC_CATALOG__;
+  renderTraceability(source?.metrics || normalized.metric_catalog || normalized.dashboard.metric_catalog || []);
+  const current = normalized.dashboard?.metric_catalog_version === source?.version;
+  setText("metric-source-note", source
+    ? `${source.version} · ${source.document}. ${current ? "Resultados processados com este protocolo." : "O catálogo foi atualizado; os resultados de simulação publicados ainda requerem reprocessamento com este protocolo."}`
+    : "Referência do catálogo indisponível.");
+  const protocolNote = document.getElementById("protocol-data-note");
+  if (protocolNote) {
+    protocolNote.hidden = !source || current;
+    protocolNote.textContent = source && !current
+      ? "Catálogo vinculado ao Produto 3 final. Os indicadores numéricos publicados ainda usam dados processados anteriormente; reexecute generate_dashboard.py para aplicar os parâmetros e fórmulas atualizados."
+      : "";
+  }
   renderSelectedRun();
 }
 
@@ -1447,36 +1459,23 @@ function renderTraceability(catalog) {
 }
 
 function groupTraceability(catalog) {
-  const order = ["Seguranca", "Eficiencia", "Capacidade", "Trajetorias e mapa", "Indisponiveis"];
+  const order = ["Segurança", "Eficiência", "Capacidade", "Previsibilidade", "Equidade", "Diagnóstico complementar"];
   const labels = {
-    Seguranca: "Metricas de seguranca",
-    Eficiencia: "Metricas de eficiencia",
-    Capacidade: "Metricas de capacidade",
-    "Trajetorias e mapa": "Trajetorias, mapa e diagnosticos espaciais",
-    Indisponiveis: "Metricas ainda indisponiveis",
+    "Segurança": "Segurança",
+    "Eficiência": "Eficiência",
+    "Capacidade": "Capacidade",
+    "Previsibilidade": "Previsibilidade",
+    "Equidade": "Equidade",
+    "Diagnóstico complementar": "Diagnósticos complementares do painel",
   };
   const groups = Object.fromEntries(order.map((key) => [key, []]));
   for (const metric of catalog) {
-    groups[inferMetricCategory(metric)].push(metric);
+    const group = metric.kpa || "Diagnóstico complementar";
+    if (groups[group]) groups[group].push(metric);
   }
   return order
     .filter((key) => groups[key].length)
     .map((key) => ({ label: labels[key], items: groups[key] }));
-}
-
-function inferMetricCategory(metric) {
-  const id = metric.id || "";
-  if (metric.availability === "indisponivel") return "Indisponiveis";
-  if (id.includes("lowc") || id.includes("nmac") || id.includes("severity") || id.includes("mac") || id.includes("risk") || id.includes("tls") || id.includes("conflict")) {
-    return "Seguranca";
-  }
-  if (id.includes("density") || id.includes("complexity") || id.includes("throughput") || id.includes("utilization")) {
-    return "Capacidade";
-  }
-  if (id.includes("time") || id.includes("distance") || id.includes("efficiency") || id.includes("delay") || id.includes("conformity")) {
-    return "Eficiencia";
-  }
-  return "Trajetorias e mapa";
 }
 
 function colorForVolume(volumeRatio) {

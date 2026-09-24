@@ -464,7 +464,8 @@ def detect_lowc_events(
                     "dist_v_m": dist_v_m,
                     "horizontal_ratio": float(horizontal_ratio),
                     "vertical_ratio": float(vertical_ratio),
-                    # Eq. 4.9: the most critical normalized separation governs.
+                    # Supplemental proximity diagnostic; the final Produto 3
+                    # defines event counts and risk levels, not this ratio.
                     "severity_ratio": float(
                         min(horizontal_ratio, vertical_ratio)
                         if lowc_vertical_threshold_m is not None

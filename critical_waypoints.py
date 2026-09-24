@@ -175,7 +175,7 @@ def main() -> int:
     parser.add_argument("--uam-csv", type=Path, required=True)
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument("--capture-radius-m", type=float, default=250.0)
-    parser.add_argument("--window-seconds", type=int, default=3600)
+    parser.add_argument("--window-seconds", type=int, default=900)
     parser.add_argument("--gap-seconds", type=float, default=300.0)
     parser.add_argument("--reset-distance-m", type=float, default=250.0)
     parser.add_argument("--jump-m", type=float, default=5000.0)

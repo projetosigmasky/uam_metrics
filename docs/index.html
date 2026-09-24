@@ -10,7 +10,7 @@
       integrity="sha256-p4NxAoJBhIINfQd+g9FQXHyzyTAFi+lyLwN2Bja9fM="
       crossorigin=""
     />
-    <link rel="stylesheet" href="assets/dashboard.css?v=0.9.0" />
+    <link rel="stylesheet" href="assets/dashboard.css?v=1.0.0" />
   </head>
   <body>
     <header class="topbar">
@@ -29,6 +29,7 @@
         </label>
       </div>
     </header>
+    <p id="protocol-data-note" class="protocol-note" hidden></p>
 
     <nav class="kpa-tabs" role="tablist" aria-label="Áreas de desempenho">
       <button class="active" type="button" role="tab" aria-selected="true" data-kpa-tab="overview">Visão geral</button>
@@ -367,7 +368,8 @@
       <section class="chart-section capacity-section" data-kpa-panel="capacity" aria-label="Metricas de capacidade">
         <div class="section-heading">
           <p class="eyebrow">Capacidade</p>
-          <h2>Densidade, complexidade, throughput e utilizacao</h2>
+          <h2>Throughput, capacidade prática e utilização</h2>
+          <p>Densidade, hotspots e cruzamentos são diagnósticos espaciais complementares.</p>
         </div>
         <div class="metric-grid compact-grid">
           <article class="metric">
@@ -425,6 +427,7 @@
         <div>
           <p class="eyebrow">Rastreabilidade</p>
           <h2>O que esta implementado e o que ainda precisa melhorar</h2>
+          <p id="metric-source-note">Carregando referência do Produto 3.</p>
         </div>
         <div class="table-wrap">
           <table class="comparison-table traceability-table">
@@ -456,6 +459,7 @@
     <script src="assets/candidate_nodes.js?v=0.8.0"></script>
     <script src="assets/crossing_waypoints_3d.js?v=0.8.0"></script>
     <script src="assets/uam_projection.js?v=0.9.0"></script>
-    <script src="assets/dashboard.js?v=0.9.0"></script>
+    <script src="assets/metric_catalog.js?v=1.0.0"></script>
+    <script src="assets/dashboard.js?v=1.0.0"></script>
   </body>
 </html>
