@@ -1047,3 +1047,20 @@ input[type="checkbox"] {
   .viewer3d-legend { bottom: 12px; left: 12px; right: auto; top: auto; }
   .conflict-timeline-heading { align-items: flex-start; flex-direction: column; gap: 4px; }
 }
+
+/* Long waypoint position indexes stay inside the Leaflet popup. */
+.leaflet-popup-scrolled {
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+.leaflet-popup-content {
+  overflow-wrap: anywhere;
+}
+.leaflet-popup-close-button {
+  position: absolute;
+  top: 2px;
+  right: 7px;
+  font-size: 20px;
+  color: #475569;
+  text-decoration: none;
+}

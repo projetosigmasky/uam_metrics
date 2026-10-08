@@ -1,3 +1,4 @@
 pandas
 numpy
 matplotlib
+shapely>=2.0,<3

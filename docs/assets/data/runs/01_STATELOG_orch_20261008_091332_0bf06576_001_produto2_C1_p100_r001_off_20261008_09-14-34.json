@@ -48416,881 +48416,10 @@
           ]
         },
         "crossing_waypoints": {
-          "available": true,
-          "resource_count": 43,
-          "replica_count": 50,
-          "capacity_method": "mean_replica_P95_observed_throughput",
-          "capacity_declared_per_hour": null,
-          "utilization_available": true,
-          "violation_available": false,
-          "resources": [
-            {
-              "resource_id": "XUAMREH018",
-              "label": "Cruzamento UAM × REH 018",
-              "map_target": {
-                "type": "crossing_waypoint",
-                "resource_id": "XUAMREH018",
-                "coordinates": [
-                  -46.74256801100671,
-                  -23.518395971076906
-                ]
-              },
-              "operations": 260.9,
-              "mean_throughput_per_hour": 10.833124511761966,
-              "peak_throughput_per_hour": 64.32,
-              "capacity_reference_per_hour": 39.51999999999998,
-              "utilization_peak": 1.6275303643724701,
-              "utilization_mean": 0.2741175230709001
-            },
-            {
-              "resource_id": "XUAMREH027",
-              "label": "Cruzamento UAM × REH 027",
-              "map_target": {
-                "type": "crossing_waypoint",
-                "resource_id": "XUAMREH027",
-                "coordinates": [
-                  -46.726723850672045,
-                  -23.514054899958264
-                ]
-              },
-              "operations": 260.28,
-              "mean_throughput_per_hour": 10.80735369021369,
-              "peak_throughput_per_hour": 70.56,
-              "capacity_reference_per_hour": 40.09199999999998,
-              "utilization_peak": 1.7599521101466638,
-              "utilization_mean": 0.26956384541089734
-            },
-            {
-              "resource_id": "XUAMREH020",
-              "label": "Cruzamento UAM × REH 020",
-              "map_target": {
-                "type": "crossing_waypoint",
-                "resource_id": "XUAMREH020",
-                "coordinates": [
-                  -46.7382529111411,
-                  -23.51801559902815
-                ]
-              },
-              "operations": 234.22,
-              "mean_throughput_per_hour": 9.725343117334903,
-              "peak_throughput_per_hour": 52.16,
-              "capacity_reference_per_hour": 32.37999999999999,
-              "utilization_peak": 1.6108709079678818,
-              "utilization_mean": 0.3003503124562973
-            },
-            {
-              "resource_id": "XUAMREH025",
-              "label": "Cruzamento UAM × REH 025",
-              "map_target": {
-                "type": "crossing_waypoint",
-                "resource_id": "XUAMREH025",
-                "coordinates": [
-                  -46.73455784831051,
-                  -23.515109439612967
-                ]
-              },
-              "operations": 223.14,
-              "mean_throughput_per_hour": 9.265366729776844,
-              "peak_throughput_per_hour": 57.36,
-              "capacity_reference_per_hour": 34.31599999999999,
-              "utilization_peak": 1.6715234875859664,
-              "utilization_mean": 0.27000136174894646
-            },
-            {
-              "resource_id": "XUAMREH023",
-              "label": "Cruzamento UAM × REH 023",
-              "map_target": {
-                "type": "crossing_waypoint",
-                "resource_id": "XUAMREH023",
-                "coordinates": [
-                  -46.73530258979139,
-                  -23.546804572765158
-                ]
-              },
-              "operations": 163.98,
-              "mean_throughput_per_hour": 6.808894213489416,
-              "peak_throughput_per_hour": 41.44,
-              "capacity_reference_per_hour": 25.44799999999999,
-              "utilization_peak": 1.628418736246464,
-              "utilization_mean": 0.26756107409185076
-            },
-            {
-              "resource_id": "XUAMREH019",
-              "label": "Cruzamento UAM × REH 019",
-              "map_target": {
-                "type": "crossing_waypoint",
-                "resource_id": "XUAMREH019",
-                "coordinates": [
-                  -46.7424579931275,
-                  -23.537522076083363
-                ]
-              },
-              "operations": 151.24,
-              "mean_throughput_per_hour": 6.280251097693784,
-              "peak_throughput_per_hour": 37.68,
-              "capacity_reference_per_hour": 23.583999999999993,
-              "utilization_peak": 1.5976933514246952,
-              "utilization_mean": 0.26629287218850856
-            },
-            {
-              "resource_id": "XUAMREH017",
-              "label": "Cruzamento UAM × REH 017",
-              "map_target": {
-                "type": "crossing_waypoint",
-                "resource_id": "XUAMREH017",
-                "coordinates": [
-                  -46.74321939760633,
-                  -23.53638657640141
-                ]
-              },
-              "operations": 144.86,
-              "mean_throughput_per_hour": 6.015357140108442,
-              "peak_throughput_per_hour": 35.92,
-              "capacity_reference_per_hour": 21.679999999999986,
-              "utilization_peak": 1.6568265682656838,
-              "utilization_mean": 0.2774611226987291
-            },
-            {
-              "resource_id": "XUAMREH016",
-              "label": "Cruzamento UAM × REH 016",
-              "map_target": {
-                "type": "crossing_waypoint",
-                "resource_id": "XUAMREH016",
-                "coordinates": [
-                  -46.74397829084542,
-                  -23.538606943555322
-                ]
-              },
-              "operations": 137.1,
-              "mean_throughput_per_hour": 5.693142136433428,
-              "peak_throughput_per_hour": 32.72,
-              "capacity_reference_per_hour": 19.703999999999994,
-              "utilization_peak": 1.6605765326837196,
-              "utilization_mean": 0.28893331995703564
-            },
-            {
-              "resource_id": "XUAMREH022",
-              "label": "Cruzamento UAM × REH 022",
-              "map_target": {
-                "type": "crossing_waypoint",
-                "resource_id": "XUAMREH022",
-                "coordinates": [
-                  -46.73569221948398,
-                  -23.54492364320313
-                ]
-              },
-              "operations": 119.42,
-              "mean_throughput_per_hour": 4.958873923952236,
-              "peak_throughput_per_hour": 28.0,
-              "capacity_reference_per_hour": 17.059999999999995,
-              "utilization_peak": 1.6412661195779605,
-              "utilization_mean": 0.29067256295147936
-            },
-            {
-              "resource_id": "XUAMREH021",
-              "label": "Cruzamento UAM × REH 021",
-              "map_target": {
-                "type": "crossing_waypoint",
-                "resource_id": "XUAMREH021",
-                "coordinates": [
-                  -46.73639520953387,
-                  -23.54736600595645
-                ]
-              },
-              "operations": 116.46,
-              "mean_throughput_per_hour": 4.835417379542298,
-              "peak_throughput_per_hour": 36.0,
-              "capacity_reference_per_hour": 20.587999999999987,
-              "utilization_peak": 1.7485914124732866,
-              "utilization_mean": 0.2348658140442151
-            },
-            {
-              "resource_id": "XUAMREH039",
-              "label": "Cruzamento UAM × REH 039",
-              "map_target": {
-                "type": "crossing_waypoint",
-                "resource_id": "XUAMREH039",
-                "coordinates": [
-                  -46.60709499132373,
-                  -23.54272604596319
-                ]
-              },
-              "operations": 116.36,
-              "mean_throughput_per_hour": 4.831581775781854,
-              "peak_throughput_per_hour": 30.96,
-              "capacity_reference_per_hour": 17.73599999999999,
-              "utilization_peak": 1.7456021650879576,
-              "utilization_mean": 0.27241665402468745
-            },
-            {
-              "resource_id": "XUAMREH041",
-              "label": "Cruzamento UAM × REH 041",
-              "map_target": {
-                "type": "crossing_waypoint",
-                "resource_id": "XUAMREH041",
-                "coordinates": [
-                  -46.604923183706596,
-                  -23.54266838564232
-                ]
-              },
-              "operations": 116.36,
-              "mean_throughput_per_hour": 4.831581775781854,
-              "peak_throughput_per_hour": 30.96,
-              "capacity_reference_per_hour": 17.703999999999994,
-              "utilization_peak": 1.74875734297334,
-              "utilization_mean": 0.2729090474345829
-            },
-            {
-              "resource_id": "XUAMREH040",
-              "label": "Cruzamento UAM × REH 040",
-              "map_target": {
-                "type": "crossing_waypoint",
-                "resource_id": "XUAMREH040",
-                "coordinates": [
-                  -46.60660014654001,
-                  -23.542635073452516
-                ]
-              },
-              "operations": 116.36,
-              "mean_throughput_per_hour": 4.831581775781854,
-              "peak_throughput_per_hour": 30.88,
-              "capacity_reference_per_hour": 17.73599999999999,
-              "utilization_peak": 1.7410915651781695,
-              "utilization_mean": 0.27241665402468745
-            },
-            {
-              "resource_id": "XUAMREH013",
-              "label": "Cruzamento UAM × REH 013",
-              "map_target": {
-                "type": "crossing_waypoint",
-                "resource_id": "XUAMREH013",
-                "coordinates": [
-                  -46.7533088495644,
-                  -23.524579799117795
-                ]
-              },
-              "operations": 100.9,
-              "mean_throughput_per_hour": 4.18926591126863,
-              "peak_throughput_per_hour": 34.72,
-              "capacity_reference_per_hour": 18.923999999999992,
-              "utilization_peak": 1.8347072500528436,
-              "utilization_mean": 0.2213731722293718
-            },
-            {
-              "resource_id": "XUAMREH012",
-              "label": "Cruzamento UAM × REH 012",
-              "map_target": {
-                "type": "crossing_waypoint",
-                "resource_id": "XUAMREH012",
-                "coordinates": [
-                  -46.75437731483486,
-                  -23.525568544258785
-                ]
-              },
-              "operations": 94.5,
-              "mean_throughput_per_hour": 3.9235205223521628,
-              "peak_throughput_per_hour": 33.12,
-              "capacity_reference_per_hour": 18.03199999999999,
-              "utilization_peak": 1.836734693877552,
-              "utilization_mean": 0.2175865418340819
-            },
-            {
-              "resource_id": "XUAMREH034",
-              "label": "Cruzamento UAM × REH 034",
-              "map_target": {
-                "type": "crossing_waypoint",
-                "resource_id": "XUAMREH034",
-                "coordinates": [
-                  -46.701270116014804,
-                  -23.612699209237856
-                ]
-              },
-              "operations": 82.16,
-              "mean_throughput_per_hour": 3.410910345066439,
-              "peak_throughput_per_hour": 29.04,
-              "capacity_reference_per_hour": 14.031999999999993,
-              "utilization_peak": 2.0695553021664774,
-              "utilization_mean": 0.24308083987075546
-            },
-            {
-              "resource_id": "XUAMREH029",
-              "label": "Cruzamento UAM × REH 029",
-              "map_target": {
-                "type": "crossing_waypoint",
-                "resource_id": "XUAMREH029",
-                "coordinates": [
-                  -46.708582576571175,
-                  -23.612599208788925
-                ]
-              },
-              "operations": 76.66,
-              "mean_throughput_per_hour": 3.1827049907066414,
-              "peak_throughput_per_hour": 26.24,
-              "capacity_reference_per_hour": 13.107999999999993,
-              "utilization_peak": 2.0018309429356127,
-              "utilization_mean": 0.24280630078628646
-            },
-            {
-              "resource_id": "XUAMREH030",
-              "label": "Cruzamento UAM × REH 030",
-              "map_target": {
-                "type": "crossing_waypoint",
-                "resource_id": "XUAMREH030",
-                "coordinates": [
-                  -46.70773960938346,
-                  -23.612763990761376
-                ]
-              },
-              "operations": 76.1,
-              "mean_throughput_per_hour": 3.159457568026229,
-              "peak_throughput_per_hour": 26.0,
-              "capacity_reference_per_hour": 12.983999999999991,
-              "utilization_peak": 2.0024645717806546,
-              "utilization_mean": 0.24333468638526118
-            },
-            {
-              "resource_id": "XUAMREH031",
-              "label": "Cruzamento UAM × REH 031",
-              "map_target": {
-                "type": "crossing_waypoint",
-                "resource_id": "XUAMREH031",
-                "coordinates": [
-                  -46.70746402773739,
-                  -23.611550190365055
-                ]
-              },
-              "operations": 68.92,
-              "mean_throughput_per_hour": 2.861427323243401,
-              "peak_throughput_per_hour": 25.44,
-              "capacity_reference_per_hour": 12.255999999999995,
-              "utilization_peak": 2.0757180156657973,
-              "utilization_mean": 0.2334715505257345
-            },
-            {
-              "resource_id": "XUAMREH032",
-              "label": "Cruzamento UAM × REH 032",
-              "map_target": {
-                "type": "crossing_waypoint",
-                "resource_id": "XUAMREH032",
-                "coordinates": [
-                  -46.706194188631684,
-                  -23.611641354291702
-                ]
-              },
-              "operations": 68.16,
-              "mean_throughput_per_hour": 2.829880383124954,
-              "peak_throughput_per_hour": 25.28,
-              "capacity_reference_per_hour": 12.255999999999995,
-              "utilization_peak": 2.062663185378591,
-              "utilization_mean": 0.23089755084244087
-            },
-            {
-              "resource_id": "XUAMREH033",
-              "label": "Cruzamento UAM × REH 033",
-              "map_target": {
-                "type": "crossing_waypoint",
-                "resource_id": "XUAMREH033",
-                "coordinates": [
-                  -46.70497560667669,
-                  -23.611693435361
-                ]
-              },
-              "operations": 66.94,
-              "mean_throughput_per_hour": 2.7792274621627553,
-              "peak_throughput_per_hour": 24.96,
-              "capacity_reference_per_hour": 11.955999999999994,
-              "utilization_peak": 2.0876547340247584,
-              "utilization_mean": 0.2324546221280325
-            },
-            {
-              "resource_id": "XUAMREH036",
-              "label": "Cruzamento UAM × REH 036",
-              "map_target": {
-                "type": "crossing_waypoint",
-                "resource_id": "XUAMREH036",
-                "coordinates": [
-                  -46.69757502277295,
-                  -23.613195941670394
-                ]
-              },
-              "operations": 50.98,
-              "mean_throughput_per_hour": 2.116601951797678,
-              "peak_throughput_per_hour": 23.2,
-              "capacity_reference_per_hour": 9.947999999999993,
-              "utilization_peak": 2.3321270607157234,
-              "utilization_mean": 0.2127665814030639
-            },
-            {
-              "resource_id": "XUAMREH006",
-              "label": "Cruzamento UAM × REH 006",
-              "map_target": {
-                "type": "crossing_waypoint",
-                "resource_id": "XUAMREH006",
-                "coordinates": [
-                  -46.81684682966029,
-                  -23.524442660816746
-                ]
-              },
-              "operations": 50.28,
-              "mean_throughput_per_hour": 2.0874219627265136,
-              "peak_throughput_per_hour": 21.36,
-              "capacity_reference_per_hour": 9.931999999999993,
-              "utilization_peak": 2.150624244865084,
-              "utilization_mean": 0.21017136153106272
-            },
-            {
-              "resource_id": "XUAMREH003",
-              "label": "Cruzamento UAM × REH 003",
-              "map_target": {
-                "type": "crossing_waypoint",
-                "resource_id": "XUAMREH003",
-                "coordinates": [
-                  -46.817572139651965,
-                  -23.52939920512159
-                ]
-              },
-              "operations": 50.26,
-              "mean_throughput_per_hour": 2.0865972204584726,
-              "peak_throughput_per_hour": 21.44,
-              "capacity_reference_per_hour": 9.895999999999994,
-              "utilization_peak": 2.166531932093777,
-              "utilization_mean": 0.21085258897114734
-            },
-            {
-              "resource_id": "XUAMREH004",
-              "label": "Cruzamento UAM × REH 004",
-              "map_target": {
-                "type": "crossing_waypoint",
-                "resource_id": "XUAMREH004",
-                "coordinates": [
-                  -46.81752664926729,
-                  -23.52908716642037
-                ]
-              },
-              "operations": 50.26,
-              "mean_throughput_per_hour": 2.0865972204584726,
-              "peak_throughput_per_hour": 21.44,
-              "capacity_reference_per_hour": 9.835999999999995,
-              "utilization_peak": 2.179747864985768,
-              "utilization_mean": 0.21213879833860042
-            },
-            {
-              "resource_id": "XUAMREH005",
-              "label": "Cruzamento UAM × REH 005",
-              "map_target": {
-                "type": "crossing_waypoint",
-                "resource_id": "XUAMREH005",
-                "coordinates": [
-                  -46.81689311953052,
-                  -23.52476013178882
-                ]
-              },
-              "operations": 50.26,
-              "mean_throughput_per_hour": 2.0865972204584726,
-              "peak_throughput_per_hour": 21.36,
-              "capacity_reference_per_hour": 9.931999999999993,
-              "utilization_peak": 2.150624244865084,
-              "utilization_mean": 0.21008832263979804
-            },
-            {
-              "resource_id": "XUAMREH002",
-              "label": "Cruzamento UAM × REH 002",
-              "map_target": {
-                "type": "crossing_waypoint",
-                "resource_id": "XUAMREH002",
-                "coordinates": [
-                  -46.82799249183902,
-                  -23.508223166638402
-                ]
-              },
-              "operations": 43.26,
-              "mean_throughput_per_hour": 1.796210797612588,
-              "peak_throughput_per_hour": 17.04,
-              "capacity_reference_per_hour": 8.487999999999994,
-              "utilization_peak": 2.0075400565504253,
-              "utilization_mean": 0.21161767172627113
-            },
-            {
-              "resource_id": "XUAMREH001",
-              "label": "Cruzamento UAM × REH 001",
-              "map_target": {
-                "type": "crossing_waypoint",
-                "resource_id": "XUAMREH001",
-                "coordinates": [
-                  -46.8329591731143,
-                  -23.507748668659346
-                ]
-              },
-              "operations": 41.54,
-              "mean_throughput_per_hour": 1.724722355625849,
-              "peak_throughput_per_hour": 16.72,
-              "capacity_reference_per_hour": 8.315999999999997,
-              "utilization_peak": 2.010582010582011,
-              "utilization_mean": 0.20739807066207908
-            },
-            {
-              "resource_id": "XUAMREH035",
-              "label": "Cruzamento UAM × REH 035",
-              "map_target": {
-                "type": "crossing_waypoint",
-                "resource_id": "XUAMREH035",
-                "coordinates": [
-                  -46.69770020170488,
-                  -23.606858335822476
-                ]
-              },
-              "operations": 41.04,
-              "mean_throughput_per_hour": 1.7038221466695913,
-              "peak_throughput_per_hour": 15.04,
-              "capacity_reference_per_hour": 8.196,
-              "utilization_peak": 1.8350414836505613,
-              "utilization_mean": 0.2078845957381151
-            },
-            {
-              "resource_id": "XUAMREH028",
-              "label": "Cruzamento UAM × REH 028",
-              "map_target": {
-                "type": "crossing_waypoint",
-                "resource_id": "XUAMREH028",
-                "coordinates": [
-                  -46.71570068121483,
-                  -23.611397970163665
-                ]
-              },
-              "operations": 37.82,
-              "mean_throughput_per_hour": 1.5702716739204887,
-              "peak_throughput_per_hour": 17.44,
-              "capacity_reference_per_hour": 8.215999999999998,
-              "utilization_peak": 2.122687439143136,
-              "utilization_mean": 0.19112362146062428
-            },
-            {
-              "resource_id": "XUAMREH014",
-              "label": "Cruzamento UAM × REH 014",
-              "map_target": {
-                "type": "crossing_waypoint",
-                "resource_id": "XUAMREH014",
-                "coordinates": [
-                  -46.75165877683205,
-                  -23.606158087947897
-                ]
-              },
-              "operations": 24.74,
-              "mean_throughput_per_hour": 1.0270802268887838,
-              "peak_throughput_per_hour": 11.2,
-              "capacity_reference_per_hour": 4.903999999999996,
-              "utilization_peak": 2.283849918433933,
-              "utilization_mean": 0.20943724039330844
-            },
-            {
-              "resource_id": "XUAMREH010",
-              "label": "Cruzamento UAM × REH 010",
-              "map_target": {
-                "type": "crossing_waypoint",
-                "resource_id": "XUAMREH010",
-                "coordinates": [
-                  -46.78092372499159,
-                  -23.599111511739473
-                ]
-              },
-              "operations": 24.74,
-              "mean_throughput_per_hour": 1.0270802268887838,
-              "peak_throughput_per_hour": 10.96,
-              "capacity_reference_per_hour": 4.891999999999993,
-              "utilization_peak": 2.2403924775143125,
-              "utilization_mean": 0.2099509866902668
-            },
-            {
-              "resource_id": "XUAMREH024",
-              "label": "Cruzamento UAM × REH 024",
-              "map_target": {
-                "type": "crossing_waypoint",
-                "resource_id": "XUAMREH024",
-                "coordinates": [
-                  -46.7350012042358,
-                  -23.611375251670935
-                ]
-              },
-              "operations": 16.86,
-              "mean_throughput_per_hour": 0.7000048737219227,
-              "peak_throughput_per_hour": 10.0,
-              "capacity_reference_per_hour": 4.251999999999998,
-              "utilization_peak": 2.351834430856069,
-              "utilization_mean": 0.16462955637862722
-            },
-            {
-              "resource_id": "XUAMREH038",
-              "label": "Cruzamento UAM × REH 038",
-              "map_target": {
-                "type": "crossing_waypoint",
-                "resource_id": "XUAMREH038",
-                "coordinates": [
-                  -46.62970722266726,
-                  -23.575679144046994
-                ]
-              },
-              "operations": 14.44,
-              "mean_throughput_per_hour": 0.5995491797601044,
-              "peak_throughput_per_hour": 8.4,
-              "capacity_reference_per_hour": 4.0,
-              "utilization_peak": 2.1,
-              "utilization_mean": 0.1498872949400261
-            },
-            {
-              "resource_id": "XUAMREH037",
-              "label": "Cruzamento UAM × REH 037",
-              "map_target": {
-                "type": "crossing_waypoint",
-                "resource_id": "XUAMREH037",
-                "coordinates": [
-                  -46.6369966574914,
-                  -23.581283975896312
-                ]
-              },
-              "operations": 10.96,
-              "mean_throughput_per_hour": 0.4551136464213835,
-              "peak_throughput_per_hour": 6.88,
-              "capacity_reference_per_hour": 3.94,
-              "utilization_peak": 1.7461928934010151,
-              "utilization_mean": 0.11551107777192475
-            },
-            {
-              "resource_id": "XUAMREH026",
-              "label": "Cruzamento UAM × REH 026",
-              "map_target": {
-                "type": "crossing_waypoint",
-                "resource_id": "XUAMREH026",
-                "coordinates": [
-                  -46.732732167671394,
-                  -23.608843875531957
-                ]
-              },
-              "operations": 10.36,
-              "mean_throughput_per_hour": 0.4301107294997749,
-              "peak_throughput_per_hour": 7.6,
-              "capacity_reference_per_hour": 4.0,
-              "utilization_peak": 1.9,
-              "utilization_mean": 0.10752768237494373
-            },
-            {
-              "resource_id": "XUAMREH015",
-              "label": "Cruzamento UAM × REH 015",
-              "map_target": {
-                "type": "crossing_waypoint",
-                "resource_id": "XUAMREH015",
-                "coordinates": [
-                  -46.75146609543743,
-                  -23.610853961184617
-                ]
-              },
-              "operations": 5.0,
-              "mean_throughput_per_hour": 0.20760764325817835,
-              "peak_throughput_per_hour": 5.44,
-              "capacity_reference_per_hour": 0.5999999999999863,
-              "utilization_peak": 9.066666666666874,
-              "utilization_mean": 0.34601273876363847
-            },
-            {
-              "resource_id": "XUAMREH011",
-              "label": "Cruzamento UAM × REH 011",
-              "map_target": {
-                "type": "crossing_waypoint",
-                "resource_id": "XUAMREH011",
-                "coordinates": [
-                  -46.75515135898698,
-                  -23.551309998543285
-                ]
-              },
-              "operations": 2.0,
-              "mean_throughput_per_hour": 0.08304305730327133,
-              "peak_throughput_per_hour": 4.0,
-              "capacity_reference_per_hour": 0.0,
-              "utilization_peak": null,
-              "utilization_mean": null
-            },
-            {
-              "resource_id": "XUAMREH008",
-              "label": "Cruzamento UAM × REH 008",
-              "map_target": {
-                "type": "crossing_waypoint",
-                "resource_id": "XUAMREH008",
-                "coordinates": [
-                  -46.81135475714673,
-                  -23.594339775079746
-                ]
-              },
-              "operations": 1.3,
-              "mean_throughput_per_hour": 0.05392629770302044,
-              "peak_throughput_per_hour": 3.04,
-              "capacity_reference_per_hour": 0.0,
-              "utilization_peak": null,
-              "utilization_mean": null
-            },
-            {
-              "resource_id": "XUAMREH042",
-              "label": "Cruzamento UAM × REH 042",
-              "map_target": {
-                "type": "crossing_waypoint",
-                "resource_id": "XUAMREH042",
-                "coordinates": [
-                  -46.560596399815815,
-                  -23.51487143285906
-                ]
-              },
-              "operations": 0.6,
-              "mean_throughput_per_hour": 0.024922861276903595,
-              "peak_throughput_per_hour": 1.92,
-              "capacity_reference_per_hour": 0.0,
-              "utilization_peak": null,
-              "utilization_mean": null
-            },
-            {
-              "resource_id": "XUAMREH043",
-              "label": "Cruzamento UAM × REH 043",
-              "map_target": {
-                "type": "crossing_waypoint",
-                "resource_id": "XUAMREH043",
-                "coordinates": [
-                  -46.55954122825937,
-                  -23.506044065323877
-                ]
-              },
-              "operations": 0.6,
-              "mean_throughput_per_hour": 0.024922861276903595,
-              "peak_throughput_per_hour": 1.92,
-              "capacity_reference_per_hour": 0.0,
-              "utilization_peak": null,
-              "utilization_mean": null
-            },
-            {
-              "resource_id": "XUAMREH007",
-              "label": "Cruzamento UAM × REH 007",
-              "map_target": {
-                "type": "crossing_waypoint",
-                "resource_id": "XUAMREH007",
-                "coordinates": [
-                  -46.81353096512953,
-                  -23.59194078652076
-                ]
-              },
-              "operations": 0.16,
-              "mean_throughput_per_hour": 0.006632302405498281,
-              "peak_throughput_per_hour": 0.56,
-              "capacity_reference_per_hour": 0.0,
-              "utilization_peak": null,
-              "utilization_mean": null
-            },
-            {
-              "resource_id": "XUAMREH009",
-              "label": "Cruzamento UAM × REH 009",
-              "map_target": {
-                "type": "crossing_waypoint",
-                "resource_id": "XUAMREH009",
-                "coordinates": [
-                  -46.786586339872684,
-                  -23.60037735294786
-                ]
-              },
-              "operations": 0.0,
-              "mean_throughput_per_hour": 0.0,
-              "peak_throughput_per_hour": 0.0,
-              "capacity_reference_per_hour": 0.0,
-              "utilization_peak": null,
-              "utilization_mean": null
-            }
-          ],
-          "top_resources": [
-            {
-              "resource_id": "XUAMREH018",
-              "label": "Cruzamento UAM × REH 018",
-              "map_target": {
-                "type": "crossing_waypoint",
-                "resource_id": "XUAMREH018",
-                "coordinates": [
-                  -46.74256801100671,
-                  -23.518395971076906
-                ]
-              },
-              "operations": 260.9,
-              "mean_throughput_per_hour": 10.833124511761966,
-              "peak_throughput_per_hour": 64.32,
-              "capacity_reference_per_hour": 39.51999999999998,
-              "utilization_peak": 1.6275303643724701,
-              "utilization_mean": 0.2741175230709001
-            },
-            {
-              "resource_id": "XUAMREH027",
-              "label": "Cruzamento UAM × REH 027",
-              "map_target": {
-                "type": "crossing_waypoint",
-                "resource_id": "XUAMREH027",
-                "coordinates": [
-                  -46.726723850672045,
-                  -23.514054899958264
-                ]
-              },
-              "operations": 260.28,
-              "mean_throughput_per_hour": 10.80735369021369,
-              "peak_throughput_per_hour": 70.56,
-              "capacity_reference_per_hour": 40.09199999999998,
-              "utilization_peak": 1.7599521101466638,
-              "utilization_mean": 0.26956384541089734
-            },
-            {
-              "resource_id": "XUAMREH020",
-              "label": "Cruzamento UAM × REH 020",
-              "map_target": {
-                "type": "crossing_waypoint",
-                "resource_id": "XUAMREH020",
-                "coordinates": [
-                  -46.7382529111411,
-                  -23.51801559902815
-                ]
-              },
-              "operations": 234.22,
-              "mean_throughput_per_hour": 9.725343117334903,
-              "peak_throughput_per_hour": 52.16,
-              "capacity_reference_per_hour": 32.37999999999999,
-              "utilization_peak": 1.6108709079678818,
-              "utilization_mean": 0.3003503124562973
-            },
-            {
-              "resource_id": "XUAMREH025",
-              "label": "Cruzamento UAM × REH 025",
-              "map_target": {
-                "type": "crossing_waypoint",
-                "resource_id": "XUAMREH025",
-                "coordinates": [
-                  -46.73455784831051,
-                  -23.515109439612967
-                ]
-              },
-              "operations": 223.14,
-              "mean_throughput_per_hour": 9.265366729776844,
-              "peak_throughput_per_hour": 57.36,
-              "capacity_reference_per_hour": 34.31599999999999,
-              "utilization_peak": 1.6715234875859664,
-              "utilization_mean": 0.27000136174894646
-            },
-            {
-              "resource_id": "XUAMREH023",
-              "label": "Cruzamento UAM × REH 023",
-              "map_target": {
-                "type": "crossing_waypoint",
-                "resource_id": "XUAMREH023",
-                "coordinates": [
-                  -46.73530258979139,
-                  -23.546804572765158
-                ]
-              },
-              "operations": 163.98,
-              "mean_throughput_per_hour": 6.808894213489416,
-              "peak_throughput_per_hour": 41.44,
-              "capacity_reference_per_hour": 25.44799999999999,
-              "utilization_peak": 1.628418736246464,
-              "utilization_mean": 0.26756107409185076
-            }
-          ]
+          "available": false,
+          "resources": [],
+          "top_resources": [],
+          "capacity_declared_per_hour": null
         }
       },
       "complexity": {
@@ -49301,12 +48430,17 @@
         "reh_segment_count": 106.0,
         "planned_route_count": 106.0,
         "planned_waypoint_count": 930.0,
-        "planned_route_crossings": 43.0,
+        "planned_route_crossings": 40,
         "trajectory_group_count": 121.52,
         "repeated_trajectory_group_count": 77.38,
         "lowc_event_count": 324.32,
         "crossings": {
           "type": "FeatureCollection",
+          "properties": {
+            "geometry_dimension": "3D",
+            "status": "geometric_diagnostic_only",
+            "buffer_method": "metric_linestring_buffer_round_joins_caps"
+          },
           "features": [
             {
               "type": "Feature",
@@ -49329,21 +48463,13 @@
                   "CASTELO - trecho 1"
                 ],
                 "resource_id": "XUAMREH001",
-                "label": "Cruzamento UAM × REH 001",
-                "capture_radius_m": 250.0,
-                "operations": 41.54,
-                "mean_throughput_per_hour": 1.724722355625849,
-                "peak_throughput_per_hour": 16.72,
-                "capacity_reference_per_hour": 8.315999999999997,
-                "capacity_declared_per_hour": null,
-                "utilization_peak": 2.010582010582011,
-                "replica_count": 50
+                "label": "Cruzamento UAM × REH 001"
               },
               "geometry": {
                 "type": "Point",
                 "coordinates": [
-                  -46.8329591731143,
-                  -23.507748668659346
+                  -46.8329577013066,
+                  -23.507748809325534
                 ]
               }
             },
@@ -49368,21 +48494,13 @@
                   "CASTELO - trecho 1"
                 ],
                 "resource_id": "XUAMREH002",
-                "label": "Cruzamento UAM × REH 002",
-                "capture_radius_m": 250.0,
-                "operations": 43.26,
-                "mean_throughput_per_hour": 1.796210797612588,
-                "peak_throughput_per_hour": 17.04,
-                "capacity_reference_per_hour": 8.487999999999994,
-                "capacity_declared_per_hour": null,
-                "utilization_peak": 2.0075400565504253,
-                "replica_count": 50
+                "label": "Cruzamento UAM × REH 002"
               },
               "geometry": {
                 "type": "Point",
                 "coordinates": [
-                  -46.82799249183902,
-                  -23.508223166638402
+                  -46.82799046329066,
+                  -23.508223360494792
                 ]
               }
             },
@@ -49413,21 +48531,13 @@
                   "RODOANEL - trecho 4"
                 ],
                 "resource_id": "XUAMREH003",
-                "label": "Cruzamento UAM × REH 003",
-                "capture_radius_m": 250.0,
-                "operations": 50.26,
-                "mean_throughput_per_hour": 2.0865972204584726,
-                "peak_throughput_per_hour": 21.44,
-                "capacity_reference_per_hour": 9.895999999999994,
-                "capacity_declared_per_hour": null,
-                "utilization_peak": 2.166531932093777,
-                "replica_count": 50
+                "label": "Cruzamento UAM × REH 003"
               },
               "geometry": {
                 "type": "Point",
                 "coordinates": [
-                  -46.817572139651965,
-                  -23.52939920512159
+                  -46.81757479128219,
+                  -23.529417406688083
                 ]
               }
             },
@@ -49462,21 +48572,13 @@
                   "RODOANEL - trecho 4"
                 ],
                 "resource_id": "XUAMREH004",
-                "label": "Cruzamento UAM × REH 004",
-                "capture_radius_m": 250.0,
-                "operations": 50.26,
-                "mean_throughput_per_hour": 2.0865972204584726,
-                "peak_throughput_per_hour": 21.44,
-                "capacity_reference_per_hour": 9.835999999999995,
-                "capacity_declared_per_hour": null,
-                "utilization_peak": 2.179747864985768,
-                "replica_count": 50
+                "label": "Cruzamento UAM × REH 004"
               },
               "geometry": {
                 "type": "Point",
                 "coordinates": [
-                  -46.81752664926729,
-                  -23.52908716642037
+                  -46.81752599668039,
+                  -23.52908269527561
                 ]
               }
             },
@@ -49511,21 +48613,13 @@
                   "RODOANEL - trecho 4"
                 ],
                 "resource_id": "XUAMREH005",
-                "label": "Cruzamento UAM × REH 005",
-                "capture_radius_m": 250.0,
-                "operations": 50.26,
-                "mean_throughput_per_hour": 2.0865972204584726,
-                "peak_throughput_per_hour": 21.36,
-                "capacity_reference_per_hour": 9.931999999999993,
-                "capacity_declared_per_hour": null,
-                "utilization_peak": 2.150624244865084,
-                "replica_count": 50
+                "label": "Cruzamento UAM × REH 005"
               },
               "geometry": {
                 "type": "Point",
                 "coordinates": [
-                  -46.81689311953052,
-                  -23.52476013178882
+                  -46.816892585979254,
+                  -23.524756476761375
                 ]
               }
             },
@@ -49556,21 +48650,13 @@
                   "RODOANEL - trecho 4"
                 ],
                 "resource_id": "XUAMREH006",
-                "label": "Cruzamento UAM × REH 006",
-                "capture_radius_m": 250.0,
-                "operations": 50.28,
-                "mean_throughput_per_hour": 2.0874219627265136,
-                "peak_throughput_per_hour": 21.36,
-                "capacity_reference_per_hour": 9.931999999999993,
-                "capacity_declared_per_hour": null,
-                "utilization_peak": 2.150624244865084,
-                "replica_count": 50
+                "label": "Cruzamento UAM × REH 006"
               },
               "geometry": {
                 "type": "Point",
                 "coordinates": [
-                  -46.81684682966029,
-                  -23.524442660816746
+                  -46.816849024222144,
+                  -23.524457726277195
                 ]
               }
             },
@@ -49597,21 +48683,13 @@
                   "RAPOSO - trecho 11"
                 ],
                 "resource_id": "XUAMREH007",
-                "label": "Cruzamento UAM × REH 007",
-                "capture_radius_m": 250.0,
-                "operations": 0.16,
-                "mean_throughput_per_hour": 0.006632302405498281,
-                "peak_throughput_per_hour": 0.56,
-                "capacity_reference_per_hour": 0.0,
-                "capacity_declared_per_hour": null,
-                "utilization_peak": null,
-                "replica_count": 50
+                "label": "Cruzamento UAM × REH 007"
               },
               "geometry": {
                 "type": "Point",
                 "coordinates": [
-                  -46.81353096512953,
-                  -23.59194078652076
+                  -46.81322355384674,
+                  -23.591685873674795
                 ]
               }
             },
@@ -49638,62 +48716,13 @@
                   "RODOANEL - trecho 3"
                 ],
                 "resource_id": "XUAMREH008",
-                "label": "Cruzamento UAM × REH 008",
-                "capture_radius_m": 250.0,
-                "operations": 1.3,
-                "mean_throughput_per_hour": 0.05392629770302044,
-                "peak_throughput_per_hour": 3.04,
-                "capacity_reference_per_hour": 0.0,
-                "capacity_declared_per_hour": null,
-                "utilization_peak": null,
-                "replica_count": 50
+                "label": "Cruzamento UAM × REH 008"
               },
               "geometry": {
                 "type": "Point",
                 "coordinates": [
-                  -46.81135475714673,
-                  -23.594339775079746
-                ]
-              }
-            },
-            {
-              "type": "Feature",
-              "properties": {
-                "method": "uam_buffer_official_reh_overlap",
-                "geometry_dimension": "3D",
-                "altitude_m": 1081.8899999999999,
-                "altitude_min_m": 1066.5,
-                "altitude_max_m": 1097.28,
-                "uam_route_ids": [
-                  "UAM014",
-                  "UAM064"
-                ],
-                "uam_route_labels": [
-                  "SBSP-VP-005 (Parallel 2)",
-                  "VP-003-VP-005 (Parallel 2)"
-                ],
-                "reh_resource_ids": [
-                  "REH-127"
-                ],
-                "reh_labels": [
-                  "MORUMBI - trecho 3"
-                ],
-                "resource_id": "XUAMREH009",
-                "label": "Cruzamento UAM × REH 009",
-                "capture_radius_m": 250.0,
-                "operations": 0.0,
-                "mean_throughput_per_hour": 0.0,
-                "peak_throughput_per_hour": 0.0,
-                "capacity_reference_per_hour": 0.0,
-                "capacity_declared_per_hour": null,
-                "utilization_peak": null,
-                "replica_count": 50
-              },
-              "geometry": {
-                "type": "Point",
-                "coordinates": [
-                  -46.786586339872684,
-                  -23.60037735294786
+                  -46.81202167595373,
+                  -23.59494555478637
                 ]
               }
             },
@@ -49719,22 +48748,47 @@
                 "reh_labels": [
                   "MORUMBI - trecho 3"
                 ],
-                "resource_id": "XUAMREH010",
-                "label": "Cruzamento UAM × REH 010",
-                "capture_radius_m": 250.0,
-                "operations": 24.74,
-                "mean_throughput_per_hour": 1.0270802268887838,
-                "peak_throughput_per_hour": 10.96,
-                "capacity_reference_per_hour": 4.891999999999993,
-                "capacity_declared_per_hour": null,
-                "utilization_peak": 2.2403924775143125,
-                "replica_count": 50
+                "resource_id": "XUAMREH009",
+                "label": "Cruzamento UAM × REH 009"
               },
               "geometry": {
                 "type": "Point",
                 "coordinates": [
-                  -46.78092372499159,
-                  -23.599111511739473
+                  -46.79319776122564,
+                  -23.59613494665506
+                ]
+              }
+            },
+            {
+              "type": "Feature",
+              "properties": {
+                "method": "uam_buffer_official_reh_overlap",
+                "geometry_dimension": "3D",
+                "altitude_m": 1081.8899999999999,
+                "altitude_min_m": 1066.5,
+                "altitude_max_m": 1097.28,
+                "uam_route_ids": [
+                  "UAM014",
+                  "UAM064"
+                ],
+                "uam_route_labels": [
+                  "SBSP-VP-005 (Parallel 2)",
+                  "VP-003-VP-005 (Parallel 2)"
+                ],
+                "reh_resource_ids": [
+                  "REH-127"
+                ],
+                "reh_labels": [
+                  "MORUMBI - trecho 3"
+                ],
+                "resource_id": "XUAMREH010",
+                "label": "Cruzamento UAM × REH 010"
+              },
+              "geometry": {
+                "type": "Point",
+                "coordinates": [
+                  -46.78660469478822,
+                  -23.600339802157794
                 ]
               }
             },
@@ -49759,21 +48813,13 @@
                   "OESTE - trecho 2"
                 ],
                 "resource_id": "XUAMREH011",
-                "label": "Cruzamento UAM × REH 011",
-                "capture_radius_m": 250.0,
-                "operations": 2.0,
-                "mean_throughput_per_hour": 0.08304305730327133,
-                "peak_throughput_per_hour": 4.0,
-                "capacity_reference_per_hour": 0.0,
-                "capacity_declared_per_hour": null,
-                "utilization_peak": null,
-                "replica_count": 50
+                "label": "Cruzamento UAM × REH 011"
               },
               "geometry": {
                 "type": "Point",
                 "coordinates": [
-                  -46.75515135898698,
-                  -23.551309998543285
+                  -46.755118156391845,
+                  -23.551269378701033
                 ]
               }
             },
@@ -49786,50 +48832,13 @@
                 "altitude_min_m": 1036.3200000000002,
                 "altitude_max_m": 1036.3200000000002,
                 "uam_route_ids": [
-                  "UAM005"
-                ],
-                "uam_route_labels": [
-                  "SBSP-VP-001 (Parallel 1)"
-                ],
-                "reh_resource_ids": [
-                  "REH-167"
-                ],
-                "reh_labels": [
-                  "CASTELO - trecho 2"
-                ],
-                "resource_id": "XUAMREH012",
-                "label": "Cruzamento UAM × REH 012",
-                "capture_radius_m": 250.0,
-                "operations": 94.5,
-                "mean_throughput_per_hour": 3.9235205223521628,
-                "peak_throughput_per_hour": 33.12,
-                "capacity_reference_per_hour": 18.03199999999999,
-                "capacity_declared_per_hour": null,
-                "utilization_peak": 1.836734693877552,
-                "replica_count": 50
-              },
-              "geometry": {
-                "type": "Point",
-                "coordinates": [
-                  -46.75437731483486,
-                  -23.525568544258785
-                ]
-              }
-            },
-            {
-              "type": "Feature",
-              "properties": {
-                "method": "uam_buffer_official_reh_overlap",
-                "geometry_dimension": "3D",
-                "altitude_m": 1036.3200000000002,
-                "altitude_min_m": 1036.3200000000002,
-                "altitude_max_m": 1036.3200000000002,
-                "uam_route_ids": [
+                  "UAM005",
                   "UAM046",
                   "UAM052",
                   "UAM072"
                 ],
                 "uam_route_labels": [
+                  "SBSP-VP-001 (Parallel 1)",
                   "VP-001-VP-003 (Parallel 2)",
                   "VP-001-VP-006 (Parallel 2)",
                   "VP-005-VP-006 (Parallel 2)"
@@ -49840,22 +48849,47 @@
                 "reh_labels": [
                   "CASTELO - trecho 2"
                 ],
-                "resource_id": "XUAMREH013",
-                "label": "Cruzamento UAM × REH 013",
-                "capture_radius_m": 250.0,
-                "operations": 100.9,
-                "mean_throughput_per_hour": 4.18926591126863,
-                "peak_throughput_per_hour": 34.72,
-                "capacity_reference_per_hour": 18.923999999999992,
-                "capacity_declared_per_hour": null,
-                "utilization_peak": 1.8347072500528436,
-                "replica_count": 50
+                "resource_id": "XUAMREH012",
+                "label": "Cruzamento UAM × REH 012"
               },
               "geometry": {
                 "type": "Point",
                 "coordinates": [
-                  -46.7533088495644,
-                  -23.524579799117795
+                  -46.75307091228635,
+                  -23.524961120804893
+                ]
+              }
+            },
+            {
+              "type": "Feature",
+              "properties": {
+                "method": "uam_buffer_official_reh_overlap",
+                "geometry_dimension": "3D",
+                "altitude_m": 1081.8899999999999,
+                "altitude_min_m": 1066.5,
+                "altitude_max_m": 1097.28,
+                "uam_route_ids": [
+                  "UAM014",
+                  "UAM064"
+                ],
+                "uam_route_labels": [
+                  "SBSP-VP-005 (Parallel 2)",
+                  "VP-003-VP-005 (Parallel 2)"
+                ],
+                "reh_resource_ids": [
+                  "REH-184"
+                ],
+                "reh_labels": [
+                  "OESTE - trecho 3"
+                ],
+                "resource_id": "XUAMREH013",
+                "label": "Cruzamento UAM × REH 013"
+              },
+              "geometry": {
+                "type": "Point",
+                "coordinates": [
+                  -46.751685514269695,
+                  -23.611256757236482
                 ]
               }
             },
@@ -49882,197 +48916,13 @@
                   "OESTE - trecho 2"
                 ],
                 "resource_id": "XUAMREH014",
-                "label": "Cruzamento UAM × REH 014",
-                "capture_radius_m": 250.0,
-                "operations": 24.74,
-                "mean_throughput_per_hour": 1.0270802268887838,
-                "peak_throughput_per_hour": 11.2,
-                "capacity_reference_per_hour": 4.903999999999996,
-                "capacity_declared_per_hour": null,
-                "utilization_peak": 2.283849918433933,
-                "replica_count": 50
+                "label": "Cruzamento UAM × REH 014"
               },
               "geometry": {
                 "type": "Point",
                 "coordinates": [
-                  -46.75165877683205,
-                  -23.606158087947897
-                ]
-              }
-            },
-            {
-              "type": "Feature",
-              "properties": {
-                "method": "uam_buffer_official_reh_overlap",
-                "geometry_dimension": "3D",
-                "altitude_m": 1081.8899999999999,
-                "altitude_min_m": 1066.5,
-                "altitude_max_m": 1097.28,
-                "uam_route_ids": [
-                  "UAM014",
-                  "UAM064"
-                ],
-                "uam_route_labels": [
-                  "SBSP-VP-005 (Parallel 2)",
-                  "VP-003-VP-005 (Parallel 2)"
-                ],
-                "reh_resource_ids": [
-                  "REH-184"
-                ],
-                "reh_labels": [
-                  "OESTE - trecho 3"
-                ],
-                "resource_id": "XUAMREH015",
-                "label": "Cruzamento UAM × REH 015",
-                "capture_radius_m": 250.0,
-                "operations": 5.0,
-                "mean_throughput_per_hour": 0.20760764325817835,
-                "peak_throughput_per_hour": 5.44,
-                "capacity_reference_per_hour": 0.5999999999999863,
-                "capacity_declared_per_hour": null,
-                "utilization_peak": 9.066666666666874,
-                "replica_count": 50
-              },
-              "geometry": {
-                "type": "Point",
-                "coordinates": [
-                  -46.75146609543743,
-                  -23.610853961184617
-                ]
-              }
-            },
-            {
-              "type": "Feature",
-              "properties": {
-                "method": "uam_buffer_official_reh_overlap",
-                "geometry_dimension": "3D",
-                "altitude_m": 1005.84,
-                "altitude_min_m": 1005.84,
-                "altitude_max_m": 1005.84,
-                "uam_route_ids": [
-                  "UAM029",
-                  "UAM041",
-                  "UAM051",
-                  "UAM059",
-                  "UAM069",
-                  "UAM071"
-                ],
-                "uam_route_labels": [
-                  "SBGR-VP-006 (Parallel 1)",
-                  "SBMT-VP-006 (Parallel 1)",
-                  "VP-001-VP-006 (Parallel 1)",
-                  "VP-002-VP-006 (Parallel 1)",
-                  "VP-004-VP-006 (Parallel 1)",
-                  "VP-005-VP-006 (Parallel 1)"
-                ],
-                "reh_resource_ids": [
-                  "REH-198"
-                ],
-                "reh_labels": [
-                  "PINHEIROS - trecho 1"
-                ],
-                "resource_id": "XUAMREH016",
-                "label": "Cruzamento UAM × REH 016",
-                "capture_radius_m": 250.0,
-                "operations": 137.1,
-                "mean_throughput_per_hour": 5.693142136433428,
-                "peak_throughput_per_hour": 32.72,
-                "capacity_reference_per_hour": 19.703999999999994,
-                "capacity_declared_per_hour": null,
-                "utilization_peak": 1.6605765326837196,
-                "replica_count": 50
-              },
-              "geometry": {
-                "type": "Point",
-                "coordinates": [
-                  -46.74397829084542,
-                  -23.538606943555322
-                ]
-              }
-            },
-            {
-              "type": "Feature",
-              "properties": {
-                "method": "uam_buffer_official_reh_overlap",
-                "geometry_dimension": "3D",
-                "altitude_m": 1005.84,
-                "altitude_min_m": 1005.84,
-                "altitude_max_m": 1005.84,
-                "uam_route_ids": [
-                  "UAM030",
-                  "UAM042",
-                  "UAM060",
-                  "UAM070"
-                ],
-                "uam_route_labels": [
-                  "SBGR-VP-006 (Parallel 2)",
-                  "SBMT-VP-006 (Parallel 2)",
-                  "VP-002-VP-006 (Parallel 2)",
-                  "VP-004-VP-006 (Parallel 2)"
-                ],
-                "reh_resource_ids": [
-                  "REH-198"
-                ],
-                "reh_labels": [
-                  "PINHEIROS - trecho 1"
-                ],
-                "resource_id": "XUAMREH017",
-                "label": "Cruzamento UAM × REH 017",
-                "capture_radius_m": 250.0,
-                "operations": 144.86,
-                "mean_throughput_per_hour": 6.015357140108442,
-                "peak_throughput_per_hour": 35.92,
-                "capacity_reference_per_hour": 21.679999999999986,
-                "capacity_declared_per_hour": null,
-                "utilization_peak": 1.6568265682656838,
-                "replica_count": 50
-              },
-              "geometry": {
-                "type": "Point",
-                "coordinates": [
-                  -46.74321939760633,
-                  -23.53638657640141
-                ]
-              }
-            },
-            {
-              "type": "Feature",
-              "properties": {
-                "method": "uam_buffer_official_reh_overlap",
-                "geometry_dimension": "3D",
-                "altitude_m": 1005.84,
-                "altitude_min_m": 1005.84,
-                "altitude_max_m": 1005.84,
-                "uam_route_ids": [
-                  "UAM062",
-                  "UAM069"
-                ],
-                "uam_route_labels": [
-                  "VP-003-VP-004 (Parallel 2)",
-                  "VP-004-VP-006 (Parallel 1)"
-                ],
-                "reh_resource_ids": [
-                  "REH-181"
-                ],
-                "reh_labels": [
-                  "MARTE - trecho 1"
-                ],
-                "resource_id": "XUAMREH018",
-                "label": "Cruzamento UAM × REH 018",
-                "capture_radius_m": 250.0,
-                "operations": 260.9,
-                "mean_throughput_per_hour": 10.833124511761966,
-                "peak_throughput_per_hour": 64.32,
-                "capacity_reference_per_hour": 39.51999999999998,
-                "capacity_declared_per_hour": null,
-                "utilization_peak": 1.6275303643724701,
-                "replica_count": 50
-              },
-              "geometry": {
-                "type": "Point",
-                "coordinates": [
-                  -46.74256801100671,
-                  -23.518395971076906
+                  -46.75167869855439,
+                  -23.606396034145025
                 ]
               }
             },
@@ -50098,22 +48948,14 @@
                 "reh_labels": [
                   "PINHEIROS - trecho 1"
                 ],
-                "resource_id": "XUAMREH019",
-                "label": "Cruzamento UAM × REH 019",
-                "capture_radius_m": 250.0,
-                "operations": 151.24,
-                "mean_throughput_per_hour": 6.280251097693784,
-                "peak_throughput_per_hour": 37.68,
-                "capacity_reference_per_hour": 23.583999999999993,
-                "capacity_declared_per_hour": null,
-                "utilization_peak": 1.5976933514246952,
-                "replica_count": 50
+                "resource_id": "XUAMREH015",
+                "label": "Cruzamento UAM × REH 015"
               },
               "geometry": {
                 "type": "Point",
                 "coordinates": [
-                  -46.7424579931275,
-                  -23.537522076083363
+                  -46.74394307185732,
+                  -23.535813846375408
                 ]
               }
             },
@@ -50126,98 +48968,12 @@
                 "altitude_min_m": 1005.84,
                 "altitude_max_m": 1005.84,
                 "uam_route_ids": [
-                  "UAM012",
-                  "UAM026",
-                  "UAM038",
-                  "UAM056"
+                  "UAM051",
+                  "UAM071"
                 ],
                 "uam_route_labels": [
-                  "SBSP-VP-004 (Parallel 2)",
-                  "SBGR-VP-004 (Parallel 2)",
-                  "SBMT-VP-004 (Parallel 2)",
-                  "VP-002-VP-004 (Parallel 2)"
-                ],
-                "reh_resource_ids": [
-                  "REH-181"
-                ],
-                "reh_labels": [
-                  "MARTE - trecho 1"
-                ],
-                "resource_id": "XUAMREH020",
-                "label": "Cruzamento UAM × REH 020",
-                "capture_radius_m": 250.0,
-                "operations": 234.22,
-                "mean_throughput_per_hour": 9.725343117334903,
-                "peak_throughput_per_hour": 52.16,
-                "capacity_reference_per_hour": 32.37999999999999,
-                "capacity_declared_per_hour": null,
-                "utilization_peak": 1.6108709079678818,
-                "replica_count": 50
-              },
-              "geometry": {
-                "type": "Point",
-                "coordinates": [
-                  -46.7382529111411,
-                  -23.51801559902815
-                ]
-              }
-            },
-            {
-              "type": "Feature",
-              "properties": {
-                "method": "uam_buffer_official_reh_overlap",
-                "geometry_dimension": "3D",
-                "altitude_m": 960.1200000000001,
-                "altitude_min_m": 914.4000000000001,
-                "altitude_max_m": 1005.84,
-                "uam_route_ids": [
-                  "UAM016",
-                  "UAM066"
-                ],
-                "uam_route_labels": [
-                  "SBSP-VP-006 (Parallel 2)",
-                  "VP-003-VP-006 (Parallel 2)"
-                ],
-                "reh_resource_ids": [
-                  "REH-200"
-                ],
-                "reh_labels": [
-                  "EXTERNO - trecho 1"
-                ],
-                "resource_id": "XUAMREH021",
-                "label": "Cruzamento UAM × REH 021",
-                "capture_radius_m": 250.0,
-                "operations": 116.46,
-                "mean_throughput_per_hour": 4.835417379542298,
-                "peak_throughput_per_hour": 36.0,
-                "capacity_reference_per_hour": 20.587999999999987,
-                "capacity_declared_per_hour": null,
-                "utilization_peak": 1.7485914124732866,
-                "replica_count": 50
-              },
-              "geometry": {
-                "type": "Point",
-                "coordinates": [
-                  -46.73639520953387,
-                  -23.54736600595645
-                ]
-              }
-            },
-            {
-              "type": "Feature",
-              "properties": {
-                "method": "uam_buffer_official_reh_overlap",
-                "geometry_dimension": "3D",
-                "altitude_m": 1005.84,
-                "altitude_min_m": 1005.84,
-                "altitude_max_m": 1005.84,
-                "uam_route_ids": [
-                  "UAM015",
-                  "UAM065"
-                ],
-                "uam_route_labels": [
-                  "SBSP-VP-006 (Parallel 1)",
-                  "VP-003-VP-006 (Parallel 1)"
+                  "VP-001-VP-006 (Parallel 1)",
+                  "VP-005-VP-006 (Parallel 1)"
                 ],
                 "reh_resource_ids": [
                   "REH-198"
@@ -50225,22 +48981,14 @@
                 "reh_labels": [
                   "PINHEIROS - trecho 1"
                 ],
-                "resource_id": "XUAMREH022",
-                "label": "Cruzamento UAM × REH 022",
-                "capture_radius_m": 250.0,
-                "operations": 119.42,
-                "mean_throughput_per_hour": 4.958873923952236,
-                "peak_throughput_per_hour": 28.0,
-                "capacity_reference_per_hour": 17.059999999999995,
-                "capacity_declared_per_hour": null,
-                "utilization_peak": 1.6412661195779605,
-                "replica_count": 50
+                "resource_id": "XUAMREH016",
+                "label": "Cruzamento UAM × REH 016"
               },
               "geometry": {
                 "type": "Point",
                 "coordinates": [
-                  -46.73569221948398,
-                  -23.54492364320313
+                  -46.74261163453715,
+                  -23.538089235323028
                 ]
               }
             },
@@ -50249,80 +48997,35 @@
               "properties": {
                 "method": "uam_buffer_official_reh_overlap",
                 "geometry_dimension": "3D",
-                "altitude_m": 953.8536696531238,
-                "altitude_min_m": 914.4000000000001,
-                "altitude_max_m": 993.2997838985713,
+                "altitude_m": 1005.84,
+                "altitude_min_m": 1005.84,
+                "altitude_max_m": 1005.84,
                 "uam_route_ids": [
-                  "UAM015",
-                  "UAM065"
+                  "UAM029",
+                  "UAM041",
+                  "UAM059",
+                  "UAM069"
                 ],
                 "uam_route_labels": [
-                  "SBSP-VP-006 (Parallel 1)",
-                  "VP-003-VP-006 (Parallel 1)"
+                  "SBGR-VP-006 (Parallel 1)",
+                  "SBMT-VP-006 (Parallel 1)",
+                  "VP-002-VP-006 (Parallel 1)",
+                  "VP-004-VP-006 (Parallel 1)"
                 ],
                 "reh_resource_ids": [
-                  "REH-200"
+                  "REH-198"
                 ],
                 "reh_labels": [
-                  "EXTERNO - trecho 1"
+                  "PINHEIROS - trecho 1"
                 ],
-                "resource_id": "XUAMREH023",
-                "label": "Cruzamento UAM × REH 023",
-                "capture_radius_m": 250.0,
-                "operations": 163.98,
-                "mean_throughput_per_hour": 6.808894213489416,
-                "peak_throughput_per_hour": 41.44,
-                "capacity_reference_per_hour": 25.44799999999999,
-                "capacity_declared_per_hour": null,
-                "utilization_peak": 1.628418736246464,
-                "replica_count": 50
+                "resource_id": "XUAMREH017",
+                "label": "Cruzamento UAM × REH 017"
               },
               "geometry": {
                 "type": "Point",
                 "coordinates": [
-                  -46.73530258979139,
-                  -23.546804572765158
-                ]
-              }
-            },
-            {
-              "type": "Feature",
-              "properties": {
-                "method": "uam_buffer_official_reh_overlap",
-                "geometry_dimension": "3D",
-                "altitude_m": 1081.8899999999999,
-                "altitude_min_m": 1066.5,
-                "altitude_max_m": 1097.28,
-                "uam_route_ids": [
-                  "UAM014",
-                  "UAM064"
-                ],
-                "uam_route_labels": [
-                  "SBSP-VP-005 (Parallel 2)",
-                  "VP-003-VP-005 (Parallel 2)"
-                ],
-                "reh_resource_ids": [
-                  "REH-203"
-                ],
-                "reh_labels": [
-                  "MORUMBI - trecho 2"
-                ],
-                "resource_id": "XUAMREH024",
-                "label": "Cruzamento UAM × REH 024",
-                "capture_radius_m": 250.0,
-                "operations": 16.86,
-                "mean_throughput_per_hour": 0.7000048737219227,
-                "peak_throughput_per_hour": 10.0,
-                "capacity_reference_per_hour": 4.251999999999998,
-                "capacity_declared_per_hour": null,
-                "utilization_peak": 2.351834430856069,
-                "replica_count": 50
-              },
-              "geometry": {
-                "type": "Point",
-                "coordinates": [
-                  -46.7350012042358,
-                  -23.611375251670935
+                  -46.740548485985485,
+                  -23.54099921398463
                 ]
               }
             },
@@ -50352,22 +49055,84 @@
                 "reh_labels": [
                   "MARTE - trecho 1"
                 ],
-                "resource_id": "XUAMREH025",
-                "label": "Cruzamento UAM × REH 025",
-                "capture_radius_m": 250.0,
-                "operations": 223.14,
-                "mean_throughput_per_hour": 9.265366729776844,
-                "peak_throughput_per_hour": 57.36,
-                "capacity_reference_per_hour": 34.31599999999999,
-                "capacity_declared_per_hour": null,
-                "utilization_peak": 1.6715234875859664,
-                "replica_count": 50
+                "resource_id": "XUAMREH018",
+                "label": "Cruzamento UAM × REH 018"
               },
               "geometry": {
                 "type": "Point",
                 "coordinates": [
-                  -46.73455784831051,
-                  -23.515109439612967
+                  -46.738724883352106,
+                  -23.515592485811037
+                ]
+              }
+            },
+            {
+              "type": "Feature",
+              "properties": {
+                "method": "uam_buffer_official_reh_overlap",
+                "geometry_dimension": "3D",
+                "altitude_m": 1005.84,
+                "altitude_min_m": 1005.84,
+                "altitude_max_m": 1005.84,
+                "uam_route_ids": [
+                  "UAM012",
+                  "UAM026",
+                  "UAM038",
+                  "UAM056"
+                ],
+                "uam_route_labels": [
+                  "SBSP-VP-004 (Parallel 2)",
+                  "SBGR-VP-004 (Parallel 2)",
+                  "SBMT-VP-004 (Parallel 2)",
+                  "VP-002-VP-004 (Parallel 2)"
+                ],
+                "reh_resource_ids": [
+                  "REH-181"
+                ],
+                "reh_labels": [
+                  "MARTE - trecho 1"
+                ],
+                "resource_id": "XUAMREH019",
+                "label": "Cruzamento UAM × REH 019"
+              },
+              "geometry": {
+                "type": "Point",
+                "coordinates": [
+                  -46.738324715278445,
+                  -23.518026397298332
+                ]
+              }
+            },
+            {
+              "type": "Feature",
+              "properties": {
+                "method": "uam_buffer_official_reh_overlap",
+                "geometry_dimension": "3D",
+                "altitude_m": 960.1200000000001,
+                "altitude_min_m": 914.4000000000001,
+                "altitude_max_m": 1005.84,
+                "uam_route_ids": [
+                  "UAM016",
+                  "UAM066"
+                ],
+                "uam_route_labels": [
+                  "SBSP-VP-006 (Parallel 2)",
+                  "VP-003-VP-006 (Parallel 2)"
+                ],
+                "reh_resource_ids": [
+                  "REH-200"
+                ],
+                "reh_labels": [
+                  "EXTERNO - trecho 1"
+                ],
+                "resource_id": "XUAMREH020",
+                "label": "Cruzamento UAM × REH 020"
+              },
+              "geometry": {
+                "type": "Point",
+                "coordinates": [
+                  -46.736840323413,
+                  -23.54737875720499
                 ]
               }
             },
@@ -50393,22 +49158,150 @@
                 "reh_labels": [
                   "MORUMBI - trecho 2"
                 ],
-                "resource_id": "XUAMREH026",
-                "label": "Cruzamento UAM × REH 026",
-                "capture_radius_m": 250.0,
-                "operations": 10.36,
-                "mean_throughput_per_hour": 0.4301107294997749,
-                "peak_throughput_per_hour": 7.6,
-                "capacity_reference_per_hour": 4.0,
-                "capacity_declared_per_hour": null,
-                "utilization_peak": 1.9,
-                "replica_count": 50
+                "resource_id": "XUAMREH021",
+                "label": "Cruzamento UAM × REH 021"
               },
               "geometry": {
                 "type": "Point",
                 "coordinates": [
-                  -46.732732167671394,
-                  -23.608843875531957
+                  -46.73646349892298,
+                  -23.608756228986593
+                ]
+              }
+            },
+            {
+              "type": "Feature",
+              "properties": {
+                "method": "uam_buffer_official_reh_overlap",
+                "geometry_dimension": "3D",
+                "altitude_m": 1005.84,
+                "altitude_min_m": 1005.84,
+                "altitude_max_m": 1005.84,
+                "uam_route_ids": [
+                  "UAM062",
+                  "UAM069"
+                ],
+                "uam_route_labels": [
+                  "VP-003-VP-004 (Parallel 2)",
+                  "VP-004-VP-006 (Parallel 1)"
+                ],
+                "reh_resource_ids": [
+                  "REH-181"
+                ],
+                "reh_labels": [
+                  "MARTE - trecho 1"
+                ],
+                "resource_id": "XUAMREH022",
+                "label": "Cruzamento UAM × REH 022"
+              },
+              "geometry": {
+                "type": "Point",
+                "coordinates": [
+                  -46.73599226615223,
+                  -23.516950163383083
+                ]
+              }
+            },
+            {
+              "type": "Feature",
+              "properties": {
+                "method": "uam_buffer_official_reh_overlap",
+                "geometry_dimension": "3D",
+                "altitude_m": 1005.84,
+                "altitude_min_m": 1005.84,
+                "altitude_max_m": 1005.84,
+                "uam_route_ids": [
+                  "UAM015",
+                  "UAM065"
+                ],
+                "uam_route_labels": [
+                  "SBSP-VP-006 (Parallel 1)",
+                  "VP-003-VP-006 (Parallel 1)"
+                ],
+                "reh_resource_ids": [
+                  "REH-198"
+                ],
+                "reh_labels": [
+                  "PINHEIROS - trecho 1"
+                ],
+                "resource_id": "XUAMREH023",
+                "label": "Cruzamento UAM × REH 023"
+              },
+              "geometry": {
+                "type": "Point",
+                "coordinates": [
+                  -46.73575418043856,
+                  -23.543564326553177
+                ]
+              }
+            },
+            {
+              "type": "Feature",
+              "properties": {
+                "method": "uam_buffer_official_reh_overlap",
+                "geometry_dimension": "3D",
+                "altitude_m": 1081.8899999999999,
+                "altitude_min_m": 1066.5,
+                "altitude_max_m": 1097.28,
+                "uam_route_ids": [
+                  "UAM014",
+                  "UAM064"
+                ],
+                "uam_route_labels": [
+                  "SBSP-VP-005 (Parallel 2)",
+                  "VP-003-VP-005 (Parallel 2)"
+                ],
+                "reh_resource_ids": [
+                  "REH-203"
+                ],
+                "reh_labels": [
+                  "MORUMBI - trecho 2"
+                ],
+                "resource_id": "XUAMREH024",
+                "label": "Cruzamento UAM × REH 024"
+              },
+              "geometry": {
+                "type": "Point",
+                "coordinates": [
+                  -46.73500398441374,
+                  -23.611372766766653
+                ]
+              }
+            },
+            {
+              "type": "Feature",
+              "properties": {
+                "method": "uam_buffer_official_reh_overlap",
+                "geometry_dimension": "3D",
+                "altitude_m": 975.36,
+                "altitude_min_m": 975.36,
+                "altitude_max_m": 975.36,
+                "uam_route_ids": [
+                  "UAM011",
+                  "UAM025",
+                  "UAM037",
+                  "UAM055"
+                ],
+                "uam_route_labels": [
+                  "SBSP-VP-004 (Parallel 1)",
+                  "SBGR-VP-004 (Parallel 1)",
+                  "SBMT-VP-004 (Parallel 1)",
+                  "VP-002-VP-004 (Parallel 1)"
+                ],
+                "reh_resource_ids": [
+                  "REH-165"
+                ],
+                "reh_labels": [
+                  "ANHANGUERA SUL - trecho 1"
+                ],
+                "resource_id": "XUAMREH025",
+                "label": "Cruzamento UAM × REH 025"
+              },
+              "geometry": {
+                "type": "Point",
+                "coordinates": [
+                  -46.72806849085875,
+                  -23.512332359873703
                 ]
               }
             },
@@ -50434,22 +49327,14 @@
                 "reh_labels": [
                   "ANHANGUERA SUL - trecho 1"
                 ],
-                "resource_id": "XUAMREH027",
-                "label": "Cruzamento UAM × REH 027",
-                "capture_radius_m": 250.0,
-                "operations": 260.28,
-                "mean_throughput_per_hour": 10.80735369021369,
-                "peak_throughput_per_hour": 70.56,
-                "capacity_reference_per_hour": 40.09199999999998,
-                "capacity_declared_per_hour": null,
-                "utilization_peak": 1.7599521101466638,
-                "replica_count": 50
+                "resource_id": "XUAMREH026",
+                "label": "Cruzamento UAM × REH 026"
               },
               "geometry": {
                 "type": "Point",
                 "coordinates": [
-                  -46.726723850672045,
-                  -23.514054899958264
+                  -46.72780273811585,
+                  -23.51333010955373
                 ]
               }
             },
@@ -50473,102 +49358,14 @@
                 "reh_labels": [
                   "MORUMBI - trecho 2"
                 ],
-                "resource_id": "XUAMREH028",
-                "label": "Cruzamento UAM × REH 028",
-                "capture_radius_m": 250.0,
-                "operations": 37.82,
-                "mean_throughput_per_hour": 1.5702716739204887,
-                "peak_throughput_per_hour": 17.44,
-                "capacity_reference_per_hour": 8.215999999999998,
-                "capacity_declared_per_hour": null,
-                "utilization_peak": 2.122687439143136,
-                "replica_count": 50
+                "resource_id": "XUAMREH027",
+                "label": "Cruzamento UAM × REH 027"
               },
               "geometry": {
                 "type": "Point",
                 "coordinates": [
-                  -46.71570068121483,
-                  -23.611397970163665
-                ]
-              }
-            },
-            {
-              "type": "Feature",
-              "properties": {
-                "method": "uam_buffer_official_reh_overlap",
-                "geometry_dimension": "3D",
-                "altitude_m": 1066.65,
-                "altitude_min_m": 1066.5,
-                "altitude_max_m": 1066.8,
-                "uam_route_ids": [
-                  "UAM014"
-                ],
-                "uam_route_labels": [
-                  "SBSP-VP-005 (Parallel 2)"
-                ],
-                "reh_resource_ids": [
-                  "REH-204"
-                ],
-                "reh_labels": [
-                  "MORUMBI - trecho 1"
-                ],
-                "resource_id": "XUAMREH029",
-                "label": "Cruzamento UAM × REH 029",
-                "capture_radius_m": 250.0,
-                "operations": 76.66,
-                "mean_throughput_per_hour": 3.1827049907066414,
-                "peak_throughput_per_hour": 26.24,
-                "capacity_reference_per_hour": 13.107999999999993,
-                "capacity_declared_per_hour": null,
-                "utilization_peak": 2.0018309429356127,
-                "replica_count": 50
-              },
-              "geometry": {
-                "type": "Point",
-                "coordinates": [
-                  -46.708582576571175,
-                  -23.612599208788925
-                ]
-              }
-            },
-            {
-              "type": "Feature",
-              "properties": {
-                "method": "uam_buffer_official_reh_overlap",
-                "geometry_dimension": "3D",
-                "altitude_m": 1066.65,
-                "altitude_min_m": 1066.5,
-                "altitude_max_m": 1066.8,
-                "uam_route_ids": [
-                  "UAM006",
-                  "UAM064"
-                ],
-                "uam_route_labels": [
-                  "SBSP-VP-001 (Parallel 2)",
-                  "VP-003-VP-005 (Parallel 2)"
-                ],
-                "reh_resource_ids": [
-                  "REH-204"
-                ],
-                "reh_labels": [
-                  "MORUMBI - trecho 1"
-                ],
-                "resource_id": "XUAMREH030",
-                "label": "Cruzamento UAM × REH 030",
-                "capture_radius_m": 250.0,
-                "operations": 76.1,
-                "mean_throughput_per_hour": 3.159457568026229,
-                "peak_throughput_per_hour": 26.0,
-                "capacity_reference_per_hour": 12.983999999999991,
-                "capacity_declared_per_hour": null,
-                "utilization_peak": 2.0024645717806546,
-                "replica_count": 50
-              },
-              "geometry": {
-                "type": "Point",
-                "coordinates": [
-                  -46.70773960938346,
-                  -23.612763990761376
+                  -46.715642969790494,
+                  -23.61141874337176
                 ]
               }
             },
@@ -50592,22 +49389,78 @@
                 "reh_labels": [
                   "MORUMBI - trecho 1"
                 ],
-                "resource_id": "XUAMREH031",
-                "label": "Cruzamento UAM × REH 031",
-                "capture_radius_m": 250.0,
-                "operations": 68.92,
-                "mean_throughput_per_hour": 2.861427323243401,
-                "peak_throughput_per_hour": 25.44,
-                "capacity_reference_per_hour": 12.255999999999995,
-                "capacity_declared_per_hour": null,
-                "utilization_peak": 2.0757180156657973,
-                "replica_count": 50
+                "resource_id": "XUAMREH028",
+                "label": "Cruzamento UAM × REH 028"
               },
               "geometry": {
                 "type": "Point",
                 "coordinates": [
-                  -46.70746402773739,
-                  -23.611550190365055
+                  -46.70917939927098,
+                  -23.61152858465781
+                ]
+              }
+            },
+            {
+              "type": "Feature",
+              "properties": {
+                "method": "uam_buffer_official_reh_overlap",
+                "geometry_dimension": "3D",
+                "altitude_m": 1066.65,
+                "altitude_min_m": 1066.5,
+                "altitude_max_m": 1066.8,
+                "uam_route_ids": [
+                  "UAM014",
+                  "UAM064"
+                ],
+                "uam_route_labels": [
+                  "SBSP-VP-005 (Parallel 2)",
+                  "VP-003-VP-005 (Parallel 2)"
+                ],
+                "reh_resource_ids": [
+                  "REH-204"
+                ],
+                "reh_labels": [
+                  "MORUMBI - trecho 1"
+                ],
+                "resource_id": "XUAMREH029",
+                "label": "Cruzamento UAM × REH 029"
+              },
+              "geometry": {
+                "type": "Point",
+                "coordinates": [
+                  -46.7085803267066,
+                  -23.612598427989504
+                ]
+              }
+            },
+            {
+              "type": "Feature",
+              "properties": {
+                "method": "uam_buffer_official_reh_overlap",
+                "geometry_dimension": "3D",
+                "altitude_m": 1066.65,
+                "altitude_min_m": 1066.5,
+                "altitude_max_m": 1066.8,
+                "uam_route_ids": [
+                  "UAM006"
+                ],
+                "uam_route_labels": [
+                  "SBSP-VP-001 (Parallel 2)"
+                ],
+                "reh_resource_ids": [
+                  "REH-204"
+                ],
+                "reh_labels": [
+                  "MORUMBI - trecho 1"
+                ],
+                "resource_id": "XUAMREH030",
+                "label": "Cruzamento UAM × REH 030"
+              },
+              "geometry": {
+                "type": "Point",
+                "coordinates": [
+                  -46.7077375465116,
+                  -23.612738190891438
                 ]
               }
             },
@@ -50631,22 +49484,14 @@
                 "reh_labels": [
                   "MORUMBI - trecho 1"
                 ],
-                "resource_id": "XUAMREH032",
-                "label": "Cruzamento UAM × REH 032",
-                "capture_radius_m": 250.0,
-                "operations": 68.16,
-                "mean_throughput_per_hour": 2.829880383124954,
-                "peak_throughput_per_hour": 25.28,
-                "capacity_reference_per_hour": 12.255999999999995,
-                "capacity_declared_per_hour": null,
-                "utilization_peak": 2.062663185378591,
-                "replica_count": 50
+                "resource_id": "XUAMREH031",
+                "label": "Cruzamento UAM × REH 031"
               },
               "geometry": {
                 "type": "Point",
                 "coordinates": [
-                  -46.706194188631684,
-                  -23.611641354291702
+                  -46.70619311163823,
+                  -23.611642907919023
                 ]
               }
             },
@@ -50670,22 +49515,14 @@
                 "reh_labels": [
                   "MORUMBI - trecho 1"
                 ],
-                "resource_id": "XUAMREH033",
-                "label": "Cruzamento UAM × REH 033",
-                "capture_radius_m": 250.0,
-                "operations": 66.94,
-                "mean_throughput_per_hour": 2.7792274621627553,
-                "peak_throughput_per_hour": 24.96,
-                "capacity_reference_per_hour": 11.955999999999994,
-                "capacity_declared_per_hour": null,
-                "utilization_peak": 2.0876547340247584,
-                "replica_count": 50
+                "resource_id": "XUAMREH032",
+                "label": "Cruzamento UAM × REH 032"
               },
               "geometry": {
                 "type": "Point",
                 "coordinates": [
-                  -46.70497560667669,
-                  -23.611693435361
+                  -46.70278471145257,
+                  -23.612050403174127
                 ]
               }
             },
@@ -50709,22 +49546,14 @@
                 "reh_labels": [
                   "MORUMBI - trecho 1"
                 ],
-                "resource_id": "XUAMREH034",
-                "label": "Cruzamento UAM × REH 034",
-                "capture_radius_m": 250.0,
-                "operations": 82.16,
-                "mean_throughput_per_hour": 3.410910345066439,
-                "peak_throughput_per_hour": 29.04,
-                "capacity_reference_per_hour": 14.031999999999993,
-                "capacity_declared_per_hour": null,
-                "utilization_peak": 2.0695553021664774,
-                "replica_count": 50
+                "resource_id": "XUAMREH033",
+                "label": "Cruzamento UAM × REH 033"
               },
               "geometry": {
                 "type": "Point",
                 "coordinates": [
-                  -46.701270116014804,
-                  -23.612699209237856
+                  -46.7011660860123,
+                  -23.612652329689602
                 ]
               }
             },
@@ -50733,47 +49562,8 @@
               "properties": {
                 "method": "uam_buffer_official_reh_overlap",
                 "geometry_dimension": "3D",
-                "altitude_m": 1005.84,
-                "altitude_min_m": 1005.84,
-                "altitude_max_m": 1005.84,
-                "uam_route_ids": [
-                  "UAM063"
-                ],
-                "uam_route_labels": [
-                  "VP-003-VP-005 (Parallel 1)"
-                ],
-                "reh_resource_ids": [
-                  "REH-201"
-                ],
-                "reh_labels": [
-                  "PINHEIROS - trecho 2"
-                ],
-                "resource_id": "XUAMREH035",
-                "label": "Cruzamento UAM × REH 035",
-                "capture_radius_m": 250.0,
-                "operations": 41.04,
-                "mean_throughput_per_hour": 1.7038221466695913,
-                "peak_throughput_per_hour": 15.04,
-                "capacity_reference_per_hour": 8.196,
-                "capacity_declared_per_hour": null,
-                "utilization_peak": 1.8350414836505613,
-                "replica_count": 50
-              },
-              "geometry": {
-                "type": "Point",
-                "coordinates": [
-                  -46.69770020170488,
-                  -23.606858335822476
-                ]
-              }
-            },
-            {
-              "type": "Feature",
-              "properties": {
-                "method": "uam_buffer_official_reh_overlap",
-                "geometry_dimension": "3D",
-                "altitude_m": 1034.1961159440584,
-                "altitude_min_m": 1032.0722318881164,
+                "altitude_m": 1034.4911696864292,
+                "altitude_min_m": 1032.6623393728582,
                 "altitude_max_m": 1036.3200000000002,
                 "uam_route_ids": [
                   "UAM064"
@@ -50787,22 +49577,14 @@
                 "reh_labels": [
                   "ESPRAIADA - trecho 1"
                 ],
-                "resource_id": "XUAMREH036",
-                "label": "Cruzamento UAM × REH 036",
-                "capture_radius_m": 250.0,
-                "operations": 50.98,
-                "mean_throughput_per_hour": 2.116601951797678,
-                "peak_throughput_per_hour": 23.2,
-                "capacity_reference_per_hour": 9.947999999999993,
-                "capacity_declared_per_hour": null,
-                "utilization_peak": 2.3321270607157234,
-                "replica_count": 50
+                "resource_id": "XUAMREH034",
+                "label": "Cruzamento UAM × REH 034"
               },
               "geometry": {
                 "type": "Point",
                 "coordinates": [
-                  -46.69757502277295,
-                  -23.613195941670394
+                  -46.69760345311442,
+                  -23.613221522088374
                 ]
               }
             },
@@ -50811,8 +49593,8 @@
               "properties": {
                 "method": "uam_buffer_official_reh_overlap",
                 "geometry_dimension": "3D",
-                "altitude_m": 1034.3172575530384,
-                "altitude_min_m": 1032.3178432604138,
+                "altitude_m": 1032.3568964782844,
+                "altitude_min_m": 1028.3937929565686,
                 "altitude_max_m": 1036.3200000000002,
                 "uam_route_ids": [
                   "UAM007",
@@ -50828,22 +49610,14 @@
                 "reh_labels": [
                   "ACLIMAÇÃO - trecho 2"
                 ],
-                "resource_id": "XUAMREH037",
-                "label": "Cruzamento UAM × REH 037",
-                "capture_radius_m": 250.0,
-                "operations": 10.96,
-                "mean_throughput_per_hour": 0.4551136464213835,
-                "peak_throughput_per_hour": 6.88,
-                "capacity_reference_per_hour": 3.94,
-                "capacity_declared_per_hour": null,
-                "utilization_peak": 1.7461928934010151,
-                "replica_count": 50
+                "resource_id": "XUAMREH035",
+                "label": "Cruzamento UAM × REH 035"
               },
               "geometry": {
                 "type": "Point",
                 "coordinates": [
-                  -46.6369966574914,
-                  -23.581283975896312
+                  -46.63740728074206,
+                  -23.581313986796797
                 ]
               }
             },
@@ -50852,8 +49626,8 @@
               "properties": {
                 "method": "uam_buffer_official_reh_overlap",
                 "geometry_dimension": "3D",
-                "altitude_m": 1032.9326400277964,
-                "altitude_min_m": 1029.545280055593,
+                "altitude_m": 1031.3800785508543,
+                "altitude_min_m": 1026.4401571017083,
                 "altitude_max_m": 1036.3200000000002,
                 "uam_route_ids": [
                   "UAM022",
@@ -50869,22 +49643,14 @@
                 "reh_labels": [
                   "ACLIMAÇÃO - trecho 2"
                 ],
-                "resource_id": "XUAMREH038",
-                "label": "Cruzamento UAM × REH 038",
-                "capture_radius_m": 250.0,
-                "operations": 14.44,
-                "mean_throughput_per_hour": 0.5995491797601044,
-                "peak_throughput_per_hour": 8.4,
-                "capacity_reference_per_hour": 4.0,
-                "capacity_declared_per_hour": null,
-                "utilization_peak": 2.1,
-                "replica_count": 50
+                "resource_id": "XUAMREH036",
+                "label": "Cruzamento UAM × REH 036"
               },
               "geometry": {
                 "type": "Point",
                 "coordinates": [
-                  -46.62970722266726,
-                  -23.575679144046994
+                  -46.62986486674295,
+                  -23.575537292484334
                 ]
               }
             },
@@ -50908,22 +49674,14 @@
                 "reh_labels": [
                   "RADIAL - trecho 1"
                 ],
-                "resource_id": "XUAMREH039",
-                "label": "Cruzamento UAM × REH 039",
-                "capture_radius_m": 250.0,
-                "operations": 116.36,
-                "mean_throughput_per_hour": 4.831581775781854,
-                "peak_throughput_per_hour": 30.96,
-                "capacity_reference_per_hour": 17.73599999999999,
-                "capacity_declared_per_hour": null,
-                "utilization_peak": 1.7456021650879576,
-                "replica_count": 50
+                "resource_id": "XUAMREH037",
+                "label": "Cruzamento UAM × REH 037"
               },
               "geometry": {
                 "type": "Point",
                 "coordinates": [
-                  -46.60709499132373,
-                  -23.54272604596319
+                  -46.608635142930076,
+                  -23.542813044388218
                 ]
               }
             },
@@ -50953,65 +49711,14 @@
                 "reh_labels": [
                   "RADIAL - trecho 1"
                 ],
-                "resource_id": "XUAMREH040",
-                "label": "Cruzamento UAM × REH 040",
-                "capture_radius_m": 250.0,
-                "operations": 116.36,
-                "mean_throughput_per_hour": 4.831581775781854,
-                "peak_throughput_per_hour": 30.88,
-                "capacity_reference_per_hour": 17.73599999999999,
-                "capacity_declared_per_hour": null,
-                "utilization_peak": 1.7410915651781695,
-                "replica_count": 50
+                "resource_id": "XUAMREH038",
+                "label": "Cruzamento UAM × REH 038"
               },
               "geometry": {
                 "type": "Point",
                 "coordinates": [
-                  -46.60660014654001,
-                  -23.542635073452516
-                ]
-              }
-            },
-            {
-              "type": "Feature",
-              "properties": {
-                "method": "uam_buffer_official_reh_overlap",
-                "geometry_dimension": "3D",
-                "altitude_m": 1005.84,
-                "altitude_min_m": 1005.84,
-                "altitude_max_m": 1005.84,
-                "uam_route_ids": [
-                  "UAM001",
-                  "UAM022",
-                  "UAM024"
-                ],
-                "uam_route_labels": [
-                  "SBSP-SBGR (Parallel 1)",
-                  "SBGR-VP-002 (Parallel 2)",
-                  "SBGR-VP-003 (Parallel 2)"
-                ],
-                "reh_resource_ids": [
-                  "REH-130"
-                ],
-                "reh_labels": [
-                  "RADIAL - trecho 1"
-                ],
-                "resource_id": "XUAMREH041",
-                "label": "Cruzamento UAM × REH 041",
-                "capture_radius_m": 250.0,
-                "operations": 116.36,
-                "mean_throughput_per_hour": 4.831581775781854,
-                "peak_throughput_per_hour": 30.96,
-                "capacity_reference_per_hour": 17.703999999999994,
-                "capacity_declared_per_hour": null,
-                "utilization_peak": 1.74875734297334,
-                "replica_count": 50
-              },
-              "geometry": {
-                "type": "Point",
-                "coordinates": [
-                  -46.604923183706596,
-                  -23.54266838564232
+                  -46.60833298816634,
+                  -23.54281867909301
                 ]
               }
             },
@@ -51049,22 +49756,14 @@
                 "reh_labels": [
                   "FERNÃO - trecho 1"
                 ],
-                "resource_id": "XUAMREH042",
-                "label": "Cruzamento UAM × REH 042",
-                "capture_radius_m": 250.0,
-                "operations": 0.6,
-                "mean_throughput_per_hour": 0.024922861276903595,
-                "peak_throughput_per_hour": 1.92,
-                "capacity_reference_per_hour": 0.0,
-                "capacity_declared_per_hour": null,
-                "utilization_peak": null,
-                "replica_count": 50
+                "resource_id": "XUAMREH039",
+                "label": "Cruzamento UAM × REH 039"
               },
               "geometry": {
                 "type": "Point",
                 "coordinates": [
-                  -46.560596399815815,
-                  -23.51487143285906
+                  -46.560794174197085,
+                  -23.515507578517248
                 ]
               }
             },
@@ -51102,904 +49801,27 @@
                 "reh_labels": [
                   "FERNÃO - trecho 1"
                 ],
-                "resource_id": "XUAMREH043",
-                "label": "Cruzamento UAM × REH 043",
-                "capture_radius_m": 250.0,
-                "operations": 0.6,
-                "mean_throughput_per_hour": 0.024922861276903595,
-                "peak_throughput_per_hour": 1.92,
-                "capacity_reference_per_hour": 0.0,
-                "capacity_declared_per_hour": null,
-                "utilization_peak": null,
-                "replica_count": 50
+                "resource_id": "XUAMREH040",
+                "label": "Cruzamento UAM × REH 040"
               },
               "geometry": {
                 "type": "Point",
                 "coordinates": [
-                  -46.55954122825937,
-                  -23.506044065323877
+                  -46.55955203130101,
+                  -23.506045122793815
                 ]
               }
             }
           ]
         },
         "crossing_capacity": {
-          "available": true,
-          "resource_count": 43,
-          "replica_count": 50,
-          "capacity_method": "mean_replica_P95_observed_throughput",
-          "capacity_declared_per_hour": null,
-          "utilization_available": true,
-          "violation_available": false,
-          "resources": [
-            {
-              "resource_id": "XUAMREH018",
-              "label": "Cruzamento UAM × REH 018",
-              "map_target": {
-                "type": "crossing_waypoint",
-                "resource_id": "XUAMREH018",
-                "coordinates": [
-                  -46.74256801100671,
-                  -23.518395971076906
-                ]
-              },
-              "operations": 260.9,
-              "mean_throughput_per_hour": 10.833124511761966,
-              "peak_throughput_per_hour": 64.32,
-              "capacity_reference_per_hour": 39.51999999999998,
-              "utilization_peak": 1.6275303643724701,
-              "utilization_mean": 0.2741175230709001
-            },
-            {
-              "resource_id": "XUAMREH027",
-              "label": "Cruzamento UAM × REH 027",
-              "map_target": {
-                "type": "crossing_waypoint",
-                "resource_id": "XUAMREH027",
-                "coordinates": [
-                  -46.726723850672045,
-                  -23.514054899958264
-                ]
-              },
-              "operations": 260.28,
-              "mean_throughput_per_hour": 10.80735369021369,
-              "peak_throughput_per_hour": 70.56,
-              "capacity_reference_per_hour": 40.09199999999998,
-              "utilization_peak": 1.7599521101466638,
-              "utilization_mean": 0.26956384541089734
-            },
-            {
-              "resource_id": "XUAMREH020",
-              "label": "Cruzamento UAM × REH 020",
-              "map_target": {
-                "type": "crossing_waypoint",
-                "resource_id": "XUAMREH020",
-                "coordinates": [
-                  -46.7382529111411,
-                  -23.51801559902815
-                ]
-              },
-              "operations": 234.22,
-              "mean_throughput_per_hour": 9.725343117334903,
-              "peak_throughput_per_hour": 52.16,
-              "capacity_reference_per_hour": 32.37999999999999,
-              "utilization_peak": 1.6108709079678818,
-              "utilization_mean": 0.3003503124562973
-            },
-            {
-              "resource_id": "XUAMREH025",
-              "label": "Cruzamento UAM × REH 025",
-              "map_target": {
-                "type": "crossing_waypoint",
-                "resource_id": "XUAMREH025",
-                "coordinates": [
-                  -46.73455784831051,
-                  -23.515109439612967
-                ]
-              },
-              "operations": 223.14,
-              "mean_throughput_per_hour": 9.265366729776844,
-              "peak_throughput_per_hour": 57.36,
-              "capacity_reference_per_hour": 34.31599999999999,
-              "utilization_peak": 1.6715234875859664,
-              "utilization_mean": 0.27000136174894646
-            },
-            {
-              "resource_id": "XUAMREH023",
-              "label": "Cruzamento UAM × REH 023",
-              "map_target": {
-                "type": "crossing_waypoint",
-                "resource_id": "XUAMREH023",
-                "coordinates": [
-                  -46.73530258979139,
-                  -23.546804572765158
-                ]
-              },
-              "operations": 163.98,
-              "mean_throughput_per_hour": 6.808894213489416,
-              "peak_throughput_per_hour": 41.44,
-              "capacity_reference_per_hour": 25.44799999999999,
-              "utilization_peak": 1.628418736246464,
-              "utilization_mean": 0.26756107409185076
-            },
-            {
-              "resource_id": "XUAMREH019",
-              "label": "Cruzamento UAM × REH 019",
-              "map_target": {
-                "type": "crossing_waypoint",
-                "resource_id": "XUAMREH019",
-                "coordinates": [
-                  -46.7424579931275,
-                  -23.537522076083363
-                ]
-              },
-              "operations": 151.24,
-              "mean_throughput_per_hour": 6.280251097693784,
-              "peak_throughput_per_hour": 37.68,
-              "capacity_reference_per_hour": 23.583999999999993,
-              "utilization_peak": 1.5976933514246952,
-              "utilization_mean": 0.26629287218850856
-            },
-            {
-              "resource_id": "XUAMREH017",
-              "label": "Cruzamento UAM × REH 017",
-              "map_target": {
-                "type": "crossing_waypoint",
-                "resource_id": "XUAMREH017",
-                "coordinates": [
-                  -46.74321939760633,
-                  -23.53638657640141
-                ]
-              },
-              "operations": 144.86,
-              "mean_throughput_per_hour": 6.015357140108442,
-              "peak_throughput_per_hour": 35.92,
-              "capacity_reference_per_hour": 21.679999999999986,
-              "utilization_peak": 1.6568265682656838,
-              "utilization_mean": 0.2774611226987291
-            },
-            {
-              "resource_id": "XUAMREH016",
-              "label": "Cruzamento UAM × REH 016",
-              "map_target": {
-                "type": "crossing_waypoint",
-                "resource_id": "XUAMREH016",
-                "coordinates": [
-                  -46.74397829084542,
-                  -23.538606943555322
-                ]
-              },
-              "operations": 137.1,
-              "mean_throughput_per_hour": 5.693142136433428,
-              "peak_throughput_per_hour": 32.72,
-              "capacity_reference_per_hour": 19.703999999999994,
-              "utilization_peak": 1.6605765326837196,
-              "utilization_mean": 0.28893331995703564
-            },
-            {
-              "resource_id": "XUAMREH022",
-              "label": "Cruzamento UAM × REH 022",
-              "map_target": {
-                "type": "crossing_waypoint",
-                "resource_id": "XUAMREH022",
-                "coordinates": [
-                  -46.73569221948398,
-                  -23.54492364320313
-                ]
-              },
-              "operations": 119.42,
-              "mean_throughput_per_hour": 4.958873923952236,
-              "peak_throughput_per_hour": 28.0,
-              "capacity_reference_per_hour": 17.059999999999995,
-              "utilization_peak": 1.6412661195779605,
-              "utilization_mean": 0.29067256295147936
-            },
-            {
-              "resource_id": "XUAMREH021",
-              "label": "Cruzamento UAM × REH 021",
-              "map_target": {
-                "type": "crossing_waypoint",
-                "resource_id": "XUAMREH021",
-                "coordinates": [
-                  -46.73639520953387,
-                  -23.54736600595645
-                ]
-              },
-              "operations": 116.46,
-              "mean_throughput_per_hour": 4.835417379542298,
-              "peak_throughput_per_hour": 36.0,
-              "capacity_reference_per_hour": 20.587999999999987,
-              "utilization_peak": 1.7485914124732866,
-              "utilization_mean": 0.2348658140442151
-            },
-            {
-              "resource_id": "XUAMREH039",
-              "label": "Cruzamento UAM × REH 039",
-              "map_target": {
-                "type": "crossing_waypoint",
-                "resource_id": "XUAMREH039",
-                "coordinates": [
-                  -46.60709499132373,
-                  -23.54272604596319
-                ]
-              },
-              "operations": 116.36,
-              "mean_throughput_per_hour": 4.831581775781854,
-              "peak_throughput_per_hour": 30.96,
-              "capacity_reference_per_hour": 17.73599999999999,
-              "utilization_peak": 1.7456021650879576,
-              "utilization_mean": 0.27241665402468745
-            },
-            {
-              "resource_id": "XUAMREH041",
-              "label": "Cruzamento UAM × REH 041",
-              "map_target": {
-                "type": "crossing_waypoint",
-                "resource_id": "XUAMREH041",
-                "coordinates": [
-                  -46.604923183706596,
-                  -23.54266838564232
-                ]
-              },
-              "operations": 116.36,
-              "mean_throughput_per_hour": 4.831581775781854,
-              "peak_throughput_per_hour": 30.96,
-              "capacity_reference_per_hour": 17.703999999999994,
-              "utilization_peak": 1.74875734297334,
-              "utilization_mean": 0.2729090474345829
-            },
-            {
-              "resource_id": "XUAMREH040",
-              "label": "Cruzamento UAM × REH 040",
-              "map_target": {
-                "type": "crossing_waypoint",
-                "resource_id": "XUAMREH040",
-                "coordinates": [
-                  -46.60660014654001,
-                  -23.542635073452516
-                ]
-              },
-              "operations": 116.36,
-              "mean_throughput_per_hour": 4.831581775781854,
-              "peak_throughput_per_hour": 30.88,
-              "capacity_reference_per_hour": 17.73599999999999,
-              "utilization_peak": 1.7410915651781695,
-              "utilization_mean": 0.27241665402468745
-            },
-            {
-              "resource_id": "XUAMREH013",
-              "label": "Cruzamento UAM × REH 013",
-              "map_target": {
-                "type": "crossing_waypoint",
-                "resource_id": "XUAMREH013",
-                "coordinates": [
-                  -46.7533088495644,
-                  -23.524579799117795
-                ]
-              },
-              "operations": 100.9,
-              "mean_throughput_per_hour": 4.18926591126863,
-              "peak_throughput_per_hour": 34.72,
-              "capacity_reference_per_hour": 18.923999999999992,
-              "utilization_peak": 1.8347072500528436,
-              "utilization_mean": 0.2213731722293718
-            },
-            {
-              "resource_id": "XUAMREH012",
-              "label": "Cruzamento UAM × REH 012",
-              "map_target": {
-                "type": "crossing_waypoint",
-                "resource_id": "XUAMREH012",
-                "coordinates": [
-                  -46.75437731483486,
-                  -23.525568544258785
-                ]
-              },
-              "operations": 94.5,
-              "mean_throughput_per_hour": 3.9235205223521628,
-              "peak_throughput_per_hour": 33.12,
-              "capacity_reference_per_hour": 18.03199999999999,
-              "utilization_peak": 1.836734693877552,
-              "utilization_mean": 0.2175865418340819
-            },
-            {
-              "resource_id": "XUAMREH034",
-              "label": "Cruzamento UAM × REH 034",
-              "map_target": {
-                "type": "crossing_waypoint",
-                "resource_id": "XUAMREH034",
-                "coordinates": [
-                  -46.701270116014804,
-                  -23.612699209237856
-                ]
-              },
-              "operations": 82.16,
-              "mean_throughput_per_hour": 3.410910345066439,
-              "peak_throughput_per_hour": 29.04,
-              "capacity_reference_per_hour": 14.031999999999993,
-              "utilization_peak": 2.0695553021664774,
-              "utilization_mean": 0.24308083987075546
-            },
-            {
-              "resource_id": "XUAMREH029",
-              "label": "Cruzamento UAM × REH 029",
-              "map_target": {
-                "type": "crossing_waypoint",
-                "resource_id": "XUAMREH029",
-                "coordinates": [
-                  -46.708582576571175,
-                  -23.612599208788925
-                ]
-              },
-              "operations": 76.66,
-              "mean_throughput_per_hour": 3.1827049907066414,
-              "peak_throughput_per_hour": 26.24,
-              "capacity_reference_per_hour": 13.107999999999993,
-              "utilization_peak": 2.0018309429356127,
-              "utilization_mean": 0.24280630078628646
-            },
-            {
-              "resource_id": "XUAMREH030",
-              "label": "Cruzamento UAM × REH 030",
-              "map_target": {
-                "type": "crossing_waypoint",
-                "resource_id": "XUAMREH030",
-                "coordinates": [
-                  -46.70773960938346,
-                  -23.612763990761376
-                ]
-              },
-              "operations": 76.1,
-              "mean_throughput_per_hour": 3.159457568026229,
-              "peak_throughput_per_hour": 26.0,
-              "capacity_reference_per_hour": 12.983999999999991,
-              "utilization_peak": 2.0024645717806546,
-              "utilization_mean": 0.24333468638526118
-            },
-            {
-              "resource_id": "XUAMREH031",
-              "label": "Cruzamento UAM × REH 031",
-              "map_target": {
-                "type": "crossing_waypoint",
-                "resource_id": "XUAMREH031",
-                "coordinates": [
-                  -46.70746402773739,
-                  -23.611550190365055
-                ]
-              },
-              "operations": 68.92,
-              "mean_throughput_per_hour": 2.861427323243401,
-              "peak_throughput_per_hour": 25.44,
-              "capacity_reference_per_hour": 12.255999999999995,
-              "utilization_peak": 2.0757180156657973,
-              "utilization_mean": 0.2334715505257345
-            },
-            {
-              "resource_id": "XUAMREH032",
-              "label": "Cruzamento UAM × REH 032",
-              "map_target": {
-                "type": "crossing_waypoint",
-                "resource_id": "XUAMREH032",
-                "coordinates": [
-                  -46.706194188631684,
-                  -23.611641354291702
-                ]
-              },
-              "operations": 68.16,
-              "mean_throughput_per_hour": 2.829880383124954,
-              "peak_throughput_per_hour": 25.28,
-              "capacity_reference_per_hour": 12.255999999999995,
-              "utilization_peak": 2.062663185378591,
-              "utilization_mean": 0.23089755084244087
-            },
-            {
-              "resource_id": "XUAMREH033",
-              "label": "Cruzamento UAM × REH 033",
-              "map_target": {
-                "type": "crossing_waypoint",
-                "resource_id": "XUAMREH033",
-                "coordinates": [
-                  -46.70497560667669,
-                  -23.611693435361
-                ]
-              },
-              "operations": 66.94,
-              "mean_throughput_per_hour": 2.7792274621627553,
-              "peak_throughput_per_hour": 24.96,
-              "capacity_reference_per_hour": 11.955999999999994,
-              "utilization_peak": 2.0876547340247584,
-              "utilization_mean": 0.2324546221280325
-            },
-            {
-              "resource_id": "XUAMREH036",
-              "label": "Cruzamento UAM × REH 036",
-              "map_target": {
-                "type": "crossing_waypoint",
-                "resource_id": "XUAMREH036",
-                "coordinates": [
-                  -46.69757502277295,
-                  -23.613195941670394
-                ]
-              },
-              "operations": 50.98,
-              "mean_throughput_per_hour": 2.116601951797678,
-              "peak_throughput_per_hour": 23.2,
-              "capacity_reference_per_hour": 9.947999999999993,
-              "utilization_peak": 2.3321270607157234,
-              "utilization_mean": 0.2127665814030639
-            },
-            {
-              "resource_id": "XUAMREH006",
-              "label": "Cruzamento UAM × REH 006",
-              "map_target": {
-                "type": "crossing_waypoint",
-                "resource_id": "XUAMREH006",
-                "coordinates": [
-                  -46.81684682966029,
-                  -23.524442660816746
-                ]
-              },
-              "operations": 50.28,
-              "mean_throughput_per_hour": 2.0874219627265136,
-              "peak_throughput_per_hour": 21.36,
-              "capacity_reference_per_hour": 9.931999999999993,
-              "utilization_peak": 2.150624244865084,
-              "utilization_mean": 0.21017136153106272
-            },
-            {
-              "resource_id": "XUAMREH003",
-              "label": "Cruzamento UAM × REH 003",
-              "map_target": {
-                "type": "crossing_waypoint",
-                "resource_id": "XUAMREH003",
-                "coordinates": [
-                  -46.817572139651965,
-                  -23.52939920512159
-                ]
-              },
-              "operations": 50.26,
-              "mean_throughput_per_hour": 2.0865972204584726,
-              "peak_throughput_per_hour": 21.44,
-              "capacity_reference_per_hour": 9.895999999999994,
-              "utilization_peak": 2.166531932093777,
-              "utilization_mean": 0.21085258897114734
-            },
-            {
-              "resource_id": "XUAMREH004",
-              "label": "Cruzamento UAM × REH 004",
-              "map_target": {
-                "type": "crossing_waypoint",
-                "resource_id": "XUAMREH004",
-                "coordinates": [
-                  -46.81752664926729,
-                  -23.52908716642037
-                ]
-              },
-              "operations": 50.26,
-              "mean_throughput_per_hour": 2.0865972204584726,
-              "peak_throughput_per_hour": 21.44,
-              "capacity_reference_per_hour": 9.835999999999995,
-              "utilization_peak": 2.179747864985768,
-              "utilization_mean": 0.21213879833860042
-            },
-            {
-              "resource_id": "XUAMREH005",
-              "label": "Cruzamento UAM × REH 005",
-              "map_target": {
-                "type": "crossing_waypoint",
-                "resource_id": "XUAMREH005",
-                "coordinates": [
-                  -46.81689311953052,
-                  -23.52476013178882
-                ]
-              },
-              "operations": 50.26,
-              "mean_throughput_per_hour": 2.0865972204584726,
-              "peak_throughput_per_hour": 21.36,
-              "capacity_reference_per_hour": 9.931999999999993,
-              "utilization_peak": 2.150624244865084,
-              "utilization_mean": 0.21008832263979804
-            },
-            {
-              "resource_id": "XUAMREH002",
-              "label": "Cruzamento UAM × REH 002",
-              "map_target": {
-                "type": "crossing_waypoint",
-                "resource_id": "XUAMREH002",
-                "coordinates": [
-                  -46.82799249183902,
-                  -23.508223166638402
-                ]
-              },
-              "operations": 43.26,
-              "mean_throughput_per_hour": 1.796210797612588,
-              "peak_throughput_per_hour": 17.04,
-              "capacity_reference_per_hour": 8.487999999999994,
-              "utilization_peak": 2.0075400565504253,
-              "utilization_mean": 0.21161767172627113
-            },
-            {
-              "resource_id": "XUAMREH001",
-              "label": "Cruzamento UAM × REH 001",
-              "map_target": {
-                "type": "crossing_waypoint",
-                "resource_id": "XUAMREH001",
-                "coordinates": [
-                  -46.8329591731143,
-                  -23.507748668659346
-                ]
-              },
-              "operations": 41.54,
-              "mean_throughput_per_hour": 1.724722355625849,
-              "peak_throughput_per_hour": 16.72,
-              "capacity_reference_per_hour": 8.315999999999997,
-              "utilization_peak": 2.010582010582011,
-              "utilization_mean": 0.20739807066207908
-            },
-            {
-              "resource_id": "XUAMREH035",
-              "label": "Cruzamento UAM × REH 035",
-              "map_target": {
-                "type": "crossing_waypoint",
-                "resource_id": "XUAMREH035",
-                "coordinates": [
-                  -46.69770020170488,
-                  -23.606858335822476
-                ]
-              },
-              "operations": 41.04,
-              "mean_throughput_per_hour": 1.7038221466695913,
-              "peak_throughput_per_hour": 15.04,
-              "capacity_reference_per_hour": 8.196,
-              "utilization_peak": 1.8350414836505613,
-              "utilization_mean": 0.2078845957381151
-            },
-            {
-              "resource_id": "XUAMREH028",
-              "label": "Cruzamento UAM × REH 028",
-              "map_target": {
-                "type": "crossing_waypoint",
-                "resource_id": "XUAMREH028",
-                "coordinates": [
-                  -46.71570068121483,
-                  -23.611397970163665
-                ]
-              },
-              "operations": 37.82,
-              "mean_throughput_per_hour": 1.5702716739204887,
-              "peak_throughput_per_hour": 17.44,
-              "capacity_reference_per_hour": 8.215999999999998,
-              "utilization_peak": 2.122687439143136,
-              "utilization_mean": 0.19112362146062428
-            },
-            {
-              "resource_id": "XUAMREH014",
-              "label": "Cruzamento UAM × REH 014",
-              "map_target": {
-                "type": "crossing_waypoint",
-                "resource_id": "XUAMREH014",
-                "coordinates": [
-                  -46.75165877683205,
-                  -23.606158087947897
-                ]
-              },
-              "operations": 24.74,
-              "mean_throughput_per_hour": 1.0270802268887838,
-              "peak_throughput_per_hour": 11.2,
-              "capacity_reference_per_hour": 4.903999999999996,
-              "utilization_peak": 2.283849918433933,
-              "utilization_mean": 0.20943724039330844
-            },
-            {
-              "resource_id": "XUAMREH010",
-              "label": "Cruzamento UAM × REH 010",
-              "map_target": {
-                "type": "crossing_waypoint",
-                "resource_id": "XUAMREH010",
-                "coordinates": [
-                  -46.78092372499159,
-                  -23.599111511739473
-                ]
-              },
-              "operations": 24.74,
-              "mean_throughput_per_hour": 1.0270802268887838,
-              "peak_throughput_per_hour": 10.96,
-              "capacity_reference_per_hour": 4.891999999999993,
-              "utilization_peak": 2.2403924775143125,
-              "utilization_mean": 0.2099509866902668
-            },
-            {
-              "resource_id": "XUAMREH024",
-              "label": "Cruzamento UAM × REH 024",
-              "map_target": {
-                "type": "crossing_waypoint",
-                "resource_id": "XUAMREH024",
-                "coordinates": [
-                  -46.7350012042358,
-                  -23.611375251670935
-                ]
-              },
-              "operations": 16.86,
-              "mean_throughput_per_hour": 0.7000048737219227,
-              "peak_throughput_per_hour": 10.0,
-              "capacity_reference_per_hour": 4.251999999999998,
-              "utilization_peak": 2.351834430856069,
-              "utilization_mean": 0.16462955637862722
-            },
-            {
-              "resource_id": "XUAMREH038",
-              "label": "Cruzamento UAM × REH 038",
-              "map_target": {
-                "type": "crossing_waypoint",
-                "resource_id": "XUAMREH038",
-                "coordinates": [
-                  -46.62970722266726,
-                  -23.575679144046994
-                ]
-              },
-              "operations": 14.44,
-              "mean_throughput_per_hour": 0.5995491797601044,
-              "peak_throughput_per_hour": 8.4,
-              "capacity_reference_per_hour": 4.0,
-              "utilization_peak": 2.1,
-              "utilization_mean": 0.1498872949400261
-            },
-            {
-              "resource_id": "XUAMREH037",
-              "label": "Cruzamento UAM × REH 037",
-              "map_target": {
-                "type": "crossing_waypoint",
-                "resource_id": "XUAMREH037",
-                "coordinates": [
-                  -46.6369966574914,
-                  -23.581283975896312
-                ]
-              },
-              "operations": 10.96,
-              "mean_throughput_per_hour": 0.4551136464213835,
-              "peak_throughput_per_hour": 6.88,
-              "capacity_reference_per_hour": 3.94,
-              "utilization_peak": 1.7461928934010151,
-              "utilization_mean": 0.11551107777192475
-            },
-            {
-              "resource_id": "XUAMREH026",
-              "label": "Cruzamento UAM × REH 026",
-              "map_target": {
-                "type": "crossing_waypoint",
-                "resource_id": "XUAMREH026",
-                "coordinates": [
-                  -46.732732167671394,
-                  -23.608843875531957
-                ]
-              },
-              "operations": 10.36,
-              "mean_throughput_per_hour": 0.4301107294997749,
-              "peak_throughput_per_hour": 7.6,
-              "capacity_reference_per_hour": 4.0,
-              "utilization_peak": 1.9,
-              "utilization_mean": 0.10752768237494373
-            },
-            {
-              "resource_id": "XUAMREH015",
-              "label": "Cruzamento UAM × REH 015",
-              "map_target": {
-                "type": "crossing_waypoint",
-                "resource_id": "XUAMREH015",
-                "coordinates": [
-                  -46.75146609543743,
-                  -23.610853961184617
-                ]
-              },
-              "operations": 5.0,
-              "mean_throughput_per_hour": 0.20760764325817835,
-              "peak_throughput_per_hour": 5.44,
-              "capacity_reference_per_hour": 0.5999999999999863,
-              "utilization_peak": 9.066666666666874,
-              "utilization_mean": 0.34601273876363847
-            },
-            {
-              "resource_id": "XUAMREH011",
-              "label": "Cruzamento UAM × REH 011",
-              "map_target": {
-                "type": "crossing_waypoint",
-                "resource_id": "XUAMREH011",
-                "coordinates": [
-                  -46.75515135898698,
-                  -23.551309998543285
-                ]
-              },
-              "operations": 2.0,
-              "mean_throughput_per_hour": 0.08304305730327133,
-              "peak_throughput_per_hour": 4.0,
-              "capacity_reference_per_hour": 0.0,
-              "utilization_peak": null,
-              "utilization_mean": null
-            },
-            {
-              "resource_id": "XUAMREH008",
-              "label": "Cruzamento UAM × REH 008",
-              "map_target": {
-                "type": "crossing_waypoint",
-                "resource_id": "XUAMREH008",
-                "coordinates": [
-                  -46.81135475714673,
-                  -23.594339775079746
-                ]
-              },
-              "operations": 1.3,
-              "mean_throughput_per_hour": 0.05392629770302044,
-              "peak_throughput_per_hour": 3.04,
-              "capacity_reference_per_hour": 0.0,
-              "utilization_peak": null,
-              "utilization_mean": null
-            },
-            {
-              "resource_id": "XUAMREH042",
-              "label": "Cruzamento UAM × REH 042",
-              "map_target": {
-                "type": "crossing_waypoint",
-                "resource_id": "XUAMREH042",
-                "coordinates": [
-                  -46.560596399815815,
-                  -23.51487143285906
-                ]
-              },
-              "operations": 0.6,
-              "mean_throughput_per_hour": 0.024922861276903595,
-              "peak_throughput_per_hour": 1.92,
-              "capacity_reference_per_hour": 0.0,
-              "utilization_peak": null,
-              "utilization_mean": null
-            },
-            {
-              "resource_id": "XUAMREH043",
-              "label": "Cruzamento UAM × REH 043",
-              "map_target": {
-                "type": "crossing_waypoint",
-                "resource_id": "XUAMREH043",
-                "coordinates": [
-                  -46.55954122825937,
-                  -23.506044065323877
-                ]
-              },
-              "operations": 0.6,
-              "mean_throughput_per_hour": 0.024922861276903595,
-              "peak_throughput_per_hour": 1.92,
-              "capacity_reference_per_hour": 0.0,
-              "utilization_peak": null,
-              "utilization_mean": null
-            },
-            {
-              "resource_id": "XUAMREH007",
-              "label": "Cruzamento UAM × REH 007",
-              "map_target": {
-                "type": "crossing_waypoint",
-                "resource_id": "XUAMREH007",
-                "coordinates": [
-                  -46.81353096512953,
-                  -23.59194078652076
-                ]
-              },
-              "operations": 0.16,
-              "mean_throughput_per_hour": 0.006632302405498281,
-              "peak_throughput_per_hour": 0.56,
-              "capacity_reference_per_hour": 0.0,
-              "utilization_peak": null,
-              "utilization_mean": null
-            },
-            {
-              "resource_id": "XUAMREH009",
-              "label": "Cruzamento UAM × REH 009",
-              "map_target": {
-                "type": "crossing_waypoint",
-                "resource_id": "XUAMREH009",
-                "coordinates": [
-                  -46.786586339872684,
-                  -23.60037735294786
-                ]
-              },
-              "operations": 0.0,
-              "mean_throughput_per_hour": 0.0,
-              "peak_throughput_per_hour": 0.0,
-              "capacity_reference_per_hour": 0.0,
-              "utilization_peak": null,
-              "utilization_mean": null
-            }
-          ],
-          "top_resources": [
-            {
-              "resource_id": "XUAMREH018",
-              "label": "Cruzamento UAM × REH 018",
-              "map_target": {
-                "type": "crossing_waypoint",
-                "resource_id": "XUAMREH018",
-                "coordinates": [
-                  -46.74256801100671,
-                  -23.518395971076906
-                ]
-              },
-              "operations": 260.9,
-              "mean_throughput_per_hour": 10.833124511761966,
-              "peak_throughput_per_hour": 64.32,
-              "capacity_reference_per_hour": 39.51999999999998,
-              "utilization_peak": 1.6275303643724701,
-              "utilization_mean": 0.2741175230709001
-            },
-            {
-              "resource_id": "XUAMREH027",
-              "label": "Cruzamento UAM × REH 027",
-              "map_target": {
-                "type": "crossing_waypoint",
-                "resource_id": "XUAMREH027",
-                "coordinates": [
-                  -46.726723850672045,
-                  -23.514054899958264
-                ]
-              },
-              "operations": 260.28,
-              "mean_throughput_per_hour": 10.80735369021369,
-              "peak_throughput_per_hour": 70.56,
-              "capacity_reference_per_hour": 40.09199999999998,
-              "utilization_peak": 1.7599521101466638,
-              "utilization_mean": 0.26956384541089734
-            },
-            {
-              "resource_id": "XUAMREH020",
-              "label": "Cruzamento UAM × REH 020",
-              "map_target": {
-                "type": "crossing_waypoint",
-                "resource_id": "XUAMREH020",
-                "coordinates": [
-                  -46.7382529111411,
-                  -23.51801559902815
-                ]
-              },
-              "operations": 234.22,
-              "mean_throughput_per_hour": 9.725343117334903,
-              "peak_throughput_per_hour": 52.16,
-              "capacity_reference_per_hour": 32.37999999999999,
-              "utilization_peak": 1.6108709079678818,
-              "utilization_mean": 0.3003503124562973
-            },
-            {
-              "resource_id": "XUAMREH025",
-              "label": "Cruzamento UAM × REH 025",
-              "map_target": {
-                "type": "crossing_waypoint",
-                "resource_id": "XUAMREH025",
-                "coordinates": [
-                  -46.73455784831051,
-                  -23.515109439612967
-                ]
-              },
-              "operations": 223.14,
-              "mean_throughput_per_hour": 9.265366729776844,
-              "peak_throughput_per_hour": 57.36,
-              "capacity_reference_per_hour": 34.31599999999999,
-              "utilization_peak": 1.6715234875859664,
-              "utilization_mean": 0.27000136174894646
-            },
-            {
-              "resource_id": "XUAMREH023",
-              "label": "Cruzamento UAM × REH 023",
-              "map_target": {
-                "type": "crossing_waypoint",
-                "resource_id": "XUAMREH023",
-                "coordinates": [
-                  -46.73530258979139,
-                  -23.546804572765158
-                ]
-              },
-              "operations": 163.98,
-              "mean_throughput_per_hour": 6.808894213489416,
-              "peak_throughput_per_hour": 41.44,
-              "capacity_reference_per_hour": 25.44799999999999,
-              "utilization_peak": 1.628418736246464,
-              "utilization_mean": 0.26756107409185076
-            }
-          ]
-        }
+          "available": false,
+          "reason": "geometric crossings are diagnostics, not named waypoint capacity",
+          "resources": [],
+          "top_resources": []
+        },
+        "buffer_method": "metric_linestring_buffer_round_joins_caps",
+        "spatial_diagnostics_status": "geometry_refreshed_without_recomputing_traffic_metrics"
       }
     },
     "safety": {

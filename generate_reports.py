@@ -39,6 +39,8 @@ def main() -> None:
         destination.write_text(json.dumps(settings, indent=2) + "\n", encoding="utf-8")
         config_path = destination
     selection = load_run_selection(config_path)
+    if selection.uam_corridor_csv_path is None:
+        raise ValueError("Set uam_corridor_csv in the run configuration before generating reports")
     print(f"Generating P100 reports from {selection.run_dir}", flush=True)
     dashboard_command = [sys.executable, str(repository / "generate_dashboard.py"), "--config", str(config_path)]
     if args.workers is not None:
@@ -51,7 +53,7 @@ def main() -> None:
     )
     index_path = repository / "docs" / "index.html"
     html = index_path.read_text(encoding="utf-8")
-    for name in ("data_bundle.js", "waypoint_rankings.js"):
+    for name in ("data_bundle.js", "waypoint_rankings.js", "candidate_nodes.js", "dashboard.js", "dashboard.css", "uam_projection.js", "crossing_waypoints_3d.js"):
         asset = repository / "docs" / "assets" / name
         digest = hashlib.sha256(asset.read_bytes()).hexdigest()[:12]
         html, replacements = re.subn(

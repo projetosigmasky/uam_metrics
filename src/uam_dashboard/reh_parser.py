@@ -44,6 +44,7 @@ def load_reh_network(path: str | Path) -> dict[str, Any]:
             "altitude_max_ft": _float_or_none(properties.get("altmax")),
             "altitude_compulsory_ft": _float_or_none(properties.get("altcomp")),
             "fix_a_name": properties.get("fixo_a_nome") or "",
+            "explicit_fixes": [{"name": properties.get(f"fixo_{side}_nome") or "", "lat": _float_or_none(properties.get(f"fixo_{side}_lat")), "lon": _float_or_none(properties.get(f"fixo_{side}_lon"))} for side in ("a", "b")],
             "fix_b_name": properties.get("fixo_b_nome") or "",
             "ats": properties.get("ats") or properties.get("fca") or "",
             "effective_date": properties.get("efetivacao") or "",

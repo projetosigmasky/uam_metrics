@@ -12,7 +12,7 @@ from .capacity import _reh_vertical_interval_m
 from .uam_corridor_parser import load_uam_corridor_network
 
 
-ELIGIBLE_NODE_TYPES = {"waypoint", "geometric node"}
+ELIGIBLE_NODE_TYPES = {"waypoint"}
 
 
 def _coordinate_key(point: dict[str, Any]) -> tuple[float, float, float]:
@@ -144,24 +144,14 @@ def candidate_node_collection(
     uam_routes: list[dict[str, Any]], reh_segments: list[dict[str, Any]]
 ) -> dict[str, Any]:
     """Expose geometric candidates without assigning simulated criticality."""
-    uam_features = network_junction_features(uam_routes)
-    reh_features = reh_junction_features(reh_segments)
-    for feature in uam_features:
-        feature["properties"]["criterion"] = "uam_junction"
-        feature["properties"]["status"] = "candidate"
-    for feature in reh_features:
-        feature["properties"]["criterion"] = "reh_junction"
-        feature["properties"]["status"] = "candidate"
-    return {
-        "type": "FeatureCollection",
-        "properties": {
-            "uam_junction_count": len(uam_features),
-            "reh_junction_count": len(reh_features),
-            "definition": "degree greater than two using distinct undirected centerline edges",
-            "status": "geometric_candidates_pending_replica_throughput",
-        },
-        "features": uam_features + reh_features,
-    }
+    from .named_waypoints import named_waypoint_features
+    features = named_waypoint_features(uam_routes, reh_segments)
+    return {"type": "FeatureCollection", "properties": {
+        "definition": "REH explicit named fixes; UAM named nonterminal junctions with degree >= 3 and verified REH reference",
+        "status": "geometry_only_pending_recomputation",
+        "analytical_grouping": "exact position/vertical envelope/dimensions; no totals by name",
+    }, "features": features}
+
 
 
 def write_candidate_node_assets(
@@ -170,10 +160,27 @@ def write_candidate_node_assets(
     uam_routes = load_uam_corridor_network(uam_csv)["routes"] if uam_csv else []
     reh_segments = load_reh_network(reh_xml)["segments"] if reh_xml else []
     collection = candidate_node_collection(uam_routes, reh_segments)
+    from .named_waypoints import uam_selection_inventory
+    audit = {"type": "FeatureCollection", "properties": {
+        "purpose": "selection audit only; excluded points are not capacity resources",
+        "reh_reference_max_distance_m": 500,
+        "name_matching": "accent/case/separator normalization and documented aliases; no unrestricted fuzzy matching",
+    }, "features": [f for f in uam_selection_inventory(uam_routes, reh_segments) if f["properties"]["network"] == "UAM"]}
+    collection["properties"]["uam_named_inventory_count"] = len(audit["features"])
+    collection["properties"]["uam_excluded_count"] = sum(not f["properties"]["capacity_eligible"] for f in audit["features"])
+    from .named_waypoints import source_record
+    sources = {"uam": source_record(uam_csv) if uam_csv else None, "reh": source_record(reh_xml) if reh_xml else None}
+    collection["properties"]["sources"] = sources
+    audit["properties"]["sources"] = sources
+    for feature in audit["features"]:
+        feature["properties"]["source"] = sources["uam"]
+    for feature in collection["features"]:
+        feature["properties"]["source"] = sources[feature["properties"]["network"].lower()]
     data_path = output_dir / "assets" / "data" / "candidate_nodes.geojson"
     js_path = output_dir / "assets" / "candidate_nodes.js"
     data_path.parent.mkdir(parents=True, exist_ok=True)
     js_path.parent.mkdir(parents=True, exist_ok=True)
+    (data_path.parent / "uam_node_selection_audit.geojson").write_text(json.dumps(audit, ensure_ascii=False, indent=2), encoding="utf-8")
     data_path.write_text(json.dumps(collection, ensure_ascii=False, indent=2), encoding="utf-8")
     serialized = json.dumps(collection, ensure_ascii=False, separators=(",", ":"))
     js_path.write_text(f"window.__UAM_CANDIDATE_NODES__ = {serialized};\n", encoding="utf-8")

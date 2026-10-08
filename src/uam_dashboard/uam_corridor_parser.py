@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import csv
 import re
+import math
 from collections import defaultdict
 from pathlib import Path
 from typing import Any
@@ -13,7 +14,7 @@ REQUIRED_COLUMNS = {
 PARALLEL_RE = re.compile(r"\s+\(Parallel\s+(?P<track>\d+)\)$", re.IGNORECASE)
 
 
-def load_uam_corridor_network(path: str | Path) -> dict[str, Any]:
+def load_uam_corridor_network(path: str | Path, expected_vertiports: set[str] | None = None) -> dict[str, Any]:
     """Load the six-vertiport Product II dedicated UAM corridor export."""
 
     source_path = Path(path)
@@ -47,11 +48,16 @@ def load_uam_corridor_network(path: str | Path) -> dict[str, Any]:
 
     if not grouped:
         raise ValueError(f"UAM corridor CSV contains no routes: {source_path}")
-    expected_vertiports = {f"VP-{index:03d}" for index in range(1, 7)}
-    if vertiports != expected_vertiports:
-        raise ValueError(
-            "The current dashboard scope requires exactly Product II vertiports VP-001 through VP-006."
-        )
+    if not vertiports or any(not re.fullmatch(r"VP-\d{3}", name) for name in vertiports):
+        raise ValueError("Vertiports must have nonempty VP-NNN identifiers")
+    if expected_vertiports is not None and vertiports != expected_vertiports:
+        raise ValueError(f"Expected vertiports {sorted(expected_vertiports)}, found {sorted(vertiports)}")
+    for route_name, points in grouped.items():
+        if not route_name or len(points) < 2 or len({p["id"] for p in points}) != len(points):
+            raise ValueError(f"Invalid route or duplicate point ids: {route_name!r}")
+        for point in points:
+            if not all(math.isfinite(point[k]) for k in ("lat", "lon", "altitude_m", "height_m", "width_m")) or not (-90 <= point["lat"] <= 90 and -180 <= point["lon"] <= 180) or min(point["height_m"], point["width_m"]) <= 0:
+                raise ValueError(f"Invalid corridor coordinate/dimensions in {route_name!r}")
 
     routes = []
     for index, (route_name, points) in enumerate(grouped.items(), start=1):
@@ -76,13 +82,13 @@ def load_uam_corridor_network(path: str | Path) -> dict[str, Any]:
                 "semi_width_m": width_m / 2.0,
                 "waypoint_count": len(points),
                 "points": points,
-                "geometry_source": "product2_uam_corridor_csv_6_vertiports",
+                "geometry_source": "product2_uam_corridor_csv",
             }
         )
 
     return {
         "source": str(source_path),
-        "scope": "product2_6_vertiports",
+        "scope": f"product2_{len(vertiports)}_vertiports",
         "units": "metres",
         "vertiports": sorted(vertiports),
         "route_count": len(routes),

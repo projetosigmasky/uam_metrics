@@ -746,7 +746,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--uam-corridor-csv",
         default=None,
-        help="Product II dedicated UAM corridor CSV (current scope: six vertiports).",
+        help="Product II corridor CSV belonging to the selected scenario; vertiport set is validated.",
     )
     parser.add_argument("--flight-instance-gap-seconds", type=float, default=300.0)
     parser.add_argument("--flight-instance-reset-distance-m", type=float, default=250.0)
@@ -852,6 +852,7 @@ def find(paths: tuple[Path, ...], predicate: Any) -> Path | None:
 
 def main() -> None:
     args = parse_args()
+    selection = None
     data_dir = Path(args.data_dir)
     if args.config and args.logs:
         raise ValueError("Pass either --config or positional STATELOG paths, not both")
@@ -869,7 +870,12 @@ def main() -> None:
     if worker_count < 1:
         raise ValueError("--workers must be a positive integer")
     reh_xml_path = find_reh_xml(args.reh_xml)
-    uam_corridor_csv_path = find_uam_corridor_csv(data_dir, args.uam_corridor_csv)
+    if selection and args.uam_corridor_csv and selection.uam_corridor_csv_path and Path(args.uam_corridor_csv).resolve() != selection.uam_corridor_csv_path.resolve():
+        raise ValueError("--uam-corridor-csv differs from validated run config; update the config explicitly")
+    selected_csv = args.uam_corridor_csv or (str(selection.uam_corridor_csv_path) if selection and selection.uam_corridor_csv_path else None)
+    if selection and selection.uam_corridor_csv_path is None:
+        raise ValueError("Run config must select uam_corridor_csv explicitly for its scenario")
+    uam_corridor_csv_path = find_uam_corridor_csv(data_dir, selected_csv)
     config = DashboardConfig(
         log_paths=log_paths,
         workers=worker_count,

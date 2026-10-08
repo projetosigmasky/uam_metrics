@@ -17,6 +17,7 @@ class RunSelection:
     scenario_paths: tuple[Path, ...]
     dashboard_workers: int
     ranking_workers: int
+    uam_corridor_csv_path: Path | None = None
 
 
 def load_run_selection(config_path: Path) -> RunSelection:
@@ -77,4 +78,18 @@ def load_run_selection(config_path: Path) -> RunSelection:
         matched_scenarios.append(scenario)
     if len(set(matched_scenarios)) != len(log_paths):
         raise ValueError("Each STATELOG must match a distinct SCN from the same orchestrator run")
-    return RunSelection(run_dir, tuple(log_paths), scenario_paths, dashboard_workers, ranking_workers)
+    corridor = settings.get("uam_corridor_csv")
+    corridor_path = Path(corridor).expanduser() if corridor else None
+    if corridor_path is not None:
+        if not corridor_path.is_absolute(): corridor_path = config_path.resolve().parent / corridor_path
+        from .uam_corridor_parser import load_uam_corridor_network
+        expected = settings.get("expected_vertiports")
+        load_uam_corridor_network(corridor_path, set(expected) if expected else None)
+        from .corridor_validation import validate_c2_corridor_scenarios
+        c2_scenarios = [scenario for log, scenario in zip(log_paths, matched_scenarios) if log.parent.name == "C2"]
+        validate_c2_corridor_scenarios(c2_scenarios, load_uam_corridor_network(corridor_path)["routes"])
+        if settings.get("uam_corridor_sha256"):
+            import hashlib
+            if hashlib.sha256(corridor_path.read_bytes()).hexdigest() != settings["uam_corridor_sha256"]:
+                raise ValueError("Corridor source hash differs from run configuration")
+    return RunSelection(run_dir, tuple(log_paths), scenario_paths, dashboard_workers, ranking_workers, corridor_path)

@@ -566,15 +566,12 @@ class MetricsTest(unittest.TestCase):
         self.assertEqual(complexity["planned_route_crossings"], 1)
         crossing = complexity["crossings"]["features"][0]
         self.assertEqual(crossing["properties"]["resource_id"], "XUAMREH001")
-        self.assertEqual(crossing["properties"]["operations"], 1)
+        self.assertNotIn("operations", crossing["properties"])
         self.assertAlmostEqual(crossing["properties"]["altitude_m"], 831.0)
-        self.assertIsNone(crossing["properties"]["capacity_declared_per_hour"])
+        self.assertNotIn("capacity_declared_per_hour", crossing["properties"])
         crossing_resources = metrics["throughput"]["crossing_waypoints"]
-        self.assertTrue(crossing_resources["available"])
-        self.assertEqual(
-            crossing_resources["top_resources"][0]["map_target"]["type"],
-            "crossing_waypoint",
-        )
+        self.assertFalse(crossing_resources["available"])
+        self.assertEqual(crossing_resources["resources"], [])
 
         reh_segments[0]["altitude_min_ft"] = 5000.0
         reh_segments[0]["altitude_max_ft"] = 5500.0

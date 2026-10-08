@@ -10,7 +10,7 @@
       integrity="sha256-p4NxAoJBhIINfQd+g9FQXHyzyTAFi+lyLwN2Bja9fM="
       crossorigin=""
     />
-    <link rel="stylesheet" href="assets/dashboard.css?v=1.0.0" />
+    <link rel="stylesheet" href="assets/dashboard.css?v=f4fea5ab7371" />
   </head>
   <body>
     <header class="topbar">
@@ -137,8 +137,8 @@
             </label>
             <label><input type="checkbox" id="layer-heat" /> Densidade</label>
             <label><input type="checkbox" id="layer-atd-hotspots" /> Hotspots ATD</label>
-            <label><input type="checkbox" id="layer-complexity" checked /> Cruzamentos UAM × REH 3D</label>
-            <label><input type="checkbox" id="layer-candidate-nodes" checked /> Nós candidatos UAM/REH</label>
+            <label><input type="checkbox" id="layer-complexity" checked /> Cruzamentos UAM × REH (diagnóstico 3D)</label>
+            <label><input type="checkbox" id="layer-candidate-nodes" checked /> Junções UAM e fixos REH</label>
             <label><input type="checkbox" id="layer-conflicts" checked /> Eventos LoWC/NMAC</label>
             <button class="panel-button" id="fit-map" type="button">Reenquadrar mapa</button>
             <div class="map-summary" aria-live="polite">
@@ -161,8 +161,8 @@
               <span data-legend-layer="heat"><i class="legend-swatch legend-heat"></i>Densidade</span>
               <span data-legend-layer="atd-hotspots"><i class="legend-swatch legend-atd"></i>Hotspot ATD</span>
               <span data-legend-layer="complexity"><i class="legend-swatch legend-complexity"></i>Cruzamento UAM × REH 3D</span>
-              <span data-legend-layer="candidate-nodes"><i class="legend-swatch legend-uam-node"></i>Nó UAM candidato</span>
-              <span data-legend-layer="candidate-nodes"><i class="legend-swatch legend-reh-node"></i>Nó REH candidato</span>
+              <span data-legend-layer="candidate-nodes"><i class="legend-swatch legend-uam-node"></i>Waypoint UAM nomeado</span>
+              <span data-legend-layer="candidate-nodes"><i class="legend-swatch legend-reh-node"></i>Fix REH nomeado</span>
               <span data-legend-layer="conflicts" data-conflict="lowc"><i class="legend-swatch legend-lowc"></i>LoWC</span>
               <span data-legend-layer="conflicts" data-conflict="nmac"><i class="legend-swatch legend-nmac"></i>NMAC</span>
               <span data-legend-layer="conflicts" data-conflict="mac"><i class="legend-swatch legend-mac"></i>MAC</span>
@@ -410,25 +410,26 @@
         </div>
         <div id="capacity-complexity" class="comparison-summary">-</div>
         <div class="section-heading">
-          <p class="eyebrow">Candidatos geométricos</p>
-          <h3>Nós UAM e REH com mais de duas arestas</h3>
+          <p class="eyebrow">Waypoints explicitamente nomeados</p>
+          <h3>Junções UAM referenciadas pela REH</h3>
           <p id="candidate-node-summary">Aguardando geometria da rede.</p>
-          <p>Estes pontos são candidatos. A simulação das réplicas definirá quais têm maior movimento.</p>
+          <a href="assets/data/uam_node_selection_audit.geojson" download>Baixar auditoria das posições UAM incluídas e excluídas</a>
+          <p>UAM: somente waypoints nomeados com três ou mais arestas físicas, referência REH compatível e uso não exclusivamente terminal. Geometric Node e acessos exclusivamente terminais são excluídos. Cada posição e nível permanece separado. Clique para inspecionar as posições e a origem.</p>
         </div>
         <div class="table-wrap candidate-node-table-wrap">
           <table class="comparison-table capacity-table">
-            <thead><tr><th>Rede</th><th>Nó</th><th>Arestas</th><th>Trechos conectados</th></tr></thead>
+            <thead><tr><th>Rede</th><th>Nó</th><th>Posições / grau UAM</th><th>Trechos conectados</th></tr></thead>
             <tbody id="candidate-node-table-body"></tbody>
           </table>
         </div>
         <div class="section-heading">
           <p class="eyebrow">Movimento observado</p>
-          <h3>Ranking dos waypoints candidatos</h3>
+          <h3>Demanda empírica nos waypoints nomeados</h3>
           <p id="waypoint-ranking-summary">Aguardando processamento das réplicas P100.</p>
         </div>
         <div class="table-wrap candidate-node-table-wrap">
           <table class="comparison-table capacity-table">
-            <thead><tr><th>Posição</th><th>Critério</th><th>Waypoint</th><th>Operações médias</th><th>THR médio</th></tr></thead>
+            <thead><tr><th>Posição</th><th>Critério</th><th>Waypoint</th><th>Operações médias</th><th>THR médio</th><th>P95 empírico</th></tr></thead>
             <tbody id="waypoint-ranking-table-body"></tbody>
           </table>
         </div>
@@ -466,12 +467,12 @@
       crossorigin=""
     ></script>
     <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
-    <script src="assets/data_bundle.js?v=c27b7074ae50"></script>
-    <script src="assets/candidate_nodes.js?v=0.8.0"></script>
-    <script src="assets/crossing_waypoints_3d.js?v=0.8.0"></script>
-    <script src="assets/uam_projection.js?v=0.9.0"></script>
-    <script src="assets/waypoint_rankings.js?v=40d726994131"></script>
+    <script src="assets/data_bundle.js?v=a76d611756c0"></script>
+    <script src="assets/candidate_nodes.js?v=5c868000aac4"></script>
+    <script src="assets/crossing_waypoints_3d.js?v=bc41ea612db2"></script>
+    <script src="assets/uam_projection.js?v=9ecd2e43dfa0"></script>
+    <script src="assets/waypoint_rankings.js?v=73fac6fe9bbb"></script>
     <script src="assets/metric_catalog.js?v=1.0.0"></script>
-    <script src="assets/dashboard.js?v=1.2.0"></script>
+    <script src="assets/dashboard.js?v=fb238cbaf29c"></script>
   </body>
 </html>

@@ -72,7 +72,7 @@ class CriticalWaypointTests(unittest.TestCase):
             item["properties"]["node_name"] for item in network_junction_features(routes)
         ])
 
-    def test_passage_is_counted_once_per_flight_instance(self):
+    def test_reentry_and_reused_identifier_count_as_distinct_encounters(self):
         with tempfile.TemporaryDirectory() as directory:
             log = Path(directory) / "STATELOG_produto2_C1_seed1.log"
             log.write_text(
@@ -88,10 +88,10 @@ class CriticalWaypointTests(unittest.TestCase):
                 log, [feature("X1", -46.0, -23.0), feature("X2", -47.0, -24.0)],
                 250, 3600, 300, 250, 5000,
             )
-            self.assertEqual(results[0]["operations"], 2)
-            self.assertEqual(results[0]["window_count"], 2)
-            self.assertEqual(results[0]["mean_throughput_per_hour"], 1.0)
-            self.assertEqual(results[0]["peak_throughput_per_hour"], 1.0)
+            self.assertEqual(results[0]["operations"], 3)
+            self.assertEqual(results[0]["window_count"], 1)
+            self.assertEqual(results[0]["mean_throughput_per_hour"], 2.0)
+            self.assertEqual(results[0]["peak_throughput_per_hour"], 2.0)
             self.assertEqual(results[1]["operations"], 0)
 
     def test_vertical_separation_excludes_passage_inside_horizontal_radius(self):

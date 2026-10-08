@@ -27,8 +27,10 @@ def write_uam_projection_asset(uam_csv: Path, output_dir: Path) -> int:
                 "altitude_min_m": min(corridor["altitudes_m"]),
                 "altitude_max_m": max(corridor["altitudes_m"]),
                 "geometry_source": corridor["geometry_source"],
+                "buffer_method": "metric_linestring_buffer_round_joins_caps",
+                "area_m2": corridor["area_m2"],
             },
-            "geometry": {"type": "Polygon", "coordinates": corridor["polygons"]},
+            "geometry": corridor["buffer_geometry"],
         })
     collection = {
         "type": "FeatureCollection",

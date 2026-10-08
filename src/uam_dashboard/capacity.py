@@ -39,7 +39,7 @@ def capacity_metrics(
     )
     if official_uam_routes:
         uam_route_groups = _official_uam_route_groups(official_uam_routes)
-        uam_geometry_source = "product2_uam_corridor_csv_6_vertiports"
+        uam_geometry_source = "product2_uam_corridor_csv"
     else:
         uam_route_groups, _ = _planned_route_groups(
             [flight for flight in planned_flights if flight.get("vehicle_type") == "eVTOL"],
@@ -198,12 +198,14 @@ def _buffered_route_groups(
     buffered = []
     for route in route_groups:
         semi_width_m = float(route.get("semi_width_m", corridor_width_m))
-        ring = _corridor_polygon_coordinates(route["coordinates"], semi_width_m)
+        geometry, area_m2 = _corridor_buffer_geometry(route["coordinates"], semi_width_m)
+        polygons = [geometry["coordinates"][0]] if geometry["type"] == "Polygon" and geometry["coordinates"] else [polygon[0] for polygon in geometry["coordinates"]] if geometry["type"] == "MultiPolygon" else []
         buffered.append(
             {
                 **route,
-                "polygons": [ring],
-                "area_m2": _corridor_area_m2(route["coordinates"], semi_width_m),
+                "polygons": polygons,
+                "buffer_geometry": geometry,
+                "area_m2": area_m2,
                 "semi_width_m": semi_width_m,
                 "resource_type": "uam_corridor",
             }
@@ -307,6 +309,10 @@ def _route_inside_mask(
     route: dict[str, Any],
     corridor_width_m: float,
 ) -> np.ndarray:
+    if route.get("buffer_geometry"):
+        from shapely import intersects_xy
+        from shapely.geometry import shape
+        return intersects_xy(shape(route["buffer_geometry"]), points[:, 1], points[:, 0])
     if route.get("polygons"):
         return points_in_polygons(points, route["polygons"])
     deviations = _point_to_polyline_distances_m(points, route["coordinates"])
@@ -320,48 +326,55 @@ def _route_area_m2(route: dict[str, Any], corridor_width_m: float) -> float:
 
 
 def _route_geometry(route: dict[str, Any], corridor_width_m: float) -> dict[str, Any]:
+    if route.get("buffer_geometry"):
+        return route["buffer_geometry"]
     if route.get("polygons"):
         return {
             "type": "MultiPolygon",
             "coordinates": [[ring] for ring in route["polygons"]],
         }
-    return {
-        "type": "Polygon",
-        "coordinates": [_corridor_polygon_coordinates(route["coordinates"], corridor_width_m)],
-    }
+    return _corridor_buffer_geometry(route["coordinates"], corridor_width_m)[0]
+
+
+def _corridor_buffer_geometry(polyline: np.ndarray, semi_width_m: float) -> tuple[dict[str, Any], float]:
+    """Union of constant-radius segment buffers in a local metric projection.
+
+    Round joins/caps avoid pinching and offset self-intersections at bends,
+    reversals and duplicate vertices. Preserve holes in the exported geometry.
+    Geometric points remain on the route: they describe its shape, not capacity.
+    """
+    from shapely.geometry import LineString, Point
+    polyline = np.asarray(polyline, dtype=float)
+    if not np.isfinite(semi_width_m) or semi_width_m <= 0:
+        raise ValueError("Corridor semi-width must be finite and positive")
+    if len(polyline) == 0:
+        return {"type": "Polygon", "coordinates": []}, 0.0
+    if polyline.ndim != 2 or polyline.shape[1] != 2 or not np.all(np.isfinite(polyline)):
+        raise ValueError("Invalid corridor centerline coordinates")
+    reference_lat = float(np.mean(polyline[:, 0]))
+    xy = _project_with_reference(polyline, reference_lat)
+    xy = xy[np.r_[True, np.any(np.diff(xy, axis=0) != 0, axis=1)]]
+    axis = LineString(xy) if len(xy) >= 2 else Point(xy[0])
+    footprint = axis.buffer(semi_width_m, quad_segs=16, cap_style="round", join_style="round")
+    if footprint.is_empty or not footprint.is_valid:
+        raise ValueError("Could not construct a valid corridor buffer")
+    polygons = [footprint] if footprint.geom_type == "Polygon" else list(footprint.geoms)
+    coordinates = []
+    for polygon in polygons:
+        rings = [polygon.exterior, *polygon.interiors]
+        coordinates.append([[_unproject_xy(np.asarray(point), reference_lat) for point in ring.coords] for ring in rings])
+    geometry = {"type": "Polygon", "coordinates": coordinates[0]} if len(coordinates) == 1 else {"type": "MultiPolygon", "coordinates": coordinates}
+    return geometry, float(footprint.area)
 
 
 def _corridor_area_m2(polyline: np.ndarray, corridor_width_m: float) -> float:
-    length_m = _polyline_distance_m(polyline)
-    return float(length_m * 2.0 * corridor_width_m + np.pi * corridor_width_m**2)
+    return _corridor_buffer_geometry(polyline, corridor_width_m)[1]
 
 
 def _corridor_polygon_coordinates(polyline: np.ndarray, corridor_width_m: float) -> list[list[float]]:
-    if len(polyline) < 2:
-        lat = float(polyline[0, 0]) if len(polyline) else 0.0
-        lon = float(polyline[0, 1]) if len(polyline) else 0.0
-        return [[lon, lat], [lon, lat], [lon, lat], [lon, lat]]
-
-    reference_lat = float(np.mean(polyline[:, 0]))
-    xy = _project_with_reference(polyline, reference_lat)
-    left_offsets = []
-    right_offsets = []
-    for index, point in enumerate(xy):
-        if index == 0:
-            direction = xy[1] - point
-        elif index == len(xy) - 1:
-            direction = point - xy[index - 1]
-        else:
-            before = point - xy[index - 1]
-            after = xy[index + 1] - point
-            direction = before / max(float(np.linalg.norm(before)), 1.0) + after / max(float(np.linalg.norm(after)), 1.0)
-        norm = float(np.linalg.norm(direction))
-        normal = np.asarray([0.0, 1.0]) if norm <= 0 else np.asarray([-direction[1], direction[0]]) / norm
-        left_offsets.append(point + normal * corridor_width_m)
-        right_offsets.append(point - normal * corridor_width_m)
-
-    polygon_xy = np.vstack([left_offsets, right_offsets[::-1], left_offsets[:1]])
-    return [_unproject_xy(point, reference_lat) for point in polygon_xy]
+    """Compatibility exterior; full visual export uses _corridor_buffer_geometry."""
+    geometry, _ = _corridor_buffer_geometry(polyline, corridor_width_m)
+    return geometry["coordinates"][0] if geometry["coordinates"] else []
 
 
 def _throughput_metrics(
@@ -520,13 +533,8 @@ def _complexity_components(
         }
     )
     crossings = _uam_reh_crossing_features(uam_corridors, reh_routes)
-    crossing_capacity = _annotate_crossing_criticality(
-        crossings,
-        annotated,
-        window_seconds,
-        capacity_percentile,
-        crossing_capture_radius_m,
-    )
+    crossing_capacity = {"available": False, "resources": [], "top_resources": [],
+                         "reason": "geometric crossings are diagnostics, not named waypoint capacity"}
     return {
         "available": bool(uam_corridors and reh_routes),
         "crossing_definition": "sobreposicao horizontal dos poligonos e vertical dos envelopes UAM/REH em metros MSL",

@@ -866,22 +866,67 @@ function renderCapacity(dashboard) {
   renderWaypointRanking();
 }
 
+function waypointMetric(feature) {
+  const scenario = (state.runs[state.activeRunIndex] || state.runs[0])?.metadata?.scenario_key;
+  return state.waypointRankings.find(row => row.scenario === scenario && row.waypoint_id === feature.properties.resource_id && row.source_sha256 === feature.properties.source?.sha256 && row.analysis_method_version === feature.properties.analysis_method_version);
+}
+
+function waypointAltitude(p) {
+  return p.vertical_intervals_m?.length
+    ? p.vertical_intervals_m.map(([lo, hi]) => `${formatNumber(lo, 1)}–${formatNumber(hi, 1)} m MSL`).join("; ")
+    : "Altitude desconhecida/inválida: sem contagem 3D";
+}
+
+function waypointTooltip(feature) {
+  const p = feature.properties, [lon, lat] = feature.geometry.coordinates, metric = waypointMetric(feature);
+  return `${escapeHtml(p.label)} · ${p.network} · ${formatNumber(lat, 6)}, ${formatNumber(lon, 6)}<br>` +
+    `${waypointAltitude(p)}<br>P95: ${metric?.p95_throughput_per_hour == null ? "indisponível" : `${formatNumber(metric.p95_throughput_per_hour, 2)} ops/h`} · ${p.name_position_count} posições deste nome`;
+}
+
+function waypointSelectionDetails(p) {
+  if (p.network !== "UAM") return "";
+  const ref = p.reh_reference;
+  if (!ref) return "Referência REH indisponível.<br>";
+  const target = { type: "candidate_node", resource_id: ref.resource_id };
+  return `Junção UAM: ${p.network_degree} arestas físicas distintas; ${p.interior_route_ids.length} rotas com uso não terminal.<br>` +
+    `Referência REH: <button class="resource-map-link" data-map-target="${escapeHtml(JSON.stringify(target))}">${escapeHtml(ref.label)}</button>` +
+    ` · ${formatNumber(ref.horizontal_distance_m, 1)} m · ${ref.match_method === "documented_alias" ? "alias documentado" : "nome normalizado equivalente"}. Vínculo de referência, sem fusão de recursos.<br>`;
+}
+
+function waypointDetails(feature) {
+  const p = feature.properties, metric = waypointMetric(feature);
+  const positions = (state.candidateNodes.features || []).filter(f => f.properties.name_group_id === p.name_group_id ||
+    JSON.stringify(f.geometry.coordinates) === JSON.stringify(feature.geometry.coordinates));
+  const links = positions.map(f => {
+    const q = f.properties, [lon, lat] = f.geometry.coordinates;
+    const target = { type: "candidate_node", resource_id: q.resource_id };
+    return `<li><button class="resource-map-link" data-map-target="${escapeHtml(JSON.stringify(target))}">${escapeHtml(q.label)} · ${formatNumber(lat, 6)}, ${formatNumber(lon, 6)} · ${waypointAltitude(q)}</button><br><small>${escapeHtml(q.resource_id)}</small></li>`;
+  }).join("");
+  return `<strong>${waypointTooltip(feature)}</strong><br>ID: ${escapeHtml(p.resource_id)}<br>` +
+    `Nomes originais: ${escapeHtml(p.original_names.join(", "))} · normalizado: ${escapeHtml(p.normalized_name)}<br>` +
+    waypointSelectionDetails(p) +
+    `THR médio: ${metric?.mean_throughput_per_hour == null ? "indisponível" : formatNumber(metric.mean_throughput_per_hour, 2) + " ops/h"}<br>` +
+    `Fonte: ${escapeHtml(p.source?.file || "indisponível")}<br><small>SHA256: ${escapeHtml(p.source?.sha256 || "—")}</small><br>` +
+    `Rotas/trechos: ${escapeHtml([...p.uam_route_labels, ...p.reh_labels].join(", "))}<br>` +
+    `${p.name_position_count} posições elegíveis de ${p.name_all_position_count || p.name_position_count} posições nomeadas indexadas por rede. Coordenadas, níveis e dimensões permanecem separados; nenhuma soma de P95. Marcadores não são deslocados. Posições no mesmo local 2D também estão abaixo.<ul>${links}</ul>`;
+}
+
 function renderCandidateNodes() {
   const features = state.candidateNodes.features || [];
-  const uam = features.filter((feature) => feature.properties?.criterion === "uam_junction").length;
-  const reh = features.filter((feature) => feature.properties?.criterion === "reh_junction").length;
-  setText("candidate-node-summary", `${formatNumber(uam)} nós UAM e ${formatNumber(reh)} nós REH candidatos.`);
+  const uam = features.filter((feature) => feature.properties?.criterion === "uam_named_waypoint").length;
+  const reh = features.filter((feature) => feature.properties?.criterion === "reh_named_waypoint").length;
+  setText("candidate-node-summary", `${formatNumber(uam)} junções UAM elegíveis de ${formatNumber(state.candidateNodes.properties?.uam_named_inventory_count || uam)} posições nomeadas (${formatNumber(state.candidateNodes.properties?.uam_excluded_count || 0)} excluídas) e ${formatNumber(reh)} fixos REH. UAM: 3+ arestas físicas, referência REH a até 500 m e uso não exclusivamente terminal. Marcadores nas coordenadas reais; nenhuma soma de capacidades. Fonte UAM: ${state.candidateNodes.properties?.sources?.uam?.file || "indisponível"}. Associação com os logs históricos pendente de validação na origem.`);
   const body = document.getElementById("candidate-node-table-body");
   body.innerHTML = features.length ? features.map((feature) => {
     const p = feature.properties || {};
-    const network = p.criterion === "reh_junction" ? "REH" : "UAM";
-    const connected = p.criterion === "reh_junction" ? p.reh_labels : p.uam_route_labels;
+    const network = p.criterion === "reh_named_waypoint" ? "REH" : "UAM";
+    const connected = p.criterion === "reh_named_waypoint" ? p.reh_labels : p.uam_route_labels;
     const target = { type: "candidate_node", resource_id: p.resource_id };
     const [lon, lat] = feature.geometry?.coordinates || [];
     return `<tr>
       <td>${network}</td>
       <td><button class="resource-map-link" type="button" data-map-target="${escapeHtml(JSON.stringify(target))}">${escapeHtml(p.label || p.resource_id)}</button><br><small>${escapeHtml(p.resource_id)} · ${formatNumber(lat, 5)}, ${formatNumber(lon, 5)}</small></td>
-      <td>${formatNumber(p.network_degree, 0)}</td>
+      <td>${formatNumber(p.name_position_count, 0)} posições elegíveis${p.network === "UAM" ? `<br>${formatNumber(p.network_degree, 0)} arestas físicas` : ""}<br><small>Sem total analítico por nome</small></td>
       <td>${escapeHtml((connected || []).join(", "))}</td>
     </tr>`;
   }).join("") : `<tr><td colspan="4">Geometria dos nós candidatos indisponível.</td></tr>`;
@@ -890,16 +935,16 @@ function renderCandidateNodes() {
 function renderWaypointRanking() {
   const run = state.runs[state.activeRunIndex] || state.runs[0];
   const scenario = run?.metadata?.scenario_key;
-  const rows = state.waypointRankings.filter((row) => row.scenario === scenario);
+  const rows = state.waypointRankings.filter((row) => row.scenario === scenario &&
+    state.candidateNodes.features.some(feature => feature.properties.resource_id === row.waypoint_id && feature.properties.source?.sha256 === row.source_sha256 && row.analysis_method_version === feature.properties.analysis_method_version));
   const rankedCount = rows.filter((row) => row.rank != null).length;
   const body = document.getElementById("waypoint-ranking-table-body");
   if (!body) return;
   setText("waypoint-ranking-summary", rows.length
-    ? `${formatNumber(rankedCount)} de ${formatNumber(rows.length)} candidatos classificados com ${formatNumber(run.replica_count || 1)} réplicas de ${scenario}. Nós sem altitude 3D completa permanecem sem posição.`
+    ? `${formatNumber(rankedCount)} de ${formatNumber(rows.length)} posições com P95 disponível em ${scenario}. P95 das janelas completas de ${formatNumber((rows[0]?.window_seconds || 900) / 60, 1)} min (incluindo zeros), reunidas entre réplicas; referência empírica de demanda, sem limite operacional demonstrado. ${rankedCount ? "" : "Logs brutos indisponíveis: valores antigos retirados; apenas geometria atualizada."}`
     : "Execute generate_reports.py para calcular o ranking com as réplicas P100.");
   body.innerHTML = rows.length ? rows.map((row) => {
-    const type = row.criterion === "uam_reh_crossing" ? "UAM × REH"
-      : row.criterion === "reh_junction" ? "Nó REH" : "Nó UAM";
+    const type = row.criterion === "reh_named_waypoint" ? "Fix REH" : "Waypoint UAM";
     const target = {
       type: row.criterion === "uam_reh_crossing" ? "crossing_waypoint" : "candidate_node",
       resource_id: row.waypoint_id,
@@ -911,8 +956,9 @@ function renderWaypointRanking() {
       <td><button class="resource-map-link" type="button" data-map-target="${escapeHtml(JSON.stringify(target))}">${escapeHtml(row.label)}</button><br><small>${escapeHtml(row.waypoint_id)}</small></td>
       <td>${row.mean_operations_per_replica == null ? "—" : formatNumber(row.mean_operations_per_replica, 1)}</td>
       <td>${row.mean_throughput_per_hour == null ? "—" : `${formatNumber(row.mean_throughput_per_hour, 2)} ops/h`}</td>
+      <td>${row.p95_throughput_per_hour == null ? "—" : `${formatNumber(row.p95_throughput_per_hour, 2)} ops/h`}</td>
     </tr>`;
-  }).join("") : `<tr><td colspan="5">Ranking ainda não calculado para este cenário.</td></tr>`;
+  }).join("") : `<tr><td colspan="6">Ranking ainda não calculado para este cenário.</td></tr>`;
 }
 
 function renderCapacityTable(throughput, crossingsHave3dThroughput) {
@@ -921,7 +967,7 @@ function renderCapacityTable(throughput, crossingsHave3dThroughput) {
     ["od_pairs", "Par OD"],
     ["trajectory_groups", "Grupo trajetoria"],
     ["planned_reh", "Trecho REH formal"],
-    ["crossing_waypoints", "Waypoint UAM × REH"],
+
   ]) {
     if (type === "crossing_waypoints" && !crossingsHave3dThroughput) continue;
     const group = throughput[type];
@@ -1220,7 +1266,7 @@ function renderMapLayers(tracks, plannedRoutes, officialReh, conflicts, heatmap,
           `Corredor UAM: ${escapeHtml((p.uam_route_labels || []).join(", "))}<br>` +
           `REH: ${escapeHtml((p.reh_labels || []).join(", "))}<br>` +
           `Altitude de interseção: ${formatNumber(p.altitude_m, 1)} m MSL<br>` +
-          `${p.operations == null ? "Candidato geométrico; movimento a confirmar por simulação." : `${formatNumber(p.operations, 0)} passagens em esfera de ${formatNumber(p.capture_radius_m, 0)} m · pico ${formatNumber(p.peak_throughput_per_hour, 1)} ops/h`}`
+          `Diagnóstico geométrico separado; não é recurso de capacidade neste modo.`
       );
     },
   });
@@ -1228,25 +1274,16 @@ function renderMapLayers(tracks, plannedRoutes, officialReh, conflicts, heatmap,
   state.candidateNodeLayer = L.geoJSON(state.candidateNodes, {
     pane: "conflictPane",
     pointToLayer: (feature, latlng) => {
-      const reh = feature.properties?.criterion === "reh_junction";
+      const reh = feature.properties?.criterion === "reh_named_waypoint";
       return L.circleMarker(latlng, {
         radius: 6, color: reh ? "#92400e" : "#0e7490", weight: 2,
         fillColor: reh ? "#f59e0b" : "#22d3ee", fillOpacity: 0.9,
       });
     },
     onEachFeature: (feature, layer) => {
-      const p = feature.properties || {};
-      const network = p.criterion === "reh_junction" ? "REH" : "UAM";
-      const connected = p.criterion === "reh_junction" ? p.reh_labels : p.uam_route_labels;
-      layer.bindTooltip(`${escapeHtml(p.label || p.resource_id)} · nó ${network} candidato`, { sticky: true });
-      layer.bindPopup(
-        `<strong>${escapeHtml(p.label || p.resource_id)}</strong><br>` +
-        `Rede ${network} · ${formatNumber(p.network_degree, 0)} arestas distintas<br>` +
-        `${p.altitude_m == null ? "Altitude comum indisponível<br>" : `Altitude do nó: ${formatNumber(p.altitude_m, 1)} m MSL<br>`}` +
-        `Trechos: ${escapeHtml((connected || []).join(", "))}<br>` +
-        `Candidato geométrico; movimento a confirmar por simulação.`
-      );
-    },
+      layer.bindTooltip(waypointTooltip(feature), { sticky: true });
+      layer.bindPopup(waypointDetails(feature), { maxWidth: 520, maxHeight: 360 });
+    }
   });
 
   applyCheckedLayer("layer-heat", state.heatLayer);
@@ -1361,7 +1398,7 @@ function updateMapInfo(tracks, visibleTracks, plannedRoutes, officialReh, confli
   setText("map-info-title", "Mapa operacional");
   setText(
     "map-info-text",
-    `${formatNumber(visible)} de ${formatNumber(trajectories)} trajetorias executadas visiveis, ${formatNumber(officialSegments)} trechos REH oficiais, ${formatNumber(uamCorridors)} corredores UAM e ${formatNumber(planned)} planejamentos de voo; ${formatNumber(density)} pontos de densidade, ${formatNumber(atdHotspots)} corredores ATD, ${formatNumber(crossings)} cruzamentos UAM × REH, ${formatNumber(candidates)} nós candidatos, ${formatNumber(lowc)} LoWC fora de NMAC, ${formatNumber(nmac)} NMAC e ${formatNumber(mac)} MAC observados.`
+    `${formatNumber(visible)} de ${formatNumber(trajectories)} trajetorias executadas visiveis, ${formatNumber(officialSegments)} trechos REH oficiais, ${formatNumber(uamCorridors)} corredores UAM e ${formatNumber(planned)} planejamentos de voo; ${formatNumber(density)} pontos de densidade, ${formatNumber(atdHotspots)} corredores ATD, ${formatNumber(crossings)} cruzamentos UAM × REH, ${formatNumber(candidates)} posições nomeadas, ${formatNumber(lowc)} LoWC fora de NMAC, ${formatNumber(nmac)} NMAC e ${formatNumber(mac)} MAC observados.`
   );
   updateMapLegend();
 }
@@ -1438,10 +1475,14 @@ function highlightMapResource(target) {
     pointToLayer: (_feature, latlng) => L.circleMarker(latlng, {
       pane: "conflictPane", radius: 13, color: "#831843", fillColor: "#f472b6", weight: 4, fillOpacity: 0.92,
     }),
+    onEachFeature: (feature, layer) => {
+      if (feature.properties?.name_group_id) layer.bindPopup(waypointDetails(feature), { maxWidth: 520, maxHeight: 360 });
+    },
   }).addTo(state.map);
   const bounds = state.resourceHighlightLayer.getBounds();
-  if (bounds.isValid()) state.map.fitBounds(bounds.pad(0.35), { maxZoom: 15 });
-  document.querySelector(".workspace")?.scrollIntoView({ behavior: "smooth", block: "center" });
+  if (bounds.isValid()) state.map.fitBounds(bounds.pad(0.35), { maxZoom: 15, animate: false });
+  state.resourceHighlightLayer.eachLayer(layer => { if (layer.getPopup()) layer.openPopup(); });
+  document.querySelector("#map")?.scrollIntoView({ behavior: "smooth", block: "center" });
 }
 
 function filterTracksByVolume(tracks, filter) {

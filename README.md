@@ -272,112 +272,212 @@ evento e o menor valor ao longo de sua duracao. O resultado tambem informa a
 separacao vertical e a combinacao eVTOL-eVTOL, eVTOL-helicoptero ou
 helicoptero-helicoptero.
 
-## 12. Capacidade, Densidade E Utilizacao
+## 12. Capacidade dos waypoints explicitamente nomeados
 
-A densidade complementar usa os poligonos oficiais de cada trecho REH. A area e calculada
-diretamente da geometria WFS/GML; a semilargura deixa de ser imposta globalmente e passa a ser a do
-cadastro oficial (100 m ou 250 m, conforme o trecho). Os hotspots ATD tambem passam a ser agregados
-por trecho oficial.
+`critical_waypoints.py` usa somente `type=Waypoint` com nome válido no CSV UAM e
+`fixo_a_nome`/`fixo_b_nome` com coordenadas explícitas no XML REH. A REH não exige grau mínimo;
+os recursos UAM agora exigem **três ou mais arestas físicas distintas**, referência REH
+compatível e pelo menos uma ocorrência fora de acesso terminal. Essa regra substitui
+para UAM a seleção anterior de todos os waypoints nomeados.
+Geometric Node, vertiportos, interpolação e cruzamentos virtuais não viram recursos de
+capacidade. Cruzamentos UAM × REH permanecem como diagnóstico geométrico separado.
+Os indicadores antigos de OD, trajetória e trecho são diagnósticos legados; não representam
+capacidade dos waypoints nomeados.
 
-O throughput da Eq. 3.15 e calculado em janelas padrao de 15 minutos e expresso em operacoes/hora para quatro tipos de recurso:
+| Exportação UAM | Rotas | Vertiportos | Nomes Waypoint | Inventário de posições | Junções elegíveis |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| scenario_horizontal_3000ft_expanded_displaced.csv | 72 | 6 | 26 | 96 | 16 |
+| new_scenario_horizontal_3000ft_displaced.csv | 210 | 12 | 35 | 177 | 28 |
 
-- pares origem-destino observados;
-- grupos de trajetoria executada;
-- trechos REH oficiais atravessados pelo planejamento de cada voo;
-- waypoints virtuais de cruzamento entre corredor UAM e REH.
+O XML disponível contém 106 trechos e 91 posições de fixos explicitamente nomeados.
+As cinco extremidades sem nome não entram. A geometria servida em `docs/` continua
+usando **expanded**, como a projeção UAM já publicada. A cópia **new** permanece separada;
+não foi associada aos logs históricos. Não há STATELOGs nem o RUN publicado neste
+workspace: o ranking anterior foi retirado, os resultados novos têm status
+`unavailable_raw_logs`, métricas vazias e nenhuma classificação. Outros KPAs históricos
+não foram recalculados. A associação da geometria com esses logs precisa ser confirmada
+na máquina de origem antes da recomputação.
 
-Em C1--C6, os cruzamentos candidatos exigem sobreposicao horizontal entre o corredor UAM do CSV e
-o poligono REH do XML **e** sobreposicao vertical de seus envelopes. A altitude central e a altura
-total do CSV estao em metros; os limites e altitudes compulsorias da REH sao convertidos de pes para
-metros. Os dois conjuntos sao tratados como MSL. Trechos REH sem envelope vertical completo nao
-geram cruzamentos 3D confirmados. Cada ponto virtual recebe `XUAMREHnnn` e uma altitude em metros.
+### Seleção UAM ancorada na REH e exclusão de terminais
 
-Para cada waypoint, o processamento conta uma passagem por instancia de voo dentro de uma **esfera**
-de raio configurado em metros, combinando distancia horizontal e vertical. Os resultados por janela
-e a media entre replicas ordenam os pontos mais movimentados. Nao ha capacidade declarada para eles.
+O grau é o número de vizinhos físicos exatos em arestas consecutivas não direcionadas,
+com latitude, longitude, altitude e dimensões. Duplicatas de uma mesma aresta em rotas
+não elevam o grau. Pontos geométricos continuam descrevendo a linha central e podem
+ser vizinhos de uma junção; eles nunca se tornam recursos de capacidade. Uma correspondência
+com a REH não transfere o grau nem a capacidade da REH para o UAM.
 
-A capacidade pratica da Eq. 3.16 e o P95 do throughput observado em todas as janelas,
-incluindo janelas vazias. A utilizacao da Eq. 3.17 divide o throughput por esse P95
-quando positivo. A capacidade empirica nao equivale a uma capacidade declarada pelo DECEA.
+A primeira/última ocorrência de `Waypoint` após/antes de um `Airport` ou `Vertiport` é
+um acesso terminal, mesmo que haja pontos geométricos entre ela e o terminal. Uma posição
+é exclusivamente terminal se não aparecer em nenhum outro uso interior. `CLUBE_SIRIO`
+é excluído dos recursos UAM por essa regra; o fixo REH Clube Sírio permanece selecionado.
+Uma posição com uso tanto interior quanto terminal pode entrar, se atender aos demais critérios.
 
-## 13. Testes
+Os nomes são comparados pela normalização já descrita abaixo e por aliases explícitos:
+`AVENIDA_MORUMBI` ↔ `MORUMBI`, `VD_ANTARTICA` → `VIADUTO_ANTARTICA`,
+`VD_SAO_CARLOS` → `VIADUTO_SAO_CARLOS` e `VD_GRANDE_SAO_PAULO` → `VIADUTO_GRANDE_SAO_PAULO`.
+Não há casamento difuso irrestrito ou seleção somente pelo fixo geograficamente mais próximo.
+No XML atual, o nome já é Avenida Morumbi, portanto a correspondência é normalizada exata.
+O nome original das duas redes permanece disponível.
 
-Rode os testes unitarios com:
+A associação também exige distância horizontal ≤500 m, um filtro conservador de qualidade
+da referência para as posições deslocadas/paralelas. Não é tolerância de fusão, raio de captura
+nem evidência de conexão entre redes. Nomes iguais fora desse limite ficam na auditoria
+como associação distante; por exemplo, as duas junções Shopping Tatuapé no expanded estão
+a aproximadamente 731 e 1266 m do fixo homônimo e não são aceitas automaticamente.
+Esse filtro e os aliases devem ser revistos explicitamente caso a exportação seja alterada.
+As posições UAM não são movidas para o fixo REH, nem agrupadas analiticamente com ele.
+
+`assets/data/uam_node_selection_audit.geojson` lista todas as posições UAM nomeadas, grau,
+vizinhos, usos interiores/terminais, referência e distância, inclusão/exclusão e seus motivos.
+O mapa inclui apenas as elegíveis e o popup explica o grau e permite abrir o fixo REH associado.
+GN_94/GN_95 não constam como candidatos: são `Geometric Node` na exportação.
+
+### Geometria visual dos corredores
+
+O deslocamento simplificado das bordas pelo vetor médio dos segmentos produzia 10 polígonos
+UAM auto-intersectantes entre os 72 publicados. Foi substituído por buffer da linha central
+em projeção métrica local, com semilargura `width/2`, junções e extremidades arredondadas,
+união dos segmentos e preservação de eventuais furos. Shapely é uma dependência do projeto; instale/atualize `pip install -r requirements.txt` na máquina de geração.
+Os pontos geométricos originais são preservados na linha central: removê-los para limpar a
+seleção de capacidade deformaria o traçado. Todos os buffers dos cenários de 72 e 210 rotas
+passam a ser válidos. A projeção publicada e o gerador completo usam a mesma construção;
+nenhuma largura física ou waypoint de origem foi editado. Métricas históricas de tráfego
+não foram recomputadas com essa correção visual.
+
+### Identidade, níveis, nomes e visualização
+
+UAM: identidade = rede, nome normalizado, latitude e longitude exatas da exportação,
+envelope vertical (`altitude ± height/2`), altura e largura. Duplicatas em rotas no mesmo
+recurso físico são eliminadas. Nenhuma aproximação por arredondamento ou proximidade é
+usada. Trilhas coincidentes com os mesmos atributos representam a mesma posição física;
+trilhas deslocadas e níveis/dimensões distintos permanecem separados.
+
+REH: identidade = rede, nome normalizado, posição explícita e conjunto dos envelopes
+verticais dos trechos incidentes. Preservam-se todas as faixas, inclusive disjuntas;
+não se inventa uma altitude central. Qualquer trecho incidente com altitude desconhecida
+ou envelope inválido desabilita a contagem 3D dessa posição, sem fabricar zero. O mapa
+mantém a localização 2D e explica a indisponibilidade.
+
+Normalização: NFKD, remoção de acentos, maiúsculas, separadores não alfanuméricos
+convertidos para `_`. `Cebolão` e `CEBOLAO` indexam o mesmo nome, com nomes originais
+preservados. A rede faz parte do índice: REH e UAM não são fundidas. IDs `UAM-WP-` e
+`REH-WP-` usam 20 dígitos hexadecimais de SHA256 desses atributos; a ordem das rotas não
+altera os IDs. As referências de rotas/trechos e os hashes dos arquivos permitem auditoria.
+
+**Não há consolidado analítico por nome nem soma de P95.** O índice visual por nome lista
+as posições reais, sem centroides ou deslocamento de marcadores. No inventário do CSV novo, CEBOLAO tem
+16 posições e PONTE_ESTAIADA tem 20; o índice no mapa informa quantas são elegíveis
+para capacidade pela nova regra e quantas existem no inventário. Hover informa nome, rede, coordenadas, envelope e P95
+quando disponível. Clique mostra origem/hash, rotas/trechos e links para cada posição;
+recursos coincidentes em 2D também podem ser inspecionados. A tabela abre o popup no mapa.
+O frontend recusa métricas cujo hash de origem ou versão do método de seleção não corresponda à geometria exibida.
+
+### Passagem, interpolação e sobreposição
+
+Cada STATELOG é lido em ordem de tempo. Amostras duplicadas idênticas por aeronave/tempo
+não contam novamente; duplicatas conflitantes causam erro. Reutilização de identificador
+abre nova instância quando há intervalo >300 s, recuo de distância >250 m ou salto
+horizontal >5000 m (limiares configuráveis). Não se interpola através dessas descontinuidades.
+Sem uma descontinuidade observável, reutilização de ID não pode ser inferida.
+
+Um segmento linear entre amostras intersecta o cilindro horizontal (raio padrão 250 m)
+e os envelopes verticais do recurso, em metros MSL. Isso detecta passagem mesmo sem
+amostra dentro do volume; a interpolação não cria recursos. REH usa a união das faixas
+válidas dos trechos; UAM usa a altura exportada, evitando a antiga esfera de 250 m que
+misturava níveis. Todos os veículos observados são incluídos.
+
+Um episódio contínuo de contato com volumes sobrepostos **da mesma rede** conta uma
+passagem, atribuída à posição com menor distância horizontal ao segmento. Empates abaixo
+de 1 mm são ambíguos e excluídos das operações, com contagem de ambiguidades por réplica.
+Saída e reentrada contam outra passagem, inclusive em direção contrária. Contatos
+separados em um segmento de amostragem são episódios diferentes. Uma passagem pode
+pertencer a um recurso UAM e a um REH: são redes analisadas separadamente. O evento registra
+instância, tempo interpolado de aproximação mínima, direção e número de posições competidoras.
+`passage_events.jsonl` permite auditar essa atribuição.
+
+Limites materiais: trajetórias entre amostras são aproximações lineares; curvas não
+amostradas não podem ser recuperadas. Cadeias densas de volumes sobrepostos podem formar
+um único episódio e reduzir contagens individuais. Um retorno que permaneça dentro do
+mesmo episódio não é contado como nova passagem. Contatos já presentes na primeira
+amostra ou ainda presentes na última são censurados, mas entram como contatos observados;
+não demonstram necessariamente travessia completa. Estudos operacionais devem testar
+sensibilidade ao raio, frequência de registro e esses casos.
+
+### Janelas e P95 empírico
+
+Janelas de duração configurável (padrão 900 s) começam no primeiro tempo válido do log,
+com intervalos `[início,fim)`. Só janelas completas até o último tempo entram em THR/P95;
+a sobra final é excluída e registrada em `excluded_partial_seconds`. Janelas completas
+sem operações contribuem com zero. Eventos exatamente no último limite e eventos na
+sobra não entram nas taxas, embora permaneçam no total `operations`; `full_window_operations`
+registra o total usado nas taxas. Um log sem janela completa não produz média, pico ou P95.
+
+`THR = operações × 3600 / duração_em_segundos`, em ops/h. O P95 usa interpolação linear
+na posição `0,95 × (n−1)` dos valores ordenados. Por cenário/recurso, o ranking usa o P95
+do conjunto de **todas as janelas completas de todas as réplicas**, peso igual por janela;
+réplicas mais longas contribuem mais janelas. Não é média de P95, nem soma de P95 individuais.
+A média de operações tem peso igual por réplica e a média do THR tem peso igual por janela.
+O arquivo por réplica contém as taxas com zeros, P95 individual e exclusão parcial.
+
+`capacity_reference_per_hour` é esse P95: **referência empírica de demanda/dimensionamento**,
+não um limite operacional seguro demonstrado ou capacidade declarada pelo DECEA.
+`capacity_declared_per_hour` permanece vazio. Ordenação: P95 decrescente, desempate por ID;
+altitude ou logs insuficientes não recebem rank.
+
+## 13. Recomposição no servidor e seleção do cenário
+
+Configure `uam_corridor_csv` em `run_config.local.json` para o arquivo que pertence ao RUN;
+o caminho relativo é resolvido contra o arquivo de configuração. Campos opcionais
+`expected_vertiports` (lista dos VP-NNN esperados) e `uam_corridor_sha256` fixam o conjunto
+e a versão. O parser aceita ambos os cenários, mas valida identificadores, coordenadas
+finitas, dimensões positivas e IDs únicos por rota. Não troca automaticamente o CSV.
+
+`--config` valida o RUN completo e pareamento das réplicas. A seleção de corredor também
+verifica que cada waypoint intermediário planejado de eVTOL nos SCN C2 esteja a até 2 m
+das linhas centrais do CSV (tolerância para arredondamento da exportação); origens e último
+fixo de chegada são procedimentos terminais e ficam fora dessa checagem. C1 compartilhado
+com REH não é usado para inferir o corredor dedicado. Incompatibilidade interrompe a geração
+antes de alterar relatórios. A validação SCN é horizontal: o parser de planos não expõe
+altitudes por waypoint, e essa limitação fica registrada. Se o SCN acrescentar procedimentos
+intermediários fora do corredor, será necessário identificar esses procedimentos na origem,
+sem simplesmente ampliar a tolerância. O RUN antigo em `run_config.json` não foi substituído.
+
+```bash
+.venv/bin/python generate_reports.py --config run_config.local.json --workers 4
+# ou somente a nova análise de waypoints:
+.venv/bin/python critical_waypoints.py --config run_config.local.json --workers 4
+```
+
+`--manifest` aceita CSV `scenario,path`; caminhos relativos são resolvidos contra o manifesto.
+`--logs-root` descobre STATELOG C1/C2. Esses modos exigem `--uam-csv` e registram associação
+SCN **não verificada**; são destinados a uma seleção explicitamente conferida pelo analista.
+Não misture exports distintos nas réplicas de uma análise.
+
+Para atualizar somente a geometria e retirar resultados sem recomputação:
+
+```bash
+python critical_waypoints.py --geometry-only \
+  --uam-csv data/corridors/scenario_horizontal_3000ft_expanded_displaced.csv
+```
+
+São publicados `docs/assets/candidate_nodes.js`, `waypoint_rankings.js` e
+`docs/assets/data/{candidate_nodes.geojson,critical_waypoints/*}`. Os últimos contêm
+CSV por cenário, CSV por réplica, GeoJSON, eventos JSONL e metadados com fontes/hashes,
+regra de seleção, parâmetros, janelas e limitações. A auditoria UAM fica ao lado do GeoJSON de candidatos. `crossing_waypoints.geojson` dessa
+análise fica vazio; diagnósticos geométricos usam `crossing_waypoints_3d.js` separadamente.
+`generate_reports.py` gera o dashboard e o ranking e atualiza os hashes de cache dos assets.
+Copie os resultados publicados e seus assets correspondentes do servidor; valores legados
+não podem ser convertidos para o novo universo sem os logs brutos.
+
+## 14. Testes
 
 ```powershell
-.\.venv\Scripts\python.exe -m unittest discover -s tests
+.\.venv\Scripts\python.exe -m unittest discover -s tests -p test_metrics.py
+.\.venv\Scripts\python.exe -m unittest discover -s tests -p 'test_*waypoints.py'
+.\.venv\Scripts\python.exe -m unittest discover -s tests -p test_corridor_buffers.py
 ```
 
-## 14. Waypoints criticos em todas as replicas C1/C2 no Lessonia
-
-Execute `critical_waypoints.py` **no Lessonia**, no diretorio deste repositorio.
-Os logs brutos permanecem no servidor; cada processo le uma replica em fluxo.
-Ele combina dois criterios para selecionar os pontos candidatos:
-
-- cruzamentos virtuais 3D: sobreposicao horizontal e vertical entre o volume UAM do CSV e a REH do XML;
-- nos do corredor UAM com mais de duas arestas fisicas distintas conectadas.
-- fixes da REH oficial com mais de duas arestas distintas da linha central conectadas.
-
-Para o segundo criterio, cada par consecutivo de pontos de uma rota forma uma
-aresta nao direcionada. Arestas repetidas em diferentes rotas contam apenas uma
-vez. Os nos UAM usam latitude e longitude arredondadas a seis casas decimais e
-altitude arredondada a 0,1 m, evitando unir trilhas paralelas ou niveis diferentes em locais
-distintos. Somente pontos do tipo `Waypoint` ou `Geometric Node` entram pelo
-criterio topologico; aeroportos e vertiportos nao entram por esse criterio.
-No CSV atual, essa regra identifica 52 nos UAM; no XML REH oficial disponivel
-no projeto irmao, identifica 31 nos REH. A geometria candidata e unica para
-C1 e C2, permitindo comparar os mesmos pontos. Cada voo e contado uma vez por
-waypoint dentro da esfera de 250 m. Todos os veiculos no STATELOG sao incluidos.
-Nos REH sem uma faixa de altitude comum conhecida continuam listados como candidatos,
-mas as colunas de movimento ficam vazias e eles nao recebem posicao no ranking.
-
-```bash
-.venv/bin/python critical_waypoints.py \
-  --config run_config.json \
-  --workers 4
-```
-
-O comando `generate_reports.py` ja executa esse ranking apos gerar o dashboard. Rode
-`critical_waypoints.py` separadamente apenas se quiser recalcular somente o ranking.
-
-O descobridor aceita arquivos `STATELOG` `.log` ou `.csv` cujos nomes contenham
-`_C1_` ou `_C2_` (inclusive nas subpastas). Para nomes diferentes, ou para
-selecionar explicitamente as replicas, use um manifesto CSV com cabecalho
-`scenario,path` e troque `--logs-root` por `--manifest manifesto.csv`. Caminhos
-relativos no manifesto sao resolvidos a partir da pasta do manifesto.
-
-O ranking em `critical_waypoints.csv` inclui **todos** os pontos candidatos para
-cada cenario. A coluna `criterion` identifica `uam_reh_crossing` ou
-`uam_junction` ou `reh_junction`; `network_degree` informa o grau dos nos. A coluna
-`mean_throughput_per_hour` e a media, com peso igual entre replicas, do
-throughput medio por janela de 15 minutos de cada replica. O ranking decresce por
-essa coluna; em caso de empate, usa a media dos picos horarios. Uma replica sem
-passagens em um waypoint contribui com zero. `waypoints_by_replica.csv` permite
-auditar os valores de cada execucao. `critical_waypoints.geojson` contem todos os
-pontos e identificadores; `crossing_waypoints.geojson` preserva apenas os
-cruzamentos UAM-REH. `run_metadata.json` registra parametros e arquivos processados.
-Os valores sao fluxos observados em esferas 3D, nao capacidades declaradas.
-O mapa estatico usa os candidatos 3D do arquivo `assets/crossing_waypoints_3d.js`;
-para atualiza-lo sem logs, rode `generate_crossing_waypoints.py` com `--uam-csv`,
-e `--output-dir docs`. O throughput no dashboard depende de regenerar
-o painel com os STATELOGs; contagens antigas em 2D nao sao mostradas como 3D.
-
-O dashboard mostra os nos UAM e REH candidatos em uma camada propria do mapa
-e em uma tabela na secao Capacidade. A listagem e puramente geometrica; a
-classificacao por movimento depende das replicas. Ao gerar o dashboard completo,
-`generate_dashboard.py` produz `assets/data/candidate_nodes.geojson` e
-`assets/candidate_nodes.js`. Para atualizar apenas esses dois arquivos, sem
-reprocessar logs, execute:
-
-```bash
-python generate_candidate_nodes.py \
-  --uam-csv data/corridors/scenario_horizontal_3000ft_expanded_displaced.csv \
-  --output-dir docs
-```
-
-Para trazer somente os resultados ao computador local, execute localmente,
-substituindo usuario e diretorios:
-
-```bash
-scp -r usuario@lessonia:~/post-processing/docs/assets/data/critical_waypoints ./critical_waypoints
-```
+Há verificações dos dois exports, seleção de nomes/tipos, identidade estável, posições de
+CEBOLAO/PONTE_ESTAIADA, reentrada e reutilização de ID, interpolação, duplicatas, competição
+de volumes, níveis, zeros, janelas parciais, percentil e ausência de capacidade em cruzamentos.
+A apresentação em `docs/` foi verificada no navegador com popup e índice de posições.

@@ -16,7 +16,7 @@ def write_crossing_waypoint_asset(uam_csv: Path, reh_xml: Path, output_dir: Path
     uam = _official_uam_route_groups(load_uam_corridor_network(uam_csv)["routes"])
     reh = _official_route_groups(load_reh_network(reh_xml)["segments"])
     features = _uam_reh_crossing_features(_buffered_route_groups(uam, 250.0), reh)
-    collection = {"type": "FeatureCollection", "properties": {"geometry_dimension": "3D", "status": "geometric_candidates_pending_replica_throughput"}, "features": features}
+    collection = {"type": "FeatureCollection", "properties": {"geometry_dimension": "3D", "status": "geometric_diagnostic_only", "buffer_method": "metric_linestring_buffer_round_joins_caps"}, "features": features}
     assets = output_dir / "assets"
     assets.mkdir(parents=True, exist_ok=True)
     (assets / "crossing_waypoints_3d.js").write_text("window.__UAM_CROSSINGS_3D__ = " + json.dumps(collection, ensure_ascii=False, separators=(",", ":")) + ";\n", encoding="utf-8")
