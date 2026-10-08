@@ -147,7 +147,7 @@ def candidate_node_collection(
     from .named_waypoints import named_waypoint_features
     features = named_waypoint_features(uam_routes, reh_segments)
     return {"type": "FeatureCollection", "properties": {
-        "definition": "REH explicit named fixes; UAM named nonterminal junctions with degree >= 3 and verified REH reference",
+        "definition": "REH original degree >= 3 distinct edge junctions; UAM named nonterminal junctions with degree >= 3 and verified REH reference",
         "status": "geometry_only_pending_recomputation",
         "analytical_grouping": "exact position/vertical envelope/dimensions; no totals by name",
     }, "features": features}

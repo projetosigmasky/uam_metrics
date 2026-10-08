@@ -1,5 +1,5 @@
 {
-  "method_version": "reh-anchored-uam-junctions-v2",
+  "method_version": "reh-uam-junctions-v3",
   "status": "geometry_only_raw_logs_unavailable",
   "sources": {
     "uam": {
@@ -23,11 +23,12 @@
     "VP-006"
   ],
   "route_count": 72,
-  "resource_count": 107,
+  "resource_count": 47,
+  "reh_selection_rule": "original degree >=3 distinct undirected neighbors; endpoint topology rounded to 6 decimals",
   "uam_selection_rule": "named Waypoint; >=3 exact distinct physical edges; nonterminal use; exact/explicit alias REH name within 500m",
   "named_position_counts": {
     "UAM": 16,
-    "REH": 91
+    "REH": 31
   },
   "capture_radius_m": 250,
   "window_seconds": 900,

@@ -884,12 +884,15 @@ function waypointTooltip(feature) {
 }
 
 function waypointSelectionDetails(p) {
-  if (p.network !== "UAM") return "";
+  if (p.network === "REH") return `Junção REH: ${p.network_degree} arestas distintas, conforme o critério original.<br>`;
   const ref = p.reh_reference;
   if (!ref) return "Referência REH indisponível.<br>";
   const target = { type: "candidate_node", resource_id: ref.resource_id };
+  const referenceLabel = (state.candidateNodes.features || []).some(f => f.properties.resource_id === ref.resource_id)
+    ? `<button class="resource-map-link" data-map-target="${escapeHtml(JSON.stringify(target))}">${escapeHtml(ref.label)}</button>`
+    : `${escapeHtml(ref.label)} (fixo de referência fora da seleção de junções REH)`;
   return `Junção UAM: ${p.network_degree} arestas físicas distintas; ${p.interior_route_ids.length} rotas com uso não terminal.<br>` +
-    `Referência REH: <button class="resource-map-link" data-map-target="${escapeHtml(JSON.stringify(target))}">${escapeHtml(ref.label)}</button>` +
+    `Referência REH: ${referenceLabel}` +
     ` · ${formatNumber(ref.horizontal_distance_m, 1)} m · ${ref.match_method === "documented_alias" ? "alias documentado" : "nome normalizado equivalente"}. Vínculo de referência, sem fusão de recursos.<br>`;
 }
 
@@ -915,7 +918,7 @@ function renderCandidateNodes() {
   const features = state.candidateNodes.features || [];
   const uam = features.filter((feature) => feature.properties?.criterion === "uam_named_waypoint").length;
   const reh = features.filter((feature) => feature.properties?.criterion === "reh_named_waypoint").length;
-  setText("candidate-node-summary", `${formatNumber(uam)} junções UAM elegíveis de ${formatNumber(state.candidateNodes.properties?.uam_named_inventory_count || uam)} posições nomeadas (${formatNumber(state.candidateNodes.properties?.uam_excluded_count || 0)} excluídas) e ${formatNumber(reh)} fixos REH. UAM: 3+ arestas físicas, referência REH a até 500 m e uso não exclusivamente terminal. Marcadores nas coordenadas reais; nenhuma soma de capacidades. Fonte UAM: ${state.candidateNodes.properties?.sources?.uam?.file || "indisponível"}. Associação com os logs históricos pendente de validação na origem.`);
+  setText("candidate-node-summary", `${formatNumber(uam)} junções UAM elegíveis de ${formatNumber(state.candidateNodes.properties?.uam_named_inventory_count || uam)} posições nomeadas (${formatNumber(state.candidateNodes.properties?.uam_excluded_count || 0)} excluídas) e ${formatNumber(reh)} junções REH (critério original: 3+ arestas distintas). UAM: 3+ arestas físicas, referência REH a até 500 m e uso não exclusivamente terminal. Marcadores nas coordenadas reais; nenhuma soma de capacidades. Fonte UAM: ${state.candidateNodes.properties?.sources?.uam?.file || "indisponível"}. Associação com os logs históricos pendente de validação na origem.`);
   const body = document.getElementById("candidate-node-table-body");
   body.innerHTML = features.length ? features.map((feature) => {
     const p = feature.properties || {};

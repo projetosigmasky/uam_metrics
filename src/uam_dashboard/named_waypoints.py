@@ -89,7 +89,7 @@ REH_NAME_ALIASES = {
     "VD_SAO_CARLOS": {"VIADUTO_SAO_CARLOS"},
     "VD_GRANDE_SAO_PAULO": {"VIADUTO_GRANDE_SAO_PAULO"},
 }
-CAPACITY_SELECTION_VERSION = "reh-anchored-uam-junctions-v2"
+CAPACITY_SELECTION_VERSION = "reh-uam-junctions-v3"
 REH_REFERENCE_MAX_DISTANCE_M = 500.0
 TERMINAL_TYPES = {"vertiport", "airport"}
 
@@ -134,12 +134,29 @@ def uam_selection_inventory(routes, segments, reference_max_distance_m=REH_REFER
                 gateways.add(named_indices[-1])
         for i in named_indices:
             usages[(keys[i], normalize_name(points[i]["name"]))]["terminal_gateway" if i in gateways else "interior"].add(str(route["resource_id"]))
+    # Preserve the original REH topology rule: distinct undirected neighbors,
+    # endpoints joined at six decimal places. Resource identities remain exact.
+    reh_adjacency = defaultdict(set)
+    for segment in segments:
+        coordinates = segment.get("coordinates", [])
+        if len(coordinates) < 2:
+            continue
+        left = tuple(round(float(v), 6) for v in coordinates[0][:2])
+        right = tuple(round(float(v), 6) for v in coordinates[-1][:2])
+        if left != right:
+            reh_adjacency[left].add(right)
+            reh_adjacency[right].add(left)
+    # All explicit named fixes remain available as UAM reference landmarks.
     reh = [f for f in inventory if f["properties"]["network"] == "REH"]
     for feature in inventory:
         p = feature["properties"]
         p["analysis_method_version"] = CAPACITY_SELECTION_VERSION
         if p["network"] == "REH":
-            p.update(capacity_eligible=True, selection_reasons=[], selection_rule="explicit_named_reh_fix")
+            key = tuple(round(float(v), 6) for v in reversed(feature["geometry"]["coordinates"][:2]))
+            degree = len(reh_adjacency[key])
+            p.update(network_degree=degree, capacity_eligible=degree >= 3,
+                     selection_reasons=[] if degree >= 3 else ["fewer_than_three_distinct_reh_edges"],
+                     selection_rule="reh_degree_at_least_3_distinct_undirected_edges_round6")
             continue
         lon, lat = feature["geometry"]["coordinates"]
         height, width = p["dimensions_m"]

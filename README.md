@@ -309,7 +309,7 @@ com a REH não transfere o grau nem a capacidade da REH para o UAM.
 A primeira/última ocorrência de `Waypoint` após/antes de um `Airport` ou `Vertiport` é
 um acesso terminal, mesmo que haja pontos geométricos entre ela e o terminal. Uma posição
 é exclusivamente terminal se não aparecer em nenhum outro uso interior. `CLUBE_SIRIO`
-é excluído dos recursos UAM por essa regra; o fixo REH Clube Sírio permanece selecionado.
+é excluído dos recursos UAM por essa regra; o fixo REH Clube Sírio permanece no cadastro de referências, sujeito ao filtro de junções REH.
 Uma posição com uso tanto interior quanto terminal pode entrar, se atender aos demais critérios.
 
 Os nomes são comparados pela normalização já descrita abaixo e por aliases explícitos:
@@ -352,7 +352,11 @@ recurso físico são eliminadas. Nenhuma aproximação por arredondamento ou pro
 usada. Trilhas coincidentes com os mesmos atributos representam a mesma posição física;
 trilhas deslocadas e níveis/dimensões distintos permanecem separados.
 
-REH: identidade = rede, nome normalizado, posição explícita e conjunto dos envelopes
+REH: mantém-se o critério original de junção com três ou mais vizinhos distintos em
+arestas não direcionadas, unindo extremos a seis casas decimais apenas para determinar
+o grau. São 31 junções elegíveis entre 91 fixos nomeados; o cadastro completo continua
+disponível como referência para UAM, sem incluir os outros fixos como recursos REH.
+Identidade = rede, nome normalizado, posição explícita e conjunto dos envelopes
 verticais dos trechos incidentes. Preservam-se todas as faixas, inclusive disjuntas;
 não se inventa uma altitude central. Qualquer trecho incidente com altitude desconhecida
 ou envelope inválido desabilita a contagem 3D dessa posição, sem fabricar zero. O mapa

@@ -45,7 +45,7 @@ class NamedWaypointTests(unittest.TestCase):
         segment={'resource_id':'S','label':'route','coordinates':[[0,0],[1,1]],'fix_a_name':'Fake'}
         self.assertEqual(named_waypoint_features([], [segment]),[])
         segment['explicit_fixes']=[dict(name='Named',lat=0.,lon=0.)]
-        feature=named_waypoint_features([], [segment])[0]
+        feature=named_waypoint_inventory([], [segment])[0]
         self.assertIsNone(feature['properties']['altitude_m'])
         self.assertEqual(feature['properties']['vertical_intervals_m'],[])
 
@@ -145,6 +145,19 @@ class NamedWaypointTests(unittest.TestCase):
             self.assertIn(b'cannot be reused',failed.stderr)
             self.assertEqual((results/'critical_waypoints.csv').read_bytes(),before)
 
+    def test_reh_selection_matches_original_junctions(self):
+        from src.uam_dashboard.topology import reh_junction_features
+        segments=load_reh_network(DEFAULT_REH_XML_PATH)['segments']
+        original=reh_junction_features(segments)
+        selected=named_waypoint_features([],segments)
+        def topology_key(f):
+            return tuple(round(v,6) for v in f['geometry']['coordinates'])
+        self.assertEqual(len(selected),31)
+        self.assertEqual({topology_key(f):f['properties']['network_degree'] for f in selected},
+                         {topology_key(f):f['properties']['network_degree'] for f in original})
+        self.assertEqual({f['properties']['label'] for f in selected},
+                         {f['properties']['label'] for f in original})
+
     def test_uam_selection_requires_reh_junction_and_nonterminal_use(self):
         reh=load_reh_network(DEFAULT_REH_XML_PATH)['segments']
         for filename,expected in [('scenario_horizontal_3000ft_expanded_displaced.csv',16),('new_scenario_horizontal_3000ft_displaced.csv',28)]:
@@ -152,7 +165,7 @@ class NamedWaypointTests(unittest.TestCase):
             features=named_waypoint_features(routes,reh)
             uam=[f for f in features if f['properties']['network']=='UAM']
             self.assertEqual(len(uam),expected)
-            self.assertEqual(sum(f['properties']['network']=='REH' for f in features),91)
+            self.assertEqual(sum(f['properties']['network']=='REH' for f in features),31)
             self.assertTrue(all(f['properties']['network_degree']>=3 and not f['properties']['terminal_only'] and f['properties']['reh_reference']['horizontal_distance_m']<=500 for f in uam))
             self.assertNotIn('CLUBE_SIRIO',[f['properties']['normalized_name'] for f in uam])
             self.assertTrue(any(f['properties']['normalized_name']=='AVENIDA_MORUMBI' for f in uam))

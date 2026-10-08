@@ -68,7 +68,7 @@
           "UAM-WP-8ba3a2f86f6f972185f3"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "distinct_edge_neighbors": [
           [
             -23.542081085594123,
@@ -181,7 +181,7 @@
           "UAM-WP-8ba3a2f86f6f972185f3"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "distinct_edge_neighbors": [
           [
             -23.542856261727895,
@@ -292,7 +292,7 @@
           "UAM-WP-7a2be92cfca3f1b02b87"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "distinct_edge_neighbors": [
           [
             -23.572879167604274,
@@ -397,7 +397,7 @@
           "UAM-WP-7a2be92cfca3f1b02b87"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "distinct_edge_neighbors": [
           [
             -23.5622222222222,
@@ -502,7 +502,7 @@
           "UAM-WP-7a2be92cfca3f1b02b87"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "distinct_edge_neighbors": [
           [
             -23.5622222222222,
@@ -611,7 +611,7 @@
           "UAM-WP-7a2be92cfca3f1b02b87"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "distinct_edge_neighbors": [
           [
             -23.576009721284525,
@@ -716,7 +716,7 @@
           "UAM-WP-1dd073392f122fa825ed"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "distinct_edge_neighbors": [
           [
             -23.606354090644885,
@@ -817,7 +817,7 @@
           "UAM-WP-1dd073392f122fa825ed"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "distinct_edge_neighbors": [
           [
             -23.600798797887954,
@@ -912,7 +912,7 @@
           "UAM-WP-1dd073392f122fa825ed"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "distinct_edge_neighbors": [
           [
             -23.60350120211205,
@@ -1009,7 +1009,7 @@
           "UAM-WP-1dd073392f122fa825ed"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "distinct_edge_neighbors": [
           [
             -23.610868131577313,
@@ -1122,7 +1122,7 @@
           "UAM-WP-f33f6a87e38a7d6f6229"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "distinct_edge_neighbors": [],
         "terminal_route_ids": [],
         "interior_route_ids": [],
@@ -1214,7 +1214,7 @@
           "UAM-WP-f33f6a87e38a7d6f6229"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "distinct_edge_neighbors": [],
         "terminal_route_ids": [],
         "interior_route_ids": [],
@@ -1298,7 +1298,7 @@
           "UAM-WP-e205d75d01331fb1274b"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "distinct_edge_neighbors": [
           [
             -23.509,
@@ -1404,7 +1404,7 @@
           "UAM-WP-e205d75d01331fb1274b"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "distinct_edge_neighbors": [
           [
             -23.528639113561262,
@@ -1510,7 +1510,7 @@
           "UAM-WP-e205d75d01331fb1274b"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "distinct_edge_neighbors": [
           [
             -23.528639113561262,
@@ -1615,7 +1615,7 @@
           "UAM-WP-e205d75d01331fb1274b"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "distinct_edge_neighbors": [
           [
             -23.509,
@@ -1721,7 +1721,7 @@
           "UAM-WP-e205d75d01331fb1274b"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "distinct_edge_neighbors": [
           [
             -23.509,
@@ -1827,7 +1827,7 @@
           "UAM-WP-e205d75d01331fb1274b"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "distinct_edge_neighbors": [
           [
             -23.532972445391017,
@@ -1934,7 +1934,7 @@
           "UAM-WP-e205d75d01331fb1274b"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "distinct_edge_neighbors": [
           [
             -23.532972445391017,
@@ -2036,7 +2036,7 @@
           "UAM-WP-e205d75d01331fb1274b"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "distinct_edge_neighbors": [
           [
             -23.509,
@@ -2146,7 +2146,7 @@
           "UAM-WP-db4164c80df09a40a3a5"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "distinct_edge_neighbors": [
           [
             -23.51606374594118,
@@ -2254,7 +2254,7 @@
           "UAM-WP-db4164c80df09a40a3a5"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "distinct_edge_neighbors": [
           [
             -23.531514765733224,
@@ -2361,7 +2361,7 @@
           "UAM-WP-db4164c80df09a40a3a5"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "distinct_edge_neighbors": [
           [
             -23.531514765733224,
@@ -2468,7 +2468,7 @@
           "UAM-WP-db4164c80df09a40a3a5"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "distinct_edge_neighbors": [
           [
             -23.51606374594118,
@@ -2585,7 +2585,7 @@
           "UAM-WP-db4164c80df09a40a3a5"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "distinct_edge_neighbors": [
           [
             -23.520153648065616,
@@ -2694,7 +2694,7 @@
           "UAM-WP-db4164c80df09a40a3a5"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "distinct_edge_neighbors": [
           [
             -23.535910743800176,
@@ -2797,7 +2797,7 @@
           "UAM-WP-db4164c80df09a40a3a5"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "distinct_edge_neighbors": [
           [
             -23.535109057008345,
@@ -2914,7 +2914,7 @@
           "UAM-WP-db4164c80df09a40a3a5"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "distinct_edge_neighbors": [
           [
             -23.520153648065616,
@@ -3022,7 +3022,7 @@
           "UAM-WP-7e76a392fe807fd258df"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "distinct_edge_neighbors": [
           [
             -23.58019832452846,
@@ -3130,7 +3130,7 @@
           "UAM-WP-7e76a392fe807fd258df"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "distinct_edge_neighbors": [
           [
             -23.5911111111111,
@@ -3234,7 +3234,7 @@
           "UAM-WP-7e76a392fe807fd258df"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "distinct_edge_neighbors": [
           [
             -23.58019832452846,
@@ -3340,7 +3340,7 @@
           "UAM-WP-7e76a392fe807fd258df"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "distinct_edge_neighbors": [
           [
             -23.580448517696226,
@@ -3439,7 +3439,7 @@
           "UAM-WP-7e76a392fe807fd258df"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "distinct_edge_neighbors": [
           [
             -23.583449155568573,
@@ -3542,7 +3542,7 @@
           "UAM-WP-7e76a392fe807fd258df"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "distinct_edge_neighbors": [
           [
             -23.582272984713864,
@@ -3648,7 +3648,7 @@
           "UAM-WP-7e76a392fe807fd258df"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "distinct_edge_neighbors": [
           [
             -23.5911111111111,
@@ -3752,7 +3752,7 @@
           "UAM-WP-7e76a392fe807fd258df"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "distinct_edge_neighbors": [
           [
             -23.582272984713864,
@@ -3862,7 +3862,7 @@
           "UAM-WP-5166da539596b168b1c0"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "distinct_edge_neighbors": [
           [
             -23.590511689651272,
@@ -3981,7 +3981,7 @@
           "UAM-WP-5166da539596b168b1c0"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "distinct_edge_neighbors": [
           [
             -23.58942479022261,
@@ -4106,7 +4106,7 @@
           "UAM-WP-6e904fca962e1342fd0c"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "distinct_edge_neighbors": [],
         "terminal_route_ids": [],
         "interior_route_ids": [],
@@ -4198,7 +4198,7 @@
           "UAM-WP-6e904fca962e1342fd0c"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "distinct_edge_neighbors": [],
         "terminal_route_ids": [],
         "interior_route_ids": [],
@@ -4276,7 +4276,7 @@
           "UAM-WP-260882d91a6908a9fd70"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "distinct_edge_neighbors": [
           [
             -23.54748722357915,
@@ -4369,7 +4369,7 @@
           "UAM-WP-260882d91a6908a9fd70"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "distinct_edge_neighbors": [
           [
             -23.54862388753205,
@@ -4464,7 +4464,7 @@
           "UAM-WP-ded4b293bf66e717fe00"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "distinct_edge_neighbors": [
           [
             -23.59027412529078,
@@ -4560,7 +4560,7 @@
           "UAM-WP-ded4b293bf66e717fe00"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "distinct_edge_neighbors": [
           [
             -23.594170319153623,
@@ -4656,7 +4656,7 @@
           "UAM-WP-75d90bc11f7337ff9752"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "distinct_edge_neighbors": [],
         "terminal_route_ids": [],
         "interior_route_ids": [],
@@ -4736,7 +4736,7 @@
           "UAM-WP-75d90bc11f7337ff9752"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "distinct_edge_neighbors": [],
         "terminal_route_ids": [],
         "interior_route_ids": [],
@@ -4824,7 +4824,7 @@
           "UAM-WP-d495f907fec1cc0132cc"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "distinct_edge_neighbors": [
           [
             -23.552624774559753,
@@ -4937,7 +4937,7 @@
           "UAM-WP-d495f907fec1cc0132cc"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "distinct_edge_neighbors": [
           [
             -23.552930780995844,
@@ -5048,7 +5048,7 @@
           "UAM-WP-5b826ee7ce942155a1dd"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "distinct_edge_neighbors": [
           [
             -23.509,
@@ -5153,7 +5153,7 @@
           "UAM-WP-5b826ee7ce942155a1dd"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "distinct_edge_neighbors": [
           [
             -23.531664480389757,
@@ -5257,7 +5257,7 @@
           "UAM-WP-5b826ee7ce942155a1dd"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "distinct_edge_neighbors": [
           [
             -23.535355519610242,
@@ -5361,7 +5361,7 @@
           "UAM-WP-5b826ee7ce942155a1dd"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "distinct_edge_neighbors": [
           [
             -23.509,
@@ -5478,7 +5478,7 @@
           "UAM-WP-cef9975870d9980090a5"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "distinct_edge_neighbors": [
           [
             -23.514321479588634,
@@ -5589,7 +5589,7 @@
           "UAM-WP-cef9975870d9980090a5"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "distinct_edge_neighbors": [
           [
             -23.514022994171626,
@@ -5691,7 +5691,7 @@
           "UAM-WP-cef9975870d9980090a5"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "distinct_edge_neighbors": [
           [
             -23.51606374594118,
@@ -5791,7 +5791,7 @@
           "UAM-WP-cef9975870d9980090a5"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "distinct_edge_neighbors": [
           [
             -23.514022994171626,
@@ -5895,7 +5895,7 @@
           "UAM-WP-cef9975870d9980090a5"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "distinct_edge_neighbors": [
           [
             -23.518480331799573,
@@ -6011,7 +6011,7 @@
           "UAM-WP-cef9975870d9980090a5"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "distinct_edge_neighbors": [
           [
             -23.518789758144766,
@@ -6122,7 +6122,7 @@
           "UAM-WP-eaea2fee113dd0217031"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "distinct_edge_neighbors": [],
         "terminal_route_ids": [],
         "interior_route_ids": [],
@@ -6210,7 +6210,7 @@
           "UAM-WP-eaea2fee113dd0217031"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "distinct_edge_neighbors": [],
         "terminal_route_ids": [],
         "interior_route_ids": [],
@@ -6292,7 +6292,7 @@
           "UAM-WP-8b4f1ac15630f327b7ee"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "distinct_edge_neighbors": [
           [
             -23.556416918805503,
@@ -6395,7 +6395,7 @@
           "UAM-WP-8b4f1ac15630f327b7ee"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "distinct_edge_neighbors": [
           [
             -23.556416918805503,
@@ -6499,7 +6499,7 @@
           "UAM-WP-8b4f1ac15630f327b7ee"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "distinct_edge_neighbors": [
           [
             -23.5591386367501,
@@ -6599,7 +6599,7 @@
           "UAM-WP-8b4f1ac15630f327b7ee"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "distinct_edge_neighbors": [
           [
             -23.5591386367501,
@@ -6708,7 +6708,7 @@
           "UAM-WP-8c25f0d87b4f9d33a688"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "distinct_edge_neighbors": [],
         "terminal_route_ids": [],
         "interior_route_ids": [],
@@ -6800,7 +6800,7 @@
           "UAM-WP-8c25f0d87b4f9d33a688"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "distinct_edge_neighbors": [],
         "terminal_route_ids": [],
         "interior_route_ids": [],
@@ -6882,7 +6882,7 @@
           "UAM-WP-7921b296db0b105dd507"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "distinct_edge_neighbors": [
           [
             -23.5911111111111,
@@ -6982,7 +6982,7 @@
           "UAM-WP-7921b296db0b105dd507"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "distinct_edge_neighbors": [
           [
             -23.609389520520164,
@@ -7085,7 +7085,7 @@
           "UAM-WP-7921b296db0b105dd507"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "distinct_edge_neighbors": [
           [
             -23.58520676091455,
@@ -7182,7 +7182,7 @@
           "UAM-WP-7921b296db0b105dd507"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "distinct_edge_neighbors": [
           [
             -23.58583507177885,
@@ -7281,7 +7281,7 @@
           "UAM-WP-7921b296db0b105dd507"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "distinct_edge_neighbors": [
           [
             -23.61386824332514,
@@ -7384,7 +7384,7 @@
           "UAM-WP-7921b296db0b105dd507"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "distinct_edge_neighbors": [
           [
             -23.5911111111111,
@@ -7482,7 +7482,7 @@
           "UAM-WP-387e4e78697775dedced"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "distinct_edge_neighbors": [
           [
             -23.5466666666667,
@@ -7581,7 +7581,7 @@
           "UAM-WP-387e4e78697775dedced"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "distinct_edge_neighbors": [
           [
             -23.53284476902972,
@@ -7680,7 +7680,7 @@
           "UAM-WP-387e4e78697775dedced"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "distinct_edge_neighbors": [
           [
             -23.535255230970282,
@@ -7779,7 +7779,7 @@
           "UAM-WP-387e4e78697775dedced"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "distinct_edge_neighbors": [
           [
             -23.5466666666667,
@@ -7886,7 +7886,7 @@
           "UAM-WP-f54092fceb52ffeb8996"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "distinct_edge_neighbors": [],
         "terminal_route_ids": [],
         "interior_route_ids": [],
@@ -7980,7 +7980,7 @@
           "UAM-WP-f54092fceb52ffeb8996"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "distinct_edge_neighbors": [],
         "terminal_route_ids": [],
         "interior_route_ids": [],
@@ -8064,7 +8064,7 @@
           "UAM-WP-f54092fceb52ffeb8996"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "distinct_edge_neighbors": [],
         "terminal_route_ids": [],
         "interior_route_ids": [],
@@ -8148,7 +8148,7 @@
           "UAM-WP-f54092fceb52ffeb8996"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "distinct_edge_neighbors": [],
         "terminal_route_ids": [],
         "interior_route_ids": [],
@@ -8232,7 +8232,7 @@
           "UAM-WP-f54092fceb52ffeb8996"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "distinct_edge_neighbors": [],
         "terminal_route_ids": [],
         "interior_route_ids": [],
@@ -8316,7 +8316,7 @@
           "UAM-WP-f54092fceb52ffeb8996"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "distinct_edge_neighbors": [],
         "terminal_route_ids": [],
         "interior_route_ids": [],
@@ -8410,7 +8410,7 @@
           "UAM-WP-f54092fceb52ffeb8996"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "distinct_edge_neighbors": [],
         "terminal_route_ids": [],
         "interior_route_ids": [],
@@ -8500,7 +8500,7 @@
           "UAM-WP-f54092fceb52ffeb8996"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "distinct_edge_neighbors": [],
         "terminal_route_ids": [],
         "interior_route_ids": [],
@@ -8580,7 +8580,7 @@
           "UAM-WP-be1512b86f2f2c553f88"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "distinct_edge_neighbors": [
           [
             -23.5647222222222,
@@ -8677,7 +8677,7 @@
           "UAM-WP-be1512b86f2f2c553f88"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "distinct_edge_neighbors": [
           [
             -23.5647222222222,
@@ -8772,7 +8772,7 @@
           "UAM-WP-fc8e071ecd717ea9b6b3"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "distinct_edge_neighbors": [
           [
             -23.52428591336908,
@@ -8865,7 +8865,7 @@
           "UAM-WP-fc8e071ecd717ea9b6b3"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "distinct_edge_neighbors": [
           [
             -23.527936308853118,
@@ -8972,7 +8972,7 @@
           "UAM-WP-a0bed3efcd566b2caa27"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "distinct_edge_neighbors": [],
         "terminal_route_ids": [],
         "interior_route_ids": [],
@@ -9064,7 +9064,7 @@
           "UAM-WP-a0bed3efcd566b2caa27"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "distinct_edge_neighbors": [],
         "terminal_route_ids": [],
         "interior_route_ids": [],
@@ -9158,7 +9158,7 @@
           "UAM-WP-d84a4c5177d4193d5f5a"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "distinct_edge_neighbors": [
           [
             -23.5213534865182,
@@ -9268,7 +9268,7 @@
           "UAM-WP-d84a4c5177d4193d5f5a"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "distinct_edge_neighbors": [
           [
             -23.5213534865182,
@@ -9376,7 +9376,7 @@
           "UAM-WP-d84a4c5177d4193d5f5a"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "distinct_edge_neighbors": [
           [
             -23.5258389929876,
@@ -9490,7 +9490,7 @@
           "UAM-WP-d84a4c5177d4193d5f5a"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "distinct_edge_neighbors": [
           [
             -23.5258389929876,
@@ -9594,7 +9594,7 @@
           "UAM-WP-1bf347d28fdd3b566062"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "distinct_edge_neighbors": [
           [
             -23.621466646799245,
@@ -9694,7 +9694,7 @@
           "UAM-WP-1bf347d28fdd3b566062"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "distinct_edge_neighbors": [
           [
             -23.624653353200753,

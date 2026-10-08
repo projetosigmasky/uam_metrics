@@ -1,7 +1,7 @@
 {
   "type": "FeatureCollection",
   "properties": {
-    "definition": "REH explicit named fixes; UAM named nonterminal junctions with degree >= 3 and verified REH reference",
+    "definition": "REH original degree >= 3 distinct edge junctions; UAM named nonterminal junctions with degree >= 3 and verified REH reference",
     "status": "geometry_only_pending_recomputation",
     "analytical_grouping": "exact position/vertical envelope/dimensions; no totals by name",
     "uam_named_inventory_count": 96,
@@ -30,7 +30,7 @@
         "normalized_name": "ALCANTARA_MACHADO",
         "network": "REH",
         "criterion": "reh_named_waypoint",
-        "network_degree": null,
+        "network_degree": 3,
         "altitude_m": null,
         "vertical_intervals_m": [
           [
@@ -64,10 +64,10 @@
           "REH-WP-0a627d59ccdba547fb36"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "capacity_eligible": true,
         "selection_reasons": [],
-        "selection_rule": "explicit_named_reh_fix",
+        "selection_rule": "reh_degree_at_least_3_distinct_undirected_edges_round6",
         "name_all_position_count": 1,
         "source": {
           "file": "CV_REH_XP_SAO_PAULO.xml",
@@ -85,298 +85,6 @@
     {
       "type": "Feature",
       "properties": {
-        "resource_id": "REH-WP-1663d073283e1295b8f9",
-        "label": "Alumínio",
-        "node_name": "Alumínio",
-        "original_names": [
-          "Alumínio"
-        ],
-        "normalized_name": "ALUMINIO",
-        "network": "REH",
-        "criterion": "reh_named_waypoint",
-        "network_degree": null,
-        "altitude_m": null,
-        "vertical_intervals_m": [
-          [
-            944.88,
-            944.88
-          ],
-          [
-            1036.3200000000002,
-            1036.3200000000002
-          ]
-        ],
-        "altitude_status": "known_envelopes",
-        "dimensions_m": null,
-        "uam_route_ids": [],
-        "reh_resource_ids": [
-          "REH-150",
-          "REH-151"
-        ],
-        "uam_route_labels": [],
-        "reh_labels": [
-          "RAPOSO - trecho 5",
-          "RAPOSO - trecho 6"
-        ],
-        "status": "geometry_only_pending_recomputation",
-        "method": "explicit_named_export_position",
-        "name_group_id": "REH:ALUMINIO",
-        "name_position_count": 1,
-        "name_position_ids": [
-          "REH-WP-1663d073283e1295b8f9"
-        ],
-        "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
-        "capacity_eligible": true,
-        "selection_reasons": [],
-        "selection_rule": "explicit_named_reh_fix",
-        "name_all_position_count": 1,
-        "source": {
-          "file": "CV_REH_XP_SAO_PAULO.xml",
-          "sha256": "2e11d7bd59fafa426444132d2911ffae2b097de54da11e489bb48656fd59ef3b"
-        }
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -47.24805556,
-          -23.53055556
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "resource_id": "REH-WP-74ca2fc3f89b8b1a72f5",
-        "label": "Ana Rosa",
-        "node_name": "Ana Rosa",
-        "original_names": [
-          "Ana Rosa"
-        ],
-        "normalized_name": "ANA_ROSA",
-        "network": "REH",
-        "criterion": "reh_named_waypoint",
-        "network_degree": null,
-        "altitude_m": null,
-        "vertical_intervals_m": [
-          [
-            1005.84,
-            1036.3200000000002
-          ]
-        ],
-        "altitude_status": "known_envelopes",
-        "dimensions_m": null,
-        "uam_route_ids": [],
-        "reh_resource_ids": [
-          "REH-196",
-          "REH-197"
-        ],
-        "uam_route_labels": [],
-        "reh_labels": [
-          "ACLIMAÇÃO - trecho 1",
-          "ACLIMAÇÃO - trecho 2"
-        ],
-        "status": "geometry_only_pending_recomputation",
-        "method": "explicit_named_export_position",
-        "name_group_id": "REH:ANA_ROSA",
-        "name_position_count": 1,
-        "name_position_ids": [
-          "REH-WP-74ca2fc3f89b8b1a72f5"
-        ],
-        "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
-        "capacity_eligible": true,
-        "selection_reasons": [],
-        "selection_rule": "explicit_named_reh_fix",
-        "name_all_position_count": 1,
-        "source": {
-          "file": "CV_REH_XP_SAO_PAULO.xml",
-          "sha256": "2e11d7bd59fafa426444132d2911ffae2b097de54da11e489bb48656fd59ef3b"
-        }
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -46.63833333,
-          -23.58194444
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "resource_id": "REH-WP-e7f02fa2a8fa5ed2a8f4",
-        "label": "Araçoiaba",
-        "node_name": "Araçoiaba",
-        "original_names": [
-          "Araçoiaba"
-        ],
-        "normalized_name": "ARACOIABA",
-        "network": "REH",
-        "criterion": "reh_named_waypoint",
-        "network_degree": null,
-        "altitude_m": null,
-        "vertical_intervals_m": [
-          [
-            762.0,
-            762.0
-          ]
-        ],
-        "altitude_status": "known_envelopes",
-        "dimensions_m": null,
-        "uam_route_ids": [],
-        "reh_resource_ids": [
-          "REH-146"
-        ],
-        "uam_route_labels": [],
-        "reh_labels": [
-          "RAPOSO - trecho 1"
-        ],
-        "status": "geometry_only_pending_recomputation",
-        "method": "explicit_named_export_position",
-        "name_group_id": "REH:ARACOIABA",
-        "name_position_count": 1,
-        "name_position_ids": [
-          "REH-WP-e7f02fa2a8fa5ed2a8f4"
-        ],
-        "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
-        "capacity_eligible": true,
-        "selection_reasons": [],
-        "selection_rule": "explicit_named_reh_fix",
-        "name_all_position_count": 1,
-        "source": {
-          "file": "CV_REH_XP_SAO_PAULO.xml",
-          "sha256": "2e11d7bd59fafa426444132d2911ffae2b097de54da11e489bb48656fd59ef3b"
-        }
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -47.5958333299999,
-          -23.5186111099999
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "resource_id": "REH-WP-f73567703b84eeebc324",
-        "label": "Assaí",
-        "node_name": "Assaí",
-        "original_names": [
-          "Assaí"
-        ],
-        "normalized_name": "ASSAI",
-        "network": "REH",
-        "criterion": "reh_named_waypoint",
-        "network_degree": null,
-        "altitude_m": null,
-        "vertical_intervals_m": [
-          [
-            822.96,
-            822.96
-          ]
-        ],
-        "altitude_status": "known_envelopes",
-        "dimensions_m": null,
-        "uam_route_ids": [],
-        "reh_resource_ids": [
-          "REH-148",
-          "REH-149"
-        ],
-        "uam_route_labels": [],
-        "reh_labels": [
-          "RAPOSO - trecho 3",
-          "RAPOSO - trecho 4"
-        ],
-        "status": "geometry_only_pending_recomputation",
-        "method": "explicit_named_export_position",
-        "name_group_id": "REH:ASSAI",
-        "name_position_count": 1,
-        "name_position_ids": [
-          "REH-WP-f73567703b84eeebc324"
-        ],
-        "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
-        "capacity_eligible": true,
-        "selection_reasons": [],
-        "selection_rule": "explicit_named_reh_fix",
-        "name_all_position_count": 1,
-        "source": {
-          "file": "CV_REH_XP_SAO_PAULO.xml",
-          "sha256": "2e11d7bd59fafa426444132d2911ffae2b097de54da11e489bb48656fd59ef3b"
-        }
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -47.44166667,
-          -23.5247222199999
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "resource_id": "REH-WP-8246f3618c3d296f8ca0",
-        "label": "Assaí Jundiaí",
-        "node_name": "Assaí Jundiaí",
-        "original_names": [
-          "Assaí Jundiaí"
-        ],
-        "normalized_name": "ASSAI_JUNDIAI",
-        "network": "REH",
-        "criterion": "reh_named_waypoint",
-        "network_degree": null,
-        "altitude_m": null,
-        "vertical_intervals_m": [
-          [
-            914.4000000000001,
-            914.4000000000001
-          ]
-        ],
-        "altitude_status": "known_envelopes",
-        "dimensions_m": null,
-        "uam_route_ids": [],
-        "reh_resource_ids": [
-          "REH-125",
-          "REH-215"
-        ],
-        "uam_route_labels": [],
-        "reh_labels": [
-          "JUNDIAÍ - trecho 3",
-          "JUNDIAÍ - trecho 4"
-        ],
-        "status": "geometry_only_pending_recomputation",
-        "method": "explicit_named_export_position",
-        "name_group_id": "REH:ASSAI_JUNDIAI",
-        "name_position_count": 1,
-        "name_position_ids": [
-          "REH-WP-8246f3618c3d296f8ca0"
-        ],
-        "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
-        "capacity_eligible": true,
-        "selection_reasons": [],
-        "selection_rule": "explicit_named_reh_fix",
-        "name_all_position_count": 1,
-        "source": {
-          "file": "CV_REH_XP_SAO_PAULO.xml",
-          "sha256": "2e11d7bd59fafa426444132d2911ffae2b097de54da11e489bb48656fd59ef3b"
-        }
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -46.8936111099999,
-          -23.1744444399999
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
         "resource_id": "REH-WP-66c5260ef599f42adcf4",
         "label": "Avenida Morumbi",
         "node_name": "Avenida Morumbi",
@@ -386,7 +94,7 @@
         "normalized_name": "AVENIDA_MORUMBI",
         "network": "REH",
         "criterion": "reh_named_waypoint",
-        "network_degree": null,
+        "network_degree": 3,
         "altitude_m": null,
         "vertical_intervals_m": [
           [
@@ -424,10 +132,10 @@
           "REH-WP-66c5260ef599f42adcf4"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "capacity_eligible": true,
         "selection_reasons": [],
-        "selection_rule": "explicit_named_reh_fix",
+        "selection_rule": "reh_degree_at_least_3_distinct_undirected_edges_round6",
         "name_all_position_count": 1,
         "source": {
           "file": "CV_REH_XP_SAO_PAULO.xml",
@@ -445,241 +153,6 @@
     {
       "type": "Feature",
       "properties": {
-        "resource_id": "REH-WP-063200a7157b9cba0820",
-        "label": "Bahia",
-        "node_name": "Bahia",
-        "original_names": [
-          "Bahia"
-        ],
-        "normalized_name": "BAHIA",
-        "network": "REH",
-        "criterion": "reh_named_waypoint",
-        "network_degree": null,
-        "altitude_m": null,
-        "vertical_intervals_m": [
-          [
-            944.88,
-            944.88
-          ],
-          [
-            1036.3200000000002,
-            1036.3200000000002
-          ]
-        ],
-        "altitude_status": "known_envelopes",
-        "dimensions_m": null,
-        "uam_route_ids": [],
-        "reh_resource_ids": [
-          "REH-213",
-          "REH-214"
-        ],
-        "uam_route_labels": [],
-        "reh_labels": [
-          "JUNDIAÍ - trecho 1",
-          "JUNDIAÍ - trecho 2"
-        ],
-        "status": "geometry_only_pending_recomputation",
-        "method": "explicit_named_export_position",
-        "name_group_id": "REH:BAHIA",
-        "name_position_count": 1,
-        "name_position_ids": [
-          "REH-WP-063200a7157b9cba0820"
-        ],
-        "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
-        "capacity_eligible": true,
-        "selection_reasons": [],
-        "selection_rule": "explicit_named_reh_fix",
-        "name_all_position_count": 1,
-        "source": {
-          "file": "CV_REH_XP_SAO_PAULO.xml",
-          "sha256": "2e11d7bd59fafa426444132d2911ffae2b097de54da11e489bb48656fd59ef3b"
-        }
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -46.86416667,
-          -23.235
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "resource_id": "REH-WP-e7eb58686127cfbdc141",
-        "label": "Barragem Tietê",
-        "node_name": "Barragem Tietê",
-        "original_names": [
-          "Barragem Tietê"
-        ],
-        "normalized_name": "BARRAGEM_TIETE",
-        "network": "REH",
-        "criterion": "reh_named_waypoint",
-        "network_degree": null,
-        "altitude_m": null,
-        "vertical_intervals_m": [],
-        "altitude_status": "unknown_or_invalid_envelope",
-        "dimensions_m": null,
-        "uam_route_ids": [],
-        "reh_resource_ids": [
-          "REH-137",
-          "REH-176"
-        ],
-        "uam_route_labels": [],
-        "reh_labels": [
-          "ECOLÓGICO - trecho 2",
-          "ECOLÓGICO - trecho 3"
-        ],
-        "status": "geometry_only_pending_recomputation",
-        "method": "explicit_named_export_position",
-        "name_group_id": "REH:BARRAGEM_TIETE",
-        "name_position_count": 1,
-        "name_position_ids": [
-          "REH-WP-e7eb58686127cfbdc141"
-        ],
-        "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
-        "capacity_eligible": true,
-        "selection_reasons": [],
-        "selection_rule": "explicit_named_reh_fix",
-        "name_all_position_count": 1,
-        "source": {
-          "file": "CV_REH_XP_SAO_PAULO.xml",
-          "sha256": "2e11d7bd59fafa426444132d2911ffae2b097de54da11e489bb48656fd59ef3b"
-        }
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -46.54194444,
-          -23.50222222
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "resource_id": "REH-WP-2888153428a8a03dec7d",
-        "label": "Bartira",
-        "node_name": "Bartira",
-        "original_names": [
-          "Bartira"
-        ],
-        "normalized_name": "BARTIRA",
-        "network": "REH",
-        "criterion": "reh_named_waypoint",
-        "network_degree": null,
-        "altitude_m": null,
-        "vertical_intervals_m": [
-          [
-            975.36,
-            1036.3200000000002
-          ]
-        ],
-        "altitude_status": "known_envelopes",
-        "dimensions_m": null,
-        "uam_route_ids": [],
-        "reh_resource_ids": [
-          "REH-177",
-          "REH-179"
-        ],
-        "uam_route_labels": [],
-        "reh_labels": [
-          "ESTADO - trecho 2",
-          "ESTADO - trecho 3"
-        ],
-        "status": "geometry_only_pending_recomputation",
-        "method": "explicit_named_export_position",
-        "name_group_id": "REH:BARTIRA",
-        "name_position_count": 1,
-        "name_position_ids": [
-          "REH-WP-2888153428a8a03dec7d"
-        ],
-        "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
-        "capacity_eligible": true,
-        "selection_reasons": [],
-        "selection_rule": "explicit_named_reh_fix",
-        "name_all_position_count": 1,
-        "source": {
-          "file": "CV_REH_XP_SAO_PAULO.xml",
-          "sha256": "2e11d7bd59fafa426444132d2911ffae2b097de54da11e489bb48656fd59ef3b"
-        }
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -46.56055556,
-          -23.61055556
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "resource_id": "REH-WP-951bd7daf6ab1b640336",
-        "label": "Barueri",
-        "node_name": "Barueri",
-        "original_names": [
-          "Barueri"
-        ],
-        "normalized_name": "BARUERI",
-        "network": "REH",
-        "criterion": "reh_named_waypoint",
-        "network_degree": null,
-        "altitude_m": null,
-        "vertical_intervals_m": [
-          [
-            1036.3200000000002,
-            1036.3200000000002
-          ],
-          [
-            1097.28,
-            1097.28
-          ]
-        ],
-        "altitude_status": "known_envelopes",
-        "dimensions_m": null,
-        "uam_route_ids": [],
-        "reh_resource_ids": [
-          "REH-166",
-          "REH-175"
-        ],
-        "uam_route_labels": [],
-        "reh_labels": [
-          "CASTELO - trecho 1",
-          "Tietê - trecho 2"
-        ],
-        "status": "geometry_only_pending_recomputation",
-        "method": "explicit_named_export_position",
-        "name_group_id": "REH:BARUERI",
-        "name_position_count": 1,
-        "name_position_ids": [
-          "REH-WP-951bd7daf6ab1b640336"
-        ],
-        "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
-        "capacity_eligible": true,
-        "selection_reasons": [],
-        "selection_rule": "explicit_named_reh_fix",
-        "name_all_position_count": 1,
-        "source": {
-          "file": "CV_REH_XP_SAO_PAULO.xml",
-          "sha256": "2e11d7bd59fafa426444132d2911ffae2b097de54da11e489bb48656fd59ef3b"
-        }
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -46.87666667,
-          -23.5049999999999
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
         "resource_id": "REH-WP-a390412db8d2951dc250",
         "label": "Brás",
         "node_name": "Brás",
@@ -689,7 +162,7 @@
         "normalized_name": "BRAS",
         "network": "REH",
         "criterion": "reh_named_waypoint",
-        "network_degree": null,
+        "network_degree": 4,
         "altitude_m": null,
         "vertical_intervals_m": [],
         "altitude_status": "unknown_or_invalid_envelope",
@@ -716,10 +189,10 @@
           "REH-WP-a390412db8d2951dc250"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "capacity_eligible": true,
         "selection_reasons": [],
-        "selection_rule": "explicit_named_reh_fix",
+        "selection_rule": "reh_degree_at_least_3_distinct_undirected_edges_round6",
         "name_all_position_count": 1,
         "source": {
           "file": "CV_REH_XP_SAO_PAULO.xml",
@@ -737,59 +210,6 @@
     {
       "type": "Feature",
       "properties": {
-        "resource_id": "REH-WP-2eedaed9df51864ac9f6",
-        "label": "Cabreúva",
-        "node_name": "Cabreúva",
-        "original_names": [
-          "Cabreúva"
-        ],
-        "normalized_name": "CABREUVA",
-        "network": "REH",
-        "criterion": "reh_named_waypoint",
-        "network_degree": null,
-        "altitude_m": null,
-        "vertical_intervals_m": [],
-        "altitude_status": "unknown_or_invalid_envelope",
-        "dimensions_m": null,
-        "uam_route_ids": [],
-        "reh_resource_ids": [
-          "REH-142",
-          "REH-192"
-        ],
-        "uam_route_labels": [],
-        "reh_labels": [
-          "Portão Cabreúva - trecho 1",
-          "Tietê - trecho 1"
-        ],
-        "status": "geometry_only_pending_recomputation",
-        "method": "explicit_named_export_position",
-        "name_group_id": "REH:CABREUVA",
-        "name_position_count": 1,
-        "name_position_ids": [
-          "REH-WP-2eedaed9df51864ac9f6"
-        ],
-        "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
-        "capacity_eligible": true,
-        "selection_reasons": [],
-        "selection_rule": "explicit_named_reh_fix",
-        "name_all_position_count": 1,
-        "source": {
-          "file": "CV_REH_XP_SAO_PAULO.xml",
-          "sha256": "2e11d7bd59fafa426444132d2911ffae2b097de54da11e489bb48656fd59ef3b"
-        }
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -47.13138889,
-          -23.3063888899999
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
         "resource_id": "REH-WP-1c5fd6543fef6083f7e8",
         "label": "Cebolão",
         "node_name": "Cebolão",
@@ -799,7 +219,7 @@
         "normalized_name": "CEBOLAO",
         "network": "REH",
         "criterion": "reh_named_waypoint",
-        "network_degree": null,
+        "network_degree": 4,
         "altitude_m": null,
         "vertical_intervals_m": [
           [
@@ -839,10 +259,10 @@
           "REH-WP-1c5fd6543fef6083f7e8"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "capacity_eligible": true,
         "selection_reasons": [],
-        "selection_rule": "explicit_named_reh_fix",
+        "selection_rule": "reh_degree_at_least_3_distinct_undirected_edges_round6",
         "name_all_position_count": 1,
         "source": {
           "file": "CV_REH_XP_SAO_PAULO.xml",
@@ -869,7 +289,7 @@
         "normalized_name": "CEBOLINHA",
         "network": "REH",
         "criterion": "reh_named_waypoint",
-        "network_degree": null,
+        "network_degree": 3,
         "altitude_m": null,
         "vertical_intervals_m": [
           [
@@ -903,10 +323,10 @@
           "REH-WP-db16861257baeed3a737"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "capacity_eligible": true,
         "selection_reasons": [],
-        "selection_rule": "explicit_named_reh_fix",
+        "selection_rule": "reh_degree_at_least_3_distinct_undirected_edges_round6",
         "name_all_position_count": 1,
         "source": {
           "file": "CV_REH_XP_SAO_PAULO.xml",
@@ -924,293 +344,6 @@
     {
       "type": "Feature",
       "properties": {
-        "resource_id": "REH-WP-685348e950446312300d",
-        "label": "Cemitério Fernão",
-        "node_name": "Cemitério Fernão",
-        "original_names": [
-          "Cemitério Fernão"
-        ],
-        "normalized_name": "CEMITERIO_FERNAO",
-        "network": "REH",
-        "criterion": "reh_named_waypoint",
-        "network_degree": null,
-        "altitude_m": null,
-        "vertical_intervals_m": [
-          [
-            944.88,
-            944.88
-          ]
-        ],
-        "altitude_status": "known_envelopes",
-        "dimensions_m": null,
-        "uam_route_ids": [],
-        "reh_resource_ids": [
-          "REH-171",
-          "REH-210"
-        ],
-        "uam_route_labels": [],
-        "reh_labels": [
-          "FERNÃO - trecho 2",
-          "FERNÃO - trecho 3"
-        ],
-        "status": "geometry_only_pending_recomputation",
-        "method": "explicit_named_export_position",
-        "name_group_id": "REH:CEMITERIO_FERNAO",
-        "name_position_count": 1,
-        "name_position_ids": [
-          "REH-WP-685348e950446312300d"
-        ],
-        "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
-        "capacity_eligible": true,
-        "selection_reasons": [],
-        "selection_rule": "explicit_named_reh_fix",
-        "name_all_position_count": 1,
-        "source": {
-          "file": "CV_REH_XP_SAO_PAULO.xml",
-          "sha256": "2e11d7bd59fafa426444132d2911ffae2b097de54da11e489bb48656fd59ef3b"
-        }
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -46.56888889,
-          -23.4455555599999
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "resource_id": "REH-WP-0601919841a88cfae47c",
-        "label": "Clube",
-        "node_name": "Clube",
-        "original_names": [
-          "Clube"
-        ],
-        "normalized_name": "CLUBE",
-        "network": "REH",
-        "criterion": "reh_named_waypoint",
-        "network_degree": null,
-        "altitude_m": null,
-        "vertical_intervals_m": [
-          [
-            822.96,
-            822.96
-          ],
-          [
-            944.88,
-            944.88
-          ]
-        ],
-        "altitude_status": "known_envelopes",
-        "dimensions_m": null,
-        "uam_route_ids": [],
-        "reh_resource_ids": [
-          "REH-149",
-          "REH-150"
-        ],
-        "uam_route_labels": [],
-        "reh_labels": [
-          "RAPOSO - trecho 4",
-          "RAPOSO - trecho 5"
-        ],
-        "status": "geometry_only_pending_recomputation",
-        "method": "explicit_named_export_position",
-        "name_group_id": "REH:CLUBE",
-        "name_position_count": 1,
-        "name_position_ids": [
-          "REH-WP-0601919841a88cfae47c"
-        ],
-        "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
-        "capacity_eligible": true,
-        "selection_reasons": [],
-        "selection_rule": "explicit_named_reh_fix",
-        "name_all_position_count": 1,
-        "source": {
-          "file": "CV_REH_XP_SAO_PAULO.xml",
-          "sha256": "2e11d7bd59fafa426444132d2911ffae2b097de54da11e489bb48656fd59ef3b"
-        }
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -47.42722222,
-          -23.5149999999999
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "resource_id": "REH-WP-3c2366c44b8e35b78130",
-        "label": "Clube Sírio",
-        "node_name": "Clube Sírio",
-        "original_names": [
-          "Clube Sírio"
-        ],
-        "normalized_name": "CLUBE_SIRIO",
-        "network": "REH",
-        "criterion": "reh_named_waypoint",
-        "network_degree": null,
-        "altitude_m": null,
-        "vertical_intervals_m": [
-          [
-            1005.84,
-            1005.84
-          ]
-        ],
-        "altitude_status": "known_envelopes",
-        "dimensions_m": null,
-        "uam_route_ids": [],
-        "reh_resource_ids": [
-          "REH-140"
-        ],
-        "uam_route_labels": [],
-        "reh_labels": [
-          "CONGONHAS - trecho 2"
-        ],
-        "status": "geometry_only_pending_recomputation",
-        "method": "explicit_named_export_position",
-        "name_group_id": "REH:CLUBE_SIRIO",
-        "name_position_count": 1,
-        "name_position_ids": [
-          "REH-WP-3c2366c44b8e35b78130"
-        ],
-        "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
-        "capacity_eligible": true,
-        "selection_reasons": [],
-        "selection_rule": "explicit_named_reh_fix",
-        "name_all_position_count": 1,
-        "source": {
-          "file": "CV_REH_XP_SAO_PAULO.xml",
-          "sha256": "2e11d7bd59fafa426444132d2911ffae2b097de54da11e489bb48656fd59ef3b"
-        }
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -46.65277778,
-          -23.6077777799999
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "resource_id": "REH-WP-caf56fd05bf7db6c83c8",
-        "label": "Dumont",
-        "node_name": "Dumont",
-        "original_names": [
-          "Dumont"
-        ],
-        "normalized_name": "DUMONT",
-        "network": "REH",
-        "criterion": "reh_named_waypoint",
-        "network_degree": null,
-        "altitude_m": null,
-        "vertical_intervals_m": [],
-        "altitude_status": "unknown_or_invalid_envelope",
-        "dimensions_m": null,
-        "uam_route_ids": [],
-        "reh_resource_ids": [
-          "REH-176",
-          "REH-190"
-        ],
-        "uam_route_labels": [],
-        "reh_labels": [
-          "ECOLÓGICO - trecho 3",
-          "Portão Dumont - trecho 1"
-        ],
-        "status": "geometry_only_pending_recomputation",
-        "method": "explicit_named_export_position",
-        "name_group_id": "REH:DUMONT",
-        "name_position_count": 1,
-        "name_position_ids": [
-          "REH-WP-caf56fd05bf7db6c83c8"
-        ],
-        "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
-        "capacity_eligible": true,
-        "selection_reasons": [],
-        "selection_rule": "explicit_named_reh_fix",
-        "name_all_position_count": 1,
-        "source": {
-          "file": "CV_REH_XP_SAO_PAULO.xml",
-          "sha256": "2e11d7bd59fafa426444132d2911ffae2b097de54da11e489bb48656fd59ef3b"
-        }
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -46.4691666699999,
-          -23.4802777799999
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "resource_id": "REH-WP-fbcb58547c32479cce35",
-        "label": "Dutra",
-        "node_name": "Dutra",
-        "original_names": [
-          "Dutra"
-        ],
-        "normalized_name": "DUTRA",
-        "network": "REH",
-        "criterion": "reh_named_waypoint",
-        "network_degree": null,
-        "altitude_m": null,
-        "vertical_intervals_m": [
-          [
-            944.88,
-            944.88
-          ]
-        ],
-        "altitude_status": "known_envelopes",
-        "dimensions_m": null,
-        "uam_route_ids": [],
-        "reh_resource_ids": [
-          "REH-209",
-          "REH-210"
-        ],
-        "uam_route_labels": [],
-        "reh_labels": [
-          "FERNÃO - trecho 1",
-          "FERNÃO - trecho 2"
-        ],
-        "status": "geometry_only_pending_recomputation",
-        "method": "explicit_named_export_position",
-        "name_group_id": "REH:DUTRA",
-        "name_position_count": 1,
-        "name_position_ids": [
-          "REH-WP-fbcb58547c32479cce35"
-        ],
-        "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
-        "capacity_eligible": true,
-        "selection_reasons": [],
-        "selection_rule": "explicit_named_reh_fix",
-        "name_all_position_count": 1,
-        "source": {
-          "file": "CV_REH_XP_SAO_PAULO.xml",
-          "sha256": "2e11d7bd59fafa426444132d2911ffae2b097de54da11e489bb48656fd59ef3b"
-        }
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -46.5594444399999,
-          -23.49833333
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
         "resource_id": "REH-WP-628d71b50ec457c650a1",
         "label": "Elevado Aricanduva",
         "node_name": "Elevado Aricanduva",
@@ -1220,7 +353,7 @@
         "normalized_name": "ELEVADO_ARICANDUVA",
         "network": "REH",
         "criterion": "reh_named_waypoint",
-        "network_degree": null,
+        "network_degree": 4,
         "altitude_m": null,
         "vertical_intervals_m": [
           [
@@ -1251,10 +384,10 @@
           "REH-WP-628d71b50ec457c650a1"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "capacity_eligible": true,
         "selection_reasons": [],
-        "selection_rule": "explicit_named_reh_fix",
+        "selection_rule": "reh_degree_at_least_3_distinct_undirected_edges_round6",
         "name_all_position_count": 1,
         "source": {
           "file": "CV_REH_XP_SAO_PAULO.xml",
@@ -1281,7 +414,7 @@
         "normalized_name": "EMPRESARIAL",
         "network": "REH",
         "criterion": "reh_named_waypoint",
-        "network_degree": null,
+        "network_degree": 4,
         "altitude_m": null,
         "vertical_intervals_m": [
           [
@@ -1321,10 +454,10 @@
           "REH-WP-35dc8b69267f1a54e986"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "capacity_eligible": true,
         "selection_reasons": [],
-        "selection_rule": "explicit_named_reh_fix",
+        "selection_rule": "reh_degree_at_least_3_distinct_undirected_edges_round6",
         "name_all_position_count": 1,
         "source": {
           "file": "CV_REH_XP_SAO_PAULO.xml",
@@ -1351,7 +484,7 @@
         "normalized_name": "ENTRONCAMENTO",
         "network": "REH",
         "criterion": "reh_named_waypoint",
-        "network_degree": null,
+        "network_degree": 3,
         "altitude_m": null,
         "vertical_intervals_m": [
           [
@@ -1381,10 +514,10 @@
           "REH-WP-4dfa6bb48391f8a301a1"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "capacity_eligible": true,
         "selection_reasons": [],
-        "selection_rule": "explicit_named_reh_fix",
+        "selection_rule": "reh_degree_at_least_3_distinct_undirected_edges_round6",
         "name_all_position_count": 1,
         "source": {
           "file": "CV_REH_XP_SAO_PAULO.xml",
@@ -1402,68 +535,6 @@
     {
       "type": "Feature",
       "properties": {
-        "resource_id": "REH-WP-aa39ab52732de97b7cee",
-        "label": "Estação",
-        "node_name": "Estação",
-        "original_names": [
-          "Estação"
-        ],
-        "normalized_name": "ESTACAO",
-        "network": "REH",
-        "criterion": "reh_named_waypoint",
-        "network_degree": null,
-        "altitude_m": null,
-        "vertical_intervals_m": [
-          [
-            914.4000000000001,
-            914.4000000000001
-          ],
-          [
-            944.88,
-            944.88
-          ]
-        ],
-        "altitude_status": "known_envelopes",
-        "dimensions_m": null,
-        "uam_route_ids": [],
-        "reh_resource_ids": [
-          "REH-125",
-          "REH-214"
-        ],
-        "uam_route_labels": [],
-        "reh_labels": [
-          "JUNDIAÍ - trecho 2",
-          "JUNDIAÍ - trecho 3"
-        ],
-        "status": "geometry_only_pending_recomputation",
-        "method": "explicit_named_export_position",
-        "name_group_id": "REH:ESTACAO",
-        "name_position_count": 1,
-        "name_position_ids": [
-          "REH-WP-aa39ab52732de97b7cee"
-        ],
-        "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
-        "capacity_eligible": true,
-        "selection_reasons": [],
-        "selection_rule": "explicit_named_reh_fix",
-        "name_all_position_count": 1,
-        "source": {
-          "file": "CV_REH_XP_SAO_PAULO.xml",
-          "sha256": "2e11d7bd59fafa426444132d2911ffae2b097de54da11e489bb48656fd59ef3b"
-        }
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -46.87222222,
-          -23.1949999999999
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
         "resource_id": "REH-WP-89464b9dd40b5b0f553a",
         "label": "Estação Saladino",
         "node_name": "Estação Saladino",
@@ -1473,7 +544,7 @@
         "normalized_name": "ESTACAO_SALADINO",
         "network": "REH",
         "criterion": "reh_named_waypoint",
-        "network_degree": null,
+        "network_degree": 3,
         "altitude_m": null,
         "vertical_intervals_m": [
           [
@@ -1507,10 +578,10 @@
           "REH-WP-89464b9dd40b5b0f553a"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "capacity_eligible": true,
         "selection_reasons": [],
-        "selection_rule": "explicit_named_reh_fix",
+        "selection_rule": "reh_degree_at_least_3_distinct_undirected_edges_round6",
         "name_all_position_count": 1,
         "source": {
           "file": "CV_REH_XP_SAO_PAULO.xml",
@@ -1528,68 +599,6 @@
     {
       "type": "Feature",
       "properties": {
-        "resource_id": "REH-WP-aee1667c829507d6b32d",
-        "label": "Extra Cotia",
-        "node_name": "Extra Cotia",
-        "original_names": [
-          "Extra Cotia"
-        ],
-        "normalized_name": "EXTRA_COTIA",
-        "network": "REH",
-        "criterion": "reh_named_waypoint",
-        "network_degree": null,
-        "altitude_m": null,
-        "vertical_intervals_m": [
-          [
-            1036.3200000000002,
-            1097.28
-          ],
-          [
-            1097.28,
-            1097.28
-          ]
-        ],
-        "altitude_status": "known_envelopes",
-        "dimensions_m": null,
-        "uam_route_ids": [],
-        "reh_resource_ids": [
-          "REH-154",
-          "REH-155"
-        ],
-        "uam_route_labels": [],
-        "reh_labels": [
-          "RAPOSO - trecho 10",
-          "RAPOSO - trecho 11"
-        ],
-        "status": "geometry_only_pending_recomputation",
-        "method": "explicit_named_export_position",
-        "name_group_id": "REH:EXTRA_COTIA",
-        "name_position_count": 1,
-        "name_position_ids": [
-          "REH-WP-aee1667c829507d6b32d"
-        ],
-        "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
-        "capacity_eligible": true,
-        "selection_reasons": [],
-        "selection_rule": "explicit_named_reh_fix",
-        "name_all_position_count": 1,
-        "source": {
-          "file": "CV_REH_XP_SAO_PAULO.xml",
-          "sha256": "2e11d7bd59fafa426444132d2911ffae2b097de54da11e489bb48656fd59ef3b"
-        }
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -46.9125,
-          -23.6025
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
         "resource_id": "REH-WP-48906d9bf2ea5890c352",
         "label": "Extra Jaguaré",
         "node_name": "Extra Jaguaré",
@@ -1599,7 +608,7 @@
         "normalized_name": "EXTRA_JAGUARE",
         "network": "REH",
         "criterion": "reh_named_waypoint",
-        "network_degree": null,
+        "network_degree": 3,
         "altitude_m": null,
         "vertical_intervals_m": [
           [
@@ -1633,10 +642,10 @@
           "REH-WP-48906d9bf2ea5890c352"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "capacity_eligible": true,
         "selection_reasons": [],
-        "selection_rule": "explicit_named_reh_fix",
+        "selection_rule": "reh_degree_at_least_3_distinct_undirected_edges_round6",
         "name_all_position_count": 1,
         "source": {
           "file": "CV_REH_XP_SAO_PAULO.xml",
@@ -1663,7 +672,7 @@
         "normalized_name": "EXTRA_TABOAO",
         "network": "REH",
         "criterion": "reh_named_waypoint",
-        "network_degree": null,
+        "network_degree": 4,
         "altitude_m": null,
         "vertical_intervals_m": [
           [
@@ -1695,10 +704,10 @@
           "REH-WP-6f6c7b559524993da7eb"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "capacity_eligible": true,
         "selection_reasons": [],
-        "selection_rule": "explicit_named_reh_fix",
+        "selection_rule": "reh_degree_at_least_3_distinct_undirected_edges_round6",
         "name_all_position_count": 1,
         "source": {
           "file": "CV_REH_XP_SAO_PAULO.xml",
@@ -1716,68 +725,6 @@
     {
       "type": "Feature",
       "properties": {
-        "resource_id": "REH-WP-e8cbef3c0005e202a033",
-        "label": "Fábrica Ferraz",
-        "node_name": "Fábrica Ferraz",
-        "original_names": [
-          "Fábrica Ferraz"
-        ],
-        "normalized_name": "FABRICA_FERRAZ",
-        "network": "REH",
-        "criterion": "reh_named_waypoint",
-        "network_degree": null,
-        "altitude_m": null,
-        "vertical_intervals_m": [
-          [
-            1005.84,
-            1005.84
-          ],
-          [
-            1036.3200000000002,
-            1036.3200000000002
-          ]
-        ],
-        "altitude_status": "known_envelopes",
-        "dimensions_m": null,
-        "uam_route_ids": [],
-        "reh_resource_ids": [
-          "REH-133",
-          "REH-134"
-        ],
-        "uam_route_labels": [],
-        "reh_labels": [
-          "SUZANO - trecho 1",
-          "SUZANO - trecho 2"
-        ],
-        "status": "geometry_only_pending_recomputation",
-        "method": "explicit_named_export_position",
-        "name_group_id": "REH:FABRICA_FERRAZ",
-        "name_position_count": 1,
-        "name_position_ids": [
-          "REH-WP-e8cbef3c0005e202a033"
-        ],
-        "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
-        "capacity_eligible": true,
-        "selection_reasons": [],
-        "selection_rule": "explicit_named_reh_fix",
-        "name_all_position_count": 1,
-        "source": {
-          "file": "CV_REH_XP_SAO_PAULO.xml",
-          "sha256": "2e11d7bd59fafa426444132d2911ffae2b097de54da11e489bb48656fd59ef3b"
-        }
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -46.3899999999999,
-          -23.53861111
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
         "resource_id": "REH-WP-7540e1c56ff4b440392d",
         "label": "Gm",
         "node_name": "Gm",
@@ -1787,7 +734,7 @@
         "normalized_name": "GM",
         "network": "REH",
         "criterion": "reh_named_waypoint",
-        "network_degree": null,
+        "network_degree": 3,
         "altitude_m": null,
         "vertical_intervals_m": [
           [
@@ -1821,10 +768,10 @@
           "REH-WP-7540e1c56ff4b440392d"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "capacity_eligible": true,
         "selection_reasons": [],
-        "selection_rule": "explicit_named_reh_fix",
+        "selection_rule": "reh_degree_at_least_3_distinct_undirected_edges_round6",
         "name_all_position_count": 1,
         "source": {
           "file": "CV_REH_XP_SAO_PAULO.xml",
@@ -1842,532 +789,6 @@
     {
       "type": "Feature",
       "properties": {
-        "resource_id": "REH-WP-5dfbe85d02cf7c8213c5",
-        "label": "Granja Julieta",
-        "node_name": "Granja Julieta",
-        "original_names": [
-          "Granja Julieta"
-        ],
-        "normalized_name": "GRANJA_JULIETA",
-        "network": "REH",
-        "criterion": "reh_named_waypoint",
-        "network_degree": null,
-        "altitude_m": null,
-        "vertical_intervals_m": [
-          [
-            1005.84,
-            1005.84
-          ]
-        ],
-        "altitude_status": "known_envelopes",
-        "dimensions_m": null,
-        "uam_route_ids": [],
-        "reh_resource_ids": [
-          "REH-205",
-          "REH-206"
-        ],
-        "uam_route_labels": [],
-        "reh_labels": [
-          "PINHEIROS - trecho 3",
-          "PINHEIROS - trecho 4"
-        ],
-        "status": "geometry_only_pending_recomputation",
-        "method": "explicit_named_export_position",
-        "name_group_id": "REH:GRANJA_JULIETA",
-        "name_position_count": 1,
-        "name_position_ids": [
-          "REH-WP-5dfbe85d02cf7c8213c5"
-        ],
-        "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
-        "capacity_eligible": true,
-        "selection_reasons": [],
-        "selection_rule": "explicit_named_reh_fix",
-        "name_all_position_count": 1,
-        "source": {
-          "file": "CV_REH_XP_SAO_PAULO.xml",
-          "sha256": "2e11d7bd59fafa426444132d2911ffae2b097de54da11e489bb48656fd59ef3b"
-        }
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -46.71194444,
-          -23.6269444399999
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "resource_id": "REH-WP-99ec71cd03ddf9a6923f",
-        "label": "Honda",
-        "node_name": "Honda",
-        "original_names": [
-          "Honda"
-        ],
-        "normalized_name": "HONDA",
-        "network": "REH",
-        "criterion": "reh_named_waypoint",
-        "network_degree": null,
-        "altitude_m": null,
-        "vertical_intervals_m": [
-          [
-            914.4000000000001,
-            914.4000000000001
-          ]
-        ],
-        "altitude_status": "known_envelopes",
-        "dimensions_m": null,
-        "uam_route_ids": [],
-        "reh_resource_ids": [
-          "REH-161",
-          "REH-162"
-        ],
-        "uam_route_labels": [],
-        "reh_labels": [
-          "ANHANGUERA NORTE - trecho 1",
-          "ANHANGUERA NORTE - trecho 2"
-        ],
-        "status": "geometry_only_pending_recomputation",
-        "method": "explicit_named_export_position",
-        "name_group_id": "REH:HONDA",
-        "name_position_count": 1,
-        "name_position_ids": [
-          "REH-WP-99ec71cd03ddf9a6923f"
-        ],
-        "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
-        "capacity_eligible": true,
-        "selection_reasons": [],
-        "selection_rule": "explicit_named_reh_fix",
-        "name_all_position_count": 1,
-        "source": {
-          "file": "CV_REH_XP_SAO_PAULO.xml",
-          "sha256": "2e11d7bd59fafa426444132d2911ffae2b097de54da11e489bb48656fd59ef3b"
-        }
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -47.19638889,
-          -22.82083333
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "resource_id": "REH-WP-f5ed431ed05630c1211c",
-        "label": "Hospital",
-        "node_name": "Hospital",
-        "original_names": [
-          "Hospital"
-        ],
-        "normalized_name": "HOSPITAL",
-        "network": "REH",
-        "criterion": "reh_named_waypoint",
-        "network_degree": null,
-        "altitude_m": null,
-        "vertical_intervals_m": [
-          [
-            762.0,
-            762.0
-          ]
-        ],
-        "altitude_status": "known_envelopes",
-        "dimensions_m": null,
-        "uam_route_ids": [],
-        "reh_resource_ids": [
-          "REH-146",
-          "REH-147"
-        ],
-        "uam_route_labels": [],
-        "reh_labels": [
-          "RAPOSO - trecho 1",
-          "RAPOSO - trecho 2"
-        ],
-        "status": "geometry_only_pending_recomputation",
-        "method": "explicit_named_export_position",
-        "name_group_id": "REH:HOSPITAL",
-        "name_position_count": 1,
-        "name_position_ids": [
-          "REH-WP-f5ed431ed05630c1211c"
-        ],
-        "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
-        "capacity_eligible": true,
-        "selection_reasons": [],
-        "selection_rule": "explicit_named_reh_fix",
-        "name_all_position_count": 1,
-        "source": {
-          "file": "CV_REH_XP_SAO_PAULO.xml",
-          "sha256": "2e11d7bd59fafa426444132d2911ffae2b097de54da11e489bb48656fd59ef3b"
-        }
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -47.51944444,
-          -23.52583333
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "resource_id": "REH-WP-170efc3afcde6175c673",
-        "label": "Igaratá",
-        "node_name": "Igaratá",
-        "original_names": [
-          "Igaratá"
-        ],
-        "normalized_name": "IGARATA",
-        "network": "REH",
-        "criterion": "reh_named_waypoint",
-        "network_degree": null,
-        "altitude_m": null,
-        "vertical_intervals_m": [
-          [
-            975.36,
-            975.36
-          ],
-          [
-            1036.3200000000002,
-            1066.8
-          ]
-        ],
-        "altitude_status": "known_envelopes",
-        "dimensions_m": null,
-        "uam_route_ids": [],
-        "reh_resource_ids": [
-          "REH-118",
-          "REH-119"
-        ],
-        "uam_route_labels": [],
-        "reh_labels": [
-          "CAMPOS - trecho 3",
-          "CAMPOS - trecho 4"
-        ],
-        "status": "geometry_only_pending_recomputation",
-        "method": "explicit_named_export_position",
-        "name_group_id": "REH:IGARATA",
-        "name_position_count": 1,
-        "name_position_ids": [
-          "REH-WP-170efc3afcde6175c673"
-        ],
-        "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
-        "capacity_eligible": true,
-        "selection_reasons": [],
-        "selection_rule": "explicit_named_reh_fix",
-        "name_all_position_count": 1,
-        "source": {
-          "file": "CV_REH_XP_SAO_PAULO.xml",
-          "sha256": "2e11d7bd59fafa426444132d2911ffae2b097de54da11e489bb48656fd59ef3b"
-        }
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -46.1591666699999,
-          -23.20583333
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "resource_id": "REH-WP-a02d13d8f1efe1a60eb2",
-        "label": "Imperial",
-        "node_name": "Imperial",
-        "original_names": [
-          "Imperial"
-        ],
-        "normalized_name": "IMPERIAL",
-        "network": "REH",
-        "criterion": "reh_named_waypoint",
-        "network_degree": null,
-        "altitude_m": null,
-        "vertical_intervals_m": [
-          [
-            975.36,
-            975.36
-          ]
-        ],
-        "altitude_status": "known_envelopes",
-        "dimensions_m": null,
-        "uam_route_ids": [],
-        "reh_resource_ids": [
-          "REH-136"
-        ],
-        "uam_route_labels": [],
-        "reh_labels": [
-          "RODOANEL - trecho 5"
-        ],
-        "status": "geometry_only_pending_recomputation",
-        "method": "explicit_named_export_position",
-        "name_group_id": "REH:IMPERIAL",
-        "name_position_count": 1,
-        "name_position_ids": [
-          "REH-WP-a02d13d8f1efe1a60eb2"
-        ],
-        "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
-        "capacity_eligible": true,
-        "selection_reasons": [],
-        "selection_rule": "explicit_named_reh_fix",
-        "name_all_position_count": 1,
-        "source": {
-          "file": "CV_REH_XP_SAO_PAULO.xml",
-          "sha256": "2e11d7bd59fafa426444132d2911ffae2b097de54da11e489bb48656fd59ef3b"
-        }
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -46.80722222,
-          -23.4894444399999
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "resource_id": "REH-WP-4507b8b0ae594dcbf2aa",
-        "label": "Itaquera",
-        "node_name": "Itaquera",
-        "original_names": [
-          "Itaquera"
-        ],
-        "normalized_name": "ITAQUERA",
-        "network": "REH",
-        "criterion": "reh_named_waypoint",
-        "network_degree": null,
-        "altitude_m": null,
-        "vertical_intervals_m": [
-          [
-            944.88,
-            944.88
-          ],
-          [
-            1005.84,
-            1005.84
-          ]
-        ],
-        "altitude_status": "known_envelopes",
-        "dimensions_m": null,
-        "uam_route_ids": [],
-        "reh_resource_ids": [
-          "REH-133",
-          "REH-170"
-        ],
-        "uam_route_labels": [],
-        "reh_labels": [
-          "RADIAL - trecho 3",
-          "SUZANO - trecho 1"
-        ],
-        "status": "geometry_only_pending_recomputation",
-        "method": "explicit_named_export_position",
-        "name_group_id": "REH:ITAQUERA",
-        "name_position_count": 1,
-        "name_position_ids": [
-          "REH-WP-4507b8b0ae594dcbf2aa"
-        ],
-        "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
-        "capacity_eligible": true,
-        "selection_reasons": [],
-        "selection_rule": "explicit_named_reh_fix",
-        "name_all_position_count": 1,
-        "source": {
-          "file": "CV_REH_XP_SAO_PAULO.xml",
-          "sha256": "2e11d7bd59fafa426444132d2911ffae2b097de54da11e489bb48656fd59ef3b"
-        }
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -46.46555556,
-          -23.5422222199999
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "resource_id": "REH-WP-7c15f8aaf3f9150f62e2",
-        "label": "Itaú Cto",
-        "node_name": "Itaú Cto",
-        "original_names": [
-          "Itaú Cto"
-        ],
-        "normalized_name": "ITAU_CTO",
-        "network": "REH",
-        "criterion": "reh_named_waypoint",
-        "network_degree": null,
-        "altitude_m": null,
-        "vertical_intervals_m": [
-          [
-            1005.84,
-            1036.3200000000002
-          ]
-        ],
-        "altitude_status": "known_envelopes",
-        "dimensions_m": null,
-        "uam_route_ids": [],
-        "reh_resource_ids": [
-          "REH-112",
-          "REH-113"
-        ],
-        "uam_route_labels": [],
-        "reh_labels": [
-          "ACLIMAÇÃO - trecho 3",
-          "ACLIMAÇÃO - trecho 4"
-        ],
-        "status": "geometry_only_pending_recomputation",
-        "method": "explicit_named_export_position",
-        "name_group_id": "REH:ITAU_CTO",
-        "name_position_count": 1,
-        "name_position_ids": [
-          "REH-WP-7c15f8aaf3f9150f62e2"
-        ],
-        "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
-        "capacity_eligible": true,
-        "selection_reasons": [],
-        "selection_rule": "explicit_named_reh_fix",
-        "name_all_position_count": 1,
-        "source": {
-          "file": "CV_REH_XP_SAO_PAULO.xml",
-          "sha256": "2e11d7bd59fafa426444132d2911ffae2b097de54da11e489bb48656fd59ef3b"
-        }
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -46.61555556,
-          -23.55777778
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "resource_id": "REH-WP-55b7e0eb4b69846eb7f0",
-        "label": "Jaraguá",
-        "node_name": "Jaraguá",
-        "original_names": [
-          "Jaraguá"
-        ],
-        "normalized_name": "JARAGUA",
-        "network": "REH",
-        "criterion": "reh_named_waypoint",
-        "network_degree": null,
-        "altitude_m": null,
-        "vertical_intervals_m": [
-          [
-            1036.3200000000002,
-            1066.8
-          ]
-        ],
-        "altitude_status": "known_envelopes",
-        "dimensions_m": null,
-        "uam_route_ids": [],
-        "reh_resource_ids": [
-          "REH-163",
-          "REH-164"
-        ],
-        "uam_route_labels": [],
-        "reh_labels": [
-          "ANHANGUERA SUL - trecho 2",
-          "ANHANGUERA SUL - trecho 3"
-        ],
-        "status": "geometry_only_pending_recomputation",
-        "method": "explicit_named_export_position",
-        "name_group_id": "REH:JARAGUA",
-        "name_position_count": 1,
-        "name_position_ids": [
-          "REH-WP-55b7e0eb4b69846eb7f0"
-        ],
-        "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
-        "capacity_eligible": true,
-        "selection_reasons": [],
-        "selection_rule": "explicit_named_reh_fix",
-        "name_all_position_count": 1,
-        "source": {
-          "file": "CV_REH_XP_SAO_PAULO.xml",
-          "sha256": "2e11d7bd59fafa426444132d2911ffae2b097de54da11e489bb48656fd59ef3b"
-        }
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -46.78694444,
-          -23.45194444
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "resource_id": "REH-WP-1a1fa0f7a73d600c9224",
-        "label": "Jundiapeba",
-        "node_name": "Jundiapeba",
-        "original_names": [
-          "Jundiapeba"
-        ],
-        "normalized_name": "JUNDIAPEBA",
-        "network": "REH",
-        "criterion": "reh_named_waypoint",
-        "network_degree": null,
-        "altitude_m": null,
-        "vertical_intervals_m": [
-          [
-            944.88,
-            1036.3200000000002
-          ]
-        ],
-        "altitude_status": "known_envelopes",
-        "dimensions_m": null,
-        "uam_route_ids": [],
-        "reh_resource_ids": [
-          "REH-169"
-        ],
-        "uam_route_labels": [],
-        "reh_labels": [
-          "SUZANO - trecho 3"
-        ],
-        "status": "geometry_only_pending_recomputation",
-        "method": "explicit_named_export_position",
-        "name_group_id": "REH:JUNDIAPEBA",
-        "name_position_count": 1,
-        "name_position_ids": [
-          "REH-WP-1a1fa0f7a73d600c9224"
-        ],
-        "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
-        "capacity_eligible": true,
-        "selection_reasons": [],
-        "selection_rule": "explicit_named_reh_fix",
-        "name_all_position_count": 1,
-        "source": {
-          "file": "CV_REH_XP_SAO_PAULO.xml",
-          "sha256": "2e11d7bd59fafa426444132d2911ffae2b097de54da11e489bb48656fd59ef3b"
-        }
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -46.25833333,
-          -23.5427777799999
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
         "resource_id": "REH-WP-ccd3273b6b1ef9335a16",
         "label": "Kentinha",
         "node_name": "Kentinha",
@@ -2377,7 +798,7 @@
         "normalized_name": "KENTINHA",
         "network": "REH",
         "criterion": "reh_named_waypoint",
-        "network_degree": null,
+        "network_degree": 3,
         "altitude_m": null,
         "vertical_intervals_m": [
           [
@@ -2411,10 +832,10 @@
           "REH-WP-ccd3273b6b1ef9335a16"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "capacity_eligible": true,
         "selection_reasons": [],
-        "selection_rule": "explicit_named_reh_fix",
+        "selection_rule": "reh_degree_at_least_3_distinct_undirected_edges_round6",
         "name_all_position_count": 1,
         "source": {
           "file": "CV_REH_XP_SAO_PAULO.xml",
@@ -2432,120 +853,6 @@
     {
       "type": "Feature",
       "properties": {
-        "resource_id": "REH-WP-fd607ae4fd08f7d98833",
-        "label": "Lobato",
-        "node_name": "Lobato",
-        "original_names": [
-          "Lobato"
-        ],
-        "normalized_name": "LOBATO",
-        "network": "REH",
-        "criterion": "reh_named_waypoint",
-        "network_degree": null,
-        "altitude_m": null,
-        "vertical_intervals_m": [
-          [
-            975.36,
-            975.36
-          ]
-        ],
-        "altitude_status": "known_envelopes",
-        "dimensions_m": null,
-        "uam_route_ids": [],
-        "reh_resource_ids": [
-          "REH-168"
-        ],
-        "uam_route_labels": [],
-        "reh_labels": [
-          "CAMPOS - trecho 5"
-        ],
-        "status": "geometry_only_pending_recomputation",
-        "method": "explicit_named_export_position",
-        "name_group_id": "REH:LOBATO",
-        "name_position_count": 1,
-        "name_position_ids": [
-          "REH-WP-fd607ae4fd08f7d98833"
-        ],
-        "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
-        "capacity_eligible": true,
-        "selection_reasons": [],
-        "selection_rule": "explicit_named_reh_fix",
-        "name_all_position_count": 1,
-        "source": {
-          "file": "CV_REH_XP_SAO_PAULO.xml",
-          "sha256": "2e11d7bd59fafa426444132d2911ffae2b097de54da11e489bb48656fd59ef3b"
-        }
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -45.8386111099999,
-          -22.95527778
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "resource_id": "REH-WP-1246ed72ae12f58ba4a7",
-        "label": "Louveira",
-        "node_name": "Louveira",
-        "original_names": [
-          "Louveira"
-        ],
-        "normalized_name": "LOUVEIRA",
-        "network": "REH",
-        "criterion": "reh_named_waypoint",
-        "network_degree": null,
-        "altitude_m": null,
-        "vertical_intervals_m": [
-          [
-            914.4000000000001,
-            914.4000000000001
-          ]
-        ],
-        "altitude_status": "known_envelopes",
-        "dimensions_m": null,
-        "uam_route_ids": [],
-        "reh_resource_ids": [
-          "REH-215",
-          "REH-216"
-        ],
-        "uam_route_labels": [],
-        "reh_labels": [
-          "JUNDIAÍ - trecho 4",
-          "JUNDIAÍ - trecho 5"
-        ],
-        "status": "geometry_only_pending_recomputation",
-        "method": "explicit_named_export_position",
-        "name_group_id": "REH:LOUVEIRA",
-        "name_position_count": 1,
-        "name_position_ids": [
-          "REH-WP-1246ed72ae12f58ba4a7"
-        ],
-        "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
-        "capacity_eligible": true,
-        "selection_reasons": [],
-        "selection_rule": "explicit_named_reh_fix",
-        "name_all_position_count": 1,
-        "source": {
-          "file": "CV_REH_XP_SAO_PAULO.xml",
-          "sha256": "2e11d7bd59fafa426444132d2911ffae2b097de54da11e489bb48656fd59ef3b"
-        }
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -46.949651444,
-          -23.089960102
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
         "resource_id": "REH-WP-296c939e855352e08f82",
         "label": "Luz",
         "node_name": "Luz",
@@ -2555,7 +862,7 @@
         "normalized_name": "LUZ",
         "network": "REH",
         "criterion": "reh_named_waypoint",
-        "network_degree": null,
+        "network_degree": 3,
         "altitude_m": null,
         "vertical_intervals_m": [],
         "altitude_status": "unknown_or_invalid_envelope",
@@ -2580,10 +887,10 @@
           "REH-WP-296c939e855352e08f82"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "capacity_eligible": true,
         "selection_reasons": [],
-        "selection_rule": "explicit_named_reh_fix",
+        "selection_rule": "reh_degree_at_least_3_distinct_undirected_edges_round6",
         "name_all_position_count": 1,
         "source": {
           "file": "CV_REH_XP_SAO_PAULO.xml",
@@ -2610,7 +917,7 @@
         "normalized_name": "MAILASQUI",
         "network": "REH",
         "criterion": "reh_named_waypoint",
-        "network_degree": null,
+        "network_degree": 3,
         "altitude_m": null,
         "vertical_intervals_m": [],
         "altitude_status": "unknown_or_invalid_envelope",
@@ -2635,10 +942,10 @@
           "REH-WP-0e1b8b2bef089bd90e4e"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "capacity_eligible": true,
         "selection_reasons": [],
-        "selection_rule": "explicit_named_reh_fix",
+        "selection_rule": "reh_degree_at_least_3_distinct_undirected_edges_round6",
         "name_all_position_count": 1,
         "source": {
           "file": "CV_REH_XP_SAO_PAULO.xml",
@@ -2656,186 +963,6 @@
     {
       "type": "Feature",
       "properties": {
-        "resource_id": "REH-WP-00778407a844ada104cb",
-        "label": "Mairinque",
-        "node_name": "Mairinque",
-        "original_names": [
-          "Mairinque"
-        ],
-        "normalized_name": "MAIRINQUE",
-        "network": "REH",
-        "criterion": "reh_named_waypoint",
-        "network_degree": null,
-        "altitude_m": null,
-        "vertical_intervals_m": [
-          [
-            1036.3200000000002,
-            1036.3200000000002
-          ],
-          [
-            1097.28,
-            1097.28
-          ]
-        ],
-        "altitude_status": "known_envelopes",
-        "dimensions_m": null,
-        "uam_route_ids": [],
-        "reh_resource_ids": [
-          "REH-151",
-          "REH-152"
-        ],
-        "uam_route_labels": [],
-        "reh_labels": [
-          "RAPOSO - trecho 6",
-          "RAPOSO - trecho 7"
-        ],
-        "status": "geometry_only_pending_recomputation",
-        "method": "explicit_named_export_position",
-        "name_group_id": "REH:MAIRINQUE",
-        "name_position_count": 1,
-        "name_position_ids": [
-          "REH-WP-00778407a844ada104cb"
-        ],
-        "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
-        "capacity_eligible": true,
-        "selection_reasons": [],
-        "selection_rule": "explicit_named_reh_fix",
-        "name_all_position_count": 1,
-        "source": {
-          "file": "CV_REH_XP_SAO_PAULO.xml",
-          "sha256": "2e11d7bd59fafa426444132d2911ffae2b097de54da11e489bb48656fd59ef3b"
-        }
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -47.18861111,
-          -23.53638889
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "resource_id": "REH-WP-5c6baf721ec8ed32fcb9",
-        "label": "Mairiporã",
-        "node_name": "Mairiporã",
-        "original_names": [
-          "Mairiporã"
-        ],
-        "normalized_name": "MAIRIPORA",
-        "network": "REH",
-        "criterion": "reh_named_waypoint",
-        "network_degree": null,
-        "altitude_m": null,
-        "vertical_intervals_m": [
-          [
-            1249.68,
-            1371.6000000000001
-          ]
-        ],
-        "altitude_status": "known_envelopes",
-        "dimensions_m": null,
-        "uam_route_ids": [],
-        "reh_resource_ids": [
-          "REH-172"
-        ],
-        "uam_route_labels": [],
-        "reh_labels": [
-          "FERNÃO - trecho 6"
-        ],
-        "status": "geometry_only_pending_recomputation",
-        "method": "explicit_named_export_position",
-        "name_group_id": "REH:MAIRIPORA",
-        "name_position_count": 1,
-        "name_position_ids": [
-          "REH-WP-5c6baf721ec8ed32fcb9"
-        ],
-        "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
-        "capacity_eligible": true,
-        "selection_reasons": [],
-        "selection_rule": "explicit_named_reh_fix",
-        "name_all_position_count": 1,
-        "source": {
-          "file": "CV_REH_XP_SAO_PAULO.xml",
-          "sha256": "2e11d7bd59fafa426444132d2911ffae2b097de54da11e489bb48656fd59ef3b"
-        }
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -46.5825,
-          -23.3199999999999
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "resource_id": "REH-WP-5de1862a259a3daa67f8",
-        "label": "Makro",
-        "node_name": "Makro",
-        "original_names": [
-          "Makro"
-        ],
-        "normalized_name": "MAKRO",
-        "network": "REH",
-        "criterion": "reh_named_waypoint",
-        "network_degree": null,
-        "altitude_m": null,
-        "vertical_intervals_m": [
-          [
-            762.0,
-            762.0
-          ],
-          [
-            822.96,
-            822.96
-          ]
-        ],
-        "altitude_status": "known_envelopes",
-        "dimensions_m": null,
-        "uam_route_ids": [],
-        "reh_resource_ids": [
-          "REH-147",
-          "REH-148"
-        ],
-        "uam_route_labels": [],
-        "reh_labels": [
-          "RAPOSO - trecho 2",
-          "RAPOSO - trecho 3"
-        ],
-        "status": "geometry_only_pending_recomputation",
-        "method": "explicit_named_export_position",
-        "name_group_id": "REH:MAKRO",
-        "name_position_count": 1,
-        "name_position_ids": [
-          "REH-WP-5de1862a259a3daa67f8"
-        ],
-        "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
-        "capacity_eligible": true,
-        "selection_reasons": [],
-        "selection_rule": "explicit_named_reh_fix",
-        "name_all_position_count": 1,
-        "source": {
-          "file": "CV_REH_XP_SAO_PAULO.xml",
-          "sha256": "2e11d7bd59fafa426444132d2911ffae2b097de54da11e489bb48656fd59ef3b"
-        }
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -47.50305556,
-          -23.5358333299999
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
         "resource_id": "REH-WP-f14e24ca9367ab00e492",
         "label": "Marco Zero",
         "node_name": "Marco Zero",
@@ -2845,7 +972,7 @@
         "normalized_name": "MARCO_ZERO",
         "network": "REH",
         "criterion": "reh_named_waypoint",
-        "network_degree": null,
+        "network_degree": 3,
         "altitude_m": null,
         "vertical_intervals_m": [
           [
@@ -2879,10 +1006,10 @@
           "REH-WP-f14e24ca9367ab00e492"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "capacity_eligible": true,
         "selection_reasons": [],
-        "selection_rule": "explicit_named_reh_fix",
+        "selection_rule": "reh_degree_at_least_3_distinct_undirected_edges_round6",
         "name_all_position_count": 1,
         "source": {
           "file": "CV_REH_XP_SAO_PAULO.xml",
@@ -2900,62 +1027,6 @@
     {
       "type": "Feature",
       "properties": {
-        "resource_id": "REH-WP-739e723eadb4b4b6f65d",
-        "label": "Maria Maluf",
-        "node_name": "Maria Maluf",
-        "original_names": [
-          "Maria Maluf"
-        ],
-        "normalized_name": "MARIA_MALUF",
-        "network": "REH",
-        "criterion": "reh_named_waypoint",
-        "network_degree": null,
-        "altitude_m": null,
-        "vertical_intervals_m": [
-          [
-            1005.84,
-            1005.84
-          ]
-        ],
-        "altitude_status": "known_envelopes",
-        "dimensions_m": null,
-        "uam_route_ids": [],
-        "reh_resource_ids": [
-          "REH-186"
-        ],
-        "uam_route_labels": [],
-        "reh_labels": [
-          "TANCREDO - trecho 2"
-        ],
-        "status": "geometry_only_pending_recomputation",
-        "method": "explicit_named_export_position",
-        "name_group_id": "REH:MARIA_MALUF",
-        "name_position_count": 1,
-        "name_position_ids": [
-          "REH-WP-739e723eadb4b4b6f65d"
-        ],
-        "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
-        "capacity_eligible": true,
-        "selection_reasons": [],
-        "selection_rule": "explicit_named_reh_fix",
-        "name_all_position_count": 1,
-        "source": {
-          "file": "CV_REH_XP_SAO_PAULO.xml",
-          "sha256": "2e11d7bd59fafa426444132d2911ffae2b097de54da11e489bb48656fd59ef3b"
-        }
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -46.62972222,
-          -23.62916667
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
         "resource_id": "REH-WP-6302215216ab38b6780b",
         "label": "Maxxi",
         "node_name": "Maxxi",
@@ -2965,7 +1036,7 @@
         "normalized_name": "MAXXI",
         "network": "REH",
         "criterion": "reh_named_waypoint",
-        "network_degree": null,
+        "network_degree": 3,
         "altitude_m": null,
         "vertical_intervals_m": [
           [
@@ -3003,10 +1074,10 @@
           "REH-WP-6302215216ab38b6780b"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "capacity_eligible": true,
         "selection_reasons": [],
-        "selection_rule": "explicit_named_reh_fix",
+        "selection_rule": "reh_degree_at_least_3_distinct_undirected_edges_round6",
         "name_all_position_count": 1,
         "source": {
           "file": "CV_REH_XP_SAO_PAULO.xml",
@@ -3024,57 +1095,6 @@
     {
       "type": "Feature",
       "properties": {
-        "resource_id": "REH-WP-317a233a2b57cf0d4d3e",
-        "label": "Memorial",
-        "node_name": "Memorial",
-        "original_names": [
-          "Memorial"
-        ],
-        "normalized_name": "MEMORIAL",
-        "network": "REH",
-        "criterion": "reh_named_waypoint",
-        "network_degree": null,
-        "altitude_m": null,
-        "vertical_intervals_m": [],
-        "altitude_status": "unknown_or_invalid_envelope",
-        "dimensions_m": null,
-        "uam_route_ids": [],
-        "reh_resource_ids": [
-          "REH-189"
-        ],
-        "uam_route_labels": [],
-        "reh_labels": [
-          "Portão Memorial - trecho 1"
-        ],
-        "status": "geometry_only_pending_recomputation",
-        "method": "explicit_named_export_position",
-        "name_group_id": "REH:MEMORIAL",
-        "name_position_count": 1,
-        "name_position_ids": [
-          "REH-WP-317a233a2b57cf0d4d3e"
-        ],
-        "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
-        "capacity_eligible": true,
-        "selection_reasons": [],
-        "selection_rule": "explicit_named_reh_fix",
-        "name_all_position_count": 1,
-        "source": {
-          "file": "CV_REH_XP_SAO_PAULO.xml",
-          "sha256": "2e11d7bd59fafa426444132d2911ffae2b097de54da11e489bb48656fd59ef3b"
-        }
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -46.664444444,
-          -23.526666667
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
         "resource_id": "REH-WP-bf48fb48a983c1895c29",
         "label": "Mercedes",
         "node_name": "Mercedes",
@@ -3084,7 +1104,7 @@
         "normalized_name": "MERCEDES",
         "network": "REH",
         "criterion": "reh_named_waypoint",
-        "network_degree": null,
+        "network_degree": 4,
         "altitude_m": null,
         "vertical_intervals_m": [
           [
@@ -3120,10 +1140,10 @@
           "REH-WP-bf48fb48a983c1895c29"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "capacity_eligible": true,
         "selection_reasons": [],
-        "selection_rule": "explicit_named_reh_fix",
+        "selection_rule": "reh_degree_at_least_3_distinct_undirected_edges_round6",
         "name_all_position_count": 1,
         "source": {
           "file": "CV_REH_XP_SAO_PAULO.xml",
@@ -3141,68 +1161,6 @@
     {
       "type": "Feature",
       "properties": {
-        "resource_id": "REH-WP-b19b152399df260eaa23",
-        "label": "Pão de Açúcar",
-        "node_name": "Pão de Açúcar",
-        "original_names": [
-          "Pão de Açúcar"
-        ],
-        "normalized_name": "PAO_DE_ACUCAR",
-        "network": "REH",
-        "criterion": "reh_named_waypoint",
-        "network_degree": null,
-        "altitude_m": null,
-        "vertical_intervals_m": [
-          [
-            975.36,
-            975.36
-          ],
-          [
-            1036.3200000000002,
-            1066.8
-          ]
-        ],
-        "altitude_status": "known_envelopes",
-        "dimensions_m": null,
-        "uam_route_ids": [],
-        "reh_resource_ids": [
-          "REH-164",
-          "REH-165"
-        ],
-        "uam_route_labels": [],
-        "reh_labels": [
-          "ANHANGUERA SUL - trecho 1",
-          "ANHANGUERA SUL - trecho 2"
-        ],
-        "status": "geometry_only_pending_recomputation",
-        "method": "explicit_named_export_position",
-        "name_group_id": "REH:PAO_DE_ACUCAR",
-        "name_position_count": 1,
-        "name_position_ids": [
-          "REH-WP-b19b152399df260eaa23"
-        ],
-        "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
-        "capacity_eligible": true,
-        "selection_reasons": [],
-        "selection_rule": "explicit_named_reh_fix",
-        "name_all_position_count": 1,
-        "source": {
-          "file": "CV_REH_XP_SAO_PAULO.xml",
-          "sha256": "2e11d7bd59fafa426444132d2911ffae2b097de54da11e489bb48656fd59ef3b"
-        }
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -46.76944444,
-          -23.48555556
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
         "resource_id": "REH-WP-03dadcc57139582eb153",
         "label": "Parelheiros",
         "node_name": "Parelheiros",
@@ -3212,7 +1170,7 @@
         "normalized_name": "PARELHEIROS",
         "network": "REH",
         "criterion": "reh_named_waypoint",
-        "network_degree": null,
+        "network_degree": 3,
         "altitude_m": null,
         "vertical_intervals_m": [
           [
@@ -3246,10 +1204,10 @@
           "REH-WP-03dadcc57139582eb153"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "capacity_eligible": true,
         "selection_reasons": [],
-        "selection_rule": "explicit_named_reh_fix",
+        "selection_rule": "reh_degree_at_least_3_distinct_undirected_edges_round6",
         "name_all_position_count": 1,
         "source": {
           "file": "CV_REH_XP_SAO_PAULO.xml",
@@ -3267,465 +1225,6 @@
     {
       "type": "Feature",
       "properties": {
-        "resource_id": "REH-WP-5ba7180f6feeb87a4d58",
-        "label": "Parque Aclimação",
-        "node_name": "Parque Aclimação",
-        "original_names": [
-          "Parque Aclimação"
-        ],
-        "normalized_name": "PARQUE_ACLIMACAO",
-        "network": "REH",
-        "criterion": "reh_named_waypoint",
-        "network_degree": null,
-        "altitude_m": null,
-        "vertical_intervals_m": [
-          [
-            1005.84,
-            1036.3200000000002
-          ]
-        ],
-        "altitude_status": "known_envelopes",
-        "dimensions_m": null,
-        "uam_route_ids": [],
-        "reh_resource_ids": [
-          "REH-112",
-          "REH-196"
-        ],
-        "uam_route_labels": [],
-        "reh_labels": [
-          "ACLIMAÇÃO - trecho 2",
-          "ACLIMAÇÃO - trecho 3"
-        ],
-        "status": "geometry_only_pending_recomputation",
-        "method": "explicit_named_export_position",
-        "name_group_id": "REH:PARQUE_ACLIMACAO",
-        "name_position_count": 1,
-        "name_position_ids": [
-          "REH-WP-5ba7180f6feeb87a4d58"
-        ],
-        "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
-        "capacity_eligible": true,
-        "selection_reasons": [],
-        "selection_rule": "explicit_named_reh_fix",
-        "name_all_position_count": 1,
-        "source": {
-          "file": "CV_REH_XP_SAO_PAULO.xml",
-          "sha256": "2e11d7bd59fafa426444132d2911ffae2b097de54da11e489bb48656fd59ef3b"
-        }
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -46.62861111,
-          -23.57444444
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "resource_id": "REH-WP-41be5224ccba9c216cc7",
-        "label": "Parque do Carmo",
-        "node_name": "Parque do Carmo",
-        "original_names": [
-          "Parque do Carmo"
-        ],
-        "normalized_name": "PARQUE_DO_CARMO",
-        "network": "REH",
-        "criterion": "reh_named_waypoint",
-        "network_degree": null,
-        "altitude_m": null,
-        "vertical_intervals_m": [
-          [
-            944.88,
-            944.88
-          ],
-          [
-            975.36,
-            975.36
-          ]
-        ],
-        "altitude_status": "known_envelopes",
-        "dimensions_m": null,
-        "uam_route_ids": [],
-        "reh_resource_ids": [
-          "REH-115",
-          "REH-174"
-        ],
-        "uam_route_labels": [],
-        "reh_labels": [
-          "ARICANDUVA - trecho 1"
-        ],
-        "status": "geometry_only_pending_recomputation",
-        "method": "explicit_named_export_position",
-        "name_group_id": "REH:PARQUE_DO_CARMO",
-        "name_position_count": 1,
-        "name_position_ids": [
-          "REH-WP-41be5224ccba9c216cc7"
-        ],
-        "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
-        "capacity_eligible": true,
-        "selection_reasons": [],
-        "selection_rule": "explicit_named_reh_fix",
-        "name_all_position_count": 1,
-        "source": {
-          "file": "CV_REH_XP_SAO_PAULO.xml",
-          "sha256": "2e11d7bd59fafa426444132d2911ffae2b097de54da11e489bb48656fd59ef3b"
-        }
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -46.46583333,
-          -23.59444444
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "resource_id": "REH-WP-098d3749e7240912d459",
-        "label": "Pedágio Americana",
-        "node_name": "Pedágio Americana",
-        "original_names": [
-          "Pedágio Americana"
-        ],
-        "normalized_name": "PEDAGIO_AMERICANA",
-        "network": "REH",
-        "criterion": "reh_named_waypoint",
-        "network_degree": null,
-        "altitude_m": null,
-        "vertical_intervals_m": [
-          [
-            914.4000000000001,
-            914.4000000000001
-          ]
-        ],
-        "altitude_status": "known_envelopes",
-        "dimensions_m": null,
-        "uam_route_ids": [],
-        "reh_resource_ids": [
-          "REH-161"
-        ],
-        "uam_route_labels": [],
-        "reh_labels": [
-          "ANHANGUERA NORTE - trecho 2"
-        ],
-        "status": "geometry_only_pending_recomputation",
-        "method": "explicit_named_export_position",
-        "name_group_id": "REH:PEDAGIO_AMERICANA",
-        "name_position_count": 1,
-        "name_position_ids": [
-          "REH-WP-098d3749e7240912d459"
-        ],
-        "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
-        "capacity_eligible": true,
-        "selection_reasons": [],
-        "selection_rule": "explicit_named_reh_fix",
-        "name_all_position_count": 1,
-        "source": {
-          "file": "CV_REH_XP_SAO_PAULO.xml",
-          "sha256": "2e11d7bd59fafa426444132d2911ffae2b097de54da11e489bb48656fd59ef3b"
-        }
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -47.2388888899999,
-          -22.77083333
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "resource_id": "REH-WP-cd27f8a411bdb1ca87be",
-        "label": "Pedágio Anchieta",
-        "node_name": "Pedágio Anchieta",
-        "original_names": [
-          "Pedágio Anchieta"
-        ],
-        "normalized_name": "PEDAGIO_ANCHIETA",
-        "network": "REH",
-        "criterion": "reh_named_waypoint",
-        "network_degree": null,
-        "altitude_m": null,
-        "vertical_intervals_m": [
-          [
-            1005.84,
-            1066.8
-          ]
-        ],
-        "altitude_status": "known_envelopes",
-        "dimensions_m": null,
-        "uam_route_ids": [],
-        "reh_resource_ids": [
-          "REH-145"
-        ],
-        "uam_route_labels": [],
-        "reh_labels": [
-          "ANCHIETA - trecho 3"
-        ],
-        "status": "geometry_only_pending_recomputation",
-        "method": "explicit_named_export_position",
-        "name_group_id": "REH:PEDAGIO_ANCHIETA",
-        "name_position_count": 1,
-        "name_position_ids": [
-          "REH-WP-cd27f8a411bdb1ca87be"
-        ],
-        "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
-        "capacity_eligible": true,
-        "selection_reasons": [],
-        "selection_rule": "explicit_named_reh_fix",
-        "name_all_position_count": 1,
-        "source": {
-          "file": "CV_REH_XP_SAO_PAULO.xml",
-          "sha256": "2e11d7bd59fafa426444132d2911ffae2b097de54da11e489bb48656fd59ef3b"
-        }
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -46.5197222199999,
-          -23.7891666699999
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "resource_id": "REH-WP-61088d519e16ac163dd9",
-        "label": "Pedágio Imigrantes",
-        "node_name": "Pedágio Imigrantes",
-        "original_names": [
-          "Pedágio Imigrantes"
-        ],
-        "normalized_name": "PEDAGIO_IMIGRANTES",
-        "network": "REH",
-        "criterion": "reh_named_waypoint",
-        "network_degree": null,
-        "altitude_m": null,
-        "vertical_intervals_m": [
-          [
-            1036.3200000000002,
-            1097.28
-          ]
-        ],
-        "altitude_status": "known_envelopes",
-        "dimensions_m": null,
-        "uam_route_ids": [],
-        "reh_resource_ids": [
-          "REH-160"
-        ],
-        "uam_route_labels": [],
-        "reh_labels": [
-          "IMIGRANTES - trecho 2"
-        ],
-        "status": "geometry_only_pending_recomputation",
-        "method": "explicit_named_export_position",
-        "name_group_id": "REH:PEDAGIO_IMIGRANTES",
-        "name_position_count": 1,
-        "name_position_ids": [
-          "REH-WP-61088d519e16ac163dd9"
-        ],
-        "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
-        "capacity_eligible": true,
-        "selection_reasons": [],
-        "selection_rule": "explicit_named_reh_fix",
-        "name_all_position_count": 1,
-        "source": {
-          "file": "CV_REH_XP_SAO_PAULO.xml",
-          "sha256": "2e11d7bd59fafa426444132d2911ffae2b097de54da11e489bb48656fd59ef3b"
-        }
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -46.58277778,
-          -23.82083333
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "resource_id": "REH-WP-ec485d89dca5c0e7a9d3",
-        "label": "Pedágio Senna",
-        "node_name": "Pedágio Senna",
-        "original_names": [
-          "Pedágio Senna"
-        ],
-        "normalized_name": "PEDAGIO_SENNA",
-        "network": "REH",
-        "criterion": "reh_named_waypoint",
-        "network_degree": null,
-        "altitude_m": null,
-        "vertical_intervals_m": [
-          [
-            1005.84,
-            1066.8
-          ]
-        ],
-        "altitude_status": "known_envelopes",
-        "dimensions_m": null,
-        "uam_route_ids": [],
-        "reh_resource_ids": [
-          "REH-138"
-        ],
-        "uam_route_labels": [],
-        "reh_labels": [
-          "SENNA - trecho 1"
-        ],
-        "status": "geometry_only_pending_recomputation",
-        "method": "explicit_named_export_position",
-        "name_group_id": "REH:PEDAGIO_SENNA",
-        "name_position_count": 1,
-        "name_position_ids": [
-          "REH-WP-ec485d89dca5c0e7a9d3"
-        ],
-        "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
-        "capacity_eligible": true,
-        "selection_reasons": [],
-        "selection_rule": "explicit_named_reh_fix",
-        "name_all_position_count": 1,
-        "source": {
-          "file": "CV_REH_XP_SAO_PAULO.xml",
-          "sha256": "2e11d7bd59fafa426444132d2911ffae2b097de54da11e489bb48656fd59ef3b"
-        }
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -46.15388889,
-          -23.38416667
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "resource_id": "REH-WP-32cb84560de10ffad2ed",
-        "label": "Pirapora",
-        "node_name": "Pirapora",
-        "original_names": [
-          "Pirapora"
-        ],
-        "normalized_name": "PIRAPORA",
-        "network": "REH",
-        "criterion": "reh_named_waypoint",
-        "network_degree": null,
-        "altitude_m": null,
-        "vertical_intervals_m": [
-          [
-            1097.28,
-            1097.28
-          ]
-        ],
-        "altitude_status": "known_envelopes",
-        "dimensions_m": null,
-        "uam_route_ids": [],
-        "reh_resource_ids": [
-          "REH-142",
-          "REH-166"
-        ],
-        "uam_route_labels": [],
-        "reh_labels": [
-          "Tietê - trecho 1",
-          "Tietê - trecho 2"
-        ],
-        "status": "geometry_only_pending_recomputation",
-        "method": "explicit_named_export_position",
-        "name_group_id": "REH:PIRAPORA",
-        "name_position_count": 1,
-        "name_position_ids": [
-          "REH-WP-32cb84560de10ffad2ed"
-        ],
-        "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
-        "capacity_eligible": true,
-        "selection_reasons": [],
-        "selection_rule": "explicit_named_reh_fix",
-        "name_all_position_count": 1,
-        "source": {
-          "file": "CV_REH_XP_SAO_PAULO.xml",
-          "sha256": "2e11d7bd59fafa426444132d2911ffae2b097de54da11e489bb48656fd59ef3b"
-        }
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -46.9994444399999,
-          -23.39638889
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "resource_id": "REH-WP-aeda4f0c1bd27bcc4ea2",
-        "label": "Piratininga",
-        "node_name": "Piratininga",
-        "original_names": [
-          "Piratininga"
-        ],
-        "normalized_name": "PIRATININGA",
-        "network": "REH",
-        "criterion": "reh_named_waypoint",
-        "network_degree": null,
-        "altitude_m": null,
-        "vertical_intervals_m": [
-          [
-            1005.84,
-            1005.84
-          ]
-        ],
-        "altitude_status": "known_envelopes",
-        "dimensions_m": null,
-        "uam_route_ids": [],
-        "reh_resource_ids": [
-          "REH-207",
-          "REH-208"
-        ],
-        "uam_route_labels": [],
-        "reh_labels": [
-          "FÁBRICA - trecho 1",
-          "PINHEIROS - trecho 5"
-        ],
-        "status": "geometry_only_pending_recomputation",
-        "method": "explicit_named_export_position",
-        "name_group_id": "REH:PIRATININGA",
-        "name_position_count": 1,
-        "name_position_ids": [
-          "REH-WP-aeda4f0c1bd27bcc4ea2"
-        ],
-        "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
-        "capacity_eligible": true,
-        "selection_reasons": [],
-        "selection_rule": "explicit_named_reh_fix",
-        "name_all_position_count": 1,
-        "source": {
-          "file": "CV_REH_XP_SAO_PAULO.xml",
-          "sha256": "2e11d7bd59fafa426444132d2911ffae2b097de54da11e489bb48656fd59ef3b"
-        }
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -46.6744444399999,
-          -23.7030555599999
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
         "resource_id": "REH-WP-56f39d98e4d7729cc154",
         "label": "Ponte Aricanduva",
         "node_name": "Ponte Aricanduva",
@@ -3735,7 +1234,7 @@
         "normalized_name": "PONTE_ARICANDUVA",
         "network": "REH",
         "criterion": "reh_named_waypoint",
-        "network_degree": null,
+        "network_degree": 4,
         "altitude_m": null,
         "vertical_intervals_m": [],
         "altitude_status": "unknown_or_invalid_envelope",
@@ -3762,10 +1261,10 @@
           "REH-WP-56f39d98e4d7729cc154"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "capacity_eligible": true,
         "selection_reasons": [],
-        "selection_rule": "explicit_named_reh_fix",
+        "selection_rule": "reh_degree_at_least_3_distinct_undirected_edges_round6",
         "name_all_position_count": 1,
         "source": {
           "file": "CV_REH_XP_SAO_PAULO.xml",
@@ -3792,7 +1291,7 @@
         "normalized_name": "PONTE_ESTAIADA",
         "network": "REH",
         "criterion": "reh_named_waypoint",
-        "network_degree": null,
+        "network_degree": 4,
         "altitude_m": null,
         "vertical_intervals_m": [
           [
@@ -3832,10 +1331,10 @@
           "REH-WP-a144b575c10365d83328"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "capacity_eligible": true,
         "selection_reasons": [],
-        "selection_rule": "explicit_named_reh_fix",
+        "selection_rule": "reh_degree_at_least_3_distinct_undirected_edges_round6",
         "name_all_position_count": 1,
         "source": {
           "file": "CV_REH_XP_SAO_PAULO.xml",
@@ -3862,7 +1361,7 @@
         "normalized_name": "PONTE_JAGUARE",
         "network": "REH",
         "criterion": "reh_named_waypoint",
-        "network_degree": null,
+        "network_degree": 3,
         "altitude_m": null,
         "vertical_intervals_m": [
           [
@@ -3896,10 +1395,10 @@
           "REH-WP-3f9c6ec4f05449598d28"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "capacity_eligible": true,
         "selection_reasons": [],
-        "selection_rule": "explicit_named_reh_fix",
+        "selection_rule": "reh_degree_at_least_3_distinct_undirected_edges_round6",
         "name_all_position_count": 1,
         "source": {
           "file": "CV_REH_XP_SAO_PAULO.xml",
@@ -3917,169 +1416,6 @@
     {
       "type": "Feature",
       "properties": {
-        "resource_id": "REH-WP-e6b11903d9d89eb727c8",
-        "label": "Portuguesa",
-        "node_name": "Portuguesa",
-        "original_names": [
-          "Portuguesa"
-        ],
-        "normalized_name": "PORTUGUESA",
-        "network": "REH",
-        "criterion": "reh_named_waypoint",
-        "network_degree": null,
-        "altitude_m": null,
-        "vertical_intervals_m": [],
-        "altitude_status": "unknown_or_invalid_envelope",
-        "dimensions_m": null,
-        "uam_route_ids": [],
-        "reh_resource_ids": [
-          "REH-188"
-        ],
-        "uam_route_labels": [],
-        "reh_labels": [
-          "Portão Brás - trecho 1"
-        ],
-        "status": "geometry_only_pending_recomputation",
-        "method": "explicit_named_export_position",
-        "name_group_id": "REH:PORTUGUESA",
-        "name_position_count": 1,
-        "name_position_ids": [
-          "REH-WP-e6b11903d9d89eb727c8"
-        ],
-        "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
-        "capacity_eligible": true,
-        "selection_reasons": [],
-        "selection_rule": "explicit_named_reh_fix",
-        "name_all_position_count": 1,
-        "source": {
-          "file": "CV_REH_XP_SAO_PAULO.xml",
-          "sha256": "2e11d7bd59fafa426444132d2911ffae2b097de54da11e489bb48656fd59ef3b"
-        }
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -46.618611111,
-          -23.520555556
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "resource_id": "REH-WP-f092bf704b3f768a1f9d",
-        "label": "Represa Vinhedo",
-        "node_name": "Represa Vinhedo",
-        "original_names": [
-          "Represa Vinhedo"
-        ],
-        "normalized_name": "REPRESA_VINHEDO",
-        "network": "REH",
-        "criterion": "reh_named_waypoint",
-        "network_degree": null,
-        "altitude_m": null,
-        "vertical_intervals_m": [
-          [
-            914.4000000000001,
-            914.4000000000001
-          ]
-        ],
-        "altitude_status": "known_envelopes",
-        "dimensions_m": null,
-        "uam_route_ids": [],
-        "reh_resource_ids": [
-          "REH-193"
-        ],
-        "uam_route_labels": [],
-        "reh_labels": [
-          "Jundiaí - trecho 6"
-        ],
-        "status": "geometry_only_pending_recomputation",
-        "method": "explicit_named_export_position",
-        "name_group_id": "REH:REPRESA_VINHEDO",
-        "name_position_count": 1,
-        "name_position_ids": [
-          "REH-WP-f092bf704b3f768a1f9d"
-        ],
-        "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
-        "capacity_eligible": true,
-        "selection_reasons": [],
-        "selection_rule": "explicit_named_reh_fix",
-        "name_all_position_count": 1,
-        "source": {
-          "file": "CV_REH_XP_SAO_PAULO.xml",
-          "sha256": "2e11d7bd59fafa426444132d2911ffae2b097de54da11e489bb48656fd59ef3b"
-        }
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -46.9522222219999,
-          -23.031388889
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "resource_id": "REH-WP-51d6c55306cb6cb897b2",
-        "label": "Ribeirão Pires",
-        "node_name": "Ribeirão Pires",
-        "original_names": [
-          "Ribeirão Pires"
-        ],
-        "normalized_name": "RIBEIRAO_PIRES",
-        "network": "REH",
-        "criterion": "reh_named_waypoint",
-        "network_degree": null,
-        "altitude_m": null,
-        "vertical_intervals_m": [
-          [
-            1005.84,
-            1097.28
-          ]
-        ],
-        "altitude_status": "known_envelopes",
-        "dimensions_m": null,
-        "uam_route_ids": [],
-        "reh_resource_ids": [
-          "REH-180"
-        ],
-        "uam_route_labels": [],
-        "reh_labels": [
-          "Ferrovia - trecho 1"
-        ],
-        "status": "geometry_only_pending_recomputation",
-        "method": "explicit_named_export_position",
-        "name_group_id": "REH:RIBEIRAO_PIRES",
-        "name_position_count": 1,
-        "name_position_ids": [
-          "REH-WP-51d6c55306cb6cb897b2"
-        ],
-        "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
-        "capacity_eligible": true,
-        "selection_reasons": [],
-        "selection_rule": "explicit_named_reh_fix",
-        "name_all_position_count": 1,
-        "source": {
-          "file": "CV_REH_XP_SAO_PAULO.xml",
-          "sha256": "2e11d7bd59fafa426444132d2911ffae2b097de54da11e489bb48656fd59ef3b"
-        }
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -46.414603972,
-          -23.7137283779999
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
         "resource_id": "REH-WP-10f31dfbe26ccb969564",
         "label": "Rodoanel Castelo",
         "node_name": "Rodoanel Castelo",
@@ -4089,7 +1425,7 @@
         "normalized_name": "RODOANEL_CASTELO",
         "network": "REH",
         "criterion": "reh_named_waypoint",
-        "network_degree": null,
+        "network_degree": 4,
         "altitude_m": null,
         "vertical_intervals_m": [
           [
@@ -4125,10 +1461,10 @@
           "REH-WP-10f31dfbe26ccb969564"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "capacity_eligible": true,
         "selection_reasons": [],
-        "selection_rule": "explicit_named_reh_fix",
+        "selection_rule": "reh_degree_at_least_3_distinct_undirected_edges_round6",
         "name_all_position_count": 1,
         "source": {
           "file": "CV_REH_XP_SAO_PAULO.xml",
@@ -4146,68 +1482,6 @@
     {
       "type": "Feature",
       "properties": {
-        "resource_id": "REH-WP-0060ddfbd45d1b560ebc",
-        "label": "Rodoanel Fernão",
-        "node_name": "Rodoanel Fernão",
-        "original_names": [
-          "Rodoanel Fernão"
-        ],
-        "normalized_name": "RODOANEL_FERNAO",
-        "network": "REH",
-        "criterion": "reh_named_waypoint",
-        "network_degree": null,
-        "altitude_m": null,
-        "vertical_intervals_m": [
-          [
-            944.88,
-            944.88
-          ],
-          [
-            1005.84,
-            1097.28
-          ]
-        ],
-        "altitude_status": "known_envelopes",
-        "dimensions_m": null,
-        "uam_route_ids": [],
-        "reh_resource_ids": [
-          "REH-171",
-          "REH-211"
-        ],
-        "uam_route_labels": [],
-        "reh_labels": [
-          "FERNÃO - trecho 3",
-          "FERNÃO - trecho 4"
-        ],
-        "status": "geometry_only_pending_recomputation",
-        "method": "explicit_named_export_position",
-        "name_group_id": "REH:RODOANEL_FERNAO",
-        "name_position_count": 1,
-        "name_position_ids": [
-          "REH-WP-0060ddfbd45d1b560ebc"
-        ],
-        "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
-        "capacity_eligible": true,
-        "selection_reasons": [],
-        "selection_rule": "explicit_named_reh_fix",
-        "name_all_position_count": 1,
-        "source": {
-          "file": "CV_REH_XP_SAO_PAULO.xml",
-          "sha256": "2e11d7bd59fafa426444132d2911ffae2b097de54da11e489bb48656fd59ef3b"
-        }
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -46.57277778,
-          -23.42611111
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
         "resource_id": "REH-WP-7dcb64a4944a1aea450f",
         "label": "Rodoanel Raposo",
         "node_name": "Rodoanel Raposo",
@@ -4217,7 +1491,7 @@
         "normalized_name": "RODOANEL_RAPOSO",
         "network": "REH",
         "criterion": "reh_named_waypoint",
-        "network_degree": null,
+        "network_degree": 4,
         "altitude_m": null,
         "vertical_intervals_m": [
           [
@@ -4253,10 +1527,10 @@
           "REH-WP-7dcb64a4944a1aea450f"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "capacity_eligible": true,
         "selection_reasons": [],
-        "selection_rule": "explicit_named_reh_fix",
+        "selection_rule": "reh_degree_at_least_3_distinct_undirected_edges_round6",
         "name_all_position_count": 1,
         "source": {
           "file": "CV_REH_XP_SAO_PAULO.xml",
@@ -4274,298 +1548,6 @@
     {
       "type": "Feature",
       "properties": {
-        "resource_id": "REH-WP-635aafddf84d991b30ef",
-        "label": "Rotatória Louveira",
-        "node_name": "Rotatória Louveira",
-        "original_names": [
-          "Rotatória Louveira"
-        ],
-        "normalized_name": "ROTATORIA_LOUVEIRA",
-        "network": "REH",
-        "criterion": "reh_named_waypoint",
-        "network_degree": null,
-        "altitude_m": null,
-        "vertical_intervals_m": [
-          [
-            914.4000000000001,
-            914.4000000000001
-          ]
-        ],
-        "altitude_status": "known_envelopes",
-        "dimensions_m": null,
-        "uam_route_ids": [],
-        "reh_resource_ids": [
-          "REH-193",
-          "REH-216"
-        ],
-        "uam_route_labels": [],
-        "reh_labels": [
-          "JUNDIAÍ - trecho 5",
-          "Jundiaí - trecho 6"
-        ],
-        "status": "geometry_only_pending_recomputation",
-        "method": "explicit_named_export_position",
-        "name_group_id": "REH:ROTATORIA_LOUVEIRA",
-        "name_position_count": 1,
-        "name_position_ids": [
-          "REH-WP-635aafddf84d991b30ef"
-        ],
-        "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
-        "capacity_eligible": true,
-        "selection_reasons": [],
-        "selection_rule": "explicit_named_reh_fix",
-        "name_all_position_count": 1,
-        "source": {
-          "file": "CV_REH_XP_SAO_PAULO.xml",
-          "sha256": "2e11d7bd59fafa426444132d2911ffae2b097de54da11e489bb48656fd59ef3b"
-        }
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -46.9621833049999,
-          -23.0508050249999
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "resource_id": "REH-WP-86cff9159d9547321478",
-        "label": "Santos Dumont",
-        "node_name": "Santos Dumont",
-        "original_names": [
-          "Santos Dumont"
-        ],
-        "normalized_name": "SANTOS_DUMONT",
-        "network": "REH",
-        "criterion": "reh_named_waypoint",
-        "network_degree": null,
-        "altitude_m": null,
-        "vertical_intervals_m": [
-          [
-            914.4000000000001,
-            914.4000000000001
-          ]
-        ],
-        "altitude_status": "known_envelopes",
-        "dimensions_m": null,
-        "uam_route_ids": [],
-        "reh_resource_ids": [
-          "REH-162"
-        ],
-        "uam_route_labels": [],
-        "reh_labels": [
-          "ANHANGUERA NORTE - trecho 1"
-        ],
-        "status": "geometry_only_pending_recomputation",
-        "method": "explicit_named_export_position",
-        "name_group_id": "REH:SANTOS_DUMONT",
-        "name_position_count": 1,
-        "name_position_ids": [
-          "REH-WP-86cff9159d9547321478"
-        ],
-        "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
-        "capacity_eligible": true,
-        "selection_reasons": [],
-        "selection_rule": "explicit_named_reh_fix",
-        "name_all_position_count": 1,
-        "source": {
-          "file": "CV_REH_XP_SAO_PAULO.xml",
-          "sha256": "2e11d7bd59fafa426444132d2911ffae2b097de54da11e489bb48656fd59ef3b"
-        }
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -47.07388889,
-          -22.93277778
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "resource_id": "REH-WP-2a86d9ca90a2d7669226",
-        "label": "São José",
-        "node_name": "São José",
-        "original_names": [
-          "São José"
-        ],
-        "normalized_name": "SAO_JOSE",
-        "network": "REH",
-        "criterion": "reh_named_waypoint",
-        "network_degree": null,
-        "altitude_m": null,
-        "vertical_intervals_m": [
-          [
-            975.36,
-            975.36
-          ]
-        ],
-        "altitude_status": "known_envelopes",
-        "dimensions_m": null,
-        "uam_route_ids": [],
-        "reh_resource_ids": [
-          "REH-119",
-          "REH-168"
-        ],
-        "uam_route_labels": [],
-        "reh_labels": [
-          "CAMPOS - trecho 4",
-          "CAMPOS - trecho 5"
-        ],
-        "status": "geometry_only_pending_recomputation",
-        "method": "explicit_named_export_position",
-        "name_group_id": "REH:SAO_JOSE",
-        "name_position_count": 1,
-        "name_position_ids": [
-          "REH-WP-2a86d9ca90a2d7669226"
-        ],
-        "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
-        "capacity_eligible": true,
-        "selection_reasons": [],
-        "selection_rule": "explicit_named_reh_fix",
-        "name_all_position_count": 1,
-        "source": {
-          "file": "CV_REH_XP_SAO_PAULO.xml",
-          "sha256": "2e11d7bd59fafa426444132d2911ffae2b097de54da11e489bb48656fd59ef3b"
-        }
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -45.92361111,
-          -23.07833333
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "resource_id": "REH-WP-bff1aa2c4e46adc7248c",
-        "label": "São Mateus",
-        "node_name": "São Mateus",
-        "original_names": [
-          "São Mateus"
-        ],
-        "normalized_name": "SAO_MATEUS",
-        "network": "REH",
-        "criterion": "reh_named_waypoint",
-        "network_degree": null,
-        "altitude_m": null,
-        "vertical_intervals_m": [
-          [
-            975.36,
-            975.36
-          ],
-          [
-            1005.84,
-            1005.84
-          ]
-        ],
-        "altitude_status": "known_envelopes",
-        "dimensions_m": null,
-        "uam_route_ids": [],
-        "reh_resource_ids": [
-          "REH-115",
-          "REH-132"
-        ],
-        "uam_route_labels": [],
-        "reh_labels": [
-          "ARICANDUVA - trecho 1",
-          "REFINARIA - trecho 1"
-        ],
-        "status": "geometry_only_pending_recomputation",
-        "method": "explicit_named_export_position",
-        "name_group_id": "REH:SAO_MATEUS",
-        "name_position_count": 1,
-        "name_position_ids": [
-          "REH-WP-bff1aa2c4e46adc7248c"
-        ],
-        "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
-        "capacity_eligible": true,
-        "selection_reasons": [],
-        "selection_rule": "explicit_named_reh_fix",
-        "name_all_position_count": 1,
-        "source": {
-          "file": "CV_REH_XP_SAO_PAULO.xml",
-          "sha256": "2e11d7bd59fafa426444132d2911ffae2b097de54da11e489bb48656fd59ef3b"
-        }
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -46.47638889,
-          -23.6125
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "resource_id": "REH-WP-cd4677e7c4efb4e179a2",
-        "label": "São Roque",
-        "node_name": "São Roque",
-        "original_names": [
-          "São Roque"
-        ],
-        "normalized_name": "SAO_ROQUE",
-        "network": "REH",
-        "criterion": "reh_named_waypoint",
-        "network_degree": null,
-        "altitude_m": null,
-        "vertical_intervals_m": [
-          [
-            1097.28,
-            1097.28
-          ]
-        ],
-        "altitude_status": "known_envelopes",
-        "dimensions_m": null,
-        "uam_route_ids": [],
-        "reh_resource_ids": [
-          "REH-152",
-          "REH-217"
-        ],
-        "uam_route_labels": [],
-        "reh_labels": [
-          "RAPOSO - trecho 7",
-          "RAPOSO - trecho 8"
-        ],
-        "status": "geometry_only_pending_recomputation",
-        "method": "explicit_named_export_position",
-        "name_group_id": "REH:SAO_ROQUE",
-        "name_position_count": 1,
-        "name_position_ids": [
-          "REH-WP-cd4677e7c4efb4e179a2"
-        ],
-        "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
-        "capacity_eligible": true,
-        "selection_reasons": [],
-        "selection_rule": "explicit_named_reh_fix",
-        "name_all_position_count": 1,
-        "source": {
-          "file": "CV_REH_XP_SAO_PAULO.xml",
-          "sha256": "2e11d7bd59fafa426444132d2911ffae2b097de54da11e489bb48656fd59ef3b"
-        }
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -47.1361111099999,
-          -23.5427777799999
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
         "resource_id": "REH-WP-7ba6ff6f6793c66acb20",
         "label": "Shopping Continental",
         "node_name": "Shopping Continental",
@@ -4575,7 +1557,7 @@
         "normalized_name": "SHOPPING_CONTINENTAL",
         "network": "REH",
         "criterion": "reh_named_waypoint",
-        "network_degree": null,
+        "network_degree": 3,
         "altitude_m": null,
         "vertical_intervals_m": [
           [
@@ -4613,10 +1595,10 @@
           "REH-WP-7ba6ff6f6793c66acb20"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "capacity_eligible": true,
         "selection_reasons": [],
-        "selection_rule": "explicit_named_reh_fix",
+        "selection_rule": "reh_degree_at_least_3_distinct_undirected_edges_round6",
         "name_all_position_count": 1,
         "source": {
           "file": "CV_REH_XP_SAO_PAULO.xml",
@@ -4643,7 +1625,7 @@
         "normalized_name": "SHOPPING_TATUAPE",
         "network": "REH",
         "criterion": "reh_named_waypoint",
-        "network_degree": null,
+        "network_degree": 3,
         "altitude_m": null,
         "vertical_intervals_m": [
           [
@@ -4677,10 +1659,10 @@
           "REH-WP-608c8b62e8bd54c13e7e"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "capacity_eligible": true,
         "selection_reasons": [],
-        "selection_rule": "explicit_named_reh_fix",
+        "selection_rule": "reh_degree_at_least_3_distinct_undirected_edges_round6",
         "name_all_position_count": 1,
         "source": {
           "file": "CV_REH_XP_SAO_PAULO.xml",
@@ -4707,7 +1689,7 @@
         "normalized_name": "SUZANO",
         "network": "REH",
         "criterion": "reh_named_waypoint",
-        "network_degree": null,
+        "network_degree": 3,
         "altitude_m": null,
         "vertical_intervals_m": [
           [
@@ -4745,10 +1727,10 @@
           "REH-WP-4eee34403391d1f7bc15"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "capacity_eligible": true,
         "selection_reasons": [],
-        "selection_rule": "explicit_named_reh_fix",
+        "selection_rule": "reh_degree_at_least_3_distinct_undirected_edges_round6",
         "name_all_position_count": 1,
         "source": {
           "file": "CV_REH_XP_SAO_PAULO.xml",
@@ -4766,64 +1748,6 @@
     {
       "type": "Feature",
       "properties": {
-        "resource_id": "REH-WP-b6db0cd6103d5a5046b7",
-        "label": "Través Isabel",
-        "node_name": "Través Isabel",
-        "original_names": [
-          "Través Isabel"
-        ],
-        "normalized_name": "TRAVES_ISABEL",
-        "network": "REH",
-        "criterion": "reh_named_waypoint",
-        "network_degree": null,
-        "altitude_m": null,
-        "vertical_intervals_m": [
-          [
-            1036.3200000000002,
-            1066.8
-          ]
-        ],
-        "altitude_status": "known_envelopes",
-        "dimensions_m": null,
-        "uam_route_ids": [],
-        "reh_resource_ids": [
-          "REH-117",
-          "REH-118"
-        ],
-        "uam_route_labels": [],
-        "reh_labels": [
-          "CAMPOS - trecho 2",
-          "CAMPOS - trecho 3"
-        ],
-        "status": "geometry_only_pending_recomputation",
-        "method": "explicit_named_export_position",
-        "name_group_id": "REH:TRAVES_ISABEL",
-        "name_position_count": 1,
-        "name_position_ids": [
-          "REH-WP-b6db0cd6103d5a5046b7"
-        ],
-        "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
-        "capacity_eligible": true,
-        "selection_reasons": [],
-        "selection_rule": "explicit_named_reh_fix",
-        "name_all_position_count": 1,
-        "source": {
-          "file": "CV_REH_XP_SAO_PAULO.xml",
-          "sha256": "2e11d7bd59fafa426444132d2911ffae2b097de54da11e489bb48656fd59ef3b"
-        }
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -46.20583333,
-          -23.32277778
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
         "resource_id": "REH-WP-d531e665fba9a5915310",
         "label": "Trevo Anchieta",
         "node_name": "Trevo Anchieta",
@@ -4833,7 +1757,7 @@
         "normalized_name": "TREVO_ANCHIETA",
         "network": "REH",
         "criterion": "reh_named_waypoint",
-        "network_degree": null,
+        "network_degree": 3,
         "altitude_m": null,
         "vertical_intervals_m": [
           [
@@ -4867,10 +1791,10 @@
           "REH-WP-d531e665fba9a5915310"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "capacity_eligible": true,
         "selection_reasons": [],
-        "selection_rule": "explicit_named_reh_fix",
+        "selection_rule": "reh_degree_at_least_3_distinct_undirected_edges_round6",
         "name_all_position_count": 1,
         "source": {
           "file": "CV_REH_XP_SAO_PAULO.xml",
@@ -4888,68 +1812,6 @@
     {
       "type": "Feature",
       "properties": {
-        "resource_id": "REH-WP-a61275fc7c2836eb5651",
-        "label": "Trevo Anhanguera Bandeirantes",
-        "node_name": "Trevo Anhanguera Bandeirantes",
-        "original_names": [
-          "Trevo Anhanguera Bandeirantes"
-        ],
-        "normalized_name": "TREVO_ANHANGUERA_BANDEIRANTES",
-        "network": "REH",
-        "criterion": "reh_named_waypoint",
-        "network_degree": null,
-        "altitude_m": null,
-        "vertical_intervals_m": [
-          [
-            1036.3200000000002,
-            1036.3200000000002
-          ],
-          [
-            1036.3200000000002,
-            1066.8
-          ]
-        ],
-        "altitude_status": "known_envelopes",
-        "dimensions_m": null,
-        "uam_route_ids": [],
-        "reh_resource_ids": [
-          "REH-163",
-          "REH-213"
-        ],
-        "uam_route_labels": [],
-        "reh_labels": [
-          "ANHANGUERA SUL - trecho 3",
-          "JUNDIAÍ - trecho 1"
-        ],
-        "status": "geometry_only_pending_recomputation",
-        "method": "explicit_named_export_position",
-        "name_group_id": "REH:TREVO_ANHANGUERA_BANDEIRANTES",
-        "name_position_count": 1,
-        "name_position_ids": [
-          "REH-WP-a61275fc7c2836eb5651"
-        ],
-        "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
-        "capacity_eligible": true,
-        "selection_reasons": [],
-        "selection_rule": "explicit_named_reh_fix",
-        "name_all_position_count": 1,
-        "source": {
-          "file": "CV_REH_XP_SAO_PAULO.xml",
-          "sha256": "2e11d7bd59fafa426444132d2911ffae2b097de54da11e489bb48656fd59ef3b"
-        }
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -46.8663888899999,
-          -23.26194444
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
         "resource_id": "REH-WP-439c7d07e50c789c85e6",
         "label": "Trevo Imigrantes",
         "node_name": "Trevo Imigrantes",
@@ -4959,7 +1821,7 @@
         "normalized_name": "TREVO_IMIGRANTES",
         "network": "REH",
         "criterion": "reh_named_waypoint",
-        "network_degree": null,
+        "network_degree": 4,
         "altitude_m": null,
         "vertical_intervals_m": [
           [
@@ -4991,10 +1853,10 @@
           "REH-WP-439c7d07e50c789c85e6"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "capacity_eligible": true,
         "selection_reasons": [],
-        "selection_rule": "explicit_named_reh_fix",
+        "selection_rule": "reh_degree_at_least_3_distinct_undirected_edges_round6",
         "name_all_position_count": 1,
         "source": {
           "file": "CV_REH_XP_SAO_PAULO.xml",
@@ -5012,246 +1874,6 @@
     {
       "type": "Feature",
       "properties": {
-        "resource_id": "REH-WP-79ff17e726712f61383d",
-        "label": "Trevo Tremembé",
-        "node_name": "Trevo Tremembé",
-        "original_names": [
-          "Trevo Tremembé"
-        ],
-        "normalized_name": "TREVO_TREMEMBE",
-        "network": "REH",
-        "criterion": "reh_named_waypoint",
-        "network_degree": null,
-        "altitude_m": null,
-        "vertical_intervals_m": [
-          [
-            1005.84,
-            1097.28
-          ],
-          [
-            1249.68,
-            1371.6000000000001
-          ]
-        ],
-        "altitude_status": "known_envelopes",
-        "dimensions_m": null,
-        "uam_route_ids": [],
-        "reh_resource_ids": [
-          "REH-211",
-          "REH-212"
-        ],
-        "uam_route_labels": [],
-        "reh_labels": [
-          "FERNÃO - trecho 4",
-          "FERNÃO - trecho 5"
-        ],
-        "status": "geometry_only_pending_recomputation",
-        "method": "explicit_named_export_position",
-        "name_group_id": "REH:TREVO_TREMEMBE",
-        "name_position_count": 1,
-        "name_position_ids": [
-          "REH-WP-79ff17e726712f61383d"
-        ],
-        "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
-        "capacity_eligible": true,
-        "selection_reasons": [],
-        "selection_rule": "explicit_named_reh_fix",
-        "name_all_position_count": 1,
-        "source": {
-          "file": "CV_REH_XP_SAO_PAULO.xml",
-          "sha256": "2e11d7bd59fafa426444132d2911ffae2b097de54da11e489bb48656fd59ef3b"
-        }
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -46.5813307989999,
-          -23.4101353779999
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "resource_id": "REH-WP-2d14be1e100e067e5e76",
-        "label": "Túnel",
-        "node_name": "Túnel",
-        "original_names": [
-          "Túnel"
-        ],
-        "normalized_name": "TUNEL",
-        "network": "REH",
-        "criterion": "reh_named_waypoint",
-        "network_degree": null,
-        "altitude_m": null,
-        "vertical_intervals_m": [
-          [
-            1249.68,
-            1371.6000000000001
-          ]
-        ],
-        "altitude_status": "known_envelopes",
-        "dimensions_m": null,
-        "uam_route_ids": [],
-        "reh_resource_ids": [
-          "REH-172",
-          "REH-212"
-        ],
-        "uam_route_labels": [],
-        "reh_labels": [
-          "FERNÃO - trecho 5",
-          "FERNÃO - trecho 6"
-        ],
-        "status": "geometry_only_pending_recomputation",
-        "method": "explicit_named_export_position",
-        "name_group_id": "REH:TUNEL",
-        "name_position_count": 1,
-        "name_position_ids": [
-          "REH-WP-2d14be1e100e067e5e76"
-        ],
-        "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
-        "capacity_eligible": true,
-        "selection_reasons": [],
-        "selection_rule": "explicit_named_reh_fix",
-        "name_all_position_count": 1,
-        "source": {
-          "file": "CV_REH_XP_SAO_PAULO.xml",
-          "sha256": "2e11d7bd59fafa426444132d2911ffae2b097de54da11e489bb48656fd59ef3b"
-        }
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -46.54916667,
-          -23.3569444399999
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "resource_id": "REH-WP-23f566da13898f842f0f",
-        "label": "Utinga",
-        "node_name": "Utinga",
-        "original_names": [
-          "Utinga"
-        ],
-        "normalized_name": "UTINGA",
-        "network": "REH",
-        "criterion": "reh_named_waypoint",
-        "network_degree": null,
-        "altitude_m": null,
-        "vertical_intervals_m": [
-          [
-            975.36,
-            1036.3200000000002
-          ]
-        ],
-        "altitude_status": "known_envelopes",
-        "dimensions_m": null,
-        "uam_route_ids": [],
-        "reh_resource_ids": [
-          "REH-121",
-          "REH-179"
-        ],
-        "uam_route_labels": [],
-        "reh_labels": [
-          "ESTADO - trecho 3",
-          "ESTADO - trecho 4"
-        ],
-        "status": "geometry_only_pending_recomputation",
-        "method": "explicit_named_export_position",
-        "name_group_id": "REH:UTINGA",
-        "name_position_count": 1,
-        "name_position_ids": [
-          "REH-WP-23f566da13898f842f0f"
-        ],
-        "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
-        "capacity_eligible": true,
-        "selection_reasons": [],
-        "selection_rule": "explicit_named_reh_fix",
-        "name_all_position_count": 1,
-        "source": {
-          "file": "CV_REH_XP_SAO_PAULO.xml",
-          "sha256": "2e11d7bd59fafa426444132d2911ffae2b097de54da11e489bb48656fd59ef3b"
-        }
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -46.54138889,
-          -23.62416667
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "resource_id": "REH-WP-17becd82c07cddaa5b16",
-        "label": "Vargem Grande",
-        "node_name": "Vargem Grande",
-        "original_names": [
-          "Vargem Grande"
-        ],
-        "normalized_name": "VARGEM_GRANDE",
-        "network": "REH",
-        "criterion": "reh_named_waypoint",
-        "network_degree": null,
-        "altitude_m": null,
-        "vertical_intervals_m": [
-          [
-            1097.28,
-            1097.28
-          ],
-          [
-            1219.2,
-            1219.2
-          ]
-        ],
-        "altitude_status": "known_envelopes",
-        "dimensions_m": null,
-        "uam_route_ids": [],
-        "reh_resource_ids": [
-          "REH-153",
-          "REH-154"
-        ],
-        "uam_route_labels": [],
-        "reh_labels": [
-          "RAPOSO - trecho 10",
-          "RAPOSO - trecho 9"
-        ],
-        "status": "geometry_only_pending_recomputation",
-        "method": "explicit_named_export_position",
-        "name_group_id": "REH:VARGEM_GRANDE",
-        "name_position_count": 1,
-        "name_position_ids": [
-          "REH-WP-17becd82c07cddaa5b16"
-        ],
-        "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
-        "capacity_eligible": true,
-        "selection_reasons": [],
-        "selection_rule": "explicit_named_reh_fix",
-        "name_all_position_count": 1,
-        "source": {
-          "file": "CV_REH_XP_SAO_PAULO.xml",
-          "sha256": "2e11d7bd59fafa426444132d2911ffae2b097de54da11e489bb48656fd59ef3b"
-        }
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -47.01638889,
-          -23.60555556
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
         "resource_id": "REH-WP-1e31f1507767c6d52e1f",
         "label": "Vd Grande São Paulo",
         "node_name": "Vd Grande São Paulo",
@@ -5261,7 +1883,7 @@
         "normalized_name": "VD_GRANDE_SAO_PAULO",
         "network": "REH",
         "criterion": "reh_named_waypoint",
-        "network_degree": null,
+        "network_degree": 3,
         "altitude_m": null,
         "vertical_intervals_m": [
           [
@@ -5295,10 +1917,10 @@
           "REH-WP-1e31f1507767c6d52e1f"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "capacity_eligible": true,
         "selection_reasons": [],
-        "selection_rule": "explicit_named_reh_fix",
+        "selection_rule": "reh_degree_at_least_3_distinct_undirected_edges_round6",
         "name_all_position_count": 1,
         "source": {
           "file": "CV_REH_XP_SAO_PAULO.xml",
@@ -5316,68 +1938,6 @@
     {
       "type": "Feature",
       "properties": {
-        "resource_id": "REH-WP-c12349bd0493a5ea4d89",
-        "label": "Vd São Carlos",
-        "node_name": "Vd São Carlos",
-        "original_names": [
-          "Vd São Carlos"
-        ],
-        "normalized_name": "VD_SAO_CARLOS",
-        "network": "REH",
-        "criterion": "reh_named_waypoint",
-        "network_degree": null,
-        "altitude_m": null,
-        "vertical_intervals_m": [
-          [
-            975.36,
-            975.36
-          ],
-          [
-            975.36,
-            1036.3200000000002
-          ]
-        ],
-        "altitude_status": "known_envelopes",
-        "dimensions_m": null,
-        "uam_route_ids": [],
-        "reh_resource_ids": [
-          "REH-126",
-          "REH-173"
-        ],
-        "uam_route_labels": [],
-        "reh_labels": [
-          "ESTADO - trecho 1",
-          "MARTE - trecho 6"
-        ],
-        "status": "geometry_only_pending_recomputation",
-        "method": "explicit_named_export_position",
-        "name_group_id": "REH:VD_SAO_CARLOS",
-        "name_position_count": 1,
-        "name_position_ids": [
-          "REH-WP-c12349bd0493a5ea4d89"
-        ],
-        "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
-        "capacity_eligible": true,
-        "selection_reasons": [],
-        "selection_rule": "explicit_named_reh_fix",
-        "name_all_position_count": 1,
-        "source": {
-          "file": "CV_REH_XP_SAO_PAULO.xml",
-          "sha256": "2e11d7bd59fafa426444132d2911ffae2b097de54da11e489bb48656fd59ef3b"
-        }
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -46.60388889,
-          -23.56722222
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
         "resource_id": "REH-WP-7bd8dec56987d003130d",
         "label": "Viaduto Antártica",
         "node_name": "Viaduto Antártica",
@@ -5387,7 +1947,7 @@
         "normalized_name": "VIADUTO_ANTARTICA",
         "network": "REH",
         "criterion": "reh_named_waypoint",
-        "network_degree": null,
+        "network_degree": 3,
         "altitude_m": null,
         "vertical_intervals_m": [
           [
@@ -5425,10 +1985,10 @@
           "REH-WP-7bd8dec56987d003130d"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "capacity_eligible": true,
         "selection_reasons": [],
-        "selection_rule": "explicit_named_reh_fix",
+        "selection_rule": "reh_degree_at_least_3_distinct_undirected_edges_round6",
         "name_all_position_count": 1,
         "source": {
           "file": "CV_REH_XP_SAO_PAULO.xml",
@@ -5440,62 +2000,6 @@
         "coordinates": [
           -46.6708333299999,
           -23.5247222199999
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "resource_id": "REH-WP-0bf27269952ead4ce29c",
-        "label": "Washington Luís",
-        "node_name": "Washington Luís",
-        "original_names": [
-          "Washington Luís"
-        ],
-        "normalized_name": "WASHINGTON_LUIS",
-        "network": "REH",
-        "criterion": "reh_named_waypoint",
-        "network_degree": null,
-        "altitude_m": null,
-        "vertical_intervals_m": [
-          [
-            1005.84,
-            1036.3200000000002
-          ]
-        ],
-        "altitude_status": "known_envelopes",
-        "dimensions_m": null,
-        "uam_route_ids": [],
-        "reh_resource_ids": [
-          "REH-141"
-        ],
-        "uam_route_labels": [],
-        "reh_labels": [
-          "ESPRAIADA - trecho 1"
-        ],
-        "status": "geometry_only_pending_recomputation",
-        "method": "explicit_named_export_position",
-        "name_group_id": "REH:WASHINGTON_LUIS",
-        "name_position_count": 1,
-        "name_position_ids": [
-          "REH-WP-0bf27269952ead4ce29c"
-        ],
-        "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
-        "capacity_eligible": true,
-        "selection_reasons": [],
-        "selection_rule": "explicit_named_reh_fix",
-        "name_all_position_count": 1,
-        "source": {
-          "file": "CV_REH_XP_SAO_PAULO.xml",
-          "sha256": "2e11d7bd59fafa426444132d2911ffae2b097de54da11e489bb48656fd59ef3b"
-        }
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -46.66916667,
-          -23.6336111099999
         ]
       }
     },
@@ -5551,7 +2055,7 @@
           "UAM-WP-8ba3a2f86f6f972185f3"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "distinct_edge_neighbors": [
           [
             -23.542081085594123,
@@ -5665,7 +2169,7 @@
           "UAM-WP-8ba3a2f86f6f972185f3"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "distinct_edge_neighbors": [
           [
             -23.542856261727895,
@@ -5775,7 +2279,7 @@
           "UAM-WP-7a2be92cfca3f1b02b87"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "distinct_edge_neighbors": [
           [
             -23.572879167604274,
@@ -5883,7 +2387,7 @@
           "UAM-WP-7a2be92cfca3f1b02b87"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "distinct_edge_neighbors": [
           [
             -23.576009721284525,
@@ -5987,7 +2491,7 @@
           "UAM-WP-1dd073392f122fa825ed"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "distinct_edge_neighbors": [
           [
             -23.606354090644885,
@@ -6089,7 +2593,7 @@
           "UAM-WP-1dd073392f122fa825ed"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "distinct_edge_neighbors": [
           [
             -23.610868131577313,
@@ -6195,7 +2699,7 @@
           "UAM-WP-e9735b8c108e6225ee5e"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "distinct_edge_neighbors": [
           [
             -23.531514765733224,
@@ -6307,7 +2811,7 @@
           "UAM-WP-e9735b8c108e6225ee5e"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "distinct_edge_neighbors": [
           [
             -23.51606374594118,
@@ -6421,7 +2925,7 @@
           "UAM-WP-e9735b8c108e6225ee5e"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "distinct_edge_neighbors": [
           [
             -23.520153648065616,
@@ -6531,7 +3035,7 @@
           "UAM-WP-e9735b8c108e6225ee5e"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "distinct_edge_neighbors": [
           [
             -23.535109057008345,
@@ -6637,7 +3141,7 @@
           "UAM-WP-393c0f9e7a61aa5770f9"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "distinct_edge_neighbors": [
           [
             -23.58019832452846,
@@ -6742,7 +3246,7 @@
           "UAM-WP-393c0f9e7a61aa5770f9"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "distinct_edge_neighbors": [
           [
             -23.582272984713864,
@@ -6853,7 +3357,7 @@
           "UAM-WP-d495f907fec1cc0132cc"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "distinct_edge_neighbors": [
           [
             -23.552624774559753,
@@ -6967,7 +3471,7 @@
           "UAM-WP-d495f907fec1cc0132cc"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "distinct_edge_neighbors": [
           [
             -23.552930780995844,
@@ -7073,7 +3577,7 @@
           "UAM-WP-9cd7c06653831ca34e5c"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "distinct_edge_neighbors": [
           [
             -23.609389520520164,
@@ -7175,7 +3679,7 @@
           "UAM-WP-9cd7c06653831ca34e5c"
         ],
         "grouping_rule": "name index only; exact coordinates/levels/dimensions remain independent; no analytical name total",
-        "analysis_method_version": "reh-anchored-uam-junctions-v2",
+        "analysis_method_version": "reh-uam-junctions-v3",
         "distinct_edge_neighbors": [
           [
             -23.61386824332514,

@@ -226,7 +226,7 @@ def main() -> int:
         parser.error("Invalid positive settings")
     prior_metadata_path = args.output_dir / "run_metadata.json"
     prior_metadata = json.loads(prior_metadata_path.read_text(encoding="utf-8")) if prior_metadata_path.exists() else {}
-    retired_run = prior_metadata.get("retired_legacy_run") or (prior_metadata.get("source_run") if prior_metadata.get("method_version") not in {"named-waypoints-v1", "reh-anchored-uam-junctions-v2"} else None)
+    retired_run = prior_metadata.get("retired_legacy_run") or (prior_metadata.get("source_run") if prior_metadata.get("method_version") not in {"named-waypoints-v1", "reh-anchored-uam-junctions-v2", "reh-uam-junctions-v3"} else None)
     selection=None; logs=[]
     if args.config:
         selection=load_run_selection(args.config)
@@ -299,10 +299,10 @@ def main() -> int:
     # This file was formerly included as capacity resources. Geometric crossings are diagnostics elsewhere.
     (args.output_dir/'crossing_waypoints.geojson').write_text(json.dumps({'type':'FeatureCollection','features':[]}),encoding='utf-8')
     write_candidate_node_assets(args.dashboard_assets.parent,args.uam_csv,args.reh_xml)
-    metadata={'method_version':'reh-anchored-uam-junctions-v2','status':'recomputed' if logs else 'geometry_only_raw_logs_unavailable',
+    metadata={'method_version':'reh-uam-junctions-v3','status':'recomputed' if logs else 'geometry_only_raw_logs_unavailable',
         'sources':sources,'topology_selection':'C2 SCN interior positions validated within 2m of selected corridor centerlines' if selection else 'explicit caller selection; SCN association unverified',
         'source_run':selection.run_dir.name if selection else None,'retired_legacy_run':retired_run,'vertiports':uam['vertiports'],'route_count':uam['route_count'],
-        'resource_count':len(features),'uam_selection_rule':'named Waypoint; >=3 exact distinct physical edges; nonterminal use; exact/explicit alias REH name within 500m','named_position_counts':{net:sum(f['properties']['network']==net for f in features) for net in ('UAM','REH')},
+        'resource_count':len(features),'reh_selection_rule':'original degree >=3 distinct undirected neighbors; endpoint topology rounded to 6 decimals','uam_selection_rule':'named Waypoint; >=3 exact distinct physical edges; nonterminal use; exact/explicit alias REH name within 500m','named_position_counts':{net:sum(f['properties']['network']==net for f in features) for net in ('UAM','REH')},
         'capture_radius_m':args.capture_radius_m,'window_seconds':args.window_seconds,
         'vertical_rule':'UAM exported altitude +/- height/2; REH union of complete valid incident envelopes; any unknown disables counting',
         'passage_rule':'connected trajectory/cylinder encounter per aircraft/flight/network; closest horizontal position wins; ties <1mm excluded; reentry counts again',
