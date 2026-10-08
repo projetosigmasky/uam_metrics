@@ -358,6 +358,13 @@ class MetricsTest(unittest.TestCase):
             config.write_text(json.dumps({"runs_root": str(root / "runs"), "run_name": "run_001",
                                           "expected_replicas_per_scenario": 1,
                                           "dashboard_workers": 3, "ranking_workers": 4}), encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "completion summary"):
+                load_run_selection(config)
+            summary_path = run / "summary.json"
+            summary_path.write_text(json.dumps({"scenarios": [{"status": "command_failed"}]}))
+            with self.assertRaisesRegex(ValueError, "incomplete or failed"):
+                load_run_selection(config)
+            summary_path.write_text(json.dumps({"scenarios": [{"status": "completed"}, {"status": "completed"}]}))
             selected = load_run_selection(config)
             self.assertEqual(len(selected.log_paths), 2)
             self.assertEqual(len(selected.scenario_paths), 2)

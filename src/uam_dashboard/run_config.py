@@ -24,8 +24,18 @@ def load_run_selection(config_path: Path) -> RunSelection:
     run_name = settings.get("run_name")
     if not isinstance(run_name, str) or not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_.-]*", run_name) or run_name in {".", ".."}:
         raise ValueError("run_name must be one run directory name, without path separators")
-    runs_root = Path(settings.get("runs_root", "~/bluesky-orchestrator/runs")).expanduser()
+    runs_root = Path(settings.get("runs_root", "~/runs")).expanduser()
     run_dir = runs_root / run_name
+    summary_path = run_dir / "summary.json"
+    if not summary_path.is_file():
+        raise ValueError(f"Run has no completion summary: {run_dir}")
+    summary = json.loads(summary_path.read_text(encoding="utf-8"))
+    records = summary.get("scenarios", [])
+    if summary.get("error") or summary.get("stopped") or not records or any(item.get("status") != "completed" for item in records):
+        raise ValueError(f"Run is incomplete or failed: {run_dir}")
+    lifecycle_path = run_dir / "lifecycle.json"
+    if lifecycle_path.is_file() and json.loads(lifecycle_path.read_text(encoding="utf-8")).get("status") != "completed":
+        raise ValueError(f"Run lifecycle is not completed: {run_dir}")
     scenario_dir = run_dir / "scenario"
     if not scenario_dir.is_dir():
         raise FileNotFoundError(f"Orchestrator scenario directory not found: {scenario_dir}")

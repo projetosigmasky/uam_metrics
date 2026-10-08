@@ -4,6 +4,19 @@ Dashboard estatico para analisar logs `STATELOG` do BlueSky em cenarios de corre
 
 Este repositorio vincula as metricas ao `Produto3_vfinal_ProjetoSIGMASky.pdf` (Produto 3, versao 2.0, 31/07/2026). A saida principal e a pasta `docs/`, pronta para GitHub Pages. O PDF local e ignorado pelo Git; o catalogo versionado registra suas paginas e equacoes.
 
+
+## Fluxo atual no Lessonia
+
+Os novos runs ficam em `~/runs`. Atualize o código do orquestrador e do gerador antes de executar. O gerador exporta um contrato headless e os plugins UAMLOG/WPPASS; os logs só entram neste projeto após conclusão sem erros.
+
+```bash
+cd ~/post-processing
+git pull --ff-only
+.venv/bin/python generate_reports.py --run-id RUN_ID_CONCLUIDO --runs-root ~/runs
+```
+
+O comando valida o resumo, o estado do executor e os pareamentos P100/OFF antes de alterar os relatórios; salva a seleção em `run_config.local.json` (ignorado pelo Git). Runs ativos, pilotos incompletos e execuções com erro são rejeitados. A validação de passagens nativas pertence ao orquestrador; o dashboard atual continua calculando suas métricas a partir dos STATELOGs. A seção de preparação histórica abaixo descreve o run antigo, não o caminho padrão atual.
+
 ## 1. Preparar Os Logs
 
 Os STATELOGs desta fase estao no Lessonia, na execucao P100 do orquestrador:
