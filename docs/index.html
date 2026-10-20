@@ -3,6 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="assets/baseline_calibration.css" />
     <title>Dashboard KPI/KPA UAM - RMSP</title>
     <link
       rel="stylesheet"
@@ -10,7 +11,7 @@
       integrity="sha256-p4NxAoJBhIINfQd+g9FQXHyzyTAFi+lyLwN2Bja9fM="
       crossorigin=""
     />
-    <link rel="stylesheet" href="assets/dashboard.css?v=f4fea5ab7371" />
+    <link rel="stylesheet" href="assets/dashboard.css?v=4e78fbf6b017" />
   </head>
   <body>
     <header class="topbar">
@@ -82,43 +83,96 @@
         </article>
       </section>
 
-      <section class="comparison-panel" data-kpa-panel="overview" aria-label="Comparacao entre STATELOGs">
-        <div class="comparison-header">
-          <div>
-            <p class="eyebrow">Comparacao</p>
-            <h2>Cenarios processados</h2>
-          </div>
-        </div>
-        <div id="comparison-summary" class="comparison-summary">-</div>
-        <div class="table-wrap">
-          <table class="comparison-table">
-            <thead>
-              <tr>
-                <th>Variante</th>
-                <th>Atraso solo</th>
-                <th>Atraso ar</th>
-                <th>Atraso total</th>
-                <th>Tempo medio</th>
-                <th>Δ tempo vs referencia</th>
-                <th>Distancia</th>
-                <th>Δ distancia vs referencia</th>
-                <th>Conformidade TC</th>
-                <th>Aderencia REH</th>
-                <th>LoWC</th>
-                <th>LoWC/h</th>
-                <th>MAC/100k h</th>
-                <th>Margem TLS</th>
-                <th>Razao risco vs ref</th>
-                <th>NMAC</th>
-                <th>Sev. min</th>
-              </tr>
-            </thead>
-            <tbody id="comparison-table-body"></tbody>
-          </table>
-        </div>
+      <section class="metric-grid" data-kpa-panel="safety" aria-label="Indicadores de seguranca" hidden>
+        <article class="metric danger">
+          <span>Severidade minima</span>
+          <strong id="kpa-severity">-</strong>
+          <small>media por replica</small>
+        </article>
+        <article class="metric danger">
+          <span>MAC esperado / 100k h</span>
+          <strong id="kpa-mac-rate">-</strong>
+          <small>estimativa probabilistica</small>
+        </article>
+        <article class="metric danger">
+          <span>Margem TLS</span>
+          <strong id="kpa-tls-margin">-</strong>
+          <small>avaliacao frente ao limite de seguranca</small>
+        </article>
+        <article class="metric danger">
+          <span>Tempo abaixo do limiar</span>
+          <strong id="kpa-time-below">-</strong>
+          <small>segundos, media por replica</small>
+        </article>
+        <article class="metric danger">
+          <span>Tempo ate conflito</span>
+          <strong id="kpa-time-to-conflict">-</strong>
+          <small>diagnostico complementar DTLOOK</small>
+        </article>
+        <article class="metric danger">
+          <span>Amostragem LoWC</span>
+          <strong id="kpa-safety-sample">-</strong>
+          <small>intervalo em segundos</small>
+        </article>
       </section>
 
-      <section class="workspace" data-kpa-panel="overview">
+      <section class="metric-grid" data-kpa-panel="efficiency" aria-label="Indicadores de eficiencia" hidden>
+        <article class="metric">
+          <span>Ineficiencia horizontal</span>
+          <strong id="kpa-route-efficiency">-</strong>
+          <small>distancia adicional em relacao a rota direta</small>
+        </article>
+        <article class="metric">
+          <span>Conformidade por distancia</span>
+          <strong id="kpa-conformity">-</strong>
+          <small>distancia adicional em relacao ao plano</small>
+        </article>
+        <article class="metric">
+          <span>Aderencia espacial a REH</span>
+          <strong id="kpa-spatial-adherence">-</strong>
+          <small>percentual dentro dos corredores</small>
+        </article>
+        <article class="metric">
+          <span>Atraso medio em solo</span>
+          <strong id="kpa-ground-delay">-</strong>
+          <small>segundos por voo</small>
+        </article>
+        <article class="metric">
+          <span>Atraso medio no ar</span>
+          <strong id="kpa-airborne-delay">-</strong>
+          <small>segundos por voo</small>
+        </article>
+        <article class="metric">
+          <span>Atraso total medio</span>
+          <strong id="kpa-total-delay">-</strong>
+          <small>segundos por voo</small>
+        </article>
+      </section>
+
+      <section class="metric-grid" data-kpa-panel="capacity" aria-label="Indicadores de capacidade e diagnosticos espaciais" hidden>
+        <article class="metric">
+          <span>Densidade ATD</span>
+          <strong id="capacity-atd">-</strong>
+          <small>aeronaves / km²</small>
+        </article>
+        <article class="metric">
+          <span>Hotspot ATD</span>
+          <strong id="capacity-hotspot">-</strong>
+          <small>aeronaves / km²</small>
+        </article>
+        <article class="metric">
+          <span>Area REH</span>
+          <strong id="capacity-area">-</strong>
+          <small>km² de corredor</small>
+        </article>
+        <article class="metric">
+          <span>Waypoints UAM × REH</span>
+          <strong id="capacity-crossings">-</strong>
+          <small>interseções geométricas 3D candidatas</small>
+        </article>
+      </section>
+
+      <section data-kpa-panel="overview" class="workspace">
         <aside class="side-panel">
           <div class="panel-section">
             <h2>Camadas</h2>
@@ -171,7 +225,94 @@
         </section>
       </section>
 
-      <section class="viewer3d-section" data-kpa-panel="safety" aria-labelledby="viewer3d-title">
+      <section data-kpa-panel="overview" class="chart-section context-section" aria-label="Graficos de contexto operacional">
+        <div class="section-heading">
+          <p class="eyebrow">Contexto operacional</p>
+          <h2>Demanda simultanea e perfil de altitude</h2>
+        </div>
+        <div class="charts">
+        <article class="chart-card">
+          <h2>Aeronaves simultaneas</h2>
+          <img id="chart-active" alt="Serie temporal de aeronaves simultaneas" />
+        </article>
+        <article class="chart-card">
+          <h2>Altitude</h2>
+          <img id="chart-altitude" alt="Histograma de altitude" />
+        </article>
+        </div>
+      </section>
+
+      <details class="kpa-details" data-kpa-panel="overview">
+        <summary>
+          <span>Visão geral</span>
+          <span class="details-show">Ver detalhes</span>
+          <span class="details-hide">Ocultar detalhes</span>
+        </summary>
+        <div class="kpa-details-content">
+          <section class="comparison-panel" aria-label="Comparacao entre STATELOGs">
+            <div class="comparison-header">
+              <div>
+                <p class="eyebrow">Comparacao</p>
+                <h2>Cenarios processados</h2>
+              </div>
+            </div>
+            <div id="comparison-summary" class="comparison-summary">-</div>
+            <div class="table-wrap">
+              <table class="comparison-table">
+                <thead>
+                  <tr>
+                    <th>Variante</th>
+                    <th>Atraso solo</th>
+                    <th>Atraso ar</th>
+                    <th>Atraso total</th>
+                    <th>Tempo medio</th>
+                    <th>Δ tempo vs referencia</th>
+                    <th>Distancia</th>
+                    <th>Δ distancia vs referencia</th>
+                    <th>Conformidade TC</th>
+                    <th>Aderencia REH</th>
+                    <th>LoWC</th>
+                    <th>LoWC/h</th>
+                    <th>MAC/100k h</th>
+                    <th>Margem TLS</th>
+                    <th>Razao risco vs ref</th>
+                    <th>NMAC</th>
+                    <th>Sev. min</th>
+                  </tr>
+                </thead>
+                <tbody id="comparison-table-body"></tbody>
+              </table>
+            </div>
+          </section>
+
+          <section class="traceability-panel" aria-label="Rastreabilidade das metricas">
+            <div>
+              <p class="eyebrow">Rastreabilidade</p>
+              <h2>O que esta implementado e o que ainda precisa melhorar</h2>
+              <p id="metric-source-note">Carregando referência do Produto 3.</p>
+            </div>
+            <div class="table-wrap">
+              <table class="comparison-table traceability-table">
+                <thead>
+                  <tr>
+                    <th>Metrica</th>
+                    <th>Formula</th>
+                    <th>PDF</th>
+                    <th>Codigo</th>
+                    <th>Status</th>
+                    <th>Dados necessarios</th>
+                    <th>Implementado hoje</th>
+                    <th>Melhorias e pendencias</th>
+                  </tr>
+                </thead>
+                <tbody id="traceability-table-body"></tbody>
+              </table>
+            </div>
+          </section>
+        </div>
+      </details>
+
+      <section data-kpa-panel="safety" hidden class="viewer3d-section" aria-labelledby="viewer3d-title">
         <div class="section-heading viewer3d-heading">
           <div>
             <p class="eyebrow">Espaço aéreo em três dimensões</p>
@@ -221,100 +362,41 @@
             <span><i class="viewer3d-dot mac"></i>MAC</span>
           </div>
         </div>
-        <section class="conflict-timeline" aria-labelledby="conflict-timeline-title">
-          <div class="conflict-timeline-heading">
-            <h3 id="conflict-timeline-title">Linha do tempo de eventos</h3>
-            <span id="conflict-timeline-summary">Carregando eventos…</span>
+        <details class="kpa-details">
+          <summary>
+            <span>Linha do tempo de eventos</span>
+            <span class="details-show">Ver detalhes</span>
+            <span class="details-hide">Ocultar detalhes</span>
+          </summary>
+          <div class="kpa-details-content">
+            <section class="conflict-timeline" aria-labelledby="conflict-timeline-title">
+              <div class="conflict-timeline-heading">
+                <h3 id="conflict-timeline-title">Linha do tempo de eventos</h3>
+                <span id="conflict-timeline-summary">Carregando eventos…</span>
+              </div>
+              <div class="conflict-timeline-table">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Classe</th>
+                      <th>Início</th>
+                      <th>Maior severidade</th>
+                      <th>Fim</th>
+                      <th>Aeronaves</th>
+                      <th>Combinação</th>
+                      <th>Separação H / V</th>
+                    </tr>
+                  </thead>
+                  <tbody id="conflict-timeline-body"></tbody>
+                </table>
+              </div>
+              <p class="mac-availability" id="mac-availability"></p>
+            </section>
           </div>
-          <div class="conflict-timeline-table">
-            <table>
-              <thead>
-                <tr>
-                  <th>Classe</th>
-                  <th>Início</th>
-                  <th>Maior severidade</th>
-                  <th>Fim</th>
-                  <th>Aeronaves</th>
-                  <th>Combinação</th>
-                  <th>Separação H / V</th>
-                </tr>
-              </thead>
-              <tbody id="conflict-timeline-body"></tbody>
-            </table>
-          </div>
-          <p class="mac-availability" id="mac-availability"></p>
-        </section>
+        </details>
       </section>
 
-      <section class="detail-panel" data-kpa-panel="efficiency safety" aria-label="Detalhamento das metricas">
-        <div class="section-heading">
-          <p class="eyebrow">Detalhamento</p>
-          <h2>Leitura complementar do cenario selecionado</h2>
-        </div>
-        <div class="detail-grid">
-          <article class="detail-group detail-efficiency" data-kpa-child="efficiency">
-            <h3>Eficiencia</h3>
-            <dl class="kpa-list">
-              <div>
-                <dt>Ineficiencia horizontal executada</dt>
-                <dd id="kpa-route-efficiency">-</dd>
-              </div>
-              <div>
-                <dt>Conformidade por distancia</dt>
-                <dd id="kpa-conformity">-</dd>
-              </div>
-              <div>
-                <dt>Aderencia espacial a REH</dt>
-                <dd id="kpa-spatial-adherence">-</dd>
-              </div>
-              <div>
-                <dt>Atraso medio em solo</dt>
-                <dd id="kpa-ground-delay">-</dd>
-              </div>
-              <div>
-                <dt>Atraso medio no ar</dt>
-                <dd id="kpa-airborne-delay">-</dd>
-              </div>
-              <div>
-                <dt>Atraso total medio</dt>
-                <dd id="kpa-total-delay">-</dd>
-              </div>
-            </dl>
-          </article>
-
-          <article class="detail-group detail-safety" data-kpa-child="safety">
-            <h3>Seguranca</h3>
-            <dl class="kpa-list">
-              <div>
-                <dt>Media da severidade minima por replica</dt>
-                <dd id="kpa-severity">-</dd>
-              </div>
-              <div>
-                <dt>MAC esperado / 100k h</dt>
-                <dd id="kpa-mac-rate">-</dd>
-              </div>
-              <div>
-                <dt>Margem TLS</dt>
-                <dd id="kpa-tls-margin">-</dd>
-              </div>
-              <div>
-                <dt>Tempo medio abaixo do limiar por replica</dt>
-                <dd id="kpa-time-below">-</dd>
-              </div>
-              <div>
-                <dt>Tempo ate conflito</dt>
-                <dd id="kpa-time-to-conflict">-</dd>
-              </div>
-              <div>
-                <dt>Amostragem LoWC</dt>
-                <dd id="kpa-safety-sample">-</dd>
-              </div>
-            </dl>
-          </article>
-        </div>
-      </section>
-
-      <section class="chart-section safety-section" data-kpa-panel="safety" aria-label="Graficos de seguranca">
+      <section data-kpa-panel="safety" hidden class="chart-section safety-section" aria-label="Graficos de seguranca">
         <div class="section-heading">
           <p class="eyebrow">Seguranca</p>
           <h2>Separacao, LoWC e severidade</h2>
@@ -331,7 +413,7 @@
         </div>
       </section>
 
-      <section class="chart-section efficiency-section" data-kpa-panel="efficiency" aria-label="Graficos de eficiencia">
+      <section data-kpa-panel="efficiency" hidden class="chart-section efficiency-section" aria-label="Graficos de eficiencia">
         <div class="section-heading">
           <p class="eyebrow">Eficiencia</p>
           <h2>Tempo, distancia e aderencia ao planejamento</h2>
@@ -348,117 +430,67 @@
         </div>
       </section>
 
-      <section class="chart-section context-section" data-kpa-panel="overview" aria-label="Graficos de contexto operacional">
-        <div class="section-heading">
-          <p class="eyebrow">Contexto operacional</p>
-          <h2>Demanda simultanea e perfil de altitude</h2>
-        </div>
-        <div class="charts">
-        <article class="chart-card">
-          <h2>Aeronaves simultaneas</h2>
-          <img id="chart-active" alt="Serie temporal de aeronaves simultaneas" />
-        </article>
-        <article class="chart-card">
-          <h2>Altitude</h2>
-          <img id="chart-altitude" alt="Histograma de altitude" />
-        </article>
-        </div>
+      <section class="chart-section" data-kpa-panel="capacity" hidden aria-label="Calibração dos quatro cenários-base">
+        <div data-baseline-calibration></div>
+        <p><a href="calibration.html">Abrir calibração em página própria</a></p>
       </section>
 
-      <section class="chart-section capacity-section" data-kpa-panel="capacity" aria-label="Metricas de capacidade">
-        <div class="section-heading">
-          <p class="eyebrow">Capacidade</p>
-          <h2>Throughput, capacidade prática e utilização</h2>
-          <p>Densidade, hotspots e cruzamentos são diagnósticos espaciais complementares.</p>
+      <details class="kpa-details" data-kpa-panel="capacity" hidden>
+        <summary>
+          <span>Capacidade</span>
+          <span class="details-show">Ver detalhes</span>
+          <span class="details-hide">Ocultar detalhes</span>
+        </summary>
+        <div class="kpa-details-content">
+          <section class="chart-section capacity-section" aria-label="Metricas de capacidade">
+            <div class="section-heading">
+              <p class="eyebrow">Capacidade</p>
+              <h2>Throughput, capacidade prática e utilização</h2>
+              <p>Densidade, hotspots e cruzamentos são diagnósticos espaciais complementares.</p>
+            </div>
+            <div class="table-wrap">
+              <table class="comparison-table capacity-table">
+                <thead>
+                  <tr>
+                    <th>Tipo</th>
+                    <th>Recurso</th>
+                    <th>Operacoes</th>
+                    <th>THR pico</th>
+                    <th>Capacidade P95</th>
+                    <th>Utilizacao pico</th>
+                  </tr>
+                </thead>
+                <tbody id="capacity-table-body"></tbody>
+              </table>
+            </div>
+            <div id="capacity-complexity" class="comparison-summary">-</div>
+            <div class="section-heading">
+              <p class="eyebrow">Waypoints explicitamente nomeados</p>
+              <h3>Junções UAM referenciadas pela REH</h3>
+              <p id="candidate-node-summary">Aguardando geometria da rede.</p>
+              <a href="assets/data/uam_node_selection_audit.geojson" download>Baixar auditoria das posições UAM incluídas e excluídas</a>
+              <p>UAM: somente waypoints nomeados com três ou mais arestas físicas, referência REH compatível e uso não exclusivamente terminal. Geometric Node e acessos exclusivamente terminais são excluídos. Cada posição e nível permanece separado. Clique para inspecionar as posições e a origem.</p>
+            </div>
+            <div class="table-wrap candidate-node-table-wrap">
+              <table class="comparison-table capacity-table">
+                <thead><tr><th>Rede</th><th>Nó</th><th>Posições / grau UAM</th><th>Trechos conectados</th></tr></thead>
+                <tbody id="candidate-node-table-body"></tbody>
+              </table>
+            </div>
+            <div class="section-heading">
+              <p class="eyebrow">Movimento observado</p>
+              <h3>Demanda empírica nos waypoints nomeados</h3>
+              <p id="waypoint-ranking-summary">Aguardando processamento das réplicas P100.</p>
+            </div>
+            <div class="table-wrap candidate-node-table-wrap">
+              <table class="comparison-table capacity-table">
+                <thead><tr><th>Posição</th><th>Critério</th><th>Waypoint</th><th>Operações médias</th><th>THR médio</th><th>P95 empírico</th></tr></thead>
+                <tbody id="waypoint-ranking-table-body"></tbody>
+              </table>
+            </div>
+          </section>
         </div>
-        <div class="metric-grid compact-grid">
-          <article class="metric">
-            <span>Densidade ATD</span>
-            <strong id="capacity-atd">-</strong>
-            <small>aeronaves / km²</small>
-          </article>
-          <article class="metric">
-            <span>Hotspot ATD</span>
-            <strong id="capacity-hotspot">-</strong>
-            <small>aeronaves / km²</small>
-          </article>
-          <article class="metric">
-            <span>Area REH</span>
-            <strong id="capacity-area">-</strong>
-            <small>km² de corredor</small>
-          </article>
-          <article class="metric">
-            <span>Waypoints UAM × REH</span>
-            <strong id="capacity-crossings">-</strong>
-            <small>interseções geométricas 3D candidatas</small>
-          </article>
-        </div>
-        <div class="table-wrap">
-          <table class="comparison-table capacity-table">
-            <thead>
-              <tr>
-                <th>Tipo</th>
-                <th>Recurso</th>
-                <th>Operacoes</th>
-                <th>THR pico</th>
-                <th>Capacidade P95</th>
-                <th>Utilizacao pico</th>
-              </tr>
-            </thead>
-            <tbody id="capacity-table-body"></tbody>
-          </table>
-        </div>
-        <div id="capacity-complexity" class="comparison-summary">-</div>
-        <div class="section-heading">
-          <p class="eyebrow">Waypoints explicitamente nomeados</p>
-          <h3>Junções UAM referenciadas pela REH</h3>
-          <p id="candidate-node-summary">Aguardando geometria da rede.</p>
-          <a href="assets/data/uam_node_selection_audit.geojson" download>Baixar auditoria das posições UAM incluídas e excluídas</a>
-          <p>UAM: somente waypoints nomeados com três ou mais arestas físicas, referência REH compatível e uso não exclusivamente terminal. Geometric Node e acessos exclusivamente terminais são excluídos. Cada posição e nível permanece separado. Clique para inspecionar as posições e a origem.</p>
-        </div>
-        <div class="table-wrap candidate-node-table-wrap">
-          <table class="comparison-table capacity-table">
-            <thead><tr><th>Rede</th><th>Nó</th><th>Posições / grau UAM</th><th>Trechos conectados</th></tr></thead>
-            <tbody id="candidate-node-table-body"></tbody>
-          </table>
-        </div>
-        <div class="section-heading">
-          <p class="eyebrow">Movimento observado</p>
-          <h3>Demanda empírica nos waypoints nomeados</h3>
-          <p id="waypoint-ranking-summary">Aguardando processamento das réplicas P100.</p>
-        </div>
-        <div class="table-wrap candidate-node-table-wrap">
-          <table class="comparison-table capacity-table">
-            <thead><tr><th>Posição</th><th>Critério</th><th>Waypoint</th><th>Operações médias</th><th>THR médio</th><th>P95 empírico</th></tr></thead>
-            <tbody id="waypoint-ranking-table-body"></tbody>
-          </table>
-        </div>
-      </section>
-
-      <section class="traceability-panel" data-kpa-panel="overview" aria-label="Rastreabilidade das metricas">
-        <div>
-          <p class="eyebrow">Rastreabilidade</p>
-          <h2>O que esta implementado e o que ainda precisa melhorar</h2>
-          <p id="metric-source-note">Carregando referência do Produto 3.</p>
-        </div>
-        <div class="table-wrap">
-          <table class="comparison-table traceability-table">
-            <thead>
-              <tr>
-                <th>Metrica</th>
-                <th>Formula</th>
-                <th>PDF</th>
-                <th>Codigo</th>
-                <th>Status</th>
-                <th>Dados necessarios</th>
-                <th>Implementado hoje</th>
-                <th>Melhorias e pendencias</th>
-              </tr>
-            </thead>
-            <tbody id="traceability-table-body"></tbody>
-          </table>
-        </div>
-      </section>
+      </details>
     </main>
 
     <script
@@ -473,6 +505,8 @@
     <script src="assets/uam_projection.js?v=9ecd2e43dfa0"></script>
     <script src="assets/waypoint_rankings.js?v=b41c228c891b"></script>
     <script src="assets/metric_catalog.js?v=cf897343f15b"></script>
-    <script src="assets/dashboard.js?v=4d2cad994180"></script>
+    <script src="assets/baseline_calibration_data.js"></script>
+    <script src="assets/baseline_calibration.js"></script>
+    <script src="assets/dashboard.js?v=8d31d07b2c90"></script>
   </body>
 </html>

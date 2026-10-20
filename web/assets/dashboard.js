@@ -127,23 +127,16 @@ function initMap() {
   const conflictPane = state.map.createPane("conflictPane");
   conflictPane.style.zIndex = 560;
 
-  const positron = L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", {
-    attribution: "&copy; OpenStreetMap &copy; CARTO",
+  const openStreetMap = L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    maxNativeZoom: 19,
     maxZoom: 20,
     updateWhenIdle: true,
     keepBuffer: 4,
   }).addTo(state.map);
 
-  const voyager = L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", {
-    attribution: "&copy; OpenStreetMap &copy; CARTO",
-    maxZoom: 20,
-    updateWhenIdle: true,
-    keepBuffer: 4,
-  });
-
   state.baseLayers = {
-    "Base clara": positron,
-    "Base detalhada": voyager,
+    "OpenStreetMap": openStreetMap,
   };
 }
 

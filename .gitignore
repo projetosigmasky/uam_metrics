@@ -4,3 +4,5 @@ __pycache__/
 data/logs/
 .venv/
 run_config.local.json
+baseline_manifest.local.json
+calibration_audit/

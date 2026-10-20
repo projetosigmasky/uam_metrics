@@ -5,6 +5,65 @@ Dashboard estatico para analisar logs `STATELOG` do BlueSky em cenarios de corre
 Este repositorio vincula as metricas ao `Produto3_vfinal_ProjetoSIGMASky.pdf` (Produto 3, versao 2.0, 31/07/2026). A saida principal e a pasta `docs/`, pronta para GitHub Pages. O PDF local e ignorado pelo Git; o catalogo versionado registra suas paginas e equacoes.
 
 
+## Calibracao dos quatro baselines nominais
+
+O modulo de calibracao compara **C1.1, C1.2, C2.1 e C2.2**, separadamente, em janelas de **300, 900 e 3600 segundos**. C1 usa arquitetura compartilhada, C2 usa corredores dedicados; o sufixo `.1` corresponde a 6 vertiportos e `.2` a 12. Este fluxo e independente da selecao legada C1/C2 descrita abaixo: nao reutiliza automaticamente suas metricas ou geometrias.
+
+No Lessonia, mantenha acessiveis os **JSONs originais da geracao nominal**, com `product2.resource_manifest`, e os arquivos **WPPASS** dos runs concluidos. Somente SCN ou STATELOG nao substituem esse catalogo de recursos fisicos. Os eventos sao conferidos por aeronave, recurso e ocorrencia na rota; eventos ausentes, duplicados ou divergentes interrompem a geracao. A descoberta recusa arquivos ambiguos e exige as 50 replicas de cada baseline, mesmo quando estao distribuidas em runs diferentes.
+
+```bash
+cd ~/post-processing
+.venv/bin/python prepare_baseline_manifest.py \
+  --scenario-root ~/rmsp-uam-simulations/scenarios/product2/nominal_20261013 \
+  --run-dirs ~/runs/RUN_CONCLUIDO \
+  --output baseline_manifest.local.json
+
+.venv/bin/python generate_reports.py \
+  --baseline-manifest baseline_manifest.local.json \
+  --audit-dir calibration_audit
+```
+
+Ajuste o caminho do clone e o identificador do run. Se os quatro baselines estiverem em runs distintos, passe todos os diretorios depois de `--run-dirs`. Logs de outras variantes sao ignorados na descoberta; os runs selecionados precisam estar concluidos sem erro. Nao ha acesso remoto ou disparo de simulacoes nesses comandos. A calibracao tambem pode ser executada diretamente por `generate_baseline_calibration.py --manifest baseline_manifest.local.json --output-dir docs`.
+
+A saida aparece em **`docs/calibration.html`** e na aba **Capacidade** do dashboard. O seletor de cenario da calibracao e independente do seletor do mapa. As tres janelas aparecem lado a lado nos histogramas e curvas acumuladas, com os mesmos limites e classes do eixo horizontal entre todos os cenarios. A curva de sensibilidade mostra o mesmo waypoint nas tres janelas. A tabela detalhada e os parametros ficam recolhidos em “Ver detalhes”. Sem processamento, a interface mostra ausencia de resultados; nao cria capacidades ficticias.
+
+### Definicoes e comparabilidade
+
+- Recurso: ponto fisico/pista/altitude do manifesto de simulacao, com `capacity_key=physical_point_track`, elegivel e nomeado. Nomes iguais nao somam capacidades, e esse universo nao e o filtro legado de juncoes de grau >=3.
+- Tempo: origem em 0 s, intervalos semiabertos `[k*w,(k+1)*w)`, somente janelas inteiramente observadas. No modo nativo, o intervalo padrao e a duracao declarada da simulacao concluida. Um intervalo menor pode ser informado por replica em `observation_start_s`/`observation_end_s`. A cobertura registra os segundos parciais e passagens excluidos.
+- Unidades: contagem por janela **e** taxa equivalente em operacoes/h. Uma operacao corresponde a 12 op/h na janela de 5 min, 4 op/h em 15 min e 1 op/h em 60 min. As comparacoes entre escalas usam operacoes/h.
+- Referencia empirica: P95 `higher` das janelas reunidas das replicas, calculado de novo para cada tamanho de janela. Nao e a media dos P95 individuais nem um limite operacional demonstrado.
+- Zeros: “somente positivas” reproduz a selecao configurada para calibracao no gerador; “todas” inclui ociosidade. Waypoints sem uso observado ficam identificados separadamente, sem atribuir capacidade zero ou aplicar piso artificial de uma operacao. Falta de janela completa em alguma replica invalida a estimativa final para aquela escala.
+- Rede: o histograma conta cada waypoint uma vez por cenario/janela. Nao ha soma de capacidades dos waypoints para estimar capacidade da rede.
+
+### Estabilidade e incerteza
+
+O bootstrap usa **replicas inteiras como blocos**, preservando a dependencia temporal das janelas de cada simulacao. Calcula IC percentil para o P95 reunido e a media das janelas reunidas, alem das curvas acumuladas. As sementes C1/C2 do mesmo estagio sao verificadas, mas nao se publica um efeito pareado entre recursos de identidades fisicas distintas.
+
+Padroes: 95% de confianca, minimo de 30 replicas, tolerancia relativa de 5%, absoluta de 0 op/h, 15 avaliacoes consecutivas e 1.000 reamostragens com semente 1729. A primeira confirmacao possivel e em 44 replicas. O resultado final exige que a sequencia de 15 confirmacoes se mantenha ate a ultima replica. Media e P95 possuem resultados de estabilidade independentes. Sao criterios de precisao empirica, nao prova de seguranca nem garantia de que 50 replicas bastam para todos os KPIs. Percentis discretos podem produzir intervalos degenerados; poucos eventos ou reamostragens sem uso nao devem ser interpretados como evidencia de capacidade maxima.
+
+Ajustes opcionais no manifesto:
+
+```json
+"stability": {
+  "minimum_replications": 30,
+  "confirmation_window": 15,
+  "confidence_level": 0.95,
+  "relative_tolerance": 0.05,
+  "absolute_tolerance_per_hour": 0.0,
+  "bootstrap_samples": 1000,
+  "seed": 1729
+}
+```
+
+### Auditoria e alternativa geometrica
+
+`docs/assets/data/baseline_calibration/` recebe 16 PNGs de histogramas/distribuicoes acumuladas, `comparison.csv`, `replica_metrics.csv`, `convergence.csv` e `calibration.json` com cobertura, parametros e hashes das fontes. `docs/assets/baseline_calibration_data.js` permite visualizar os resultados sem fetch. Os CSVs opcionais de passagens e janelas positivas ficam em `calibration_audit/`, fora da publicacao e ignorados pelo Git; zeros omitidos desse CSV esparso sao reconstruiveis pela cobertura. As curvas e coberturas do JSON usam linhas compactas com os campos descritos em `trace_columns` e `coverage_columns`; os CSVs mantem cabecalhos explicitos. Os logs brutos permanecem no servidor.
+
+Se nao houver WPPASS, edite explicitamente o manifesto: `allow_geometric_estimate: true` na raiz e `passage_source: "geometric"` com `statelog` em cada replica. Continue fornecendo o JSON original e o run concluido. O estimador usa cilindros de 250 m (configuraveis por `capture_radius_m`), competicao entre posicoes e interpolacao 3D, limitado a cobertura efetiva do STATELOG. Nao mistura fontes nativas e geometricas dentro de um mesmo cenario e nao faz fallback silencioso. Os resultados ficam identificados como estimativa geometrica.
+
+Depois de processar, publique `docs/` com os assets correspondentes. O modo legado `generate_reports.py --config ...` continua independente e regenera seus assets; se for usado tambem, execute a calibracao **depois** dele para publicar o conjunto atualizado.
+
 ## Fluxo atual no Lessonia
 
 Os novos runs ficam em `~/runs`. Atualize o código do orquestrador e do gerador antes de executar. O gerador exporta um contrato headless e os plugins UAMLOG/WPPASS; os logs só entram neste projeto após conclusão sem erros.
@@ -125,6 +184,8 @@ Alguns parametros podem ser alterados pela linha de comando:
 ```
 
 ## 4. Saida Gerada
+
+O mapa 2D usa Leaflet com o basemap padrao do OpenStreetMap, sem cadastro ou chave de API. Trajetorias, corredores, eventos e densidade sao camadas desenhadas sobre esse fundo. Os tiles sao carregados pela internet de `https://tile.openstreetmap.org/{z}/{x}/{y}.png`, com atribuicao visivel aos contribuidores. O servico publico segue a [politica de uso de tiles do OpenStreetMap](https://operations.osmfoundation.org/policies/tiles/), sem garantia de disponibilidade e sem downloads em massa ou uso offline. Para visualizar o dashboard localmente, sirva a pasta `docs/` por HTTP em vez de abrir o HTML diretamente.
 
 O gerador publica em `docs/`:
 

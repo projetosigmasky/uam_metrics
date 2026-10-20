@@ -330,6 +330,51 @@ main {
   font-size: 28px;
   line-height: 1.1;
   margin: 10px 0 5px;
+  overflow-wrap: anywhere;
+}
+
+.kpa-details {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+  min-width: 0;
+}
+
+.kpa-details > summary {
+  cursor: pointer;
+  padding: 18px;
+  font-weight: 700;
+}
+
+.kpa-details > summary > span:first-child {
+  margin-right: 12px;
+}
+
+.kpa-details > summary > span + span {
+  color: var(--blue);
+  font-size: 13px;
+}
+
+.kpa-details > summary:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 3px;
+}
+
+.kpa-details .details-hide,
+.kpa-details[open] .details-show {
+  display: none;
+}
+
+.kpa-details[open] .details-hide {
+  display: inline;
+}
+
+.kpa-details-content {
+  display: grid;
+  gap: 18px;
+  min-width: 0;
+  padding: 0 16px 16px;
 }
 
 .metric.danger strong {

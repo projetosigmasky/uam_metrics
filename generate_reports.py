@@ -19,7 +19,17 @@ def main() -> None:
     parser.add_argument("--workers", type=int, default=None, help="Override both worker counts from the JSON")
     parser.add_argument("--run-id", help="Select a completed run and save run_config.local.json")
     parser.add_argument("--runs-root", type=Path, help="Run directory root, default ~/runs when selecting a run")
+    parser.add_argument("--baseline-manifest", type=Path, help="Calibrate the four nominal baselines instead of the legacy C1/C2 report")
+    parser.add_argument("--audit-dir", type=Path, help="Optional server-side passage/window CSVs for baseline calibration")
     args = parser.parse_args()
+    if args.baseline_manifest is not None:
+        if args.run_id is not None or args.runs_root is not None or args.workers is not None or args.config != Path("run_config.json"):
+            parser.error("--baseline-manifest uses its own completed run paths; do not combine with legacy run/config/worker selection")
+        from generate_baseline_calibration import generate
+        generate(args.baseline_manifest.resolve(), Path(__file__).resolve().parent / "docs", args.audit_dir)
+        return
+    if args.audit_dir is not None:
+        parser.error("--audit-dir requires --baseline-manifest")
     if args.runs_root is not None and args.run_id is None:
         parser.error("--runs-root requires --run-id")
     if args.workers is not None and args.workers <= 0:
