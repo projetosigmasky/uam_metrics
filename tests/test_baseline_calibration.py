@@ -1,6 +1,7 @@
 import copy
 import csv
 import json
+import os
 import tempfile
 import unittest
 from unittest.mock import patch
@@ -144,12 +145,41 @@ class CalibrationTests(unittest.TestCase):
             replicas[-1]["seeds"]["seed"] = 999
             with self.assertRaisesRegex(ValueError, "not paired"): analyze(replicas, manifest["stability"])
 
+    def test_parallel_matches_serial_including_bootstrap_and_restores_environment(self):
+        with tempfile.TemporaryDirectory() as temp:
+            path, _, _ = fixture(Path(temp))
+            manifest, entries = load_manifest(path)
+            for entry in entries:
+                n = entry["replication"]
+                entry["events_file"].write_text("time_s,flight_id,resource_id,occurrence\n"
+                    f"{n*170},A,R1,0\n{n*400},A,R1,1\n{3600+n*100},A,R1,2\n")
+            replicas = [read_replica(entry) for entry in entries]
+            serial, _, _ = analyze(replicas, manifest["stability"], workers=1)
+            with patch.dict(os.environ, {"OPENBLAS_NUM_THREADS": "3", "OMP_NUM_THREADS": "2"}):
+                parallel, _, _ = analyze(replicas, manifest["stability"], workers=2)
+                self.assertEqual(os.environ["OPENBLAS_NUM_THREADS"], "3")
+                self.assertEqual(os.environ["OMP_NUM_THREADS"], "2")
+            self.assertEqual(serial, parallel)
+
+    def test_invalid_workers_fail_before_reading_or_writing(self):
+        for workers in (0, -1, True, 1.5):
+            with self.subTest(workers=workers):
+                with self.assertRaisesRegex(ValueError, "workers must be a positive integer"):
+                    analyze([], workers=workers)
+                with self.assertRaisesRegex(ValueError, "workers must be a positive integer"):
+                    generate(Path("missing.json"), Path("unused"), workers=workers)
+
     def test_publish_end_to_end_and_failure_preserves_output(self):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)
             path, _, _ = fixture(root)
+            manifest = json.loads(path.read_text())
+            manifest["workers"] = 2
+            path.write_text(json.dumps(manifest))
             output = root / "docs"
-            generate(path, output, root / "audit")
+            with patch("generate_baseline_calibration.analyze", wraps=analyze) as analyze_call:
+                generate(path, output, root / "audit")
+                self.assertEqual(analyze_call.call_args.kwargs["workers"], 2)
             destination = output / "assets/data/baseline_calibration"
             self.assertEqual(len(list(destination.glob("*.png"))), 16)
             result = json.loads((destination / "calibration.json").read_text(encoding="utf-8"))
@@ -169,11 +199,12 @@ class CalibrationTests(unittest.TestCase):
 
     def test_report_command_routes_calibration_without_legacy_processing(self):
         import generate_reports
-        with patch("sys.argv", ["generate_reports.py", "--baseline-manifest", "selected.json"]), \
+        with patch("sys.argv", ["generate_reports.py", "--baseline-manifest", "selected.json", "--workers", "25"]), \
              patch("generate_baseline_calibration.generate") as build, \
              patch("generate_reports.subprocess.run") as subprocess_run:
             generate_reports.main()
             build.assert_called_once()
+            self.assertEqual(build.call_args.kwargs["workers"], 25)
             subprocess_run.assert_not_called()
 
     def test_report_command_rejects_mixed_selection(self):

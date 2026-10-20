@@ -9,7 +9,11 @@ import csv
 import hashlib
 import json
 import math
+import multiprocessing
+import os
 import re
+from concurrent.futures import ProcessPoolExecutor
+from contextlib import contextmanager
 from pathlib import Path
 
 import numpy as np
@@ -22,6 +26,38 @@ DEFAULT_CRITERIA = {
     "confidence_level": .95, "relative_tolerance": .05,
     "absolute_tolerance_per_hour": 0., "bootstrap_samples": 1000, "seed": 1729,
 }
+
+_worker_criteria = None
+_worker_weights = None
+
+
+def validate_workers(workers: int) -> None:
+    if type(workers) is not int or workers < 1:
+        raise ValueError("workers must be a positive integer")
+
+
+@contextmanager
+def _worker_environment():
+    """Spawn numerical workers with one BLAS/OpenMP thread per process."""
+    names = ("OPENBLAS_NUM_THREADS", "OMP_NUM_THREADS", "MKL_NUM_THREADS",
+             "BLIS_NUM_THREADS", "VECLIB_MAXIMUM_THREADS", "NUMEXPR_NUM_THREADS")
+    previous = {name: os.environ.get(name) for name in names}
+    try:
+        os.environ.update(dict.fromkeys(names, "1"))
+        yield
+    finally:
+        for name, value in previous.items():
+            if value is None: os.environ.pop(name, None)
+            else: os.environ[name] = value
+
+
+def _initialize_waypoint_worker(criteria, weights):
+    global _worker_criteria, _worker_weights
+    _worker_criteria, _worker_weights = criteria, weights
+
+
+def _run_waypoint_worker(task):
+    return _analyze_waypoint(task, _worker_criteria, _worker_weights)
 
 
 def fingerprint(path: Path) -> dict:
@@ -251,7 +287,26 @@ def estimate(counts: list[list[int]], window: int, policy: str, criteria: dict, 
             "convergence": trace}
 
 
-def analyze(replicas: list[dict], criteria: dict | None = None) -> tuple:
+def _analyze_waypoint(task: tuple, criteria: dict, weights_by_scenario: dict) -> tuple:
+    scenario, metadata, observations = task
+    record = {**metadata, "estimates": {}, "coverage": {}}
+    for window in WINDOWS:
+        per_replica = []
+        coverage = []
+        for replication, start, end, times in observations:
+            counts, audit = full_window_counts(times, start, end, window)
+            per_replica.append(counts)
+            coverage.append({"replication": replication, **audit})
+        record["coverage"][str(window)] = coverage
+        for policy in POLICIES:
+            record["estimates"][f"{window}:{policy}"] = estimate(
+                per_replica, window, policy, criteria, weights_by_scenario[scenario]
+            )
+    return scenario, record
+
+
+def analyze(replicas: list[dict], criteria: dict | None = None, workers: int = 1) -> tuple:
+    validate_workers(workers)
     criteria = {**DEFAULT_CRITERIA, **(criteria or {})}
     for key in ("minimum_replications", "confirmation_window", "bootstrap_samples", "seed"):
         if type(criteria[key]) is not int or criteria[key] < (0 if key == "seed" else 1): raise ValueError(f"Invalid {key}")
@@ -264,6 +319,8 @@ def analyze(replicas: list[dict], criteria: dict | None = None) -> tuple:
               "criteria": criteria, "uncertainty_method": "percentile_bootstrap_replication_clusters",
               "scenarios": {}}
     rng = np.random.default_rng(criteria["seed"])
+    weights_by_scenario = {}
+    tasks = []
     for scenario in BASELINES:
         rows = sorted((r for r in replicas if r["scenario"] == scenario), key=lambda r: r["replication"])
         if not rows: raise ValueError(f"Missing {scenario}")
@@ -275,23 +332,16 @@ def analyze(replicas: list[dict], criteria: dict | None = None) -> tuple:
                 catalog[rid] = resource
         weights = {n: rng.multinomial(n, np.full(n, 1/n), size=criteria["bootstrap_samples"]).astype(float)
                    for n in range(criteria["minimum_replications"], len(rows) + 1)}
+        weights_by_scenario[scenario] = weights
         output = {"replica_count": len(rows), "passage_source": rows[0]["provenance"]["passage_source"],
                   "provenance": [{"replication": r["replication"], **r["provenance"]} for r in rows], "resources": []}
         print(f"Calibrating {scenario}: {len(rows)} replicas, {len(catalog)} physical waypoints", flush=True)
-        for resource_index, (rid, resource) in enumerate(sorted(catalog.items()), 1):
-            if resource_index % 50 == 0: print(f"  {scenario}: {resource_index}/{len(catalog)} waypoints", flush=True)
-            record = {"waypoint_id": rid, "label": resource.get("reh_name") or resource.get("source_waypoint_name") or rid,
-                      "network": resource.get("network"), "lat": resource["lat"], "lon": resource["lon"],
-                      "altitude_ft": resource.get("altitude_ft"), "estimates": {}}
-            for window in WINDOWS:
-                per_replica = []
-                for row in rows:
-                    counts, audit = full_window_counts(row["events"].get(rid, []), row["start"], row["end"], window)
-                    per_replica.append(counts)
-                    record.setdefault("coverage", {}).setdefault(str(window), []).append({"replication": row["replication"], **audit})
-                for policy in POLICIES:
-                    record["estimates"][f"{window}:{policy}"] = estimate(per_replica, window, policy, criteria, weights)
-            output["resources"].append(record)
+        for rid, resource in sorted(catalog.items()):
+            metadata = {"waypoint_id": rid, "label": resource.get("reh_name") or resource.get("source_waypoint_name") or rid,
+                        "network": resource.get("network"), "lat": resource["lat"], "lon": resource["lon"],
+                        "altitude_ft": resource.get("altitude_ft")}
+            observations = [(row["replication"], row["start"], row["end"], row["events"].get(rid, [])) for row in rows]
+            tasks.append((scenario, metadata, observations))
         result["scenarios"][scenario] = output
     # Pairing is checked on requested-demand seeds, never assumed by scenario name alone.
     for stage in ("1", "2"):
@@ -299,6 +349,30 @@ def analyze(replicas: list[dict], criteria: dict | None = None) -> tuple:
         right = {r["replication"]: r for r in replicas if r["scenario"] == f"C2.{stage}"}
         if any(r["seeds"] != right[r["replication"]]["seeds"] or any(v is None for v in r["seeds"].values()) for r in left):
             raise ValueError(f"Baseline seeds are not paired for stage {stage}")
+    worker_count = min(workers, len(tasks))
+    print(f"Analyzing {len(tasks)} physical waypoints with {worker_count} worker processes...", flush=True)
+
+    def collect(results):
+        # executor.map preserves input order, independent of completion order.
+        for completed, (scenario, record) in enumerate(results, 1):
+            result["scenarios"][scenario]["resources"].append(record)
+            if completed % 50 == 0 or completed == len(tasks):
+                print(f"Completed {completed}/{len(tasks)} physical waypoints", flush=True)
+
+    if worker_count == 1:
+        collect(_analyze_waypoint(task, criteria, weights_by_scenario) for task in tasks)
+    else:
+        # The bootstrap draws are generated once above, in the same order as the
+        # serial implementation, and initialized once per worker. Tasks contain
+        # only one waypoint's observations, never entire logs or replica catalogs.
+        with _worker_environment():
+            with ProcessPoolExecutor(
+                max_workers=worker_count,
+                mp_context=multiprocessing.get_context("spawn"),
+                initializer=_initialize_waypoint_worker,
+                initargs=(criteria, weights_by_scenario),
+            ) as pool:
+                collect(pool.map(_run_waypoint_worker, tasks, chunksize=1))
     return result, iter_windows(replicas), iter_passages(replicas)
 
 

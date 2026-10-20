@@ -20,10 +20,15 @@ cd ~/post-processing
 
 .venv/bin/python generate_reports.py \
   --baseline-manifest baseline_manifest.local.json \
-  --audit-dir calibration_audit
+  --audit-dir calibration_audit \
+  --workers 25
 ```
 
-Ajuste o caminho do clone e o identificador do run. Se os quatro baselines estiverem em runs distintos, passe todos os diretorios depois de `--run-dirs`. Logs de outras variantes sao ignorados na descoberta; os runs selecionados precisam estar concluidos sem erro. Nao ha acesso remoto ou disparo de simulacoes nesses comandos. A calibracao tambem pode ser executada diretamente por `generate_baseline_calibration.py --manifest baseline_manifest.local.json --output-dir docs`.
+Ajuste o caminho do clone e o identificador do run. Se os quatro baselines estiverem em runs distintos, passe todos os diretorios depois de `--run-dirs`. Logs de outras variantes sao ignorados na descoberta; os runs selecionados precisam estar concluidos sem erro. Nao ha acesso remoto ou disparo de simulacoes nesses comandos. A calibracao tambem pode ser executada diretamente por `generate_baseline_calibration.py --manifest baseline_manifest.local.json --output-dir docs --workers 25`.
+
+`--workers 25` distribui os waypoints fisicos dos quatro cenarios em ate 25 **processos**, aproveitando CPUs diferentes no Lessonia. Cada tarefa calcula as tres janelas, ambas as politicas de zeros e os bootstraps de um waypoint. Os sorteios sao preparados uma unica vez com a mesma semente e a saida e ordenada, preservando os resultados do modo sequencial. Cada processo numerico usa um thread BLAS/OpenMP para evitar multiplicacao de threads. Leitura/validacao dos logs, graficos e gravacao dos arquivos permanecem sequenciais. O progresso informa o numero efetivo de processos e os waypoints concluidos.
+
+A prioridade e `--workers` > campo `workers` na raiz do manifesto > **1 processo**. O manifesto e independente de `dashboard_workers`/`ranking_workers` do fluxo legado. Para persistir a escolha, acrescente `"workers": 25` ao manifesto. Para comparar ou diagnosticar, use `--workers 1`. A quantidade efetiva e limitada ao numero de waypoints; valores zero ou negativos sao rejeitados.
 
 A saida aparece em **`docs/calibration.html`** e na aba **Capacidade** do dashboard. O seletor de cenario da calibracao e independente do seletor do mapa. As tres janelas aparecem lado a lado nos histogramas e curvas acumuladas, com os mesmos limites e classes do eixo horizontal entre todos os cenarios. A curva de sensibilidade mostra o mesmo waypoint nas tres janelas. A tabela detalhada e os parametros ficam recolhidos em “Ver detalhes”. Sem processamento, a interface mostra ausencia de resultados; nao cria capacidades ficticias.
 
