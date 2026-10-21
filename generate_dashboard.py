@@ -5,12 +5,14 @@ import copy
 import json
 import shutil
 import re
+import math
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from pathlib import Path
 from typing import Any
 
 from src.uam_dashboard.capacity import capacity_metrics
 from src.uam_dashboard.aggregation import average_resource_group
+from src.uam_dashboard.replica_analysis import summarize_replica, aggregate_summaries, stability_payload, plot_aggregates, metric_value, metric_audit, KPI_PATHS, SCHEMA_VERSION
 from src.uam_dashboard.config import DEFAULT_REH_XML_PATH, DashboardConfig, SAO_PAULO_CENTER
 from src.uam_dashboard.experiment import experiment_metadata, experiment_sort_key, log_experiment_metadata, matching_scenario
 from src.uam_dashboard.exports import (
@@ -33,14 +35,6 @@ from src.uam_dashboard.metrics import (
     trajectory_conformity,
 )
 from src.uam_dashboard.metric_catalog import SOURCE_VERSION, metric_catalog_payload, write_metric_catalog_asset
-from src.uam_dashboard.plots import (
-    plot_active_aircraft,
-    plot_altitude_histogram,
-    plot_route_distance_histogram,
-    plot_separation_histogram,
-    plot_severity_histogram,
-    plot_trajectory_conformity,
-)
 from src.uam_dashboard.reh_parser import load_reh_network
 from src.uam_dashboard.run_config import load_run_selection
 from src.uam_dashboard.scenario_parser import (
@@ -57,9 +51,10 @@ from generate_uam_projection import write_uam_projection_asset
 from src.uam_dashboard.uam_corridor_parser import load_uam_corridor_network
 
 
-def write_json(path: Path, payload: object) -> None:
+def write_json(path: Path, payload: object, *, compact: bool = False) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+    path.write_text(json.dumps(payload, ensure_ascii=False, indent=None if compact else 2,
+                               separators=(",", ":") if compact else None), encoding="utf-8")
 
 
 def write_js_bundle(path: Path, payload: object) -> None:
@@ -104,8 +99,9 @@ def slugify(value: str) -> str:
     return value.strip("._")[:96] or "statelog"
 
 
-def mean(values: list[float]) -> float:
-    return sum(values) / len(values) if values else 0.0
+def mean(values: list[float | None]) -> float | None:
+    valid = [v for v in values if v is not None and math.isfinite(v)]
+    return sum(valid) / len(valid) if valid else None
 
 
 def average_dashboard(run_dashboards: list[dict[str, Any]]) -> dict[str, Any]:
@@ -550,23 +546,6 @@ def analyze_log(log_path: Path, config: DashboardConfig, charts_dir: Path, run_i
         "severity_histogram": f"assets/charts/{chart_prefix}_severity_histogram.png",
         "trajectory_conformity": f"assets/charts/{chart_prefix}_trajectory_conformity.png",
     }
-    if render_charts:
-        print("Rendering representative chart images...")
-        plot_active_aircraft(series, charts_dir / Path(chart_paths["active_aircraft"]).name)
-        plot_separation_histogram(
-            separation_samples,
-            config.lowc_horizontal_m,
-            charts_dir / Path(chart_paths["separation_histogram"]).name,
-        )
-        plot_altitude_histogram(
-            df, None, charts_dir / Path(chart_paths["altitude_histogram"]).name,
-            title="Distribuicao de altitude", xlabel="Altitude MSL (m)",
-        )
-        plot_route_distance_histogram(df, charts_dir / Path(chart_paths["distance_histogram"]).name)
-        plot_severity_histogram(lowc_events, charts_dir / Path(chart_paths["severity_histogram"]).name)
-        plot_trajectory_conformity(
-            conformity_by_instance, charts_dir / Path(chart_paths["trajectory_conformity"]).name,
-        )
     tracks = tracks_geojson(
         df,
         config.track_sample_stride,
@@ -614,6 +593,7 @@ def analyze_log(log_path: Path, config: DashboardConfig, charts_dir: Path, run_i
         "metric_catalog": metric_catalog_payload(),
     }
 
+    dashboard["replica_summary"] = summarize_replica(df, series, separation_samples, lowc_events, conformity_by_instance, config)
     grid = density_grid(df, config.heatmap_grid_degrees)
     if not render_charts:
         return {"dashboard": dashboard, "density_grid": grid}
@@ -670,7 +650,8 @@ def build_dashboard(config: DashboardConfig) -> None:
     data_dir.mkdir(parents=True, exist_ok=True)
 
     # Keep only per-replica metrics in memory. Geometry, timelines and charts
-    # are published from one representative replica per scenario. The heatmap
+    # are published from one representative replica per scenario. Charts use compact
+    # per-replica summaries; inference retains the individual estimates. The heatmap
     # merges every position sample from all replicas on a common grid, preventing
     # a 50-replica GitHub Pages bundle from duplicating large tracks 50 times.
     dashboards_by_group: dict[tuple[str, str, bool | None], list[tuple[int, dict[str, Any]]]] = {}
@@ -678,7 +659,8 @@ def build_dashboard(config: DashboardConfig) -> None:
     representatives: dict[tuple[str, str, bool | None], dict[str, Any]] = {}
     group_order: list[tuple[str, str, bool | None]] = []
     tasks = []
-    for index, log_path in enumerate(sorted(config.log_paths, key=experiment_sort_key)):
+    for index, log_path in enumerate(sorted(config.log_paths, key=lambda path: (
+            experiment_sort_key(path), log_experiment_metadata(path, config.scenario_paths).get("replica") or 0, str(path)))):
         metadata = log_experiment_metadata(log_path, config.scenario_paths)
         group_key = (
             str(metadata.get("day_key")),
@@ -723,6 +705,26 @@ def build_dashboard(config: DashboardConfig) -> None:
             ])
             run["dashboard"]["source_log"] = f"Média de {count} réplicas ({run['metadata'].get('scenario_key', group_key[1])})"
             run["metadata"] = {**run["metadata"], "variant_label": f"{run['metadata']['variant_label']} · média de {count} réplicas"}
+        individuals = [d for _, d in sorted(dashboards_by_group[group_key])]
+        run["aggregate_analysis"] = aggregate_summaries([d.pop("replica_summary") for d in individuals])
+        run["stability"] = stability_payload(individuals)
+        # Preserve all individual scalar metrics in an audit file, outside the browser bundle.
+        write_json(data_dir / "replica_metrics" / f"{run['id']}.json", {
+            "schema_version": SCHEMA_VERSION, "replicas": [
+                metric_audit(d) for d in individuals]}, compact=True)
+        run["dashboard"] = copy.deepcopy(run["dashboard"])
+        for path in sorted({p for paths in KPI_PATHS.values() for p in paths} - {"safety.tls_margin"}):
+            values = [metric_value(d, path) for d in individuals]
+            valid = [v for v in values if v is not None]
+            parent = run["dashboard"]
+            for part in path.split(".")[:-1]:
+                parent = parent.setdefault(part, {})
+            parent[path.split(".")[-1]] = mean(valid) if valid else None
+        run["analysis_schema_version"] = SCHEMA_VERSION
+        run["dashboard"].pop("replica_summary", None)
+        run["dashboard"]["chart_aggregation_version"] = SCHEMA_VERSION
+        run["dashboard"]["replica_count"] = count
+        plot_aggregates(run["aggregate_analysis"], run["dashboard"]["charts"], charts_dir)
         run["replica_count"] = count
         run["representative_log"] = run["name"]
         run["density"] = merge_density_grids(grids_by_group[group_key], config.heatmap_grid_degrees)

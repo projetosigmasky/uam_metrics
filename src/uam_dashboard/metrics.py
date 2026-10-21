@@ -268,10 +268,14 @@ def trajectory_conformity(
         if not len(deviations):
             continue
 
+        planned_distance_m = _polyline_distance_m(planned_coordinates)
+        if not np.isfinite(planned_distance_m) or planned_distance_m <= 0:
+            # Undefined relative distance is missing, never a zero deviation.
+            continue
+
         matched_instances += 1
         vehicle_type = str(group["vehicle_type"].iloc[0]) if "vehicle_type" in group else "desconhecido"
         all_deviations.extend(deviations.tolist())
-        planned_distance_m = _polyline_distance_m(planned_coordinates)
         executed_distance_m = float(group["distflown"].max() - group["distflown"].min())
         additional_distance_m = executed_distance_m - planned_distance_m
         conformity_ratio = _safe_rate(additional_distance_m, planned_distance_m)

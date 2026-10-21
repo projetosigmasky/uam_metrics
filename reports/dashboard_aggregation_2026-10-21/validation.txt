@@ -1,0 +1,9 @@
+Unittest: 87 tests, OK (136.624 s).
+Includes serial/parallel full dashboard comparison with reversed input order.
+Final focused replica tests: 12, OK.
+DOM/Leaflet, canvas playback and stability SVG contracts: OK.
+JavaScript syntax: OK.
+HTML tag balance and unique IDs, web/docs: OK.
+Compact individual-metric audit preserves estimates and excludes geometry: OK.
+Browser visual QA unavailable: localhost connection timed out; sandbox blocked loopback request.
+Published numerical data and prior report directories: no Git changes.

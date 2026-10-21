@@ -11,23 +11,39 @@ const actual = {};
 vm.runInNewContext(fs.readFileSync(path.join(root, 'docs/assets/data_bundle.js'), 'utf8'), {window: actual});
 
 function context(model) {
-  const elements = new Map([...ids].map(id => [id, {
-    innerHTML: '', textContent: '', hidden: false, value: '', checked: html.includes(`id="${id}" checked`),
-    setAttribute() {}, addEventListener() {}, querySelectorAll() {return [];}, scrollIntoView() {},
-    classList: {toggle() {}, add() {}, remove() {}}, closest() {return {hidden:false};},
-  }]));
+  const elements = new Map();
+  const drawn=[];
+  const canvasContext=new Proxy({}, {get(target,key){return target[key] || ((...args)=>drawn.push([key,...args]));}});
+  function element(id) {
+    return {id,innerHTML:'',textContent:'',hidden:false,value:'',dataset:{}, listeners:{},
+      checked:html.includes(`id="${id}" checked`),
+      setAttribute(name,value){this[name]=value;}, removeAttribute(name){delete this[name];},
+      addEventListener(name,fn){this.listeners[name]=fn;},
+      after(node){elements.set(node.id,node);}, scrollIntoView(){}, setPointerCapture(){},
+      getBoundingClientRect(){return {width:800,height:500};}, getContext(){return canvasContext;},
+      querySelectorAll(selector){
+        if(selector!=='[data-simt]')return [];
+        this.buttons=[...this.innerHTML.matchAll(/data-simt="([^"]+)"/g)].map(m=>{
+          const node=element('time-button');node.dataset.simt=m[1];return node;
+        });return this.buttons;
+      },
+      classList:{toggle(){},add(){},remove(){}},closest(){return {hidden:false};}
+    };
+  }
+  for(const id of ids) elements.set(id,element(id));
   const seen = [];
   const layer = () => ({addTo() {return this;}, addLayer() {}, bindTooltip() {}, bindPopup() {}});
   const document = {
-    addEventListener() {}, getElementById(id) {return elements.get(id) || null;},
+    createElement(){return element("");}, addEventListener() {}, getElementById(id) {return elements.get(id) || null;},
     querySelectorAll() {return [];}, querySelector() {return {hidden:false};},
   };
   const L = {geoJSON(data) {seen.push(data);return layer();}, layerGroup: layer, heatLayer: layer,
     circleMarker:layer, latLngBounds() {return {extend(){return this;},isValid(){return true;},pad(){return this;}};}};
-  const window = {__UAM_DASHBOARD_DATA__: model, L};
-  const c = vm.createContext({document,window,L,console,requestAnimationFrame(fn){fn();}});
+  const window = {__UAM_DASHBOARD_DATA__: model, L, setTimeout(fn){fn();}};
+  const frames=new Map();let frame=0;
+  const c = vm.createContext({document,window,L,console,requestAnimationFrame(fn){if(fn.name!=="animate3D"){fn();return 0;}frames.set(++frame,fn);return frame;},cancelAnimationFrame(id){frames.delete(id);}});
   vm.runInContext(script,c);
-  return {c,elements,seen};
+  return {c,elements,seen,drawn,frames};
 }
 
 const pendingModel=structuredClone(actual.__UAM_DASHBOARD_DATA__);
@@ -57,9 +73,49 @@ assert.match(current.elements.get('map-info-text').textContent,/50 réplicas/);
 assert.equal(current.elements.get('layer-complexity').disabled,true);
 assert.equal(current.elements.has('layer-tracks'),false);
 assert.equal(current.elements.has('layer-planned'),false);
-assert.equal(current.elements.has('viewer3d-canvas'),false);
+assert.equal(current.elements.has('viewer3d-canvas'),true);
+assert.equal(current.elements.has('kpa-time-to-conflict'),false);
+assert.equal(current.elements.get('chart-active').hidden,true);
+assert.match(current.elements.get('chart-active-aggregation').textContent,/indisponível/);
+assert.match(current.elements.get('stability-safety').innerHTML,/valores individuais/);
+assert(current.drawn.some(call=>call[0]==='lineTo'));
+vm.runInContext('bind3DControls()',current.c);
+const timeButton=current.elements.get('conflict-timeline-body').buttons[0];
+assert(timeButton);timeButton.listeners.click();
+assert.equal(vm.runInContext('viewer3d.currentTime',current.c),Number(timeButton.dataset.simt));
+assert.equal(vm.runInContext('state.activeKpa',current.c),'safety');
+current.elements.get('viewer3d-play').listeners.click();
+assert.equal(current.frames.size,1);
 assert(!current.seen.some(collection=>collection===model.runs[0].tracks || collection===model.runs[0].planned_routes));
 vm.runInContext('state.activeRunIndex=3;renderSelectedRun()',current.c);
 assert.equal(current.elements.get('layer-complexity').disabled,false);
+assert.equal(current.frames.size,0);
+assert.equal(vm.runInContext('viewer3d.playing',current.c),false);
+assert.equal(vm.runInContext('viewer3d.currentTime',current.c),model.runs[3].trajectory_3d.sim_start_s);
+assert.equal(vm.runInContext('viewer3d.data',current.c),model.runs[3].trajectory_3d);
 assert.match(current.elements.get('map-info-text').textContent,/50 réplicas/);
 console.log('Dashboard DOM/Leaflet contracts: OK (pending legacy, four scenarios, hidden paths, density, scenario change)');
+
+// Aggregated-format fixture: valid count, images, stability and missing next run.
+model.runs[3].analysis_schema_version=1;
+model.runs[3].dashboard.chart_aggregation_version=1;
+model.runs[3].aggregate_analysis={schema_version:1,coverage:[],charts:{}};
+model.runs[3].stability={schema_version:1,panels:{overview:{},safety:{},efficiency:{},capacity:{}}};
+vm.runInContext('renderSelectedRun()',current.c);
+assert.equal(current.elements.get('chart-active').hidden,false);
+model.runs[0].trajectory_3d=null;
+vm.runInContext('state.activeRunIndex=0;renderSelectedRun()',current.c);
+assert.equal(vm.runInContext('viewer3d.data',current.c),null);
+assert.equal(current.elements.get('viewer3d-play').disabled,true);
+assert.equal(current.elements.get('chart-active').hidden,true);
+assert.match(current.elements.get('viewer3d-status').textContent,/Sem trajetórias/);
+console.log('3D seek/play/reset-on-scenario and aggregate-version guards: OK');
+
+model.runs[3].stability.panels.safety={example:{status:'confirmed',valid_count:50,total_count:50,stable_from_n:30,confirmed_at_n:44,trace:Array.from({length:50},(_,i)=>({replicas:i+1,mean:10+i*.01,ci95:i>1?[9,11]:null,criterion_met:i>=29}))}};
+vm.runInContext('state.activeRunIndex=3;renderSelectedRun()',current.c);
+const stabilityHtml=current.elements.get('stability-safety').innerHTML;
+assert.match(stabilityHtml,/Confirmação em 44 réplicas/);
+assert.match(stabilityHtml,/a partir de 30 réplicas/);
+assert.match(stabilityHtml,/<svg/);
+assert(!/NaN|Infinity/.test(stabilityHtml));
+console.log('Stability SVG and distinct start/confirmation labels: OK');

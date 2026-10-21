@@ -266,10 +266,11 @@ function renderSelectedRun() {
   renderMetrics(run.dashboard);
   renderCharts(run.dashboard);
   renderCapacity(run.dashboard);
-  // Trajectory viewers are under observation; calculations remain in Python.
-  viewer3d.conflicts = run.conflicts?.features || [];
-  viewer3d.macTimestampAvailable = Boolean(run.conflicts?.properties?.mac_timestamp_available);
-  renderConflictTimeline(filteredConflictFeatures(viewer3d.conflicts), viewer3d.macTimestampAvailable);
+  render3DVisualization(run.trajectory_3d, run.conflicts);
+  const replica = run.metadata?.replica;
+  setText("replica-universe", `Cards: média de ${run.replica_count || 1} réplicas por cenário. Heatmap: todas as réplicas. Gráficos agregados: pacote v1, quando disponível.`);
+  setText("representative-note", `Ilustrativo — réplica ${replica == null ? "não informada" : "r" + String(replica).padStart(3, "0")} · ${run.representative_log || run.name}. Mapa de eventos, tabela e reprodução 3D usam este arquivo; KPIs agregados.`);
+  renderStability();
   if (state.map) {
     renderMapLayers(run.tracks, run.planned_routes, run.official_reh || emptyFeatureCollection(), run.conflicts, run.heatmap, run.dashboard.capacity);
   }
@@ -283,12 +284,17 @@ function bind3DControls() {
   play.addEventListener("click", () => {
     if (!viewer3d.data) return;
     if (viewer3d.currentTime >= viewer3d.data.sim_end_s) viewer3d.currentTime = viewer3d.data.sim_start_s;
+    if (viewer3d.animationFrame !== null) cancelAnimationFrame(viewer3d.animationFrame);
+    viewer3d.animationFrame = null;
     viewer3d.playing = !viewer3d.playing;
     viewer3d.lastFrame = null;
     update3DControls();
     if (viewer3d.playing) viewer3d.animationFrame = requestAnimationFrame(animate3D);
   });
   timeline.addEventListener("input", (event) => {
+    if (viewer3d.animationFrame !== null) cancelAnimationFrame(viewer3d.animationFrame);
+    viewer3d.animationFrame = null;
+    viewer3d.lastFrame = null;
     viewer3d.playing = false;
     viewer3d.currentTime = Number(event.target.value);
     update3DControls();
@@ -332,14 +338,19 @@ function bind3DControls() {
 }
 
 function render3DVisualization(data, conflicts) {
+  if (viewer3d.animationFrame !== null) cancelAnimationFrame(viewer3d.animationFrame);
+  viewer3d.animationFrame = null;
+  viewer3d.currentTime = 0;
+  viewer3d.dragging = false;
   viewer3d.playing = false;
   viewer3d.lastFrame = null;
-  viewer3d.data = data || null;
+  viewer3d.data = data?.tracks?.length ? data : null;
   viewer3d.conflicts = conflicts?.features || [];
   viewer3d.macTimestampAvailable = Boolean(conflicts?.properties?.mac_timestamp_available);
   renderConflictTimeline(filteredConflictFeatures(viewer3d.conflicts), viewer3d.macTimestampAvailable);
   if (!data?.tracks?.length) {
     setText("viewer3d-status", "Sem trajetórias 3D para este cenário.");
+    setText("viewer3d-note", "Dados 3D indisponíveis para esta réplica.");
     update3DControls();
     draw3D();
     return;
@@ -365,7 +376,7 @@ function animate3D(timestamp) {
   const interval = viewer3d.data.sample_seconds;
   const next = viewer3d.currentTime + elapsed * viewer3d.speed;
   const aligned = viewer3d.data.sim_start_s + Math.floor((next - viewer3d.data.sim_start_s) / interval) * interval;
-  if (aligned !== viewer3d.currentTime) {
+  if (aligned > viewer3d.currentTime) {
     viewer3d.currentTime = Math.min(aligned, viewer3d.data.sim_end_s);
     viewer3d.lastFrame = timestamp;
     update3DControls();
@@ -477,6 +488,7 @@ function activateKpa(kpa) {
   document.querySelectorAll("[data-kpa-child]").forEach((child) => {
     child.hidden = child.dataset.kpaChild !== state.activeKpa;
   });
+  if (state.activeKpa === "safety") draw3D();
   if (state.activeKpa === "overview" && state.map) {
     window.setTimeout(() => state.map.invalidateSize(true), 0);
   }
@@ -522,12 +534,7 @@ function renderConflictTimeline(features, macTimestampAvailable) {
     : `<tr><td colspan="7">Nenhum evento LoWC/NMAC observado para esta combinação.</td></tr>`;
   body.querySelectorAll("[data-simt]").forEach((button) => {
     button.addEventListener("click", () => {
-      const lat = Number(button.dataset.eventLat), lon = Number(button.dataset.eventLon);
-      if (state.map && Number.isFinite(lat) && Number.isFinite(lon)) {
-        activateKpa("overview");
-        state.map.setView([lat, lon], 14);
-        document.getElementById("map").scrollIntoView({ behavior: "smooth", block: "center" });
-      }
+      seek3D(Number(button.dataset.simt));
     });
   });
   setText(
@@ -736,7 +743,7 @@ function renderComparison(model) {
   populateRunSelect();
   setText(
     "comparison-summary",
-    `${formatNumber(replicaCount)} réplicas em ${formatNumber(model.runs.length)} cenários. Cards: médias por cenário; densidade: todas as réplicas com escala comum. Eventos e gráficos temporais: uma réplica representativa. Referências comparativas: cenário-base da mesma etapa de rede.`
+    `${formatNumber(replicaCount)} réplicas em ${formatNumber(model.runs.length)} cenários. Cards: médias por cenário; densidade: todas as réplicas com escala comum. Mapa de eventos, tabela e 3D: uma réplica representativa ilustrativa. Gráficos agregados requerem pacote v1. Referências comparativas: cenário-base da mesma etapa de rede.`
   );
   renderDayComparison();
 }
@@ -795,9 +802,9 @@ function renderMetrics(dashboard) {
   setText("metric-duration", `${formatNumber(summary.duration_min, 1)} min`);
   setText("metric-flight-time", formatNumber(efficiency.mean_flight_time_min, 1));
   setText("metric-distance", formatNumber(efficiency.mean_distance_nm, 1));
-  setText("metric-lowc", formatNumber(safety.lowc_events));
+  setText("metric-lowc", formatNumber(safety.lowc_events, 1));
   setText("metric-lowc-threshold", `${formatNumber(safety.lowc_horizontal_m, 0)} m H / ${formatNumber(safety.lowc_vertical_m, 2)} m V`);
-  setText("metric-nmac", formatNumber(safety.nmac_events));
+  setText("metric-nmac", formatNumber(safety.nmac_events, 1));
   setText("metric-nmac-threshold", `${formatNumber(safety.nmac_horizontal_m, 0)} m H / ${formatNumber(safety.nmac_vertical_m, 2)} m V`);
   setText("metric-lowc-rate", formatNumber(safety.lowc_per_flight_hour, 2));
   setText("metric-mac-rate", formatNumber(safety.expected_mac_per_100k_flight_hours, 3));
@@ -810,13 +817,13 @@ function renderMetrics(dashboard) {
   );
   setText(
     "kpa-spatial-adherence",
-    efficiency.trajectory_conformity?.available
+    efficiency.trajectory_conformity?.spatial_adherence_pct != null
       ? `${formatNumber(efficiency.trajectory_conformity.spatial_adherence_pct, 1)}%${
           efficiency.trajectory_conformity.spatial_adherence_scope?.startsWith("helicopteros")
             ? " (helicopteros)"
             : ""
         }`
-      : "Sem SCN"
+      : "Indisponível"
   );
   setText(
     "kpa-ground-delay",
@@ -836,21 +843,79 @@ function renderMetrics(dashboard) {
       ? `${formatNumber(efficiency.total_delay.mean_total_delay_s, 0)} s`
       : "Sem pareamento"
   );
-  setText("kpa-severity", formatNumber(safety.min_severity_ratio, 2));
+  setText("kpa-severity", safety.lowc_events > 0 ? formatNumber(safety.min_severity_ratio, 2) : "Sem eventos");
   setText("kpa-mac-rate", formatNumber(safety.expected_mac_per_100k_flight_hours, 3));
   setText("kpa-tls-margin", formatTLSMargin(safety.tls_margin, safety.tls_compliant));
   setText("kpa-time-below", `${formatNumber(safety.total_time_below_threshold_s, 0)} s`);
-  setText("kpa-time-to-conflict", `Proxy DTLOOK: ${formatNumber(safety.mean_time_to_conflict_s, 0)} s`);
   setText("kpa-safety-sample", `${formatNumber(safety.sample_seconds, 0)} s`);
 }
 
 function renderCharts(dashboard) {
-  showImageChart("chart-active", dashboard.charts.active_aircraft);
-  showImageChart("chart-separation", dashboard.charts.separation_histogram);
-  showImageChart("chart-altitude", dashboard.charts.altitude_histogram);
-  showImageChart("chart-distance", dashboard.charts.distance_histogram);
-  showImageChart("chart-severity", dashboard.charts.severity_histogram);
-  showImageChart("chart-conformity", dashboard.charts.trajectory_conformity);
+  const keys = {"chart-active":"active_aircraft", "chart-altitude":"altitude_histogram", "chart-separation":"separation_histogram", "chart-severity":"severity_histogram", "chart-distance":"distance_histogram", "chart-conformity":"trajectory_conformity"};
+  const run = state.runs[state.activeRunIndex] || state.runs[0];
+  const available = run?.analysis_schema_version === 1 && run.aggregate_analysis?.schema_version === 1 && dashboard.chart_aggregation_version === 1;
+  for (const [id, key] of Object.entries(keys)) {
+    const img = document.getElementById(id);
+    img.hidden = !available;
+    if (available) showImageChart(id, dashboard.charts[key]);
+    else img.removeAttribute("src");
+    let note = document.getElementById(`${id}-aggregation`);
+    if (!note) { note = document.createElement("p"); note.id = `${id}-aggregation`; img.after(note); }
+    const data = run?.aggregate_analysis?.charts?.[key];
+    const valid = Array.isArray(data?.valid_replicas) ? `${Math.min(...data.valid_replicas)}–${Math.max(...data.valid_replicas)} de ${run.replica_count} por instante` : `${data?.valid_replicas}/${run.replica_count}`;
+    note.textContent = available ? `Média por réplica: ${valid} réplicas válidas. Faixa: mínimo–máximo, não IC.` : "Agregado indisponível neste pacote: reprocessar os STATELOGs no formato v1. A imagem representativa anterior foi suprimida.";
+  }
+}
+
+function seek3D(time) {
+  if (!viewer3d.data || !Number.isFinite(time)) return;
+  if (viewer3d.animationFrame !== null) cancelAnimationFrame(viewer3d.animationFrame);
+  viewer3d.animationFrame = null;
+  viewer3d.playing = false;
+  viewer3d.lastFrame = null;
+  viewer3d.currentTime = Math.max(viewer3d.data.sim_start_s, Math.min(time, viewer3d.data.sim_end_s));
+  activateKpa("safety");
+  update3DControls(); draw3D();
+  document.getElementById("viewer3d-canvas").scrollIntoView({behavior:"smooth", block:"center"});
+}
+
+function stabilitySvg(metric) {
+  const rows = metric.trace.filter(p => p.mean != null);
+  if (!rows.length) return "";
+  const ys = rows.flatMap(p => p.ci95 ? [...p.ci95, p.mean] : [p.mean]);
+  const min = Math.min(...ys), max = Math.max(...ys), span = max-min || Math.abs(max)*.1 || 1;
+  const x = p => 70 + (p.replicas-1) / Math.max(1,metric.total_count-1)*610;
+  const y = v => 160-(v-min)/span*125;
+  const axis = v => Math.abs(v)>1e5 || (v!==0 && Math.abs(v)<.001) ? Number(v).toExponential(2) : formatNumber(v,3);
+  const line = rows.map(p => `${x(p)},${y(p.mean)}`).join(" ");
+  const bands = rows.filter(p=>p.ci95);
+  const polygon = [...bands.map(p=>`${x(p)},${y(p.ci95[0])}`),...bands.slice().reverse().map(p=>`${x(p)},${y(p.ci95[1])}`)].join(" ");
+  const confirmation = metric.confirmed_at_n == null ? "" : `<line x1="${x({replicas:metric.confirmed_at_n})}" x2="${x({replicas:metric.confirmed_at_n})}" y1="25" y2="160" stroke="#15803d" stroke-dasharray="5 3"/><text x="80" y="18">Confirmação em ${metric.confirmed_at_n} réplicas</text>`;
+  return `<svg class="stability-plot" viewBox="0 0 720 210" role="img" aria-label="Média acumulada, intervalo bootstrap de 95% e critério por prefixo"><text x="5" y="35">${axis(min+span)}</text><text x="5" y="165">${axis(min)}</text><line x1="70" y1="160" x2="680" y2="160" stroke="#64748b"/><polygon points="${polygon}" fill="#93c5fd" opacity=".5"/><polyline points="${line}" fill="none" stroke="#2563eb" stroke-width="2"/>${rows.filter(p=>p.criterion_met).map(p=>`<circle cx="${x(p)}" cy="${y(p.mean)}" r="3" fill="#15803d"/>`).join("")}${confirmation}<text x="70" y="180">1</text><text x="665" y="180">${metric.total_count}</text><text x="210" y="202">Réplicas incorporadas (ordem do índice)</text></svg>`;
+}
+
+const stabilityLabels = {
+  "safety.lowc_horizontal_m":"Limiar horizontal LoWC (m)", "safety.lowc_vertical_m":"Limiar vertical LoWC (m)", "safety.nmac_horizontal_m":"Limiar horizontal NMAC (m)", "safety.nmac_vertical_m":"Limiar vertical NMAC (m)", "capacity.complexity.uam_corridor_count":"Corredores UAM", "capacity.complexity.reh_segment_count":"Trechos REH",
+  "summary.aircraft_count":"Aeronaves", "summary.records":"Registros", "summary.peak_simultaneous_aircraft":"Pico simultâneo", "summary.duration_min":"Duração (min)",
+  "efficiency.mean_flight_time_min":"Tempo de voo (min)", "efficiency.mean_distance_nm":"Distância (NM)", "safety.lowc_events":"Eventos LoWC", "safety.nmac_events":"Eventos NMAC", "safety.lowc_per_flight_hour":"LoWC/h", "safety.expected_mac_per_100k_flight_hours":"MAC esperado/100 mil h", "safety.min_severity_ratio":"Severidade mínima (réplicas com eventos)", "safety.tls_margin":"Margem TLS (transformação da taxa média)", "safety.total_time_below_threshold_s":"Exposição abaixo do limiar (s)", "safety.sample_seconds":"Cadência LoWC (s)",
+  "efficiency.mean_horizontal_inefficiency_pct":"Ineficiência horizontal (%)", "efficiency.trajectory_conformity.mean_trajectory_conformity_ratio":"Distância adicional/plano (razão)", "efficiency.trajectory_conformity.spatial_adherence_pct":"Aderência REH (%)", "efficiency.ground_delay.mean_ground_delay_s":"Atraso em solo (s)", "efficiency.airborne_delay.mean_airborne_delay_s":"Atraso no ar (s)", "efficiency.total_delay.mean_total_delay_s":"Atraso total (s)", "capacity.density.air_traffic_density_per_km2":"Densidade ATD (aeronaves/km²)", "capacity.density.hotspot_density_per_km2":"Hotspot ATD (aeronaves/km²)", "capacity.density.corridor_area_km2":"Área REH (km²)", "capacity.complexity.planned_route_count":"Rotas planejadas", "capacity.complexity.trajectory_group_count":"Grupos de trajetória", "capacity.complexity.repeated_trajectory_group_count":"Grupos recorrentes", "capacity.complexity.lowc_event_count":"Eventos LoWC"
+};
+
+function renderStability() {
+  for (const panel of ["overview","safety","efficiency","capacity"]) {
+    const container = document.getElementById(`stability-${panel}`);
+    container.innerHTML = `<p>Média acumulada das estimativas por réplica. IC percentil bootstrap de 95%: 1.000 reamostragens de réplicas, seed 1729. Mínimo 30 válidas; desvio máximo dos extremos do IC à média ≤5% da média, tolerância absoluta zero; confirmação por 15 prefixos consecutivos. Pontos verdes: critério atendido. Ausência quebra confirmação. Constantes e zeros observados são descritivos, sem inferência de estabilidade. Não é garantia de capacidade máxima nem de segurança operacional.</p>` + state.runs.map(run=>{
+      const data=run.stability;
+      if(run.analysis_schema_version!==1 || data?.schema_version!==1) return `<h3>${escapeHtml(run.metadata?.scenario_key || run.name)}</h3><p>Indisponível: valores individuais não preservados neste pacote. Reprocessar os STATELOGs.</p>`;
+      const coverage = run.aggregate_analysis.coverage;
+      const cadence = coverage.map(c=>c.median_cadence_s).filter(v=>v!=null);
+      const coverageTable = `<details><summary>Cobertura por réplica: tempo, cadência, registros e pareamento</summary><div class="table-wrap"><table class="comparison-table"><thead><tr><th>Índice / arquivo</th><th>Início–fim (s)</th><th>Timestamps</th><th>Cadência mediana (s)</th><th>Registros</th><th>Voos pareados / total</th></tr></thead><tbody>${coverage.map((c,i)=>`<tr><td title="${escapeHtml(data.replicas[i].file)}">r${String(data.replicas[i].index).padStart(3,"0")}</td><td>${c.start_s}–${c.end_s}</td><td>${c.observed_timestamps}</td><td>${c.median_cadence_s ?? "—"}</td><td>${c.position_records}</td><td>${c.matched_flights}/${c.flight_instances}</td></tr>`).join("")}</tbody></table></div></details>`;
+      return `<h3>${escapeHtml(run.metadata?.scenario_key || run.name)}</h3><p>${run.replica_count} réplicas; cadência mediana por réplica: ${cadence.length?`${Math.min(...cadence)}–${Math.max(...cadence)} s`:"indisponível"}.</p>${coverageTable}` + Object.entries(data.panels[panel]).map(([key,m])=>{
+        const status = m.status==="confirmed" ? `Estabilidade confirmada: trecho a partir de ${m.stable_from_n} réplicas; confirmação obtida em ${m.confirmed_at_n}.` : m.status==="unavailable" ? "Indisponível; sem zeros imputados." : m.status==="configuration_or_geometry_no_inference" ? "Configuração/geometria: inferência estatística não se aplica." : m.status==="constant_observed_no_inference" ? `Valores constantes observados; estabilidade inferencial não confirmada com ${m.total_count} réplicas.` : `Estabilidade não confirmada com ${m.total_count} réplicas.`;
+        return `<details class="stability-metric"><summary>${escapeHtml(stabilityLabels[key] || key)} · ${m.valid_count}/${m.total_count} válidas</summary><p>${status}${m.first_confirmed_at_n != null && m.status!=="confirmed" ? ` Houve confirmação anterior em ${m.first_confirmed_at_n}, sem manutenção no final.` : ""}</p>${stabilitySvg(m)}</details>`;
+      }).join("");
+    }).join("");
+  }
 }
 
 function renderCapacity(dashboard) {
@@ -1345,7 +1410,7 @@ function updateMapInfo(tracks, visibleTracks, plannedRoutes, officialReh, confli
     (() => {
       const run = state.runs[state.activeRunIndex];
       const density = run?.density;
-      return `Densidade de ${formatNumber(density?.replica_count || 1)} réplicas; ${formatNumber(density?.position_sample_count || heatmap.length)} registros em ${formatNumber(heatmap.length)} células. Média por réplica, escala comum entre cenários. ${formatNumber(officialSegments)} trechos REH; ${formatNumber(state.uamJunctions.features.length)} junções geométricas UAM. Eventos: réplica representativa.`;
+      return `Densidade de ${formatNumber(density?.replica_count || 1)} réplicas; ${formatNumber(density?.position_sample_count || heatmap.length)} registros em ${formatNumber(heatmap.length)} células. Média por réplica, escala comum entre cenários. ${formatNumber(officialSegments)} trechos REH; ${formatNumber(state.uamJunctions.features.length)} junções geométricas UAM. Eventos ilustrativos: réplica ${run?.metadata?.replica ?? "não informada"} · ${run?.representative_log || run?.name || "arquivo não informado"}.`;
     })()
   );
   updateMapLegend();
@@ -1526,7 +1591,7 @@ function emptyFeatureCollection() {
 }
 
 function formatNumber(value, digits = 0) {
-  if (!Number.isFinite(Number(value))) return "-";
+  if (value == null || !Number.isFinite(Number(value))) return "—";
   return Number(value).toLocaleString("pt-BR", {
     maximumFractionDigits: digits,
     minimumFractionDigits: digits,

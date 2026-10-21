@@ -57,7 +57,9 @@ class DashboardScenarioTests(unittest.TestCase):
             self.assertFalse((output/'calibration.html').exists())
             self.assertEqual((assets/'baseline_calibration_data.js').read_text(),'actual numerical results')
             html=(output/'index.html').read_text(encoding='utf-8')
-            for retired in ('id="layer-tracks"','id="layer-planned"','viewer3d-canvas','baseline_calibration'):
+            self.assertIn('viewer3d-canvas',html)
+            self.assertNotIn('kpa-time-to-conflict',html)
+            for retired in ('id="layer-tracks"','id="layer-planned"','baseline_calibration'):
                 self.assertNotIn(retired,html)
 
     def test_overlap_prefilter_keeps_the_intersection_vertices(self):
@@ -90,13 +92,18 @@ class DashboardScenarioTests(unittest.TestCase):
                     scn.write_text(f'00:00:00> CRE EV1 EVTOL {lat} -46.63 0 3000 40\n00:00:00> ADDWPT EV1 {lat} -46.62 3000 40\n')
                     logs.append(log);scenarios.append(scn)
             output=root/'docs'
-            build_dashboard(DashboardConfig(log_paths=tuple(logs),scenario_paths=tuple(scenarios),output_dir=output,
+            config = DashboardConfig(log_paths=tuple(reversed(logs)),scenario_paths=tuple(scenarios),output_dir=output,
                             workers=2,reh_xml_path=DEFAULT_REH_XML_PATH,uam_corridor_csv_path=CSV1,
-                            uam_corridor_csv_by_scenario={c:CSV1 if c.endswith('.1') else CSV2 for c in CODES}))
+                            uam_corridor_csv_by_scenario={c:CSV1 if c.endswith('.1') else CSV2 for c in CODES})
+            build_dashboard(config)
             runs=[json.loads(p.read_text(encoding='utf-8')) for p in (output/'assets/data/runs').glob('*.json')]
             self.assertEqual({r['metadata']['scenario_key'] for r in runs},set(CODES))
             for run in runs:
                 self.assertEqual(run['replica_count'],2)
+                self.assertEqual(run['analysis_schema_version'],1)
+                self.assertEqual(run['dashboard']['chart_aggregation_version'],1)
+                self.assertEqual([r['index'] for r in run['stability']['replicas']],[1,2])
+                self.assertEqual(run['aggregate_analysis']['charts']['severity_histogram']['valid_replicas'],2)
                 self.assertEqual(run['density']['replica_count'],2)
                 self.assertEqual(run['density']['position_sample_count'],6)
                 self.assertTrue(any(p[0]<-23.555 for p in run['heatmap']))
@@ -107,6 +114,15 @@ class DashboardScenarioTests(unittest.TestCase):
                     self.assertTrue(all(f['properties']['network']=='REH' for f in run['candidate_nodes']['features']))
                 else:
                     self.assertEqual(run['uam_geometry_audit']['route_count'],72 if run['metadata']['scenario_key'].endswith('.1') else 210)
+            from dataclasses import replace
+            serial_output = root/'serial'
+            build_dashboard(replace(config, workers=1, log_paths=tuple(logs), output_dir=serial_output))
+            serial_runs = {r['metadata']['scenario_key']:r for p in (serial_output/'assets/data/runs').glob('*.json')
+                           for r in [json.loads(p.read_text(encoding='utf-8'))]}
+            for run in runs:
+                serial = serial_runs[run['metadata']['scenario_key']]
+                for field in ('aggregate_analysis','stability','density','representative_log'):
+                    self.assertEqual(run[field],serial[field])
             comparison=json.loads((output/'assets/data/comparison.json').read_text(encoding='utf-8'))
             rows=comparison['days'][0]['rows']
             self.assertEqual({r['scenario_key'] for r in rows if r['is_reference']},{'C1.1','C1.2'})

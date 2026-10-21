@@ -1109,3 +1109,7 @@ input[type="checkbox"] {
   color: #475569;
   text-decoration: none;
 }
+
+.stability-plot { width: 100%; max-width: 850px; height: auto; background: white; }
+.stability-metric { margin: 12px 0; padding: 12px; border: 1px solid #d5dde8; border-radius: 8px; }
+.analysis-method-note { margin: 24px; color: #4d5a6b; }

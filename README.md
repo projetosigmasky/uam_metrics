@@ -23,9 +23,9 @@ O comando regenera o dashboard completo a partir dos STATELOGs e o ranking por c
 
 O heatmap reúne **todos os registros de posição de todas as réplicas**, em células de `0,001°` (aproximadamente 100 m). Sua intensidade é a média de registros por célula e réplica, com uma escala comum entre cenários. Isso representa ocupação observada; não conta aeronaves únicas nem movimentos por janela. Comparações quantitativas dessa intensidade pressupõem cadência e cobertura compatíveis dos logs. `density` registra a contagem de réplicas, registros, tamanho da célula e escala; os limites do mapa abrangem todas as réplicas.
 
-Os cards usam médias entre réplicas; gráficos temporais e eventos continuam identificados como uma réplica representativa. Trajetórias executadas, planejamento no mapa e visualização 3D ficam **em observação**, sem controles, desenhos nem atalhos de mapa na interface. Seus cálculos e exports para auditoria permanecem disponíveis. A página pública de calibração e seus links foram retirados; tabelas, figuras e dados numéricos continuam preservados.
+Os cards usam médias entre réplicas, com contagem real e cobertura válida no detalhamento. Os seis gráficos de Visão Geral, Segurança e Eficiência passam a usar agregação por réplica no protocolo `analysis_schema_version=1`. Mapa de eventos, tabela e reprodução 3D são ilustrações de uma réplica identificada por índice e arquivo. O 3D foi restaurado em Segurança; os timestamps da tabela posicionam sua reprodução. Trajetórias e planejamento no mapa 2D continuam em observação. A página pública de calibração continua retirada e seus dados e relatórios estão preservados. Pacotes antigos mantêm seus KPIs e heatmaps, mas os gráficos representativos são suprimidos até reprocessamento; nenhuma curva é reconstruída da média final.
 
-Os dados completos disponíveis neste clone ainda são C1/C2. A interface os oculta e informa que aguarda o reprocessamento; **nenhum resultado antigo é renomeado como C1.1/C1.2/C2.1/C2.2**. Depois de processar no Lessonia, traga os arquivos atualizados de `docs/` para o fluxo de publicação habitual.
+O pacote numérico publicado neste clone já contém os quatro cenários e 200 réplicas da RUN selecionada, incluindo 40.732.394 registros no heatmap. Ele usa o formato anterior, sem os resumos individuais necessários aos novos gráficos e ICs. Cards, heatmap e dados ilustrativos são preservados; as novas distribuições e a estabilidade ficam indisponíveis até o reprocessamento dos STATELOGs reais. Nenhum resultado legado C1/C2 é renomeado como os quatro cenários atuais. Depois de processar no Lessonia, traga os arquivos atualizados de `docs/` para o fluxo de publicação habitual.
 
 A união visual UAM e as junções geométricas 3D estão documentadas em [auditoria VP-005–VP-006](reports/uam_geometry_2026-10-21/README.md). As rotas originais e a seleção analítica de recursos de capacidade permanecem preservadas. O parser aceita os demais identificadores da planilha; `C5/C6/C9/C10` exigem geometria explicitamente selecionada, pois seus sufixos identificam algoritmos, e não automaticamente o número de vertiportos.
 
@@ -127,7 +127,7 @@ simt,id,lat,lon,distflown,alt,hdg,trk,cas,tas,gs,vs
 
 Execute o lote P100 com `run_config.json`, conforme as instrucoes abaixo. O gerador rejeita entradas Produto 2 de demanda diferente de P100 antes de alterar `docs/`.
 
-As replicas de cada cenario C1/C2 sao agrupadas pelo identificador do cenario, demanda e modo (`off`/`mvp`). Cada valor numerico publicado para o cenario e a media dos resultados calculados separadamente por replica, inclusive contagens, totais e picos. O P95 que aparece em algumas metricas e um percentil **dos resultados simulados**, nao um perfil de demanda P95. O mapa, os eventos, os graficos e a visualizacao 3D usam a primeira replica do grupo em ordem de nome como ilustracao. O seletor mostra um item por cenario, com a quantidade de replicas no nome. Para evitar um pacote excessivo, as trajetorias das demais replicas nao entram em `docs/`.
+As réplicas de cada cenário C1.1/C1.2/C2.1/C2.2 são agrupadas pelo identificador do cenario, demanda e modo (`off`/`mvp`). Cada valor numerico publicado para o cenario e a media dos resultados calculados separadamente por replica, inclusive contagens, totais e picos. O P95 que aparece em algumas metricas e um percentil **dos resultados simulados**, nao um perfil de demanda P95. Mapa de eventos, tabela e visualização 3D usam a primeira réplica por índice como ilustração; os seis gráficos usam resumos de todas as réplicas. Índices são ordenados antes de agregar, independentemente da conclusão dos workers. O seletor mostra um item por cenario, com a quantidade de replicas no nome. Para evitar um pacote excessivo, as trajetorias das demais replicas nao entram em `docs/`.
 
 Nos logs do orquestrador, o gerador reconhece a demanda P100, o cenario e a replica (`r022`, por exemplo), associando cada STATELOG ao respectivo `.scn`. Se o nome for opaco, pode usar a pasta pai `output/C1` ou `output/C2`, mas somente quando houver um unico `.scn` compativel. A geracao para estas pastas para antes de modificar `docs/` caso nao consiga associar um planejamento sem ambiguidade.
 
@@ -231,7 +231,7 @@ O gerador publica em `docs/`:
 - `docs/assets/data/conflicts.geojson`: eventos LoWC/NMAC do primeiro log.
 - `docs/assets/data/heatmap_points.json`: pontos de densidade do primeiro log.
 - `docs/assets/data/trajectory_3d.json`: trajetorias temporais amostradas para a visualizacao 3D.
-- `docs/assets/charts/*.png`: graficos estaticos por log.
+- `docs/assets/charts/*.png`: gráficos agregados por cenário (protocolo v1).
 
 ## 5. Responsabilidades Dos Modulos
 
@@ -280,7 +280,7 @@ As lacunas completas ficam no catalogo e na tabela do dashboard. As principais s
 Previsibilidade por OD, degradacao relativa off-nominal e equidade entre grupos
 continuam parciais ou indisponiveis, conforme a tabela de rastreabilidade.
 
-O horizonte `DTLOOK` e um parametro de diagnostico, nao um KPI formal do Produto 3 final.
+O diagnóstico tático de horizonte de detecção foi retirado da interface. Parâmetros legados permanecem por compatibilidade; não representam tempo observado até conflito e não entram na estabilidade dos KPIs.
 
 ## 8. Comparacao Entre Logs
 
@@ -575,3 +575,37 @@ Há verificações dos dois exports, seleção de nomes/tipos, identidade estáv
 CEBOLAO/PONTE_ESTAIADA, reentrada e reutilização de ID, interpolação, duplicatas, competição
 de volumes, níveis, zeros, janelas parciais, percentil e ausência de capacidade em cruzamentos.
 A apresentação em `docs/` foi verificada no navegador com popup e índice de posições.
+
+
+## Agregação por réplica e estabilidade (protocolo v1, 21/10/2026)
+
+`src/uam_dashboard/replica_analysis.py` prepara histogramas compactos nos mesmos workers de métricas, mantendo `--workers 25`. O processo principal ordena por cenário, índice da réplica e arquivo e gera os gráficos; não carrega trajetórias de todas as réplicas no navegador. O JSON de cada cenário inclui `analysis_schema_version`, `aggregate_analysis`, `stability` e `dashboard.chart_aggregation_version`. Valores individuais completos dos KPIs e resumos originais ficam em `docs/assets/data/replica_metrics/*.json` para auditoria; o navegador recebe somente resumos e as estimativas individuais dos KPIs da estabilidade.
+
+| Visualização | Estimando e cobertura |
+| --- | --- |
+| Aeronaves simultâneas | Média das contagens nos timestamps exatos do tempo de simulação; cada ponto informa seu denominador. Não interpola nem transforma timestamps ausentes, mesmo dentro da duração do log, em zero. Cadências diferentes só contribuem nos instantes efetivamente observados. A faixa é mínimo–máximo das réplicas válidas naquele instante. |
+| Altitude | Classes de 25 m MSL, origem zero; média das contagens de **registros de posição**, incluindo todas as aeronaves. Não são aeronaves únicas nem percentuais. Cadência/duração diferentes alteram essas contagens: não há normalização; início/fim, timestamps observados, cadência mediana e registros por réplica são exportados em `coverage`. |
+| Separação horizontal | Classes de 100 m, origem zero; percentual por réplica das amostras de pares não ordenados com separação <5.000 m, depois média desses percentuais. Réplica sem amostras é indisponível. Não são eventos. |
+| Severidade LoWC | Classes de 0,05, origem zero; média das contagens de **eventos** por réplica. Inclui eventos classificados NMAC; réplica analisada sem LoWC contribui com zero em cada classe. Usa a razão mínima existente do evento, sem alterar sua definição. |
+| Distância executada | Classes de 2 NM; percentual por réplica e média com peso igual. Usa instâncias de voo e diferença máximo–mínimo do odômetro, como o KPI de distância, evitando misturar reutilizações do mesmo ID. |
+| Distância adicional/plano | Classes de 5 pontos percentuais, origem zero, incluindo valores negativos. Variável `(d_real−d_plan)/d_plan*100`, somente pareamentos válidos com plano de comprimento positivo. Não pareados e planos degenerados não viram zero; contagens pareadas/totais por réplica ficam na cobertura e no detalhamento. |
+
+Classes têm largura/origem fixas em todos os cenários; classes vazias em todas as réplicas podem ser omitidas da representação compacta. Barras mostram a média, intervalos azuis mostram mínimo–máximo entre réplicas: **dispersão observada, não IC da média**. Réplicas com números diferentes de voos válidos têm peso igual nas distribuições percentuais. A contagem válida aparece em cada gráfico. O heatmap mantém todos os registros, média por célula/réplica na grade de 0,001° e escala comum; não foi alterado.
+
+Cada aba possui um detalhamento recolhido “Estabilidade dos KPIs entre réplicas”, com cada cenário e KPI dos cards, além dos componentes dos recursos de throughput exibidos. X é a quantidade de réplicas incorporadas, na ordem do índice; Y é a média acumulada das estimativas válidas por réplica. IC de 95% por bootstrap percentil de **réplicas**, 1.000 sorteios por prefixo, seed base 1729 (`seed+n`, determinístico). Não se reamostram voos, registros ou janelas dentro de uma réplica. São necessários pelo menos 30 valores válidos, desvio máximo de um extremo do IC à média ≤5% do módulo da média e 15 prefixos consecutivos atendendo ao critério. O primeiro prefixo elegível é 30 e a primeira confirmação possível é 44, sem pressupor que o conjunto real atende ao critério. O resumo distingue início do trecho estável, ponto de confirmação e primeira confirmação histórica; só declara confirmação atual se a sequência permanece válida no final.
+
+A calibração preservada estima P95 de janelas agrupadas e reamostra clusters de réplicas; esta análise estima a **média dos KPIs por réplica**. Não se aplica mecanicamente o estimador de P95 da calibração. A tolerância absoluta continua zero porque as unidades são diferentes entre KPIs; médias próximas de zero precisam satisfazer o mesmo critério relativo estrito. Valores constantes (inclusive contagens zero de eventos) são apresentados descritivamente, sem inferir estabilidade por IC degenerado. Indisponíveis são nulos, não zeros; não aumentam a quantidade válida e interrompem a sequência de confirmação no prefixo ausente. Severidade mínima não existe em réplicas sem eventos e é agregada apenas entre réplicas com LoWC. Taxas sem horas de voo não fornecem estimativas válidas. Configurações, área e geometria não recebem inferência estatística.
+
+A margem TLS preserva a fórmula do card `TLS/(média das taxas MAC+epsilon)`, em vez da média das margens individuais: cada prefixo e reamostragem aplica a transformação à média da taxa, com critério sobre o intervalo transformado. Utilização de recursos preserva a razão entre a média dos picos e a média das referências P95, reamostrando numerador e denominador conjuntamente. Recursos sem uso em uma réplica concluída contribuem com zero conforme o agregador existente; um grupo de recursos indisponível fica separado. O ranking externo de waypoints continua usando o P95 das janelas completas agrupadas, conforme seus próprios metadados e CSVs, e não é reinterpretado como média de P95 individuais. Envelopes REH desconhecidos permanecem indisponíveis. Os ICs são marginais por prefixo, sem garantia de cobertura simultânea ou correção por inspeções sucessivas; o critério é um diagnóstico de precisão do conjunto. Estabilidade deste conjunto não demonstra capacidade máxima nem segurança operacional.
+
+Segurança permanece com os limiares estritos `H<500 m e V<137,16 m` (LoWC), `H<152 m e V<30 m` (NMAC), amostragem configurada de 1 s. Amostras do mesmo par formam um evento até uma lacuna maior que `1,5*sample_seconds`. LoWC inclui NMAC; um evento é NMAC se qualquer amostra o for. Timestamp e posição representativos são os da amostra com menor razão de severidade existente (`min(H/Hlim,V/Vlim)`), e a posição é o ponto médio entre as aeronaves nessa amostra. O 3D usa sua própria cadência visual exportada (padrão 5 s); ela não muda a detecção de segurança.
+
+Os STATELOGs das 200 réplicas da RUN não estão neste clone. Nenhum agregado ou IC real foi inventado. Para atualizar o pacote após levar este código ao Lessonia, execute no servidor:
+
+```bash
+cd ~/post-processing
+git pull --ff-only
+.venv/bin/python generate_reports.py --config run_config.json --workers 25
+```
+
+`--baseline-manifest` executa a calibração independente e não substitui o reprocessamento completo. Esta implementação não faz push, publicação ou execução no Lessonia.

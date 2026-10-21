@@ -10,7 +10,7 @@
       integrity="sha256-p4NxAoJBhIINfQd+g9FQXHyzyTAFi+lyLwN2Bja9fM="
       crossorigin=""
     />
-    <link rel="stylesheet" href="assets/dashboard.css?v=ccf6cd9fa3a6" />
+    <link rel="stylesheet" href="assets/dashboard.css?v=162f2ef3d83f" />
   </head>
   <body>
     <header class="topbar">
@@ -39,6 +39,7 @@
     </nav>
 
     <main>
+      <p id="replica-universe" class="protocol-note"></p>
       <section class="metric-grid" data-kpa-panel="overview" aria-label="Indicadores principais">
         <article class="metric">
           <span>Aeronaves</span>
@@ -61,7 +62,7 @@
           <small>NM por aeronave</small>
         </article>
         <article class="metric danger">
-          <span>Eventos LoWC</span>
+          <span>LoWC — média por réplica</span>
           <strong id="metric-lowc">-</strong>
           <small id="metric-lowc-threshold">-</small>
         </article>
@@ -102,11 +103,6 @@
           <span>Tempo abaixo do limiar</span>
           <strong id="kpa-time-below">-</strong>
           <small>segundos, media por replica</small>
-        </article>
-        <article class="metric danger">
-          <span>Tempo ate conflito</span>
-          <strong id="kpa-time-to-conflict">-</strong>
-          <small>diagnostico complementar DTLOOK</small>
         </article>
         <article class="metric danger">
           <span>Amostragem LoWC</span>
@@ -296,6 +292,52 @@
         </div>
       </details>
 
+      <section data-kpa-panel="safety" hidden class="viewer3d-section" aria-labelledby="viewer3d-title">
+        <p id="representative-note" class="protocol-note"></p>
+        <div class="section-heading viewer3d-heading">
+          <div>
+            <p class="eyebrow">Espaço aéreo em três dimensões</p>
+            <h2 id="viewer3d-title">Trajetórias e conflitos ao longo da simulação</h2>
+          </div>
+          <p class="viewer3d-note" id="viewer3d-note">Plano-base a 2.621 pés MSL. Arraste para girar e use a roda para aproximar.</p>
+        </div>
+        <div class="viewer3d-controls" aria-label="Controles da visualização 3D">
+          <button id="viewer3d-play" type="button">Reproduzir</button>
+          <label class="viewer3d-timeline">
+            <span>Tempo <strong id="viewer3d-time-label">--:--:--</strong></span>
+            <input id="viewer3d-time" type="range" min="0" max="0" step="5" value="0" />
+          </label>
+          <label>
+            <span>Velocidade</span>
+            <select id="viewer3d-speed">
+              <option value="1">1×</option>
+              <option value="5">5×</option>
+              <option value="20" selected>20×</option>
+            </select>
+          </label>
+          <label>
+            <span>Exagero vertical</span>
+            <select id="viewer3d-vertical-scale">
+              <option value="1">1×</option>
+              <option value="5" selected>5×</option>
+              <option value="10">10×</option>
+            </select>
+          </label>
+          <button id="viewer3d-reset" type="button">Restaurar vista</button>
+        </div>
+        <div class="viewer3d-stage">
+          <canvas id="viewer3d-canvas" role="img" aria-label="Representação tridimensional animada das trajetórias de aeronaves"></canvas>
+          <div class="viewer3d-status" id="viewer3d-status" aria-live="polite">Carregando dados 3D…</div>
+          <div class="viewer3d-legend" aria-label="Legenda da visualização 3D">
+            <span><i class="viewer3d-dot evtol"></i>eVTOL</span>
+            <span><i class="viewer3d-dot helicopter"></i>Helicóptero</span>
+            <span><i class="viewer3d-dot lowc"></i>LoWC</span>
+            <span><i class="viewer3d-dot nmac"></i>NMAC</span>
+            <span><i class="viewer3d-dot mac"></i>MAC</span>
+          </div>
+        </div>
+      </section>
+
       <section data-kpa-panel="safety" hidden aria-label="Eventos de segurança">
         <div class="conflict-pair-filter" role="group" aria-label="Filtrar conflitos por combinação de veículos">
           <span>Combinação:</span>
@@ -429,6 +471,23 @@
           </section>
         </div>
       </details>
+      <details class="kpa-details" data-kpa-panel="overview" >
+        <summary>Estabilidade dos KPIs entre réplicas</summary>
+        <div class="kpa-details-content" id="stability-overview"></div>
+      </details>
+      <details class="kpa-details" data-kpa-panel="safety" hidden>
+        <summary>Estabilidade dos KPIs entre réplicas</summary>
+        <div class="kpa-details-content" id="stability-safety"></div>
+      </details>
+      <details class="kpa-details" data-kpa-panel="efficiency" hidden>
+        <summary>Estabilidade dos KPIs entre réplicas</summary>
+        <div class="kpa-details-content" id="stability-efficiency"></div>
+      </details>
+      <details class="kpa-details" data-kpa-panel="capacity" hidden>
+        <summary>Estabilidade dos KPIs entre réplicas</summary>
+        <div class="kpa-details-content" id="stability-capacity"></div>
+      </details>
+      <details class="analysis-method-note"><summary>Método dos gráficos agregados</summary><p>Classes fixas comuns entre cenários; peso igual por réplica válida. Faixa azul: mínimo–máximo entre réplicas, não IC. Séries: tempo exato da simulação, sem interpolação nem zeros para instantes sem observação. Altitude: média das contagens de registros por classe de 25 m, sem correção de cadência/duração; cobertura no detalhamento. Separação: percentuais das amostras de pares abaixo de 5 km; severidade: contagem de eventos LoWC, incluindo NMAC. Distância por instância de voo; distância adicional: somente voos com pareamento válido.</p></details>
     </main>
 
     <script
@@ -437,12 +496,12 @@
       crossorigin=""
     ></script>
     <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
-    <script src="assets/data_bundle.js?v=4e28795b8fcb"></script>
-    <script src="assets/candidate_nodes.js?v=aac1139d1528"></script>
-    <script src="assets/crossing_waypoints_3d.js?v=93f03711898c"></script>
-    <script src="assets/uam_projection.js?v=ce626c9a828a"></script>
-    <script src="assets/waypoint_rankings.js?v=9af65576ea09"></script>
+    <script src="assets/data_bundle.js?v=ebc80ce936ab"></script>
+    <script src="assets/candidate_nodes.js?v=e7dfbd1f0bb8"></script>
+    <script src="assets/crossing_waypoints_3d.js?v=fa02b66376ba"></script>
+    <script src="assets/uam_projection.js?v=b6b079381b35"></script>
+    <script src="assets/waypoint_rankings.js?v=df01413af211"></script>
     <script src="assets/metric_catalog.js?v=cf897343f15b"></script>
-    <script src="assets/dashboard.js?v=822778357e64"></script>
+    <script src="assets/dashboard.js?v=cb0be3b6563a"></script>
   </body>
 </html>
