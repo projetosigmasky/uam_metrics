@@ -4,6 +4,8 @@ Dashboard estatico para analisar logs `STATELOG` do BlueSky em cenarios de corre
 
 Este repositorio vincula as metricas ao `Produto3_vfinal_ProjetoSIGMASky.pdf` (Produto 3, versao 2.0, 31/07/2026). A saida principal e a pasta `docs/`, pronta para GitHub Pages. O PDF local e ignorado pelo Git; o catalogo versionado registra suas paginas e equacoes.
 
+Contexto para novas iteracoes: [historico tecnico](ITERATION_LOG.md). Para o relatorio de referencias de 1/2 movimentos por waypoint/5 min: [figuras selecionadas, tabelas e ressalvas](reports/baseline_capacity_2026-10-20/README.md).
+
 
 ## Calibracao dos quatro baselines nominais
 
@@ -14,7 +16,7 @@ No Lessonia, mantenha acessiveis os **JSONs originais da geracao nominal**, com 
 ```bash
 cd ~/post-processing
 .venv/bin/python prepare_baseline_manifest.py \
-  --scenario-root ~/rmsp-uam-simulations/scenarios/product2/nominal_20261013 \
+  --scenario-root ~/rmsp/scenarios/product2/nominal_20261013 \
   --run-dirs ~/runs/RUN_CONCLUIDO \
   --output baseline_manifest.local.json
 

@@ -1,0 +1,285 @@
+{
+  "date": "2026-10-20",
+  "data_commit": "f30f4de940b138d3c8ab97029c159fa74999a740",
+  "sources_sha256": {
+    "../../docs/assets/data/baseline_calibration/comparison.csv": "fb31b9ce278d10e7b3e738a5589c47488e1c9ca0de6674667f838b22dccf4fda",
+    "../../docs/assets/data/baseline_calibration/calibration.json": "e19fc5fffaa1b8bb4cff46ffd9f8fc27e47afc46da6316615cd7b4e9970f91e8",
+    "../../docs/assets/data/baseline_calibration/replica_metrics.csv": "7c194c1917ae6a12e2b8561724d00659661761e76f8012c19459ec73963c099d",
+    "../../docs/assets/data/baseline_calibration/convergence.csv": "dacfc2a7748d8096d308762f2c9db3565e5c4fb9b3d0b921fef6adf74bddbf26"
+  },
+  "criteria": {
+    "minimum_replications": 30,
+    "confirmation_window": 15,
+    "confidence_level": 0.95,
+    "relative_tolerance": 0.05,
+    "absolute_tolerance_per_hour": 0.0,
+    "bootstrap_samples": 1000,
+    "seed": 1729
+  },
+  "calibration_manifest": {
+    "path": "/home/matosdfm/post-processing/baseline_manifest.local.json",
+    "sha256": "ad67679118309f02d320b6484389224290f30404b8bac775a1b3e4050f4765c2"
+  },
+  "selection_rule": "P95 positivo = 1 ou 2; estabilidade final confirmada; >=100 janelas positivas; contagem mais próxima da mediana da classe; desempate pelo ID físico",
+  "current_fallback_applied": false,
+  "builder_sha256": "0655b31403f3886d469976964652bf1ee74616ab889e0a3ce648372e3e434d1f",
+  "tables_sha256": {
+    "scenario_summary.csv": "01ca085656c2427a943a7ab5c23f7e5047f5e115e914483cf2b81da9ff5c838f",
+    "waypoint_capacity_evidence.csv": "6c9c9be85edbda17018a9b14c733503011a619dca6a763e0624060c3951a0fb3",
+    "selected_waypoints.csv": "ac75cb357cf0ac4fd3e7fda104984e6bddf5bc3fb7c26e39b1270b252e05fab0",
+    "network_summary.csv": "2be8502daa41b7a87cc21b78d1dff7c2fe83d7fe670f8733442229cfda9c0da5",
+    "stage_sensitivity.csv": "72ffc4d14bf54ea40e4dd2b32a2b9366d9b16b9a0c2e2de1c056e2ed194ea1bd"
+  },
+  "figures": [
+    {
+      "scenario": "C1.1",
+      "role": "primary",
+      "path": "figures/C1_1_distribuicao_5min.png",
+      "vector_path": "figures/C1_1_distribuicao_5min.svg",
+      "sha256": "6f3d13430b81548a14d964d8dc6afc4ea650b279f5d99eec21bd146e404bc912",
+      "vector_sha256": "4de08c33a27269db5b8931e0fe1622bb9bed983b73077af61fb592fedc830cbf"
+    },
+    {
+      "scenario": "C1.1",
+      "role": "primary",
+      "path": "figures/C1_1_exemplos_1_2.png",
+      "vector_path": "figures/C1_1_exemplos_1_2.svg",
+      "sha256": "8ca6f705d00ad416a80df73b05afbc89e4276a51649cad0c21876ce994467e5c",
+      "vector_sha256": "aade4cd4b9f4861da67bbfe4cc53ae45169bc5ded6aefc718609c83870ae23b5"
+    },
+    {
+      "scenario": "C1.1",
+      "role": "sensitivity_5_15_60min",
+      "path": "../../docs/assets/data/baseline_calibration/C1.1_positive_histogram.png",
+      "sha256": "cec16346a217b304f7e5bdb1ac213f1df5d09a26065bbf09e2050badf0d1f6cf"
+    },
+    {
+      "scenario": "C1.1",
+      "role": "sensitivity_5_15_60min",
+      "path": "../../docs/assets/data/baseline_calibration/C1.1_positive_cdf.png",
+      "sha256": "c5a6e64d864dfeaaf3c161c7e946187922faba408a965ca28e2ca7592575cf81"
+    },
+    {
+      "scenario": "C1.2",
+      "role": "primary",
+      "path": "figures/C1_2_distribuicao_5min.png",
+      "vector_path": "figures/C1_2_distribuicao_5min.svg",
+      "sha256": "3c50151b02ebb815cd08ab38f35171ca66fa0597ee8d21e6448b9afc8bab43eb",
+      "vector_sha256": "c26a426248f1c57f25c0d25c118f12c0caeed2233c7c239a835cb5ab1751ea6b"
+    },
+    {
+      "scenario": "C1.2",
+      "role": "primary",
+      "path": "figures/C1_2_exemplos_1_2.png",
+      "vector_path": "figures/C1_2_exemplos_1_2.svg",
+      "sha256": "78757e8c5a6f877941363368f1acad79f2fa83d17cc934695a1cf1bf990e391f",
+      "vector_sha256": "3ebaf8be4bd2eb8e7ec2215dfc7cb178f6436cb6e189aca5309fe9e4a00f7381"
+    },
+    {
+      "scenario": "C1.2",
+      "role": "sensitivity_5_15_60min",
+      "path": "../../docs/assets/data/baseline_calibration/C1.2_positive_histogram.png",
+      "sha256": "69f9f7c3adc1effb80ac4e7b44c0eb999b8ac057e02ad3a438a59346a85dfc67"
+    },
+    {
+      "scenario": "C1.2",
+      "role": "sensitivity_5_15_60min",
+      "path": "../../docs/assets/data/baseline_calibration/C1.2_positive_cdf.png",
+      "sha256": "98abee08c69dd5ad44047f052b84066da685db5c377d97e5f8182828cbba50da"
+    },
+    {
+      "scenario": "C2.1",
+      "role": "primary",
+      "path": "figures/C2_1_distribuicao_5min.png",
+      "vector_path": "figures/C2_1_distribuicao_5min.svg",
+      "sha256": "3759b3195433da5545acea014a6aac138204303c4c8b10f2a329f8d2b6177ad2",
+      "vector_sha256": "29c1e909ddc19ec171a4292a36258ec2c767527c8c937345c5e14a8d5bc4f655"
+    },
+    {
+      "scenario": "C2.1",
+      "role": "primary",
+      "path": "figures/C2_1_exemplos_1_2.png",
+      "vector_path": "figures/C2_1_exemplos_1_2.svg",
+      "sha256": "3f6cf77e85ea87ae6f6f23423976697645d80556b1fc6d0a25f2330fb3843d6c",
+      "vector_sha256": "560ab0380fb1e00062a20accf52999d154254966fc2344c0fa3d84112bf2a69f"
+    },
+    {
+      "scenario": "C2.1",
+      "role": "sensitivity_5_15_60min",
+      "path": "../../docs/assets/data/baseline_calibration/C2.1_positive_histogram.png",
+      "sha256": "c6da7c5e20caa263739440f8598bef5c52665e0193cb1b030d3603eefb21aa5d"
+    },
+    {
+      "scenario": "C2.1",
+      "role": "sensitivity_5_15_60min",
+      "path": "../../docs/assets/data/baseline_calibration/C2.1_positive_cdf.png",
+      "sha256": "c626c754ff8ace1eda728e425fc0e3e41bad740a652bab5ebd004c2d4cdf4b51"
+    },
+    {
+      "scenario": "C2.2",
+      "role": "primary",
+      "path": "figures/C2_2_distribuicao_5min.png",
+      "vector_path": "figures/C2_2_distribuicao_5min.svg",
+      "sha256": "9e8462c6532128ee9b25b96e0588a11353ac8ccd3f88093e62253f9b86fbdb42",
+      "vector_sha256": "9034680c2b83341c777ae159d4fcf79d8c690b1e5186c8a018bb1ab38b65e772"
+    },
+    {
+      "scenario": "C2.2",
+      "role": "primary",
+      "path": "figures/C2_2_exemplos_1_2.png",
+      "vector_path": "figures/C2_2_exemplos_1_2.svg",
+      "sha256": "da825077010b0b91138cf4468674bea2241b82e1773629c9ff920df0b221bbef",
+      "vector_sha256": "5eb92d4eef1066a82c4317eaa93b4de5d668dc26088fcfec04b3f9234d221e0e"
+    },
+    {
+      "scenario": "C2.2",
+      "role": "sensitivity_5_15_60min",
+      "path": "../../docs/assets/data/baseline_calibration/C2.2_positive_histogram.png",
+      "sha256": "0776033762edb22fb878e80732e703d9583f5df29d12bec4af4e71d796a2993b"
+    },
+    {
+      "scenario": "C2.2",
+      "role": "sensitivity_5_15_60min",
+      "path": "../../docs/assets/data/baseline_calibration/C2.2_positive_cdf.png",
+      "sha256": "614c0518c4d7cdbab8252ce0443f8499682d35e2053c65ed54dfc1d3c5805a1f"
+    },
+    {
+      "scenario": "all",
+      "role": "overview",
+      "path": "figures/00_comparacao_quatro_baselines_5min.png",
+      "vector_path": "figures/00_comparacao_quatro_baselines_5min.svg",
+      "sha256": "8a7c41e2c22b2c40131bdfdb6bdb591d79ddc4af6b609015cb211508ad0f0827",
+      "vector_sha256": "101d67d37289a109fd340caff9ca9403b2e0594ec454136de567a9fedb656d03"
+    }
+  ],
+  "summary": [
+    {
+      "scenario": "C1.1",
+      "zero_policy": "positive",
+      "physical_resources": 544,
+      "observed_estimates": 544,
+      "p95_0": 0,
+      "p95_1": 487,
+      "p95_2": 57,
+      "p95_above_2": 0,
+      "p95_1_or_2": 544,
+      "p95_1_or_2_pct": 100.0,
+      "stable_p95": 215,
+      "stable_mean": 258,
+      "no_observed_use": 0,
+      "insufficient_full_windows": 0
+    },
+    {
+      "scenario": "C1.1",
+      "zero_policy": "all",
+      "physical_resources": 544,
+      "observed_estimates": 544,
+      "p95_0": 496,
+      "p95_1": 48,
+      "p95_2": 0,
+      "p95_above_2": 0,
+      "p95_1_or_2": 48,
+      "p95_1_or_2_pct": 8.823529411764707,
+      "stable_p95": 517,
+      "stable_mean": 61,
+      "no_observed_use": 0,
+      "insufficient_full_windows": 0
+    },
+    {
+      "scenario": "C1.2",
+      "zero_policy": "positive",
+      "physical_resources": 594,
+      "observed_estimates": 594,
+      "p95_0": 0,
+      "p95_1": 477,
+      "p95_2": 108,
+      "p95_above_2": 9,
+      "p95_1_or_2": 585,
+      "p95_1_or_2_pct": 98.48484848484848,
+      "stable_p95": 236,
+      "stable_mean": 309,
+      "no_observed_use": 0,
+      "insufficient_full_windows": 0
+    },
+    {
+      "scenario": "C1.2",
+      "zero_policy": "all",
+      "physical_resources": 594,
+      "observed_estimates": 594,
+      "p95_0": 527,
+      "p95_1": 65,
+      "p95_2": 2,
+      "p95_above_2": 0,
+      "p95_1_or_2": 67,
+      "p95_1_or_2_pct": 11.27946127946128,
+      "stable_p95": 560,
+      "stable_mean": 146,
+      "no_observed_use": 0,
+      "insufficient_full_windows": 0
+    },
+    {
+      "scenario": "C2.1",
+      "zero_policy": "positive",
+      "physical_resources": 193,
+      "observed_estimates": 193,
+      "p95_0": 0,
+      "p95_1": 114,
+      "p95_2": 79,
+      "p95_above_2": 0,
+      "p95_1_or_2": 193,
+      "p95_1_or_2_pct": 100.0,
+      "stable_p95": 127,
+      "stable_mean": 164,
+      "no_observed_use": 0,
+      "insufficient_full_windows": 0
+    },
+    {
+      "scenario": "C2.1",
+      "zero_policy": "all",
+      "physical_resources": 193,
+      "observed_estimates": 193,
+      "p95_0": 145,
+      "p95_1": 46,
+      "p95_2": 2,
+      "p95_above_2": 0,
+      "p95_1_or_2": 48,
+      "p95_1_or_2_pct": 24.870466321243523,
+      "stable_p95": 184,
+      "stable_mean": 112,
+      "no_observed_use": 0,
+      "insufficient_full_windows": 0
+    },
+    {
+      "scenario": "C2.2",
+      "zero_policy": "positive",
+      "physical_resources": 271,
+      "observed_estimates": 271,
+      "p95_0": 0,
+      "p95_1": 125,
+      "p95_2": 129,
+      "p95_above_2": 17,
+      "p95_1_or_2": 254,
+      "p95_1_or_2_pct": 93.7269372693727,
+      "stable_p95": 167,
+      "stable_mean": 239,
+      "no_observed_use": 0,
+      "insufficient_full_windows": 0
+    },
+    {
+      "scenario": "C2.2",
+      "zero_policy": "all",
+      "physical_resources": 271,
+      "observed_estimates": 271,
+      "p95_0": 196,
+      "p95_1": 73,
+      "p95_2": 2,
+      "p95_above_2": 0,
+      "p95_1_or_2": 75,
+      "p95_1_or_2_pct": 27.675276752767527,
+      "stable_p95": 262,
+      "stable_mean": 190,
+      "no_observed_use": 0,
+      "insufficient_full_windows": 0
+    }
+  ]
+}

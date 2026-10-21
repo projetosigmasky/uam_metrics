@@ -1,0 +1,7 @@
+scenario,network,resources,p95_1,p95_2,p95_above_2
+C1.1,reh,544,487,57,0
+C1.2,reh,594,477,108,9
+C2.1,dedicated_uam,96,48,48,0
+C2.1,reh,97,66,31,0
+C2.2,dedicated_uam,174,59,98,17
+C2.2,reh,97,66,31,0
