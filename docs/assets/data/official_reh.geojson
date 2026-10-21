@@ -20,6 +20,18 @@
         "altitude_max_ft": 3300.0,
         "altitude_compulsory_ft": null,
         "fix_a_name": "Piratininga",
+        "explicit_fixes": [
+          {
+            "name": "Piratininga",
+            "lat": -23.7030555599999,
+            "lon": -46.6744444399999
+          },
+          {
+            "name": "Kentinha",
+            "lat": -23.7222222199999,
+            "lon": -46.6077777799999
+          }
+        ],
         "fix_b_name": "Kentinha",
         "ats": "TWR-SP127.150 MHz",
         "effective_date": "2025-10-02T00:00:00Z",
@@ -80,6 +92,18 @@
         "altitude_max_ft": null,
         "altitude_compulsory_ft": null,
         "fix_a_name": "Mailasqui",
+        "explicit_fixes": [
+          {
+            "name": "Mailasqui",
+            "lat": -23.5669444399999,
+            "lon": -47.07222222
+          },
+          {
+            "name": "",
+            "lat": -23.5414999999999,
+            "lon": -47.0843
+          }
+        ],
         "fix_b_name": "",
         "ats": "",
         "effective_date": "2025-10-02T00:00:00Z",
@@ -140,6 +164,18 @@
         "altitude_max_ft": 3600.0,
         "altitude_compulsory_ft": null,
         "fix_a_name": "Extra Taboão",
+        "explicit_fixes": [
+          {
+            "name": "Extra Taboão",
+            "lat": -23.60861111,
+            "lon": -46.75166667
+          },
+          {
+            "name": "Rodoanel Raposo",
+            "lat": -23.5922222199999,
+            "lon": -46.81027778
+          }
+        ],
         "fix_b_name": "Rodoanel Raposo",
         "ats": "COORDENAÇÃO HELICÓPTERO127.350 MHz",
         "effective_date": "2025-10-02T00:00:00Z",
@@ -200,6 +236,18 @@
         "altitude_max_ft": 3400.0,
         "altitude_compulsory_ft": null,
         "fix_a_name": "Parque Aclimação",
+        "explicit_fixes": [
+          {
+            "name": "Parque Aclimação",
+            "lat": -23.57444444,
+            "lon": -46.62861111
+          },
+          {
+            "name": "Itaú Cto",
+            "lat": -23.55777778,
+            "lon": -46.61555556
+          }
+        ],
         "fix_b_name": "Itaú Cto",
         "ats": "COORDENAÇÃO HELICÓPTERO127.350 MHz",
         "effective_date": "2025-10-02T00:00:00Z",
@@ -260,6 +308,18 @@
         "altitude_max_ft": 3400.0,
         "altitude_compulsory_ft": null,
         "fix_a_name": "Itaú Cto",
+        "explicit_fixes": [
+          {
+            "name": "Itaú Cto",
+            "lat": -23.55777778,
+            "lon": -46.61555556
+          },
+          {
+            "name": "Alcântara Machado",
+            "lat": -23.5527777799999,
+            "lon": -46.6113888899999
+          }
+        ],
         "fix_b_name": "Alcântara Machado",
         "ats": "COORDENAÇÃO HELICÓPTERO127.350 MHz",
         "effective_date": "2025-10-02T00:00:00Z",
@@ -328,6 +388,18 @@
         "altitude_max_ft": null,
         "altitude_compulsory_ft": 3100.0,
         "fix_a_name": "Ponte Aricanduva",
+        "explicit_fixes": [
+          {
+            "name": "Ponte Aricanduva",
+            "lat": -23.5230555599999,
+            "lon": -46.55833333
+          },
+          {
+            "name": "Elevado Aricanduva",
+            "lat": -23.535,
+            "lon": -46.5483333299999
+          }
+        ],
         "fix_b_name": "Elevado Aricanduva",
         "ats": "COORDENAÇÃO HELICÓPTERO127.350 MHz",
         "effective_date": "2025-10-02T00:00:00Z",
@@ -400,6 +472,18 @@
         "altitude_max_ft": null,
         "altitude_compulsory_ft": 3200.0,
         "fix_a_name": "São Mateus",
+        "explicit_fixes": [
+          {
+            "name": "São Mateus",
+            "lat": -23.6125,
+            "lon": -46.47638889
+          },
+          {
+            "name": "Parque do Carmo",
+            "lat": -23.59444444,
+            "lon": -46.46583333
+          }
+        ],
         "fix_b_name": "Parque do Carmo",
         "ats": "COORDENAÇÃO HELICÓPTERO127.350 MHz",
         "effective_date": "2025-10-02T00:00:00Z",
@@ -468,6 +552,18 @@
         "altitude_max_ft": 3500.0,
         "altitude_compulsory_ft": null,
         "fix_a_name": "Suzano",
+        "explicit_fixes": [
+          {
+            "name": "Suzano",
+            "lat": -23.5341666699999,
+            "lon": -46.30805556
+          },
+          {
+            "name": "Gm",
+            "lat": -23.44083333,
+            "lon": -46.25722222
+          }
+        ],
         "fix_b_name": "Gm",
         "ats": "SUL 126.650 MHz",
         "effective_date": "2025-10-02T00:00:00Z",
@@ -528,6 +624,18 @@
         "altitude_max_ft": 3500.0,
         "altitude_compulsory_ft": null,
         "fix_a_name": "Gm",
+        "explicit_fixes": [
+          {
+            "name": "Gm",
+            "lat": -23.44083333,
+            "lon": -46.25722222
+          },
+          {
+            "name": "Través Isabel",
+            "lat": -23.32277778,
+            "lon": -46.20583333
+          }
+        ],
         "fix_b_name": "Través Isabel",
         "ats": "SUL 126.650 MHz",
         "effective_date": "2025-10-02T00:00:00Z",
@@ -592,6 +700,18 @@
         "altitude_max_ft": 3500.0,
         "altitude_compulsory_ft": null,
         "fix_a_name": "Través Isabel",
+        "explicit_fixes": [
+          {
+            "name": "Través Isabel",
+            "lat": -23.32277778,
+            "lon": -46.20583333
+          },
+          {
+            "name": "Igaratá",
+            "lat": -23.20583333,
+            "lon": -46.1591666699999
+          }
+        ],
         "fix_b_name": "Igaratá",
         "ats": "SUL 126.650 MHz",
         "effective_date": "2025-10-02T00:00:00Z",
@@ -652,6 +772,18 @@
         "altitude_max_ft": null,
         "altitude_compulsory_ft": 3200.0,
         "fix_a_name": "Igaratá",
+        "explicit_fixes": [
+          {
+            "name": "Igaratá",
+            "lat": -23.20583333,
+            "lon": -46.1591666699999
+          },
+          {
+            "name": "São José",
+            "lat": -23.07833333,
+            "lon": -45.92361111
+          }
+        ],
         "fix_b_name": "São José",
         "ats": "APP-SP134.150 MHz / 124.150 MHz",
         "effective_date": "2025-10-02T00:00:00Z",
@@ -712,6 +844,18 @@
         "altitude_max_ft": null,
         "altitude_compulsory_ft": 3300.0,
         "fix_a_name": "Shopping Tatuapé",
+        "explicit_fixes": [
+          {
+            "name": "Shopping Tatuapé",
+            "lat": -23.538972004,
+            "lon": -46.57632054
+          },
+          {
+            "name": "Ponte Aricanduva",
+            "lat": -23.5230555599999,
+            "lon": -46.55833333
+          }
+        ],
         "fix_b_name": "Ponte Aricanduva",
         "ats": "COORDENAÇÃO HELICÓPTERO127.350 MHz",
         "effective_date": "2025-10-02T00:00:00Z",
@@ -772,6 +916,18 @@
         "altitude_max_ft": 3400.0,
         "altitude_compulsory_ft": null,
         "fix_a_name": "Utinga",
+        "explicit_fixes": [
+          {
+            "name": "Utinga",
+            "lat": -23.62416667,
+            "lon": -46.54138889
+          },
+          {
+            "name": "Estação Saladino",
+            "lat": -23.6374999999999,
+            "lon": -46.535
+          }
+        ],
         "fix_b_name": "Estação Saladino",
         "ats": "COORDENAÇÃO HELICÓPTERO127.350 MHz",
         "effective_date": "2025-10-02T00:00:00Z",
@@ -832,6 +988,18 @@
         "altitude_max_ft": 3300.0,
         "altitude_compulsory_ft": null,
         "fix_a_name": "Kentinha",
+        "explicit_fixes": [
+          {
+            "name": "Kentinha",
+            "lat": -23.7222222199999,
+            "lon": -46.6077777799999
+          },
+          {
+            "name": "Mercedes",
+            "lat": -23.66611111,
+            "lon": -46.57333333
+          }
+        ],
         "fix_b_name": "Mercedes",
         "ats": "TWR-SP127.150 MHz",
         "effective_date": "2025-10-02T00:00:00Z",
@@ -892,6 +1060,18 @@
         "altitude_max_ft": 3300.0,
         "altitude_compulsory_ft": null,
         "fix_a_name": "Mercedes",
+        "explicit_fixes": [
+          {
+            "name": "Mercedes",
+            "lat": -23.66611111,
+            "lon": -46.57333333
+          },
+          {
+            "name": "Estação Saladino",
+            "lat": -23.6374999999999,
+            "lon": -46.535
+          }
+        ],
         "fix_b_name": "Estação Saladino",
         "ats": "COORDENAÇÃO HELICÓPTERO127.350 MHz",
         "effective_date": "2025-10-02T00:00:00Z",
@@ -952,6 +1132,18 @@
         "altitude_max_ft": 3600.0,
         "altitude_compulsory_ft": null,
         "fix_a_name": "Parelheiros",
+        "explicit_fixes": [
+          {
+            "name": "Parelheiros",
+            "lat": -23.80305556,
+            "lon": -46.7344444399999
+          },
+          {
+            "name": "Empresarial",
+            "lat": -23.6525,
+            "lon": -46.7233333299999
+          }
+        ],
         "fix_b_name": "Empresarial",
         "ats": "COORDENAÇÃO HELICÓPTERO127.350 MHz",
         "effective_date": "2025-10-02T00:00:00Z",
@@ -1012,6 +1204,18 @@
         "altitude_max_ft": null,
         "altitude_compulsory_ft": 3000.0,
         "fix_a_name": "Estação",
+        "explicit_fixes": [
+          {
+            "name": "Estação",
+            "lat": -23.1949999999999,
+            "lon": -46.87222222
+          },
+          {
+            "name": "Assaí Jundiaí",
+            "lat": -23.1744444399999,
+            "lon": -46.8936111099999
+          }
+        ],
         "fix_b_name": "Assaí Jundiaí",
         "ats": "TWR-JD (MONITORAMENTO) 118.750 MHz",
         "effective_date": "2025-10-02T00:00:00Z",
@@ -1088,6 +1292,18 @@
         "altitude_max_ft": null,
         "altitude_compulsory_ft": 3200.0,
         "fix_a_name": "Alcântara Machado",
+        "explicit_fixes": [
+          {
+            "name": "Alcântara Machado",
+            "lat": -23.5527777799999,
+            "lon": -46.6113888899999
+          },
+          {
+            "name": "Vd São Carlos",
+            "lat": -23.56722222,
+            "lon": -46.60388889
+          }
+        ],
         "fix_b_name": "Vd São Carlos",
         "ats": "COORDENAÇÃO HELICÓPTERO127.350 MHz",
         "effective_date": "2025-10-02T00:00:00Z",
@@ -1148,6 +1364,18 @@
         "altitude_max_ft": 3300.0,
         "altitude_compulsory_ft": null,
         "fix_a_name": "Cebolão",
+        "explicit_fixes": [
+          {
+            "name": "Cebolão",
+            "lat": -23.5261111099999,
+            "lon": -46.75027778
+          },
+          {
+            "name": "Shopping Continental",
+            "lat": -23.54805556,
+            "lon": -46.75527778
+          }
+        ],
         "fix_b_name": "Shopping Continental",
         "ats": "COORDENAÇÃO HELICÓPTERO127.350 MHz",
         "effective_date": "2025-10-02T00:00:00Z",
@@ -1208,6 +1436,18 @@
         "altitude_max_ft": 3600.0,
         "altitude_compulsory_ft": null,
         "fix_a_name": "Shopping Continental",
+        "explicit_fixes": [
+          {
+            "name": "Shopping Continental",
+            "lat": -23.54805556,
+            "lon": -46.75527778
+          },
+          {
+            "name": "Extra Taboão",
+            "lat": -23.60861111,
+            "lon": -46.75166667
+          }
+        ],
         "fix_b_name": "Extra Taboão",
         "ats": "COORDENAÇÃO HELICÓPTERO127.350 MHz",
         "effective_date": "2025-10-02T00:00:00Z",
@@ -1268,6 +1508,18 @@
         "altitude_max_ft": null,
         "altitude_compulsory_ft": 3300.0,
         "fix_a_name": "Brás",
+        "explicit_fixes": [
+          {
+            "name": "Brás",
+            "lat": -23.543888889,
+            "lon": -46.617222222
+          },
+          {
+            "name": "Shopping Tatuapé",
+            "lat": -23.538972004,
+            "lon": -46.57632054
+          }
+        ],
         "fix_b_name": "Shopping Tatuapé",
         "ats": "COORDENAÇÃO HELICÓPTERO127.350 MHz",
         "effective_date": "2025-10-02T00:00:00Z",
@@ -1328,6 +1580,18 @@
         "altitude_max_ft": null,
         "altitude_compulsory_ft": 3100.0,
         "fix_a_name": "Shopping Tatuapé",
+        "explicit_fixes": [
+          {
+            "name": "Shopping Tatuapé",
+            "lat": -23.538972004,
+            "lon": -46.57632054
+          },
+          {
+            "name": "Elevado Aricanduva",
+            "lat": -23.535,
+            "lon": -46.5483333299999
+          }
+        ],
         "fix_b_name": "Elevado Aricanduva",
         "ats": "COORDENAÇÃO HELICÓPTERO127.350 MHz",
         "effective_date": "2025-10-02T00:00:00Z",
@@ -1388,6 +1652,18 @@
         "altitude_max_ft": null,
         "altitude_compulsory_ft": 3300.0,
         "fix_a_name": "Maxxi",
+        "explicit_fixes": [
+          {
+            "name": "Maxxi",
+            "lat": -23.65638889,
+            "lon": -46.50055556
+          },
+          {
+            "name": "São Mateus",
+            "lat": -23.6125,
+            "lon": -46.47638889
+          }
+        ],
         "fix_b_name": "São Mateus",
         "ats": "COORDENAÇÃO HELICÓPTERO127.350 MHz",
         "effective_date": "2025-10-02T00:00:00Z",
@@ -1448,6 +1724,18 @@
         "altitude_max_ft": null,
         "altitude_compulsory_ft": 3300.0,
         "fix_a_name": "Itaquera",
+        "explicit_fixes": [
+          {
+            "name": "Itaquera",
+            "lat": -23.5422222199999,
+            "lon": -46.46555556
+          },
+          {
+            "name": "Fábrica Ferraz",
+            "lat": -23.53861111,
+            "lon": -46.3899999999999
+          }
+        ],
         "fix_b_name": "Fábrica Ferraz",
         "ats": "COORDENAÇÃO HELICÓPTERO127.350 MHz",
         "effective_date": "2025-10-02T00:00:00Z",
@@ -1508,6 +1796,18 @@
         "altitude_max_ft": null,
         "altitude_compulsory_ft": 3400.0,
         "fix_a_name": "Fábrica Ferraz",
+        "explicit_fixes": [
+          {
+            "name": "Fábrica Ferraz",
+            "lat": -23.53861111,
+            "lon": -46.3899999999999
+          },
+          {
+            "name": "Suzano",
+            "lat": -23.5341666699999,
+            "lon": -46.30805556
+          }
+        ],
         "fix_b_name": "Suzano",
         "ats": "SUL126.650 MHz",
         "effective_date": "2025-10-02T00:00:00Z",
@@ -1568,6 +1868,18 @@
         "altitude_max_ft": null,
         "altitude_compulsory_ft": 3200.0,
         "fix_a_name": "Rodoanel Raposo",
+        "explicit_fixes": [
+          {
+            "name": "Rodoanel Raposo",
+            "lat": -23.5922222199999,
+            "lon": -46.81027778
+          },
+          {
+            "name": "Rodoanel Castelo",
+            "lat": -23.50888889,
+            "lon": -46.82138889
+          }
+        ],
         "fix_b_name": "Rodoanel Castelo",
         "ats": "COORDENAÇÃO HELICÓPTERO127.350 MHz",
         "effective_date": "2025-10-02T00:00:00Z",
@@ -1668,6 +1980,18 @@
         "altitude_max_ft": null,
         "altitude_compulsory_ft": 3200.0,
         "fix_a_name": "Rodoanel Castelo",
+        "explicit_fixes": [
+          {
+            "name": "Rodoanel Castelo",
+            "lat": -23.50888889,
+            "lon": -46.82138889
+          },
+          {
+            "name": "Imperial",
+            "lat": -23.4894444399999,
+            "lon": -46.80722222
+          }
+        ],
         "fix_b_name": "Imperial",
         "ats": "COORDENAÇÃO HELICÓPTERO127.350 MHz",
         "effective_date": "2025-10-02T00:00:00Z",
@@ -1736,6 +2060,18 @@
         "altitude_max_ft": null,
         "altitude_compulsory_ft": null,
         "fix_a_name": "Ponte Aricanduva",
+        "explicit_fixes": [
+          {
+            "name": "Ponte Aricanduva",
+            "lat": -23.5230555599999,
+            "lon": -46.55833333
+          },
+          {
+            "name": "Barragem Tietê",
+            "lat": -23.50222222,
+            "lon": -46.54194444
+          }
+        ],
         "fix_b_name": "Barragem Tietê",
         "ats": "COORDENAÇÃO HELICÓPTERO127.350 MHz",
         "effective_date": "2025-10-02T00:00:00Z",
@@ -1796,6 +2132,18 @@
         "altitude_max_ft": 3500.0,
         "altitude_compulsory_ft": null,
         "fix_a_name": "Gm",
+        "explicit_fixes": [
+          {
+            "name": "Gm",
+            "lat": -23.44083333,
+            "lon": -46.25722222
+          },
+          {
+            "name": "Pedágio Senna",
+            "lat": -23.38416667,
+            "lon": -46.15388889
+          }
+        ],
         "fix_b_name": "Pedágio Senna",
         "ats": "SUL126.650 MHz",
         "effective_date": "2025-10-02T00:00:00Z",
@@ -1864,6 +2212,18 @@
         "altitude_max_ft": null,
         "altitude_compulsory_ft": 3300.0,
         "fix_a_name": "Viaduto Antártica",
+        "explicit_fixes": [
+          {
+            "name": "Viaduto Antártica",
+            "lat": -23.5247222199999,
+            "lon": -46.6708333299999
+          },
+          {
+            "name": "Cebolinha",
+            "lat": -23.5916666699999,
+            "lon": -46.65083333
+          }
+        ],
         "fix_b_name": "Cebolinha",
         "ats": "CONTROLE HELICÓPTERO118.350 MHz",
         "effective_date": "2025-10-02T00:00:00Z",
@@ -1956,6 +2316,18 @@
         "altitude_max_ft": null,
         "altitude_compulsory_ft": 3300.0,
         "fix_a_name": "Cebolinha",
+        "explicit_fixes": [
+          {
+            "name": "Cebolinha",
+            "lat": -23.5916666699999,
+            "lon": -46.65083333
+          },
+          {
+            "name": "Clube Sírio",
+            "lat": -23.6077777799999,
+            "lon": -46.65277778
+          }
+        ],
         "fix_b_name": "Clube Sírio",
         "ats": "CONTROLE HELICÓPTERO118.350 MHz",
         "effective_date": "2025-10-02T00:00:00Z",
@@ -2016,6 +2388,18 @@
         "altitude_max_ft": 3400.0,
         "altitude_compulsory_ft": null,
         "fix_a_name": "Ponte Estaiada",
+        "explicit_fixes": [
+          {
+            "name": "Ponte Estaiada",
+            "lat": -23.6127777799999,
+            "lon": -46.69944444
+          },
+          {
+            "name": "Washington Luís",
+            "lat": -23.6336111099999,
+            "lon": -46.66916667
+          }
+        ],
         "fix_b_name": "Washington Luís",
         "ats": "CONTROLE HELICÓPTERO118.350 MHz",
         "effective_date": "2025-10-02T00:00:00Z",
@@ -2108,6 +2492,18 @@
         "altitude_max_ft": null,
         "altitude_compulsory_ft": 3600.0,
         "fix_a_name": "Cabreúva",
+        "explicit_fixes": [
+          {
+            "name": "Cabreúva",
+            "lat": -23.3063888899999,
+            "lon": -47.13138889
+          },
+          {
+            "name": "Pirapora",
+            "lat": -23.39638889,
+            "lon": -46.9994444399999
+          }
+        ],
         "fix_b_name": "Pirapora",
         "ats": "NORTE135.675 MHz",
         "effective_date": "2025-10-02T00:00:00Z",
@@ -2168,6 +2564,18 @@
         "altitude_max_ft": null,
         "altitude_compulsory_ft": 3300.0,
         "fix_a_name": "Entroncamento",
+        "explicit_fixes": [
+          {
+            "name": "Entroncamento",
+            "lat": -23.60361111,
+            "lon": -46.60055556
+          },
+          {
+            "name": "Mercedes",
+            "lat": -23.66611111,
+            "lon": -46.57333333
+          }
+        ],
         "fix_b_name": "Mercedes",
         "ats": "COORDENAÇÃO HELICÓPTERO127.350 MHz",
         "effective_date": "2025-10-02T00:00:00Z",
@@ -2276,6 +2684,18 @@
         "altitude_max_ft": null,
         "altitude_compulsory_ft": 3100.0,
         "fix_a_name": "Ponte Aricanduva",
+        "explicit_fixes": [
+          {
+            "name": "Ponte Aricanduva",
+            "lat": -23.5230555599999,
+            "lon": -46.55833333
+          },
+          {
+            "name": "Dutra",
+            "lat": -23.49833333,
+            "lon": -46.5594444399999
+          }
+        ],
         "fix_b_name": "Dutra",
         "ats": "COORDENAÇÃO HELICÓPTERO127.350 MHz",
         "effective_date": "2025-10-02T00:00:00Z",
@@ -2352,6 +2772,18 @@
         "altitude_max_ft": 3600.0,
         "altitude_compulsory_ft": null,
         "fix_a_name": "Trevo Imigrantes",
+        "explicit_fixes": [
+          {
+            "name": "Trevo Imigrantes",
+            "lat": -23.76333333,
+            "lon": -46.59111111
+          },
+          {
+            "name": "Pedágio Imigrantes",
+            "lat": -23.82083333,
+            "lon": -46.58277778
+          }
+        ],
         "fix_b_name": "Pedágio Imigrantes",
         "ats": "SUL 126.650 MHz",
         "effective_date": "2025-10-02T00:00:00Z",
@@ -2420,6 +2852,18 @@
         "altitude_max_ft": 3500.0,
         "altitude_compulsory_ft": null,
         "fix_a_name": "Mercedes",
+        "explicit_fixes": [
+          {
+            "name": "Mercedes",
+            "lat": -23.66611111,
+            "lon": -46.57333333
+          },
+          {
+            "name": "Trevo Anchieta",
+            "lat": -23.7636111099999,
+            "lon": -46.5341666699999
+          }
+        ],
         "fix_b_name": "Trevo Anchieta",
         "ats": "COORDENAÇÃO HELICÓPTERO127.350 MHz",
         "effective_date": "2025-10-02T00:00:00Z",
@@ -2544,6 +2988,18 @@
         "altitude_max_ft": 3500.0,
         "altitude_compulsory_ft": null,
         "fix_a_name": "Trevo Anchieta",
+        "explicit_fixes": [
+          {
+            "name": "Trevo Anchieta",
+            "lat": -23.7636111099999,
+            "lon": -46.5341666699999
+          },
+          {
+            "name": "Pedágio Anchieta",
+            "lat": -23.7891666699999,
+            "lon": -46.5197222199999
+          }
+        ],
         "fix_b_name": "Pedágio Anchieta",
         "ats": "SUL126.650 MHz",
         "effective_date": "2025-10-02T00:00:00Z",
@@ -2628,6 +3084,18 @@
         "altitude_max_ft": null,
         "altitude_compulsory_ft": 2500.0,
         "fix_a_name": "Araçoiaba",
+        "explicit_fixes": [
+          {
+            "name": "Araçoiaba",
+            "lat": -23.5186111099999,
+            "lon": -47.5958333299999
+          },
+          {
+            "name": "Hospital",
+            "lat": -23.52583333,
+            "lon": -47.51944444
+          }
+        ],
         "fix_b_name": "Hospital",
         "ats": "NORTE 135.675 MHz",
         "effective_date": "2025-10-02T00:00:00Z",
@@ -2712,6 +3180,18 @@
         "altitude_max_ft": null,
         "altitude_compulsory_ft": 2500.0,
         "fix_a_name": "Hospital",
+        "explicit_fixes": [
+          {
+            "name": "Hospital",
+            "lat": -23.52583333,
+            "lon": -47.51944444
+          },
+          {
+            "name": "Makro",
+            "lat": -23.5358333299999,
+            "lon": -47.50305556
+          }
+        ],
         "fix_b_name": "Makro",
         "ats": "TWR SOROCABA (MONITORAMENTO)118.800 MHz",
         "effective_date": "2025-10-02T00:00:00Z",
@@ -2780,6 +3260,18 @@
         "altitude_max_ft": null,
         "altitude_compulsory_ft": 2700.0,
         "fix_a_name": "Makro",
+        "explicit_fixes": [
+          {
+            "name": "Makro",
+            "lat": -23.5358333299999,
+            "lon": -47.50305556
+          },
+          {
+            "name": "Assaí",
+            "lat": -23.5247222199999,
+            "lon": -47.44166667
+          }
+        ],
         "fix_b_name": "Assaí",
         "ats": "TWR SOROCABA (MONITORAMENTO)118.800 MHz",
         "effective_date": "2025-10-02T00:00:00Z",
@@ -2840,6 +3332,18 @@
         "altitude_max_ft": null,
         "altitude_compulsory_ft": 2700.0,
         "fix_a_name": "Assaí",
+        "explicit_fixes": [
+          {
+            "name": "Assaí",
+            "lat": -23.5247222199999,
+            "lon": -47.44166667
+          },
+          {
+            "name": "Clube",
+            "lat": -23.5149999999999,
+            "lon": -47.42722222
+          }
+        ],
         "fix_b_name": "Clube",
         "ats": "TWR SOROCABA (MONITORAMENTO)118.800 MHz",
         "effective_date": "2025-10-02T00:00:00Z",
@@ -2900,6 +3404,18 @@
         "altitude_max_ft": null,
         "altitude_compulsory_ft": 3100.0,
         "fix_a_name": "Clube",
+        "explicit_fixes": [
+          {
+            "name": "Clube",
+            "lat": -23.5149999999999,
+            "lon": -47.42722222
+          },
+          {
+            "name": "Alumínio",
+            "lat": -23.53055556,
+            "lon": -47.24805556
+          }
+        ],
         "fix_b_name": "Alumínio",
         "ats": "FCA NORTE 135.675 MHz",
         "effective_date": "2025-10-02T00:00:00Z",
@@ -2984,6 +3500,18 @@
         "altitude_max_ft": null,
         "altitude_compulsory_ft": 3400.0,
         "fix_a_name": "Alumínio",
+        "explicit_fixes": [
+          {
+            "name": "Alumínio",
+            "lat": -23.53055556,
+            "lon": -47.24805556
+          },
+          {
+            "name": "Mairinque",
+            "lat": -23.53638889,
+            "lon": -47.18861111
+          }
+        ],
         "fix_b_name": "Mairinque",
         "ats": "FCA NORTE 135.675 MHz",
         "effective_date": "2025-10-02T00:00:00Z",
@@ -3044,6 +3572,18 @@
         "altitude_max_ft": null,
         "altitude_compulsory_ft": 3600.0,
         "fix_a_name": "Mairinque",
+        "explicit_fixes": [
+          {
+            "name": "Mairinque",
+            "lat": -23.53638889,
+            "lon": -47.18861111
+          },
+          {
+            "name": "São Roque",
+            "lat": -23.5427777799999,
+            "lon": -47.1361111099999
+          }
+        ],
         "fix_b_name": "São Roque",
         "ats": "FCA NORTE 135.675 MHz",
         "effective_date": "2025-10-02T00:00:00Z",
@@ -3112,6 +3652,18 @@
         "altitude_max_ft": null,
         "altitude_compulsory_ft": 4000.0,
         "fix_a_name": "Mailasqui",
+        "explicit_fixes": [
+          {
+            "name": "Mailasqui",
+            "lat": -23.5669444399999,
+            "lon": -47.07222222
+          },
+          {
+            "name": "Vargem Grande",
+            "lat": -23.60555556,
+            "lon": -47.01638889
+          }
+        ],
         "fix_b_name": "Vargem Grande",
         "ats": "NORTE 135.675 MHz",
         "effective_date": "2025-10-02T00:00:00Z",
@@ -3180,6 +3732,18 @@
         "altitude_max_ft": null,
         "altitude_compulsory_ft": 3600.0,
         "fix_a_name": "Vargem Grande",
+        "explicit_fixes": [
+          {
+            "name": "Vargem Grande",
+            "lat": -23.60555556,
+            "lon": -47.01638889
+          },
+          {
+            "name": "Extra Cotia",
+            "lat": -23.6025,
+            "lon": -46.9125
+          }
+        ],
         "fix_b_name": "Extra Cotia",
         "ats": "SUL 126.650 MHz",
         "effective_date": "2025-10-02T00:00:00Z",
@@ -3280,6 +3844,18 @@
         "altitude_max_ft": 3600.0,
         "altitude_compulsory_ft": null,
         "fix_a_name": "Extra Cotia",
+        "explicit_fixes": [
+          {
+            "name": "Extra Cotia",
+            "lat": -23.6025,
+            "lon": -46.9125
+          },
+          {
+            "name": "Rodoanel Raposo",
+            "lat": -23.5922222199999,
+            "lon": -46.81027778
+          }
+        ],
         "fix_b_name": "Rodoanel Raposo",
         "ats": "SUL 126.650 MHz",
         "effective_date": "2025-10-02T00:00:00Z",
@@ -3380,6 +3956,18 @@
         "altitude_max_ft": 3600.0,
         "altitude_compulsory_ft": null,
         "fix_a_name": "Parelheiros",
+        "explicit_fixes": [
+          {
+            "name": "Parelheiros",
+            "lat": -23.80305556,
+            "lon": -46.7344444399999
+          },
+          {
+            "name": "Rodoanel Raposo",
+            "lat": -23.5922222199999,
+            "lon": -46.81027778
+          }
+        ],
         "fix_b_name": "Rodoanel Raposo",
         "ats": "COORDENAÇÃO HELICÓPTERO127.350 MHz",
         "effective_date": "2025-10-02T00:00:00Z",
@@ -3532,6 +4120,18 @@
         "altitude_max_ft": 3600.0,
         "altitude_compulsory_ft": null,
         "fix_a_name": "Trevo Imigrantes",
+        "explicit_fixes": [
+          {
+            "name": "Trevo Imigrantes",
+            "lat": -23.76333333,
+            "lon": -46.59111111
+          },
+          {
+            "name": "Parelheiros",
+            "lat": -23.80305556,
+            "lon": -46.7344444399999
+          }
+        ],
         "fix_b_name": "Parelheiros",
         "ats": "COORDENAÇÃO HELICÓPTERO127.350 MHz",
         "effective_date": "2025-10-02T00:00:00Z",
@@ -3616,6 +4216,18 @@
         "altitude_max_ft": 3600.0,
         "altitude_compulsory_ft": null,
         "fix_a_name": "Trevo Anchieta",
+        "explicit_fixes": [
+          {
+            "name": "Trevo Anchieta",
+            "lat": -23.7636111099999,
+            "lon": -46.5341666699999
+          },
+          {
+            "name": "Trevo Imigrantes",
+            "lat": -23.76333333,
+            "lon": -46.59111111
+          }
+        ],
         "fix_b_name": "Trevo Imigrantes",
         "ats": "COORDENAÇÃO HELICÓPTERO127.350 MHz",
         "effective_date": "2025-10-02T00:00:00Z",
@@ -3700,6 +4312,18 @@
         "altitude_max_ft": 3600.0,
         "altitude_compulsory_ft": null,
         "fix_a_name": "Kentinha",
+        "explicit_fixes": [
+          {
+            "name": "Kentinha",
+            "lat": -23.7222222199999,
+            "lon": -46.6077777799999
+          },
+          {
+            "name": "Trevo Imigrantes",
+            "lat": -23.76333333,
+            "lon": -46.59111111
+          }
+        ],
         "fix_b_name": "Trevo Imigrantes",
         "ats": "COORDENAÇÃO HELICÓPTERO127.350 MHz",
         "effective_date": "2025-10-02T00:00:00Z",
@@ -3784,6 +4408,18 @@
         "altitude_max_ft": null,
         "altitude_compulsory_ft": 3000.0,
         "fix_a_name": "Honda",
+        "explicit_fixes": [
+          {
+            "name": "Honda",
+            "lat": -22.82083333,
+            "lon": -47.19638889
+          },
+          {
+            "name": "Pedágio Americana",
+            "lat": -22.77083333,
+            "lon": -47.2388888899999
+          }
+        ],
         "fix_b_name": "Pedágio Americana",
         "ats": "Americana135.025 MHz",
         "effective_date": "2025-10-02T00:00:00Z",
@@ -3852,6 +4488,18 @@
         "altitude_max_ft": null,
         "altitude_compulsory_ft": 3000.0,
         "fix_a_name": "Santos Dumont",
+        "explicit_fixes": [
+          {
+            "name": "Santos Dumont",
+            "lat": -22.93277778,
+            "lon": -47.07388889
+          },
+          {
+            "name": "Honda",
+            "lat": -22.82083333,
+            "lon": -47.19638889
+          }
+        ],
         "fix_b_name": "Honda",
         "ats": "RÁDIO AMARAIS 118,125 MHz",
         "effective_date": "2025-10-02T00:00:00Z",
@@ -3968,6 +4616,18 @@
         "altitude_max_ft": 3500.0,
         "altitude_compulsory_ft": null,
         "fix_a_name": "Jaraguá",
+        "explicit_fixes": [
+          {
+            "name": "Jaraguá",
+            "lat": -23.45194444,
+            "lon": -46.78694444
+          },
+          {
+            "name": "Trevo Anhanguera Bandeirantes",
+            "lat": -23.26194444,
+            "lon": -46.8663888899999
+          }
+        ],
         "fix_b_name": "Trevo Anhanguera Bandeirantes",
         "ats": "NORTE 135.675 MHz",
         "effective_date": "2025-10-02T00:00:00Z",
@@ -4216,6 +4876,18 @@
         "altitude_max_ft": 3500.0,
         "altitude_compulsory_ft": null,
         "fix_a_name": "Pão de Açúcar",
+        "explicit_fixes": [
+          {
+            "name": "Pão de Açúcar",
+            "lat": -23.48555556,
+            "lon": -46.76944444
+          },
+          {
+            "name": "Jaraguá",
+            "lat": -23.45194444,
+            "lon": -46.78694444
+          }
+        ],
         "fix_b_name": "Jaraguá",
         "ats": "COORDENAÇÃO HELICÓPTERO127.350 MHz",
         "effective_date": "2025-10-02T00:00:00Z",
@@ -4320,6 +4992,18 @@
         "altitude_max_ft": null,
         "altitude_compulsory_ft": 3200.0,
         "fix_a_name": "Marco Zero",
+        "explicit_fixes": [
+          {
+            "name": "Marco Zero",
+            "lat": -23.51444444,
+            "lon": -46.72611111
+          },
+          {
+            "name": "Pão de Açúcar",
+            "lat": -23.48555556,
+            "lon": -46.76944444
+          }
+        ],
         "fix_b_name": "Pão de Açúcar",
         "ats": "COORDENAÇÃO HELICÓPTERO127.350 MHz",
         "effective_date": "2025-10-02T00:00:00Z",
@@ -4476,6 +5160,18 @@
         "altitude_max_ft": null,
         "altitude_compulsory_ft": 3600.0,
         "fix_a_name": "Pirapora",
+        "explicit_fixes": [
+          {
+            "name": "Pirapora",
+            "lat": -23.39638889,
+            "lon": -46.9994444399999
+          },
+          {
+            "name": "Barueri",
+            "lat": -23.5049999999999,
+            "lon": -46.87666667
+          }
+        ],
         "fix_b_name": "Barueri",
         "ats": "NORTE135.675 MHz",
         "effective_date": "2025-10-02T00:00:00Z",
@@ -4536,6 +5232,18 @@
         "altitude_max_ft": null,
         "altitude_compulsory_ft": 3400.0,
         "fix_a_name": "Rodoanel Castelo",
+        "explicit_fixes": [
+          {
+            "name": "Rodoanel Castelo",
+            "lat": -23.50888889,
+            "lon": -46.82138889
+          },
+          {
+            "name": "Cebolão",
+            "lat": -23.5261111099999,
+            "lon": -46.75027778
+          }
+        ],
         "fix_b_name": "Cebolão",
         "ats": "COORDENAÇÃO HELICÓPTERO127.350 MHz",
         "effective_date": "2025-10-02T00:00:00Z",
@@ -4624,6 +5332,18 @@
         "altitude_max_ft": null,
         "altitude_compulsory_ft": 3200.0,
         "fix_a_name": "São José",
+        "explicit_fixes": [
+          {
+            "name": "São José",
+            "lat": -23.07833333,
+            "lon": -45.92361111
+          },
+          {
+            "name": "Lobato",
+            "lat": -22.95527778,
+            "lon": -45.8386111099999
+          }
+        ],
         "fix_b_name": "Lobato",
         "ats": "APP-SP134.150 MHz / 124.150 MHz",
         "effective_date": "2025-10-02T00:00:00Z",
@@ -4692,6 +5412,18 @@
         "altitude_max_ft": 3400.0,
         "altitude_compulsory_ft": null,
         "fix_a_name": "Suzano",
+        "explicit_fixes": [
+          {
+            "name": "Suzano",
+            "lat": -23.5341666699999,
+            "lon": -46.30805556
+          },
+          {
+            "name": "Jundiapeba",
+            "lat": -23.5427777799999,
+            "lon": -46.25833333
+          }
+        ],
         "fix_b_name": "Jundiapeba",
         "ats": "SUL126.650 MHz",
         "effective_date": "2025-10-02T00:00:00Z",
@@ -4776,6 +5508,18 @@
         "altitude_max_ft": null,
         "altitude_compulsory_ft": 3100.0,
         "fix_a_name": "Elevado Aricanduva",
+        "explicit_fixes": [
+          {
+            "name": "Elevado Aricanduva",
+            "lat": -23.535,
+            "lon": -46.5483333299999
+          },
+          {
+            "name": "Itaquera",
+            "lat": -23.5422222199999,
+            "lon": -46.46555556
+          }
+        ],
         "fix_b_name": "Itaquera",
         "ats": "COORD HEL 127.350 MHz",
         "effective_date": "2025-10-02T00:00:00Z",
@@ -4908,6 +5652,18 @@
         "altitude_max_ft": null,
         "altitude_compulsory_ft": 3100.0,
         "fix_a_name": "Cemitério Fernão",
+        "explicit_fixes": [
+          {
+            "name": "Cemitério Fernão",
+            "lat": -23.4455555599999,
+            "lon": -46.56888889
+          },
+          {
+            "name": "Rodoanel Fernão",
+            "lat": -23.42611111,
+            "lon": -46.57277778
+          }
+        ],
         "fix_b_name": "Rodoanel Fernão",
         "ats": "TWR-GR (MONITORAMENTO)132.750 MHz",
         "effective_date": "2025-10-02T00:00:00Z",
@@ -4984,6 +5740,18 @@
         "altitude_max_ft": 4500.0,
         "altitude_compulsory_ft": null,
         "fix_a_name": "Túnel",
+        "explicit_fixes": [
+          {
+            "name": "Túnel",
+            "lat": -23.3569444399999,
+            "lon": -46.54916667
+          },
+          {
+            "name": "Mairiporã",
+            "lat": -23.3199999999999,
+            "lon": -46.5825
+          }
+        ],
         "fix_b_name": "Mairiporã",
         "ats": "NORTE135.675 MHz",
         "effective_date": "2025-10-02T00:00:00Z",
@@ -5068,6 +5836,18 @@
         "altitude_max_ft": 3400.0,
         "altitude_compulsory_ft": null,
         "fix_a_name": "Vd São Carlos",
+        "explicit_fixes": [
+          {
+            "name": "Vd São Carlos",
+            "lat": -23.56722222,
+            "lon": -46.60388889
+          },
+          {
+            "name": "Vd Grande São Paulo",
+            "lat": -23.5866666699999,
+            "lon": -46.59805556
+          }
+        ],
         "fix_b_name": "Vd Grande São Paulo",
         "ats": "COORDENAÇÃO HELICÓPTERO127.350 MHz",
         "effective_date": "2025-10-02T00:00:00Z",
@@ -5168,6 +5948,18 @@
         "altitude_max_ft": null,
         "altitude_compulsory_ft": null,
         "fix_a_name": "Dumont",
+        "explicit_fixes": [
+          {
+            "name": "Dumont",
+            "lat": -23.4802777799999,
+            "lon": -46.4691666699999
+          },
+          {
+            "name": "",
+            "lat": -23.466085896,
+            "lon": -46.469222599
+          }
+        ],
         "fix_b_name": "",
         "ats": "",
         "effective_date": "2025-10-02T00:00:00Z",
@@ -5228,6 +6020,18 @@
         "altitude_max_ft": null,
         "altitude_compulsory_ft": 3100.0,
         "fix_a_name": "Elevado Aricanduva",
+        "explicit_fixes": [
+          {
+            "name": "Elevado Aricanduva",
+            "lat": -23.535,
+            "lon": -46.5483333299999
+          },
+          {
+            "name": "Parque do Carmo",
+            "lat": -23.59444444,
+            "lon": -46.46583333
+          }
+        ],
         "fix_b_name": "Parque do Carmo",
         "ats": "COORDENAÇÃO HELICÓPTERO127.350 MHz",
         "effective_date": "2025-10-02T00:00:00Z",
@@ -5436,6 +6240,18 @@
         "altitude_max_ft": null,
         "altitude_compulsory_ft": 3400.0,
         "fix_a_name": "Barueri",
+        "explicit_fixes": [
+          {
+            "name": "Barueri",
+            "lat": -23.5049999999999,
+            "lon": -46.87666667
+          },
+          {
+            "name": "Rodoanel Castelo",
+            "lat": -23.50888889,
+            "lon": -46.82138889
+          }
+        ],
         "fix_b_name": "Rodoanel Castelo",
         "ats": "NORTE 135.675 MHz",
         "effective_date": "2025-10-02T00:00:00Z",
@@ -5504,6 +6320,18 @@
         "altitude_max_ft": null,
         "altitude_compulsory_ft": 3300.0,
         "fix_a_name": "Barragem Tietê",
+        "explicit_fixes": [
+          {
+            "name": "Barragem Tietê",
+            "lat": -23.50222222,
+            "lon": -46.54194444
+          },
+          {
+            "name": "Dumont",
+            "lat": -23.4802777799999,
+            "lon": -46.4691666699999
+          }
+        ],
         "fix_b_name": "Dumont",
         "ats": "COORDENAÇÃO HELICÓPTERO127.350 MHz",
         "effective_date": "2025-10-02T00:00:00Z",
@@ -5564,6 +6392,18 @@
         "altitude_max_ft": 3400.0,
         "altitude_compulsory_ft": null,
         "fix_a_name": "Vd Grande São Paulo",
+        "explicit_fixes": [
+          {
+            "name": "Vd Grande São Paulo",
+            "lat": -23.5866666699999,
+            "lon": -46.59805556
+          },
+          {
+            "name": "Bartira",
+            "lat": -23.61055556,
+            "lon": -46.56055556
+          }
+        ],
         "fix_b_name": "Bartira",
         "ats": "COORDENAÇÃO HELICÓPTERO127.350 MHz",
         "effective_date": "2025-10-02T00:00:00Z",
@@ -5672,6 +6512,18 @@
         "altitude_max_ft": 3400.0,
         "altitude_compulsory_ft": null,
         "fix_a_name": "Estação Saladino",
+        "explicit_fixes": [
+          {
+            "name": "Estação Saladino",
+            "lat": -23.6374999999999,
+            "lon": -46.535
+          },
+          {
+            "name": "Maxxi",
+            "lat": -23.65638889,
+            "lon": -46.50055556
+          }
+        ],
         "fix_b_name": "Maxxi",
         "ats": "COORDENAÇÃO HELICÓPTERO127.350 MHz",
         "effective_date": "2025-10-02T00:00:00Z",
@@ -5768,6 +6620,18 @@
         "altitude_max_ft": 3400.0,
         "altitude_compulsory_ft": null,
         "fix_a_name": "Bartira",
+        "explicit_fixes": [
+          {
+            "name": "Bartira",
+            "lat": -23.61055556,
+            "lon": -46.56055556
+          },
+          {
+            "name": "Utinga",
+            "lat": -23.62416667,
+            "lon": -46.54138889
+          }
+        ],
         "fix_b_name": "Utinga",
         "ats": "COORDENAÇÃO HELICÓPTERO127.350 MHz",
         "effective_date": "2025-10-02T00:00:00Z",
@@ -5828,6 +6692,18 @@
         "altitude_max_ft": 3600.0,
         "altitude_compulsory_ft": null,
         "fix_a_name": "Maxxi",
+        "explicit_fixes": [
+          {
+            "name": "Maxxi",
+            "lat": -23.65638889,
+            "lon": -46.50055556
+          },
+          {
+            "name": "Ribeirão Pires",
+            "lat": -23.7137283779999,
+            "lon": -46.414603972
+          }
+        ],
         "fix_b_name": "Ribeirão Pires",
         "ats": "COORDENAÇÃO HELICÓPTERO127.350 MHz",
         "effective_date": "2025-10-02T00:00:00Z",
@@ -5952,6 +6828,18 @@
         "altitude_max_ft": null,
         "altitude_compulsory_ft": 3300.0,
         "fix_a_name": "Cebolão",
+        "explicit_fixes": [
+          {
+            "name": "Cebolão",
+            "lat": -23.5261111099999,
+            "lon": -46.75027778
+          },
+          {
+            "name": "Marco Zero",
+            "lat": -23.51444444,
+            "lon": -46.72611111
+          }
+        ],
         "fix_b_name": "Marco Zero",
         "ats": "COORDENAÇÃO HELICÓPTERO127.350 MHz",
         "effective_date": "2025-10-02T00:00:00Z",
@@ -6028,6 +6916,18 @@
         "altitude_max_ft": null,
         "altitude_compulsory_ft": 3200.0,
         "fix_a_name": "Marco Zero",
+        "explicit_fixes": [
+          {
+            "name": "Marco Zero",
+            "lat": -23.51444444,
+            "lon": -46.72611111
+          },
+          {
+            "name": "Viaduto Antártica",
+            "lat": -23.5247222199999,
+            "lon": -46.6708333299999
+          }
+        ],
         "fix_b_name": "Viaduto Antártica",
         "ats": "COORDENAÇÃO HELICÓPTERO127.350 MHz",
         "effective_date": "2025-10-02T00:00:00Z",
@@ -6120,6 +7020,18 @@
         "altitude_max_ft": null,
         "altitude_compulsory_ft": 3200.0,
         "fix_a_name": "Luz",
+        "explicit_fixes": [
+          {
+            "name": "Luz",
+            "lat": -23.535,
+            "lon": -46.6352777779999
+          },
+          {
+            "name": "Brás",
+            "lat": -23.543888889,
+            "lon": -46.617222222
+          }
+        ],
         "fix_b_name": "Brás",
         "ats": "COORDENAÇÃO HELICÓPTERO127.350 MHz",
         "effective_date": "2025-10-02T00:00:00Z",
@@ -6184,6 +7096,18 @@
         "altitude_max_ft": 3600.0,
         "altitude_compulsory_ft": null,
         "fix_a_name": "Extra Taboão",
+        "explicit_fixes": [
+          {
+            "name": "Extra Taboão",
+            "lat": -23.60861111,
+            "lon": -46.75166667
+          },
+          {
+            "name": "Empresarial",
+            "lat": -23.6525,
+            "lon": -46.7233333299999
+          }
+        ],
         "fix_b_name": "Empresarial",
         "ats": "COORDENAÇÃO HELICÓPTERO127.350 MHz",
         "effective_date": "2025-10-02T00:00:00Z",
@@ -6264,6 +7188,18 @@
         "altitude_max_ft": null,
         "altitude_compulsory_ft": 3300.0,
         "fix_a_name": "Vd Grande São Paulo",
+        "explicit_fixes": [
+          {
+            "name": "Vd Grande São Paulo",
+            "lat": -23.5866666699999,
+            "lon": -46.59805556
+          },
+          {
+            "name": "Entroncamento",
+            "lat": -23.60361111,
+            "lon": -46.60055556
+          }
+        ],
         "fix_b_name": "Entroncamento",
         "ats": "COORDENAÇÃO HELICÓPTERO127.350 MHz",
         "effective_date": "2025-10-02T00:00:00Z",
@@ -6356,6 +7292,18 @@
         "altitude_max_ft": null,
         "altitude_compulsory_ft": 3300.0,
         "fix_a_name": "Entroncamento",
+        "explicit_fixes": [
+          {
+            "name": "Entroncamento",
+            "lat": -23.60361111,
+            "lon": -46.60055556
+          },
+          {
+            "name": "Maria Maluf",
+            "lat": -23.62916667,
+            "lon": -46.62972222
+          }
+        ],
         "fix_b_name": "Maria Maluf",
         "ats": "TWR-SP127.150 MHz",
         "effective_date": "2025-10-02T00:00:00Z",
@@ -6448,6 +7396,18 @@
         "altitude_max_ft": null,
         "altitude_compulsory_ft": null,
         "fix_a_name": "Luz",
+        "explicit_fixes": [
+          {
+            "name": "Luz",
+            "lat": -23.535,
+            "lon": -46.6352777779999
+          },
+          {
+            "name": "",
+            "lat": -23.5226998279999,
+            "lon": -46.634731915
+          }
+        ],
         "fix_b_name": "",
         "ats": "",
         "effective_date": "2025-10-02T00:00:00Z",
@@ -6508,6 +7468,18 @@
         "altitude_max_ft": null,
         "altitude_compulsory_ft": null,
         "fix_a_name": "Brás",
+        "explicit_fixes": [
+          {
+            "name": "Brás",
+            "lat": -23.543888889,
+            "lon": -46.617222222
+          },
+          {
+            "name": "Portuguesa",
+            "lat": -23.520555556,
+            "lon": -46.618611111
+          }
+        ],
         "fix_b_name": "Portuguesa",
         "ats": "",
         "effective_date": "2025-10-02T00:00:00Z",
@@ -6568,6 +7540,18 @@
         "altitude_max_ft": null,
         "altitude_compulsory_ft": null,
         "fix_a_name": "Memorial",
+        "explicit_fixes": [
+          {
+            "name": "Memorial",
+            "lat": -23.526666667,
+            "lon": -46.664444444
+          },
+          {
+            "name": "",
+            "lat": -23.518099056,
+            "lon": -46.658064404
+          }
+        ],
         "fix_b_name": "",
         "ats": "",
         "effective_date": "2025-10-02T00:00:00Z",
@@ -6628,6 +7612,18 @@
         "altitude_max_ft": null,
         "altitude_compulsory_ft": null,
         "fix_a_name": "Cabreúva",
+        "explicit_fixes": [
+          {
+            "name": "Cabreúva",
+            "lat": -23.3063888899999,
+            "lon": -47.13138889
+          },
+          {
+            "name": "",
+            "lat": -23.3468999999999,
+            "lon": -47.1428
+          }
+        ],
         "fix_b_name": "",
         "ats": "",
         "effective_date": "2025-10-02T00:00:00Z",
@@ -6688,6 +7684,18 @@
         "altitude_max_ft": null,
         "altitude_compulsory_ft": 3000.0,
         "fix_a_name": "Rotatória Louveira",
+        "explicit_fixes": [
+          {
+            "name": "Rotatória Louveira",
+            "lat": -23.0508050249999,
+            "lon": -46.9621833049999
+          },
+          {
+            "name": "Represa Vinhedo",
+            "lat": -23.031388889,
+            "lon": -46.9522222219999
+          }
+        ],
         "fix_b_name": "Represa Vinhedo",
         "ats": "TWR-JD (MONITORAMENTO) 118.750 MHz",
         "effective_date": "2025-10-02T00:00:00Z",
@@ -6748,6 +7756,18 @@
         "altitude_max_ft": null,
         "altitude_compulsory_ft": 3200.0,
         "fix_a_name": "Brás",
+        "explicit_fixes": [
+          {
+            "name": "Brás",
+            "lat": -23.543888889,
+            "lon": -46.617222222
+          },
+          {
+            "name": "Alcântara Machado",
+            "lat": -23.5527777799999,
+            "lon": -46.6113888899999
+          }
+        ],
         "fix_b_name": "Alcântara Machado",
         "ats": "",
         "effective_date": "2025-10-02T00:00:00Z",
@@ -6808,6 +7828,18 @@
         "altitude_max_ft": null,
         "altitude_compulsory_ft": 3100.0,
         "fix_a_name": "Viaduto Antártica",
+        "explicit_fixes": [
+          {
+            "name": "Viaduto Antártica",
+            "lat": -23.5247222199999,
+            "lon": -46.6708333299999
+          },
+          {
+            "name": "Luz",
+            "lat": -23.535,
+            "lon": -46.6352777779999
+          }
+        ],
         "fix_b_name": "Luz",
         "ats": "COORDENAÇÃO HELICÓPTERO127.350 MHz",
         "effective_date": "2025-10-02T00:00:00Z",
@@ -6920,6 +7952,18 @@
         "altitude_max_ft": 3400.0,
         "altitude_compulsory_ft": null,
         "fix_a_name": "Ana Rosa",
+        "explicit_fixes": [
+          {
+            "name": "Ana Rosa",
+            "lat": -23.58194444,
+            "lon": -46.63833333
+          },
+          {
+            "name": "Parque Aclimação",
+            "lat": -23.57444444,
+            "lon": -46.62861111
+          }
+        ],
         "fix_b_name": "Parque Aclimação",
         "ats": "COORDENAÇÃO HELICÓPTERO127.350 MHz",
         "effective_date": "2025-10-02T00:00:00Z",
@@ -6980,6 +8024,18 @@
         "altitude_max_ft": 3400.0,
         "altitude_compulsory_ft": null,
         "fix_a_name": "Cebolinha",
+        "explicit_fixes": [
+          {
+            "name": "Cebolinha",
+            "lat": -23.5916666699999,
+            "lon": -46.65083333
+          },
+          {
+            "name": "Ana Rosa",
+            "lat": -23.58194444,
+            "lon": -46.63833333
+          }
+        ],
         "fix_b_name": "Ana Rosa",
         "ats": "CONTROLE HELICÓPTERO118.350 MHz",
         "effective_date": "2025-10-02T00:00:00Z",
@@ -7040,6 +8096,18 @@
         "altitude_max_ft": null,
         "altitude_compulsory_ft": 3300.0,
         "fix_a_name": "Cebolão",
+        "explicit_fixes": [
+          {
+            "name": "Cebolão",
+            "lat": -23.5261111099999,
+            "lon": -46.75027778
+          },
+          {
+            "name": "Ponte Jaguaré",
+            "lat": -23.5458333299999,
+            "lon": -46.73472222
+          }
+        ],
         "fix_b_name": "Ponte Jaguaré",
         "ats": "COORDENAÇÃO HELICÓPTERO127.350 MHz",
         "effective_date": "2025-10-02T00:00:00Z",
@@ -7108,6 +8176,18 @@
         "altitude_max_ft": 3400.0,
         "altitude_compulsory_ft": null,
         "fix_a_name": "Extra Jaguaré",
+        "explicit_fixes": [
+          {
+            "name": "Extra Jaguaré",
+            "lat": -23.55722222,
+            "lon": -46.7474999999999
+          },
+          {
+            "name": "Shopping Continental",
+            "lat": -23.54805556,
+            "lon": -46.75527778
+          }
+        ],
         "fix_b_name": "Shopping Continental",
         "ats": "COORDENAÇÃO HELICÓPTERO127.350 MHz",
         "effective_date": "2025-10-02T00:00:00Z",
@@ -7168,6 +8248,18 @@
         "altitude_max_ft": 3300.0,
         "altitude_compulsory_ft": null,
         "fix_a_name": "Extra Jaguaré",
+        "explicit_fixes": [
+          {
+            "name": "Extra Jaguaré",
+            "lat": -23.55722222,
+            "lon": -46.7474999999999
+          },
+          {
+            "name": "Ponte Jaguaré",
+            "lat": -23.5458333299999,
+            "lon": -46.73472222
+          }
+        ],
         "fix_b_name": "Ponte Jaguaré",
         "ats": "CONTROLE HELICÓPTERO118.350 MHz",
         "effective_date": "2025-10-02T00:00:00Z",
@@ -7228,6 +8320,18 @@
         "altitude_max_ft": null,
         "altitude_compulsory_ft": 3300.0,
         "fix_a_name": "Ponte Jaguaré",
+        "explicit_fixes": [
+          {
+            "name": "Ponte Jaguaré",
+            "lat": -23.5458333299999,
+            "lon": -46.73472222
+          },
+          {
+            "name": "Ponte Estaiada",
+            "lat": -23.6127777799999,
+            "lon": -46.69944444
+          }
+        ],
         "fix_b_name": "Ponte Estaiada",
         "ats": "CONTROLE HELICÓPTERO118.350 MHz",
         "effective_date": "2025-10-02T00:00:00Z",
@@ -7312,6 +8416,18 @@
         "altitude_max_ft": 3400.0,
         "altitude_compulsory_ft": null,
         "fix_a_name": "Avenida Morumbi",
+        "explicit_fixes": [
+          {
+            "name": "Avenida Morumbi",
+            "lat": -23.61166667,
+            "lon": -46.71277778
+          },
+          {
+            "name": "Extra Jaguaré",
+            "lat": -23.55722222,
+            "lon": -46.7474999999999
+          }
+        ],
         "fix_b_name": "Extra Jaguaré",
         "ats": "NULLCONTROLE HELICÓPTERO118.350 MHz",
         "effective_date": "2025-10-02T00:00:00Z",
@@ -7380,6 +8496,18 @@
         "altitude_max_ft": 3600.0,
         "altitude_compulsory_ft": null,
         "fix_a_name": "Avenida Morumbi",
+        "explicit_fixes": [
+          {
+            "name": "Avenida Morumbi",
+            "lat": -23.61166667,
+            "lon": -46.71277778
+          },
+          {
+            "name": "Extra Taboão",
+            "lat": -23.60861111,
+            "lon": -46.75166667
+          }
+        ],
         "fix_b_name": "Extra Taboão",
         "ats": "COORDENAÇÃO HELICÓPTERO127.350 MHz",
         "effective_date": "2025-10-02T00:00:00Z",
@@ -7440,6 +8568,18 @@
         "altitude_max_ft": 3500.0,
         "altitude_compulsory_ft": null,
         "fix_a_name": "Ponte Estaiada",
+        "explicit_fixes": [
+          {
+            "name": "Ponte Estaiada",
+            "lat": -23.6127777799999,
+            "lon": -46.69944444
+          },
+          {
+            "name": "Avenida Morumbi",
+            "lat": -23.61166667,
+            "lon": -46.71277778
+          }
+        ],
         "fix_b_name": "Avenida Morumbi",
         "ats": "CONTROLE HELICÓPTERO118.350 MHz",
         "effective_date": "2025-10-02T00:00:00Z",
@@ -7500,6 +8640,18 @@
         "altitude_max_ft": null,
         "altitude_compulsory_ft": 3300.0,
         "fix_a_name": "Ponte Estaiada",
+        "explicit_fixes": [
+          {
+            "name": "Ponte Estaiada",
+            "lat": -23.6127777799999,
+            "lon": -46.69944444
+          },
+          {
+            "name": "Granja Julieta",
+            "lat": -23.6269444399999,
+            "lon": -46.71194444
+          }
+        ],
         "fix_b_name": "Granja Julieta",
         "ats": "CONTROLE HELICÓPTERO118.350 MHz",
         "effective_date": "2025-10-02T00:00:00Z",
@@ -7580,6 +8732,18 @@
         "altitude_max_ft": null,
         "altitude_compulsory_ft": 3300.0,
         "fix_a_name": "Granja Julieta",
+        "explicit_fixes": [
+          {
+            "name": "Granja Julieta",
+            "lat": -23.6269444399999,
+            "lon": -46.71194444
+          },
+          {
+            "name": "Empresarial",
+            "lat": -23.6525,
+            "lon": -46.7233333299999
+          }
+        ],
         "fix_b_name": "Empresarial",
         "ats": "COORDENAÇÃO HELICÓPTERO127.350 MHz",
         "effective_date": "2025-10-02T00:00:00Z",
@@ -7652,6 +8816,18 @@
         "altitude_max_ft": null,
         "altitude_compulsory_ft": 3300.0,
         "fix_a_name": "Empresarial",
+        "explicit_fixes": [
+          {
+            "name": "Empresarial",
+            "lat": -23.6525,
+            "lon": -46.7233333299999
+          },
+          {
+            "name": "Piratininga",
+            "lat": -23.7030555599999,
+            "lon": -46.6744444399999
+          }
+        ],
         "fix_b_name": "Piratininga",
         "ats": "COORDENAÇÃO HELICÓPTERO127.350 MHz",
         "effective_date": "2025-10-02T00:00:00Z",
@@ -7728,6 +8904,18 @@
         "altitude_max_ft": null,
         "altitude_compulsory_ft": 3100.0,
         "fix_a_name": "Dutra",
+        "explicit_fixes": [
+          {
+            "name": "Dutra",
+            "lat": -23.49833333,
+            "lon": -46.5594444399999
+          },
+          {
+            "name": "Cemitério Fernão",
+            "lat": -23.4455555599999,
+            "lon": -46.56888889
+          }
+        ],
         "fix_b_name": "Cemitério Fernão",
         "ats": "TWR-GR (MONITORAMENTO)132.750 MHz",
         "effective_date": "2025-10-02T00:00:00Z",
@@ -7812,6 +9000,18 @@
         "altitude_max_ft": 3600.0,
         "altitude_compulsory_ft": null,
         "fix_a_name": "Rodoanel Fernão",
+        "explicit_fixes": [
+          {
+            "name": "Rodoanel Fernão",
+            "lat": -23.42611111,
+            "lon": -46.57277778
+          },
+          {
+            "name": "Trevo Tremembé",
+            "lat": -23.4101353779999,
+            "lon": -46.5813307989999
+          }
+        ],
         "fix_b_name": "Trevo Tremembé",
         "ats": "TWR-GR (MONITORAMENTO)132.750 MHz",
         "effective_date": "2025-10-02T00:00:00Z",
@@ -7888,6 +9088,18 @@
         "altitude_max_ft": 4500.0,
         "altitude_compulsory_ft": null,
         "fix_a_name": "Trevo Tremembé",
+        "explicit_fixes": [
+          {
+            "name": "Trevo Tremembé",
+            "lat": -23.4101353779999,
+            "lon": -46.5813307989999
+          },
+          {
+            "name": "Túnel",
+            "lat": -23.3569444399999,
+            "lon": -46.54916667
+          }
+        ],
         "fix_b_name": "Túnel",
         "ats": "NORTE135.675 MHz",
         "effective_date": "2025-10-02T00:00:00Z",
@@ -7956,6 +9168,18 @@
         "altitude_max_ft": null,
         "altitude_compulsory_ft": 3400.0,
         "fix_a_name": "Trevo Anhanguera Bandeirantes",
+        "explicit_fixes": [
+          {
+            "name": "Trevo Anhanguera Bandeirantes",
+            "lat": -23.26194444,
+            "lon": -46.8663888899999
+          },
+          {
+            "name": "Bahia",
+            "lat": -23.235,
+            "lon": -46.86416667
+          }
+        ],
         "fix_b_name": "Bahia",
         "ats": "TWR-JD (MONITORAMENTO) 118.750 MHz",
         "effective_date": "2025-10-02T00:00:00Z",
@@ -8016,6 +9240,18 @@
         "altitude_max_ft": null,
         "altitude_compulsory_ft": 3100.0,
         "fix_a_name": "Bahia",
+        "explicit_fixes": [
+          {
+            "name": "Bahia",
+            "lat": -23.235,
+            "lon": -46.86416667
+          },
+          {
+            "name": "Estação",
+            "lat": -23.1949999999999,
+            "lon": -46.87222222
+          }
+        ],
         "fix_b_name": "Estação",
         "ats": "TWR-JD (MONITORAMENTO) 118.750 MHz",
         "effective_date": "2025-10-02T00:00:00Z",
@@ -8076,6 +9312,18 @@
         "altitude_max_ft": null,
         "altitude_compulsory_ft": 3000.0,
         "fix_a_name": "Assaí Jundiaí",
+        "explicit_fixes": [
+          {
+            "name": "Assaí Jundiaí",
+            "lat": -23.1744444399999,
+            "lon": -46.8936111099999
+          },
+          {
+            "name": "Louveira",
+            "lat": -23.089960102,
+            "lon": -46.949651444
+          }
+        ],
         "fix_b_name": "Louveira",
         "ats": "TWR-JD (MONITORAMENTO) 118.750 MHz",
         "effective_date": "2025-10-02T00:00:00Z",
@@ -8232,6 +9480,18 @@
         "altitude_max_ft": null,
         "altitude_compulsory_ft": 3000.0,
         "fix_a_name": "Louveira",
+        "explicit_fixes": [
+          {
+            "name": "Louveira",
+            "lat": -23.089960102,
+            "lon": -46.949651444
+          },
+          {
+            "name": "Rotatória Louveira",
+            "lat": -23.0508050249999,
+            "lon": -46.9621833049999
+          }
+        ],
         "fix_b_name": "Rotatória Louveira",
         "ats": "TWR-JD (MONITORAMENTO) 118.750 MHz",
         "effective_date": "2025-10-02T00:00:00Z",
@@ -8316,6 +9576,18 @@
         "altitude_max_ft": null,
         "altitude_compulsory_ft": 3600.0,
         "fix_a_name": "São Roque",
+        "explicit_fixes": [
+          {
+            "name": "São Roque",
+            "lat": -23.5427777799999,
+            "lon": -47.1361111099999
+          },
+          {
+            "name": "Mailasqui",
+            "lat": -23.5669444399999,
+            "lon": -47.07222222
+          }
+        ],
         "fix_b_name": "Mailasqui",
         "ats": "FCA NORTE 135.675 MHz",
         "effective_date": "2025-10-02T00:00:00Z",
