@@ -85,10 +85,13 @@ def aggregate_summaries(rows):
         indices = sorted({int(i) for h in hist for i in h["counts"]}) or [0]
         matrix = np.array([[h["counts"].get(str(i), 0) * (100 / h["valid_count"] if percent else 1)
                             for i in indices] for h in valid])
+        lower = matrix.min(axis=0) if len(valid) else np.array([])
+        upper = matrix.max(axis=0) if len(valid) else np.array([])
+        # Summing repeated percentages can put the floating-point mean a few
+        # ulps outside its extrema (e.g. 50 identical values of 100/3).
+        average = np.clip(matrix.mean(axis=0), lower, upper) if len(valid) else np.array([])
         charts[key] = {"x": [(i + .5) * width for i in indices], "bin_width": width,
-                       "mean": matrix.mean(axis=0).tolist() if len(valid) else [],
-                       "lower": matrix.min(axis=0).tolist() if len(valid) else [],
-                       "upper": matrix.max(axis=0).tolist() if len(valid) else [],
+                       "mean": average.tolist(), "lower": lower.tolist(), "upper": upper.tolist(),
                        "valid_replicas": len(valid), "total_replicas": len(rows),
                        "counts_per_replica": [h["valid_count"] for h in hist],
                        "xlabel": xlabel, "ylabel": "Percentual médio por réplica (%)" if percent else
@@ -237,6 +240,16 @@ def stability_payload(dashboards):
     return result
 
 
+def _histogram_error_ranges(mean, lower, upper):
+    """Nonnegative distances to extrema; tolerate only floating-point drift."""
+    mean, lower, upper = (np.asarray(values, dtype=float) for values in (mean, lower, upper))
+    errors = np.array([mean - lower, upper - mean])
+    tolerance = 64 * np.finfo(float).eps * np.maximum(1., np.maximum(np.abs(mean), np.maximum(np.abs(lower), np.abs(upper))))
+    if not np.isfinite(errors).all() or np.any(errors < -tolerance):
+        raise ValueError("Histogram mean/extrema are inconsistent or nonfinite")
+    return np.maximum(errors, 0.)
+
+
 def plot_aggregates(payload, paths, charts_dir):
     from .plots import _set_style
     import matplotlib.pyplot as plt
@@ -255,8 +268,8 @@ def plot_aggregates(payload, paths, charts_dir):
                 ax.bar(x, data["mean"], width=data["bin_width"] * .9, color="#0f766e", alpha=.8, label="Média por réplica")
                 ax.set_xlabel(data["xlabel"])
                 # Discrete ranges do not interpolate across empty classes.
-                ax.errorbar(x, data["mean"], yerr=[np.asarray(data["mean"])-data["lower"],
-                            np.asarray(data["upper"])-data["mean"]], fmt="none", capsize=4,
+                ax.errorbar(x, data["mean"], yerr=_histogram_error_ranges(data["mean"], data["lower"], data["upper"]),
+                            fmt="none", capsize=4,
                             color="#60a5fa", alpha=.7, label="Mínimo–máximo entre réplicas (não IC)")
             valid = data["valid_replicas"]
             if isinstance(valid, list):

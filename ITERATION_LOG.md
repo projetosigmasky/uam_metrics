@@ -293,3 +293,12 @@ Validação: 87 testes unittest passaram, incluindo doze testes novos e geraçã
 QA visual: PNGs agregados inspecionados com dados sintéticos identificados como testes; evidências em `reports/dashboard_aggregation_2026-10-21/`. Navegador integrado tentou `http://127.0.0.1:8765/docs/index.html` e retornou `ERR_CONNECTION_TIMED_OUT`; não se afirma QA visual de navegador. Contratos DOM/canvas foram exercitados localmente.
 
 Pendente de dados reais: os STATELOGs das 200 réplicas da RUN `20261015_112401_6cddab52` não estão no clone. Os novos histogramas, faixas e curvas reais só existirão após `cd ~/post-processing`, `git pull --ff-only` e `.venv/bin/python generate_reports.py --config run_config.json --workers 25` no Lessonia. Não usar `--baseline-manifest` para essa atualização. A indisponibilidade atual é intencional e não estima resultados a partir da representante/média final.
+
+
+## 21/10/2026 — Correção de arredondamento nos intervalos dos histogramas
+
+O reprocessamento real no Lessonia concluiu as 200 análises por réplica, mas falhou em `plot_aggregates` com `ValueError: yerr must not contain negative values`. Reprodução local com 50 histogramas percentuais idênticos (três classes de 100/3%): a soma de ponto flutuante produziu média aproximadamente 2,13e-14 abaixo do mínimo. Os testes anteriores com duas/quatro réplicas não cobriam esse caso.
+
+A média agregada é agora limitada aos próprios extremos observados para eliminar esse erro numérico. No desenho, distâncias aos extremos são verificadas com tolerância de 64 epsilons de máquina na escala dos valores e limitadas a zero apenas para diferenças de arredondamento; inconsistências materiais e valores não finitos continuam gerando erro explícito. Não foram alterados estimandos, classes, limiares de segurança, denominadores ou dados reais publicados.
+
+Validação: 15 testes do módulo de réplicas passaram, incluindo três regressões novas: renderização real dos seis PNGs com 50 réplicas idênticas e verificação de todos os yerr; arredondamento nos dois extremos; rejeição de intervalos inválidos/não finitos. Nenhuma execução no Lessonia ou push foi realizado nesta correção. Após sincronizar o código, repetir `generate_reports.py --config run_config.json --workers 25`; a análise não possui checkpoint dos resultados dos workers e precisa reler os 200 logs. “Completed 200/200” não confirma a geração final do dashboard ou a etapa posterior de ranking.

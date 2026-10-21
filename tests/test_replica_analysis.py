@@ -1,6 +1,9 @@
 import copy
 import unittest
 from concurrent.futures import ProcessPoolExecutor
+from pathlib import Path
+from tempfile import TemporaryDirectory
+from unittest.mock import patch
 
 import numpy as np
 import pandas as pd
@@ -9,6 +12,7 @@ from src.uam_dashboard.config import DashboardConfig
 from src.uam_dashboard.metrics import active_aircraft_series, trajectory_conformity
 from src.uam_dashboard.replica_analysis import (
     BINS, histogram, aggregate_summaries, summarize_replica, cumulative_mean,
+    plot_aggregates, _histogram_error_ranges,
 )
 
 
@@ -18,6 +22,54 @@ def row(active, values):
 
 
 class ReplicaAnalysisTests(unittest.TestCase):
+    def test_fifty_identical_percentage_distributions_render_all_charts(self):
+        from matplotlib.axes import Axes
+        import matplotlib.pyplot as plt
+        fixture = row([[0, 1], [1, 2]], {
+            "altitude_histogram": [900, 925, 950],
+            "separation_histogram": [100, 200, 300],
+            "severity_histogram": [.1, .2, .3],
+            "distance_histogram": [1, 3, 5],
+            "trajectory_conformity": [-10, 0, 10],
+        })
+        payload = aggregate_summaries([fixture] * 50)
+        # Before the fix, the 50-row sum of 100/3 fell below its minimum.
+        for data in payload["charts"].values():
+            self.assertTrue(np.all(np.asarray(data["mean"]) >= data["lower"]))
+            self.assertTrue(np.all(np.asarray(data["mean"]) <= data["upper"]))
+        original_errorbar = Axes.errorbar
+        checked = []
+
+        def checked_errorbar(ax, *args, **kwargs):
+            self.assertTrue(np.all(np.asarray(kwargs["yerr"]) >= 0))
+            checked.append(True)
+            return original_errorbar(ax, *args, **kwargs)
+
+        with TemporaryDirectory(dir=Path(__file__).resolve().parents[1]) as directory:
+            paths = {key: key + ".png" for key in payload["charts"]}
+            with patch.object(Axes, "errorbar", new=checked_errorbar):
+                plot_aggregates(payload, paths, Path(directory))
+            self.assertEqual(len(checked), 5)
+            for filename in paths.values():
+                pixels = plt.imread(Path(directory) / filename)
+                self.assertGreater(pixels.shape[0], 100)
+                self.assertGreater(float(pixels.std()), 0)
+
+    def test_rendering_tolerates_roundoff_on_either_side_of_extrema(self):
+        value = 100 / 3
+        errors = _histogram_error_ranges(
+            [np.nextafter(value, -np.inf), np.nextafter(value, np.inf)],
+            [value, value], [value, value])
+        self.assertTrue(np.isfinite(errors).all())
+        self.assertTrue((errors >= 0).all())
+        self.assertEqual(errors[0, 0], 0)
+        self.assertEqual(errors[1, 1], 0)
+
+    def test_rendering_rejects_materially_inconsistent_or_nonfinite_ranges(self):
+        for mean, lower, upper in (([1], [2], [3]), ([4], [2], [3]), ([np.nan], [0], [1])):
+            with self.assertRaisesRegex(ValueError, "inconsistent or nonfinite"):
+                _histogram_error_ranges(mean, lower, upper)
+
     def test_simulation_time_alignment_does_not_fill_missing_coverage(self):
         data = aggregate_summaries([row([[0, 2], [1, 4]], {}), row([[1, 8], [2, 10]], {})])
         series = data["charts"]["active_aircraft"]
