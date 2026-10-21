@@ -7,9 +7,31 @@ Este repositorio vincula as metricas ao `Produto3_vfinal_ProjetoSIGMASky.pdf` (P
 Contexto para novas iteracoes: [historico tecnico](ITERATION_LOG.md). Para o relatorio de referencias de 1/2 movimentos por waypoint/5 min: [figuras selecionadas, tabelas e ressalvas](reports/baseline_capacity_2026-10-20/README.md).
 
 
+## Dashboard atual — 21/10/2026
+
+O fluxo padrão seleciona **C1.1, C1.2, C2.1 e C2.2**, com **50 réplicas de cada cenário** na RUN `20261015_112401_6cddab52`. `run_config.json` associa a etapa `.1` ao CSV de 6 vertiportos e `.2` ao CSV validado de 12 vertiportos. A seleção exige réplicas 1–50, pareamento único com SCNs e valida a geometria dos cenários dedicados antes de publicar.
+
+Após enviar estas alterações ao remoto, no Lessonia:
+
+```bash
+cd ~/post-processing
+git pull --ff-only
+.venv/bin/python generate_reports.py --config run_config.json --workers 25
+```
+
+O comando regenera o dashboard completo a partir dos STATELOGs e o ranking por cenário. Para outra RUN concluída, use `--run-id NOVA_RUN --runs-root ~/runs`; a seleção validada será salva em `run_config.local.json`. A calibração nativa via `--baseline-manifest` continua sendo um fluxo independente: **ela não recalcula os demais KPIs do dashboard**.
+
+O heatmap reúne **todos os registros de posição de todas as réplicas**, em células de `0,001°` (aproximadamente 100 m). Sua intensidade é a média de registros por célula e réplica, com uma escala comum entre cenários. Isso representa ocupação observada; não conta aeronaves únicas nem movimentos por janela. Comparações quantitativas dessa intensidade pressupõem cadência e cobertura compatíveis dos logs. `density` registra a contagem de réplicas, registros, tamanho da célula e escala; os limites do mapa abrangem todas as réplicas.
+
+Os cards usam médias entre réplicas; gráficos temporais e eventos continuam identificados como uma réplica representativa. Trajetórias executadas, planejamento no mapa e visualização 3D ficam **em observação**, sem controles, desenhos nem atalhos de mapa na interface. Seus cálculos e exports para auditoria permanecem disponíveis. A página pública de calibração e seus links foram retirados; tabelas, figuras e dados numéricos continuam preservados.
+
+Os dados completos disponíveis neste clone ainda são C1/C2. A interface os oculta e informa que aguarda o reprocessamento; **nenhum resultado antigo é renomeado como C1.1/C1.2/C2.1/C2.2**. Depois de processar no Lessonia, traga os arquivos atualizados de `docs/` para o fluxo de publicação habitual.
+
+A união visual UAM e as junções geométricas 3D estão documentadas em [auditoria VP-005–VP-006](reports/uam_geometry_2026-10-21/README.md). As rotas originais e a seleção analítica de recursos de capacidade permanecem preservadas. O parser aceita os demais identificadores da planilha; `C5/C6/C9/C10` exigem geometria explicitamente selecionada, pois seus sufixos identificam algoritmos, e não automaticamente o número de vertiportos.
+
 ## Calibracao dos quatro baselines nominais
 
-O modulo de calibracao compara **C1.1, C1.2, C2.1 e C2.2**, separadamente, em janelas de **300, 900 e 3600 segundos**. C1 usa arquitetura compartilhada, C2 usa corredores dedicados; o sufixo `.1` corresponde a 6 vertiportos e `.2` a 12. Este fluxo e independente da selecao legada C1/C2 descrita abaixo: nao reutiliza automaticamente suas metricas ou geometrias.
+O modulo de calibracao compara **C1.1, C1.2, C2.1 e C2.2**, separadamente, em janelas de **300, 900 e 3600 segundos**. C1 usa arquitetura compartilhada, C2 usa corredores dedicados; o sufixo `.1` corresponde a 6 vertiportos e `.2` a 12. Este fluxo e independente do dashboard completo: nao reutiliza automaticamente suas metricas ou geometrias. As instrucoes C1/C2 posteriores sao historicas.
 
 No Lessonia, mantenha acessiveis os **JSONs originais da geracao nominal**, com `product2.resource_manifest`, e os arquivos **WPPASS** dos runs concluidos. Somente SCN ou STATELOG nao substituem esse catalogo de recursos fisicos. Os eventos sao conferidos por aeronave, recurso e ocorrencia na rota; eventos ausentes, duplicados ou divergentes interrompem a geracao. A descoberta recusa arquivos ambiguos e exige as 50 replicas de cada baseline, mesmo quando estao distribuidas em runs diferentes.
 
@@ -32,7 +54,7 @@ Ajuste o caminho do clone e o identificador do run. Se os quatro baselines estiv
 
 A prioridade e `--workers` > campo `workers` na raiz do manifesto > **1 processo**. O manifesto e independente de `dashboard_workers`/`ranking_workers` do fluxo legado. Para persistir a escolha, acrescente `"workers": 25` ao manifesto. Para comparar ou diagnosticar, use `--workers 1`. A quantidade efetiva e limitada ao numero de waypoints; valores zero ou negativos sao rejeitados.
 
-A saida aparece em **`docs/calibration.html`** e na aba **Capacidade** do dashboard. O seletor de cenario da calibracao e independente do seletor do mapa. As tres janelas aparecem lado a lado nos histogramas e curvas acumuladas, com os mesmos limites e classes do eixo horizontal entre todos os cenarios. A curva de sensibilidade mostra o mesmo waypoint nas tres janelas. A tabela detalhada e os parametros ficam recolhidos em “Ver detalhes”. Sem processamento, a interface mostra ausencia de resultados; nao cria capacidades ficticias.
+A saída de calibração permanece nos CSVs, JSON e PNGs de `docs/assets/data/baseline_calibration/`, para auditoria e relatório. Desde 21/10/2026, não é exibida no dashboard e `docs/calibration.html` não é publicado.
 
 ### Definicoes e comparabilidade
 
@@ -69,7 +91,7 @@ Ajustes opcionais no manifesto:
 
 Se nao houver WPPASS, edite explicitamente o manifesto: `allow_geometric_estimate: true` na raiz e `passage_source: "geometric"` com `statelog` em cada replica. Continue fornecendo o JSON original e o run concluido. O estimador usa cilindros de 250 m (configuraveis por `capture_radius_m`), competicao entre posicoes e interpolacao 3D, limitado a cobertura efetiva do STATELOG. Nao mistura fontes nativas e geometricas dentro de um mesmo cenario e nao faz fallback silencioso. Os resultados ficam identificados como estimativa geometrica.
 
-Depois de processar, publique `docs/` com os assets correspondentes. O modo legado `generate_reports.py --config ...` continua independente e regenera seus assets; se for usado tambem, execute a calibracao **depois** dele para publicar o conjunto atualizado.
+Os dados e figuras de calibração podem ser mantidos para auditoria. A atualização do dashboard via `generate_reports.py --config ...` preserva esses arquivos, sem carregar sua interface na página pública.
 
 ## Fluxo atual no Lessonia
 

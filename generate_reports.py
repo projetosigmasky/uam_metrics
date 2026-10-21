@@ -1,4 +1,4 @@
-"""Build the P100 dashboard and the C1/C2 waypoint ranking from one RUN."""
+"""Build the P100 dashboard and waypoint ranking for the selected scenarios."""
 
 from __future__ import annotations
 
@@ -16,10 +16,10 @@ from src.uam_dashboard.run_config import load_run_selection
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--config", type=Path, default=Path("run_config.json"))
-    parser.add_argument("--workers", type=int, default=None, help="Worker processes: baseline waypoints or both legacy worker counts")
+    parser.add_argument("--workers", type=int, default=None, help="Worker processes for replica metrics and waypoint reports")
     parser.add_argument("--run-id", help="Select a completed run and save run_config.local.json")
     parser.add_argument("--runs-root", type=Path, help="Run directory root, default ~/runs when selecting a run")
-    parser.add_argument("--baseline-manifest", type=Path, help="Calibrate the four nominal baselines instead of the legacy C1/C2 report")
+    parser.add_argument("--baseline-manifest", type=Path, help="Compute offline native throughput calibration only; does not regenerate the STATELOG dashboard")
     parser.add_argument("--audit-dir", type=Path, help="Optional server-side passage/window CSVs for baseline calibration")
     args = parser.parse_args()
     if args.workers is not None and args.workers <= 0:
@@ -39,6 +39,16 @@ def main() -> None:
     if args.run_id is not None:
         settings = json.loads(config_path.read_text(encoding="utf-8"))
         settings.update(run_name=args.run_id, runs_root=str(args.runs_root or Path("~/runs")))
+        # Relative geometry paths refer to the original config, including during
+        # provisional validation in a temporary directory.
+        def absolute_corridor(value):
+            path = Path(value).expanduser()
+            return str(path if path.is_absolute() else config_path.parent / path)
+        if settings.get("uam_corridor_csv"):
+            settings["uam_corridor_csv"] = absolute_corridor(settings["uam_corridor_csv"])
+        for key in ("uam_corridor_csv_by_stage", "uam_corridor_csv_by_scenario"):
+            if key in settings:
+                settings[key] = {code: absolute_corridor(value) for code, value in settings[key].items()}
         destination = repository / "run_config.local.json"
         # Validate before persisting a new selection or changing report files.
         import tempfile

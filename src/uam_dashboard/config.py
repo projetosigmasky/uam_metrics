@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 
 
@@ -37,6 +37,7 @@ class DashboardConfig:
     data_dir: Path = Path("data")
     reh_xml_path: Path | None = None
     uam_corridor_csv_path: Path | None = None
+    uam_corridor_csv_by_scenario: dict[str, Path] = field(default_factory=dict)
     flight_instance_gap_seconds: float = 300.0
     flight_instance_reset_distance_m: float = 250.0
     flight_instance_jump_m: float = 5000.0
@@ -63,3 +64,4 @@ class DashboardConfig:
     capacity_reference_percentile: float = 0.95
     crossing_capture_radius_m: float = 250.0
     heatmap_sample_stride: int = 10
+    heatmap_grid_degrees: float = 0.001

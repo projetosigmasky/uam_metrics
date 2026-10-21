@@ -18,7 +18,7 @@ PRODUCT2_RE = re.compile(
     re.IGNORECASE,
 )
 PRODUCT2_PERCENTILE_RE = re.compile(
-    r"(?:^|_)produto2_(?P<scenario>C\d+)_p(?P<percentile>\d+)"
+    r"(?:^|_)produto2_(?P<scenario>C\d+(?:[._]\d+)*)_p(?P<percentile>\d+)"
     r"(?:_r(?P<replica>\d+))?_(?P<mode>mvp|off)(?:_|$)",
     re.IGNORECASE,
 )
@@ -29,8 +29,10 @@ def experiment_metadata(path: str | Path) -> dict[str, Any]:
     product2_percentile_match = PRODUCT2_PERCENTILE_RE.search(stem)
     if product2_percentile_match:
         values = product2_percentile_match.groupdict()
-        scenario = values["scenario"].upper()
-        rank = int(scenario[1:])
+        scenario = values["scenario"].upper().replace("_", ".")
+        parts = scenario[1:].split(".")
+        rank = int(parts[0])
+        stage = scenario_stage(scenario)
         percentile = int(values["percentile"])
         return {
             "experiment_family": "produto2",
@@ -38,9 +40,12 @@ def experiment_metadata(path: str | Path) -> dict[str, Any]:
             "day_label": f"Produto 2 - demanda P{percentile}",
             "variant_key": scenario.lower(),
             "variant_label": f"{scenario} - cenário P{percentile}",
+            "network_stage": stage,
+            "airspace": scenario_airspace(scenario),
             "scenario_key": scenario,
             "replica": int(values["replica"]) if values["replica"] else None,
-            "reference_variant_key": "c1",
+            "reference_variant_key": (f"c{2 if rank in {3, 4, 5, 6} else 1}.{stage}"
+                                      if stage else "c1" if len(parts) == 1 else None),
             "mvp_enabled": values["mode"].lower() == "mvp",
             "disturbed": False,
             "rank": rank,
@@ -126,17 +131,20 @@ def matching_scenario(path: str | Path, scenario_paths: tuple[Path, ...]) -> Pat
                 scenario for scenario in candidates
                 if experiment_metadata(scenario).get("replica") == replica
             ]
-            if replica_matches:
-                candidates = replica_matches
-    named_matches = [scenario for scenario in candidates if scenario.stem.lower() in stem]
+            candidates = replica_matches
+    named_matches = [scenario for scenario in candidates if scenario.stem.lower().replace("_", ".") in stem.replace("_", ".")]
     if named_matches:
-        return max(named_matches, key=lambda scenario: len(scenario.stem))
+        best = max(len(scenario.stem) for scenario in named_matches)
+        selected = [scenario for scenario in named_matches if len(scenario.stem) == best]
+        return selected[0] if len(selected) == 1 else None
+    if metadata["experiment_family"] == "produto2":
+        return candidates[0] if len(candidates) == 1 else None
 
     # Orchestrator replicas may use an opaque filename but live in output/C1
     # or output/C2. Only infer the scenario when exactly one SCN matches that
     # folder; choosing between multiple versions would silently corrupt KPIs.
-    scenario_key = log_path.parent.name.upper()
-    if not re.fullmatch(r"C\d+", scenario_key):
+    scenario_key = log_path.parent.name.upper().replace("_", ".")
+    if not re.fullmatch(r"C\d+(?:\.\d+)*", scenario_key):
         return None
     folder_matches = [
         scenario for scenario in candidates
@@ -164,4 +172,26 @@ def experiment_sort_key(path: str | Path) -> tuple[int, int, int]:
         "nominal_mvp": 2,
         "nominal_off": 3,
     }
-    return rank, variant_order.get(metadata["variant_key"], 99), 0
+    parts = str(metadata.get("scenario_key", ""))[1:].split(".")
+    return rank, int(parts[1]) if len(parts) > 1 else variant_order.get(metadata["variant_key"], 99), int(parts[2]) if len(parts) > 2 else 0
+
+
+def scenario_stage(code: str) -> str | None:
+    """Only scenarios whose final component denotes 6/12 vertiports.
+
+    C5/C6/C9/C10 suffixes denote algorithms, not network sizes in the workbook.
+    Their geometry must be selected explicitly when those scenarios are added.
+    """
+    parts = code.upper().replace("_", ".").split(".")
+    if (parts[0] in {"C1", "C2"} and len(parts) == 2) or (parts[0] in {"C3", "C4", "C7", "C8"} and len(parts) == 3):
+        return parts[-1] if parts[-1] in {"1", "2"} else None
+    return None
+
+
+def scenario_airspace(code: str) -> str | None:
+    family = code.upper().split(".")[0]
+    if family in {"C1", "C7", "C8", "C9", "C10"}:
+        return "shared_reh"
+    if family in {"C2", "C3", "C4", "C5", "C6"}:
+        return "dedicated_uam"
+    return None

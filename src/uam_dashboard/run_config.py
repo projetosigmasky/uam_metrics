@@ -4,10 +4,10 @@ from __future__ import annotations
 
 import json
 import re
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 
-from src.uam_dashboard.experiment import log_experiment_metadata, matching_scenario
+from src.uam_dashboard.experiment import log_experiment_metadata, matching_scenario, scenario_stage, scenario_airspace
 
 
 @dataclass(frozen=True)
@@ -18,6 +18,7 @@ class RunSelection:
     dashboard_workers: int
     ranking_workers: int
     uam_corridor_csv_path: Path | None = None
+    uam_corridor_csv_by_scenario: dict[str, Path] = field(default_factory=dict)
 
 
 def load_run_selection(config_path: Path) -> RunSelection:
@@ -53,8 +54,16 @@ def load_run_selection(config_path: Path) -> RunSelection:
         if not isinstance(value, int) or isinstance(value, bool) or value <= 0:
             raise ValueError(f"{name} must be a positive integer")
     log_paths = []
-    for scenario_key in ("C1", "C2"):
+    scenario_codes = settings.get("scenario_codes") or sorted({
+        p.name.upper().replace("_", ".") for p in (run_dir / "output").iterdir()
+        if p.is_dir() and re.fullmatch(r"C\d+(?:[._]\d+)*", p.name, re.I)
+    })
+    if not scenario_codes or len(set(scenario_codes)) != len(scenario_codes) or any(not re.fullmatch(r"C\d+(?:\.\d+)*", code) for code in scenario_codes):
+        raise ValueError("scenario_codes must contain distinct scenario identifiers")
+    for scenario_key in scenario_codes:
         output_dir = run_dir / "output" / scenario_key
+        if not output_dir.is_dir():
+            output_dir = run_dir / "output" / scenario_key.replace(".", "_")
         if not output_dir.is_dir():
             raise FileNotFoundError(f"Orchestrator output directory not found: {output_dir}")
         selected = sorted(
@@ -69,7 +78,7 @@ def load_run_selection(config_path: Path) -> RunSelection:
     for log_path in log_paths:
         metadata = log_experiment_metadata(log_path, scenario_paths)
         if (metadata.get("day_key"), metadata.get("scenario_key"), metadata.get("mvp_enabled")) != (
-            "produto2_p100", log_path.parent.name, False
+            "produto2_p100", log_path.parent.name.upper().replace("_", "."), False
         ):
             raise ValueError(f"Expected a P100/off replica of {log_path.parent.name}: {log_path}")
         scenario = matching_scenario(log_path, scenario_paths)
@@ -78,6 +87,39 @@ def load_run_selection(config_path: Path) -> RunSelection:
         matched_scenarios.append(scenario)
     if len(set(matched_scenarios)) != len(log_paths):
         raise ValueError("Each STATELOG must match a distinct SCN from the same orchestrator run")
+    for code in scenario_codes:
+        if "." not in code:
+            continue
+        replica_numbers = {log_experiment_metadata(log, scenario_paths).get("replica")
+                           for log in log_paths if log.parent.name.upper().replace("_", ".") == code}
+        if replica_numbers != set(range(1, expected + 1)):
+            raise ValueError(f"{code}: require exactly replicas 1..{expected}, found {sorted(replica_numbers, key=repr)}")
+    def resolve_corridor(value):
+        path = Path(value).expanduser()
+        return path if path.is_absolute() else config_path.resolve().parent / path
+    by_stage = settings.get("uam_corridor_csv_by_stage", {})
+    by_scenario = {code: resolve_corridor(value) for code, value in settings.get("uam_corridor_csv_by_scenario", {}).items()}
+    for code in scenario_codes:
+        stage = scenario_stage(code)
+        if code not in by_scenario and stage in by_stage:
+            by_scenario[code] = resolve_corridor(by_stage[stage])
+    if by_scenario:
+        missing = set(scenario_codes) - set(by_scenario)
+        if missing: raise ValueError(f"Select a corridor CSV explicitly for: {sorted(missing)}")
+        from .uam_corridor_parser import load_uam_corridor_network
+        from .corridor_validation import validate_c2_corridor_scenarios
+        for code in scenario_codes:
+            network = load_uam_corridor_network(by_scenario[code])
+            stage = scenario_stage(code)
+            if stage and len(network["vertiports"]) != {"1": 6, "2": 12}[stage]:
+                raise ValueError(f"Wrong vertiport count for {code}: {by_scenario[code]}")
+            if scenario_airspace(code) == "dedicated_uam":
+                validate_c2_corridor_scenarios([s for log, s in zip(log_paths, matched_scenarios)
+                                               if log_experiment_metadata(log, scenario_paths)["scenario_key"] == code], network["routes"])
+        return RunSelection(run_dir, tuple(log_paths), scenario_paths, dashboard_workers, ranking_workers,
+                            by_scenario[scenario_codes[0]], by_scenario)
+    if any("." in code for code in scenario_codes):
+        raise ValueError("Dotted scenarios require uam_corridor_csv_by_stage or uam_corridor_csv_by_scenario")
     corridor = settings.get("uam_corridor_csv")
     corridor_path = Path(corridor).expanduser() if corridor else None
     if corridor_path is not None:

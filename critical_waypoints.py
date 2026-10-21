@@ -1,4 +1,4 @@
-"""Rank explicitly named UAM/REH waypoint positions from C1/C2 replicas.
+"""Rank explicitly named UAM/REH waypoint positions from selected scenario replicas.
 
 Run this script on the machine holding the raw logs. Only CSV/JSON summaries
 need to be copied back; STATELOG files are read one at a time in a stream.
@@ -22,7 +22,7 @@ from src.uam_dashboard.reh_parser import load_reh_network
 from src.uam_dashboard.uam_corridor_parser import load_uam_corridor_network
 
 
-SCENARIO_RE = re.compile(r"(?:^|[_-])(C[12])(?:[_-]|$)", re.IGNORECASE)
+SCENARIO_RE = re.compile(r"(?:^|[_-])(C\d+(?:[._]\d+)*)(?:[_-]|$)", re.IGNORECASE)
 EARTH_RADIUS_M = 6371000.0
 
 
@@ -32,7 +32,7 @@ def discover_logs(root: Path) -> list[tuple[str, Path]]:
         if path.is_file() and path.suffix.lower() in {".log", ".csv"} and "STATELOG" in path.name.upper():
             match = SCENARIO_RE.search(path.stem)
             if match:
-                found.append((match.group(1).upper(), path))
+                found.append((match.group(1).upper().replace("_", "."), path))
     return found
 
 
@@ -40,9 +40,9 @@ def manifest_logs(path: Path) -> list[tuple[str, Path]]:
     found = []
     with path.open(encoding="utf-8-sig", newline="") as stream:
         for row in csv.DictReader(stream):
-            scenario = row["scenario"].strip().upper()
-            if scenario not in {"C1", "C2"}:
-                raise ValueError(f"Invalid scenario {scenario!r}; expected C1 or C2")
+            scenario = row["scenario"].strip().upper().replace("_", ".")
+            if not re.fullmatch(r"C\d+(?:\.\d+)*", scenario):
+                raise ValueError(f"Invalid scenario {scenario!r}; expected a scenario identifier")
             log = Path(row["path"].strip())
             if not log.is_absolute():
                 log = path.parent / log
@@ -230,7 +230,7 @@ def main() -> int:
     selection=None; logs=[]
     if args.config:
         selection=load_run_selection(args.config)
-        logs=[(path.parent.name,path) for path in selection.log_paths]
+        logs=[(path.parent.name.upper().replace("_", "."),path) for path in selection.log_paths]
         if selection.uam_corridor_csv_path is None:
             parser.error("Set uam_corridor_csv in the run config; its C2 SCN association must be validated")
         if args.uam_csv is not None and args.uam_csv.resolve() != selection.uam_corridor_csv_path.resolve():
@@ -240,32 +240,49 @@ def main() -> int:
         parser.error("Select --uam-csv or config uam_corridor_csv explicitly; topology must correspond to the log scenario")
     if not args.geometry_only and not args.config:
         logs=manifest_logs(args.manifest) if args.manifest else discover_logs(args.logs_root)
-    if not args.geometry_only and (not logs or {scenario for scenario,_ in logs}!={"C1","C2"}):
-        parser.error("At least one C1 and C2 log required")
+    if not args.geometry_only and not logs:
+        parser.error("At least one selected scenario log required")
     resolved_logs = [path.resolve() for _, path in logs]
     if len(set(resolved_logs)) != len(resolved_logs):
         parser.error("A STATELOG cannot be reused as multiple replicas or scenarios")
     for scenario, path in logs:
         if not path.is_file(): parser.error(f"Missing log: {path}")
         marker = SCENARIO_RE.search(path.stem)
-        if marker and marker.group(1).upper() != scenario:
+        if marker and marker.group(1).upper().replace("_", ".") != scenario:
             parser.error(f"Manifest scenario {scenario} conflicts with log name: {path.name}")
+    from src.uam_dashboard.experiment import scenario_airspace, scenario_stage
     uam=load_uam_corridor_network(args.uam_csv)
-    features=named_waypoint_features(uam['routes'],load_reh_network(args.reh_xml)['segments'])
-    sources={'uam':source_record(args.uam_csv),'reh':source_record(args.reh_xml)}
-    for feature in features: feature['properties']['source']=sources[feature['properties']['network'].lower()]
+    segments=load_reh_network(args.reh_xml)['segments']
+    network_stage={6:'1',12:'2'}.get(len(uam['vertiports']))
+    scenario_codes=sorted({code for code,_ in logs}) or [f'C1.{network_stage}',f'C2.{network_stage}']
+    features_by_scenario={}
+    sources_by_scenario={}
+    for code in scenario_codes:
+        csv_path=selection.uam_corridor_csv_by_scenario.get(code,args.uam_csv) if selection else args.uam_csv
+        network=load_uam_corridor_network(csv_path)
+        stage=scenario_stage(code)
+        if stage and len(network['vertiports'])!={'1':6,'2':12}[stage]:
+            parser.error(f'Wrong corridor network for {code}; use --config with geometry per stage')
+        routes=network['routes'] if scenario_airspace(code)=='dedicated_uam' or code in {'C1','C2'} else []
+        sources_by_scenario[code]={'uam':source_record(csv_path),'reh':source_record(args.reh_xml)}
+        features_by_scenario[code]=named_waypoint_features(routes,segments)
+        for feature in features_by_scenario[code]:
+            feature['properties']['source']=sources_by_scenario[code][feature['properties']['network'].lower()]
+    features=[{**feature, 'properties':{**feature['properties'],'scenario':code}}
+              for code in scenario_codes for feature in features_by_scenario[code]]
+    sources=sources_by_scenario
     replica_rows=[]
     if logs:
         with ProcessPoolExecutor(max_workers=args.workers) as pool:
-            futures=[pool.submit(process_replica,path,features,args.capture_radius_m,args.window_seconds,args.gap_seconds,args.reset_distance_m,args.jump_m) for _,path in logs]
+            futures=[pool.submit(process_replica,path,features_by_scenario[scenario],args.capture_radius_m,args.window_seconds,args.gap_seconds,args.reset_distance_m,args.jump_m) for scenario,path in logs]
             for (scenario,path),future in zip(logs,futures):
                 replica_rows.extend({'scenario':scenario,'replica':str(path),**row} for row in future.result())
                 print(f"Completed {path.name}",file=sys.stderr,flush=True)
     grouped=defaultdict(list)
     for row in replica_rows: grouped[row['scenario'],row['waypoint_id']].append(row)
     summary=[]
-    for scenario in ('C1','C2'):
-        for feature in features:
+    for scenario in scenario_codes:
+        for feature in features_by_scenario[scenario]:
             p=feature['properties']; rows=grouped[scenario,p['resource_id']]
             rates=[rate for row in rows for rate in row['window_rates_per_hour']]
             p95=percentile95(rates)
@@ -276,7 +293,7 @@ def main() -> int:
                 'mean_throughput_per_hour':sum(rates)/len(rates) if rates else None,
                 'p95_throughput_per_hour':p95,'capacity_reference_per_hour':p95,'capacity_declared_per_hour':None,
                 'mean_peak_throughput_per_hour':sum(r['peak_throughput_per_hour'] for r in rows)/len(rows) if rows and all(r['peak_throughput_per_hour'] is not None for r in rows) else None,
-                'source_sha256':sources[p['network'].lower()]['sha256'],'analysis_method_version':p['analysis_method_version'],
+                'source_sha256':sources_by_scenario[scenario][p['network'].lower()]['sha256'],'analysis_method_version':p['analysis_method_version'],
                 'status':'recomputed' if rates else 'unavailable_no_full_windows_or_altitude' if rows else 'unavailable_raw_logs',
                 'uam_route_ids':';'.join(p['uam_route_ids']),'reh_resource_ids':';'.join(p['reh_resource_ids'])})
     summary.sort(key=lambda row:(row['scenario'], -(row['p95_throughput_per_hour'] if row['p95_throughput_per_hour'] is not None else -1),row['waypoint_id']))
@@ -298,10 +315,12 @@ def main() -> int:
     (args.output_dir/'critical_waypoints.geojson').write_text(json.dumps({'type':'FeatureCollection','features':features},ensure_ascii=False),encoding='utf-8')
     # This file was formerly included as capacity resources. Geometric crossings are diagnostics elsewhere.
     (args.output_dir/'crossing_waypoints.geojson').write_text(json.dumps({'type':'FeatureCollection','features':[]}),encoding='utf-8')
-    write_candidate_node_assets(args.dashboard_assets.parent,args.uam_csv,args.reh_xml)
+    if args.geometry_only:
+        write_candidate_node_assets(args.dashboard_assets.parent,args.uam_csv,args.reh_xml)
     metadata={'method_version':'reh-uam-junctions-v3','status':'recomputed' if logs else 'geometry_only_raw_logs_unavailable',
         'sources':sources,'topology_selection':'C2 SCN interior positions validated within 2m of selected corridor centerlines' if selection else 'explicit caller selection; SCN association unverified',
         'source_run':selection.run_dir.name if selection else None,'retired_legacy_run':retired_run,'vertiports':uam['vertiports'],'route_count':uam['route_count'],
+        'scenario_codes':scenario_codes,'resource_count_by_scenario':{code:len(features_by_scenario[code]) for code in scenario_codes},
         'resource_count':len(features),'reh_selection_rule':'original degree >=3 distinct undirected neighbors; endpoint topology rounded to 6 decimals','uam_selection_rule':'named Waypoint; >=3 exact distinct physical edges; nonterminal use; exact/explicit alias REH name within 500m','named_position_counts':{net:sum(f['properties']['network']==net for f in features) for net in ('UAM','REH')},
         'capture_radius_m':args.capture_radius_m,'window_seconds':args.window_seconds,
         'vertical_rule':'UAM exported altitude +/- height/2; REH union of complete valid incident envelopes; any unknown disables counting',

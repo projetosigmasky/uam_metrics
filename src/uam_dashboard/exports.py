@@ -316,3 +316,36 @@ def planned_routes_geojson(
 def heatmap_points(df: pd.DataFrame, sample_stride: int) -> list[list[float]]:
     sampled = df.iloc[:: max(1, sample_stride)]
     return [[float(row.lat), float(row.lon), 0.28] for row in sampled.itertuples(index=False)]
+
+
+def density_grid(df: pd.DataFrame, cell_degrees: float = 0.001) -> list[list[float]]:
+    """Count every position sample on a common, bounded spatial grid (~100 m).
+
+    Counts describe recorded occupancy, not distinct aircraft or throughput.
+    Integer cell indices make merging replicas independent of completion order.
+    """
+    if not np.isfinite(cell_degrees) or cell_degrees <= 0:
+        raise ValueError("Density grid size must be positive and finite")
+    coordinates = df[["lat", "lon"]].to_numpy(dtype=float)
+    if not np.isfinite(coordinates).all():
+        raise ValueError("Nonfinite density coordinates")
+    cells, counts = np.unique(np.floor(coordinates / cell_degrees).astype(np.int64), axis=0, return_counts=True)
+    return [[int(lat), int(lon), int(count)] for (lat, lon), count in zip(cells, counts)]
+
+
+def merge_density_grids(grids: list[list[list[float]]], cell_degrees: float = 0.001) -> dict[str, Any]:
+    if not grids:
+        raise ValueError("At least one replica is required for density")
+    cells: dict[tuple[int, int], int] = {}
+    for grid in grids:
+        for lat, lon, count in grid:
+            key = int(lat), int(lon)
+            cells[key] = cells.get(key, 0) + int(count)
+    return {
+        "replica_count": len(grids), "cell_degrees": cell_degrees,
+        "position_sample_count": sum(cells.values()),
+        "method": "all_position_samples_mean_per_cell_per_replica",
+        "units": "mean_position_records_per_replica",
+        "cells": [[(lat + .5) * cell_degrees, (lon + .5) * cell_degrees, count / len(grids)]
+                  for (lat, lon), count in sorted(cells.items())],
+    }

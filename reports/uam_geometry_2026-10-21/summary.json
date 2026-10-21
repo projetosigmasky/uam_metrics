@@ -1,0 +1,30 @@
+{
+  "1": {
+    "route_count": 72,
+    "segment_occurrences": 858,
+    "unique_original_segments": 222,
+    "duplicate_segment_occurrences": 636,
+    "noded_unique_segments": 280,
+    "geometric_junctions": 72,
+    "separated_intersection_checks": 68,
+    "rules": "union footprints for map only; 3D centerlines connect at equal altitude rounded to 1mm, same dimensions; no proximity snap; no capacity or source-route change",
+    "source": {
+      "file": "scenario_horizontal_3000ft_expanded_displaced.csv",
+      "sha256": "22a7773a304d67de1faf665f6ab0dca4aa2634df0feb120361ec443d39310ff1"
+    }
+  },
+  "2": {
+    "route_count": 210,
+    "segment_occurrences": 2156,
+    "unique_original_segments": 412,
+    "duplicate_segment_occurrences": 1744,
+    "noded_unique_segments": 642,
+    "geometric_junctions": 199,
+    "separated_intersection_checks": 371,
+    "rules": "union footprints for map only; 3D centerlines connect at equal altitude rounded to 1mm, same dimensions; no proximity snap; no capacity or source-route change",
+    "source": {
+      "file": "new_scenario_horizontal_3000ft_displaced_validated.csv",
+      "sha256": "c66e8a39665cbee3f44145d80fb66d2052877b5c3390803c7be9a445d7a2e0bc"
+    }
+  }
+}

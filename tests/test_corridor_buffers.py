@@ -46,8 +46,9 @@ class CorridorBufferTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             write_uam_projection_asset(ROOT/'data/corridors/scenario_horizontal_3000ft_expanded_displaced.csv',Path(directory))
             text=(Path(directory)/'assets/uam_projection.js').read_text(encoding='utf-8')
-            collection=json.loads(text.split('=',1)[1].strip().rstrip(';'))
-            self.assertEqual(len(collection['features']),72)
-            self.assertTrue(all(shape(f['geometry']).is_valid and f['properties']['buffer_method']=='metric_linestring_buffer_round_joins_caps' and f['properties']['width_m']>0 for f in collection['features']))
+            collection=json.loads(text.splitlines()[0].split('=',1)[1].strip().rstrip(';'))
+            self.assertEqual(collection['properties']['route_count'],72)
+            self.assertLess(len(collection['features']),72)
+            self.assertTrue(all(shape(f['geometry']).is_valid and f['properties']['buffer_method']=='union_of_metric_route_buffers' and all(w>0 for w in f['properties']['widths_m']) for f in collection['features']))
 
 if __name__=='__main__':unittest.main()

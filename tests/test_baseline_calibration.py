@@ -188,7 +188,7 @@ class CalibrationTests(unittest.TestCase):
             self.assertIn("trace_columns", result)
             point = result["scenarios"]["C1.1"]["resources"][0]["estimates"]["300:positive"]["convergence"][0]
             self.assertEqual(len(point), len(result["trace_columns"]))
-            self.assertTrue((output / "calibration.html").exists())
+            self.assertFalse((output / "calibration.html").exists())
             with (destination / "comparison.csv").open() as stream:
                 self.assertEqual(len(list(csv.DictReader(stream))), 4*2*3*2)
             before = (destination / "calibration.json").read_bytes()

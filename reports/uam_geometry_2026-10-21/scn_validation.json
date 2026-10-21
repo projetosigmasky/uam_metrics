@@ -1,0 +1,22 @@
+{
+  "C2.1": [
+    {
+      "file": "produto2_C2.1_p100_r001_off.scn",
+      "sha256": "a7028596620b53f16360d993f40b031f5d88ac2912a45ce136798b3c86336196",
+      "checked_interior_positions": 1732,
+      "max_horizontal_deviation_m": 0.057222041291973585,
+      "tolerance_m": 2.0,
+      "vertical_validation": "not available in scenario_parser; exported corridor envelope used"
+    }
+  ],
+  "C2.2": [
+    {
+      "file": "produto2_C2.2_p100_r001_off.scn",
+      "sha256": "6ef08aa03e35340d03fa1301085b9235778eb88d08391fbbf122cc78fbdd145a",
+      "checked_interior_positions": 4113,
+      "max_horizontal_deviation_m": 0.06479800405805515,
+      "tolerance_m": 2.0,
+      "vertical_validation": "not available in scenario_parser; exported corridor envelope used"
+    }
+  ]
+}

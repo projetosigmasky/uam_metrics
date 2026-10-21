@@ -3,7 +3,6 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="stylesheet" href="assets/baseline_calibration.css" />
     <title>Dashboard KPI/KPA UAM - RMSP</title>
     <link
       rel="stylesheet"
@@ -21,7 +20,7 @@
       </div>
       <div class="topbar-controls">
         <label>
-          <span>Dia comparado</span>
+          <span>Grupo de cenários</span>
           <select id="day-select"></select>
         </label>
         <label>
@@ -176,28 +175,17 @@
         <aside class="side-panel">
           <div class="panel-section">
             <h2>Camadas</h2>
-            <label><input type="checkbox" id="layer-tracks" checked /> Trajetorias</label>
             <label><input type="checkbox" id="layer-official-reh" checked /> REH formal</label>
-            <label><input type="checkbox" id="layer-uam-corridors" /> Corredores UAM (projeção 2D)</label>
-            <label><input type="checkbox" id="layer-planned" /> Planejamento do cenario</label>
-            <label class="stacked-control">
-              <span>Volume das trajetorias</span>
-              <select id="trajectory-volume-filter">
-                <option value="all">Todas</option>
-                <option value="high">Maior volume</option>
-                <option value="medium">Volume intermediario</option>
-                <option value="low">Menor volume</option>
-              </select>
-            </label>
-            <label><input type="checkbox" id="layer-heat" /> Densidade</label>
-            <label><input type="checkbox" id="layer-atd-hotspots" /> Hotspots ATD</label>
+            <label><input type="checkbox" id="layer-uam-corridors" checked /> Corredores UAM (projeção 2D)</label>
+            <label><input type="checkbox" id="layer-heat" checked /> Densidade (todas as réplicas)</label>
             <label><input type="checkbox" id="layer-complexity" checked /> Cruzamentos UAM × REH (diagnóstico 3D)</label>
+            <label><input type="checkbox" id="layer-uam-junctions" checked /> Junções geométricas UAM</label>
             <label><input type="checkbox" id="layer-candidate-nodes" checked /> Junções UAM e REH</label>
             <label><input type="checkbox" id="layer-conflicts" checked /> Eventos LoWC/NMAC</label>
             <button class="panel-button" id="fit-map" type="button">Reenquadrar mapa</button>
             <div class="map-summary" aria-live="polite">
               <strong id="map-info-title">Mapa operacional</strong>
-              <p id="map-info-text">Trajetorias, densidade e eventos LoWC georreferenciados.</p>
+              <p id="map-info-text">Densidade agregada das réplicas e rede de corredores.</p>
             </div>
           </div>
         </aside>
@@ -206,15 +194,11 @@
           <div id="map"></div>
           <div class="map-info" aria-live="polite">
             <div class="map-legend">
-              <span data-legend-layer="tracks" data-volume="low"><i class="legend-swatch legend-volume-low"></i>Menor volume</span>
-              <span data-legend-layer="tracks" data-volume="medium"><i class="legend-swatch legend-volume-medium"></i>Volume intermediario</span>
-              <span data-legend-layer="tracks" data-volume="high"><i class="legend-swatch legend-volume-high"></i>Maior volume</span>
               <span data-legend-layer="official-reh"><i class="legend-swatch legend-official-reh"></i>REH formal</span>
               <span data-legend-layer="uam-corridors"><i class="legend-swatch legend-uam-corridors"></i>Corredor UAM · projeção 2D</span>
-              <span data-legend-layer="planned"><i class="legend-swatch legend-planned"></i>Planejamento do cenario</span>
               <span data-legend-layer="heat"><i class="legend-swatch legend-heat"></i>Densidade</span>
-              <span data-legend-layer="atd-hotspots"><i class="legend-swatch legend-atd"></i>Hotspot ATD</span>
               <span data-legend-layer="complexity"><i class="legend-swatch legend-complexity"></i>Cruzamento UAM × REH 3D</span>
+              <span data-legend-layer="uam-junctions"><i class="legend-swatch legend-uam-node"></i>Junção geométrica UAM</span>
               <span data-legend-layer="candidate-nodes"><i class="legend-swatch legend-uam-node"></i>Waypoint UAM nomeado</span>
               <span data-legend-layer="candidate-nodes"><i class="legend-swatch legend-reh-node"></i>Fix REH nomeado</span>
               <span data-legend-layer="conflicts" data-conflict="lowc"><i class="legend-swatch legend-lowc"></i>LoWC</span>
@@ -312,55 +296,13 @@
         </div>
       </details>
 
-      <section data-kpa-panel="safety" hidden class="viewer3d-section" aria-labelledby="viewer3d-title">
-        <div class="section-heading viewer3d-heading">
-          <div>
-            <p class="eyebrow">Espaço aéreo em três dimensões</p>
-            <h2 id="viewer3d-title">Trajetórias e conflitos ao longo da simulação</h2>
-          </div>
-          <p class="viewer3d-note" id="viewer3d-note">Plano-base a 2.621 pés MSL. Arraste para girar e use a roda para aproximar.</p>
-        </div>
+      <section data-kpa-panel="safety" hidden aria-label="Eventos de segurança">
         <div class="conflict-pair-filter" role="group" aria-label="Filtrar conflitos por combinação de veículos">
           <span>Combinação:</span>
           <button class="active" type="button" aria-pressed="true" data-conflict-pair="all">Todos</button>
           <button type="button" aria-pressed="false" data-conflict-pair="evtol-evtol">eVTOL × eVTOL</button>
           <button type="button" aria-pressed="false" data-conflict-pair="evtol-helicoptero">eVTOL × helicóptero</button>
           <button type="button" aria-pressed="false" data-conflict-pair="helicoptero-helicoptero">Helicóptero × helicóptero</button>
-        </div>
-        <div class="viewer3d-controls" aria-label="Controles da visualização 3D">
-          <button id="viewer3d-play" type="button">Reproduzir</button>
-          <label class="viewer3d-timeline">
-            <span>Tempo <strong id="viewer3d-time-label">--:--:--</strong></span>
-            <input id="viewer3d-time" type="range" min="0" max="0" step="5" value="0" />
-          </label>
-          <label>
-            <span>Velocidade</span>
-            <select id="viewer3d-speed">
-              <option value="1">1×</option>
-              <option value="5">5×</option>
-              <option value="20" selected>20×</option>
-            </select>
-          </label>
-          <label>
-            <span>Exagero vertical</span>
-            <select id="viewer3d-vertical-scale">
-              <option value="1">1×</option>
-              <option value="5" selected>5×</option>
-              <option value="10">10×</option>
-            </select>
-          </label>
-          <button id="viewer3d-reset" type="button">Restaurar vista</button>
-        </div>
-        <div class="viewer3d-stage">
-          <canvas id="viewer3d-canvas" role="img" aria-label="Representação tridimensional animada das trajetórias de aeronaves"></canvas>
-          <div class="viewer3d-status" id="viewer3d-status" aria-live="polite">Carregando dados 3D…</div>
-          <div class="viewer3d-legend" aria-label="Legenda da visualização 3D">
-            <span><i class="viewer3d-dot evtol"></i>eVTOL</span>
-            <span><i class="viewer3d-dot helicopter"></i>Helicóptero</span>
-            <span><i class="viewer3d-dot lowc"></i>LoWC</span>
-            <span><i class="viewer3d-dot nmac"></i>NMAC</span>
-            <span><i class="viewer3d-dot mac"></i>MAC</span>
-          </div>
         </div>
         <details class="kpa-details">
           <summary>
@@ -430,10 +372,6 @@
         </div>
       </section>
 
-      <section class="chart-section" data-kpa-panel="capacity" hidden aria-label="Calibração dos quatro cenários-base">
-        <div data-baseline-calibration></div>
-        <p><a href="calibration.html">Abrir calibração em página própria</a></p>
-      </section>
 
       <details class="kpa-details" data-kpa-panel="capacity" hidden>
         <summary>
@@ -502,11 +440,9 @@
     <script src="assets/data_bundle.js?v=a76d611756c0"></script>
     <script src="assets/candidate_nodes.js?v=2f1acbc9db3a"></script>
     <script src="assets/crossing_waypoints_3d.js?v=bc41ea612db2"></script>
-    <script src="assets/uam_projection.js?v=9ecd2e43dfa0"></script>
+    <script src="assets/uam_projection.js?v=fee06735fd24"></script>
     <script src="assets/waypoint_rankings.js?v=b41c228c891b"></script>
     <script src="assets/metric_catalog.js?v=cf897343f15b"></script>
-    <script src="assets/baseline_calibration_data.js"></script>
-    <script src="assets/baseline_calibration.js"></script>
-    <script src="assets/dashboard.js?v=8d31d07b2c90"></script>
+    <script src="assets/dashboard.js?v=b78aae15a34f"></script>
   </body>
 </html>

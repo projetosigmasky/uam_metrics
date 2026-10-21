@@ -1,6 +1,8 @@
-# Histórico técnico e passagem de contexto — 20/10/2026
+# Histórico técnico e passagem de contexto — atualizado em 21/10/2026
 
 Este arquivo registra as decisões e os resultados desta sequência de trabalho para orientar novas iterações com outras LLMs. Não substitui os dados nem o código. A base quantitativa é o snapshot publicado no commit `f30f4de` (`Publica calibracao dos quatro baselines`).
+
+**Atualização:** a seção 11 registra as mudanças de 21/10/2026 e substitui as descrições anteriores da interface pública e da seleção C1/C2. A análise quantitativa de capacidade de 20/10 permanece preservada.
 
 ## Leitura inicial para a próxima iteração
 
@@ -224,3 +226,51 @@ Antes de alterar o gerador, decidir:
 4. Validação posterior do efeito dos limites em atraso, throughput, conflitos e ocupação. O P95 dos baselines não substitui essa avaliação.
 
 O objetivo desta iteração é **registrar e preparar evidências**, não modificar as capacidades dos algoritmos nem redigir uma conclusão de segurança.
+
+
+## 11. Atualização de 21/10/2026 — cenários e mapa UAM
+
+### Pedido e resultado implementado
+
+O usuário autorizou atualizar o dashboard para C1.1/C1.2/C2.1/C2.2, retirar trajetórias e planejamento do mapa, retirar a calibração da página pública e investigar as sobreposições no trajeto VP-005–VP-006. Foi consultada a planilha original de cenários e o repositório de simulação.
+
+- `run_config.json` agora seleciona a RUN `20261015_112401_6cddab52`, os quatro baselines, 50 réplicas por cenário e CSVs de geometria distintos por etapa. A seleção reconhece pastas com ponto ou underscore e exige réplicas 1–50, SCNs distintos e geometria compatível antes de publicar.
+- `experiment.py` reconhece identificadores com múltiplos níveis, como C3.1.2 e C8.2.1. O pareamento não substitui uma réplica ausente por outra e recusa fontes ambíguas. C5/C6/C9/C10 não inferem tamanho da rede a partir do sufixo de algoritmo; é preciso mapeamento explícito de geometria.
+- Comparações dos baselines usam C1 da mesma etapa (C2.1 vs C1.1; C2.2 vs C1.2). Para famílias dedicadas futuras, a referência configurada por metadados é C2 da mesma etapa; compartilhadas usam C1. Essas referências só produzem comparação se o baseline correspondente tiver sido selecionado.
+- O heatmap usa todos os registros de posição das réplicas, em grade fixa de 0,001°. Contagens são somadas e divididas pelo número de réplicas, incluindo réplicas sem amostras em determinada célula. Uma escala comum evita amplificação visual por quantidade de réplicas. A unidade é média de registros de posição por célula e réplica; não é throughput nem contagem de aeronaves únicas. Cadência/cobertura devem ser compatíveis para comparação quantitativa.
+- A geometria UAM e os nós passam a ser selecionados por cenário. C1.1/C1.2 exibem a rede REH, sem uma rede UAM dedicada fictícia. As regras e fontes REH foram preservadas.
+- Os gráficos temporais e eventos continuam de uma réplica representativa, explicitamente identificada. A linha do tempo permanece recolhida; seus links agora levam ao local do evento no mapa.
+- A interface não oferece trajetórias, planejamento nem visualização 3D. Esses recursos ficam **em observação**; métricas de distância, conformidade, throughput por grupo, exports e código de cálculo permanecem disponíveis. Atalhos de mapa para grupos de trajetória e pares OD também foram retirados. O heatmap é a exibição de densidade; os indicadores numéricos ATD/hotspots continuam disponíveis.
+- `docs/calibration.html` e seus links/scripts no dashboard foram retirados. O gerador nativo continua produzindo CSV/JSON/PNG para auditoria, sem voltar a publicar essa página. A atualização dos assets preserva dados e figuras de calibração já calculados.
+
+### Aglutinação dos corredores
+
+Novo módulo `src/uam_dashboard/corridor_geometry.py`; exportador `generate_uam_projection.py` atualizado. Relatório e figuras: [auditoria UAM](reports/uam_geometry_2026-10-21/README.md).
+
+1. A área 2D é a união dos buffers métricos existentes, preservando inclusive vazios internos. Isso elimina o escurecimento por repetição de rotas OD.
+2. Um grafo geométrico elimina segmentos coincidentes/invertidos e divide sobreposições parciais e interseções onde a altitude interpolada coincide com precisão de 1 mm e as dimensões são iguais. Não há união por proximidade nem por nome. Pistas distintas e níveis separados permanecem distintos.
+3. O grafo identifica junções não terminais de grau >=3: 72 na rede de 6 vertiportos e 199 na rede validada de 12. São diagnósticos, com `capacity_resource: false`; não modificam os recursos nativos nem os valores calibrados.
+4. Na rede inicial, 858 ocorrências de segmentos correspondem a 222 únicos (636 repetições); na rede de 12, 2.156 correspondem a 412 (1.744 repetições). Após dividir nas interseções, são 280 e 642 arestas geométricas únicas.
+5. O CSV validado de 12 vertiportos foi copiado do repositório de simulação, mantendo seu hash `c66e8a39665cbee3f44145d80fb66d2052877b5c3390803c7be9a445d7a2e0bc`. O CSV anterior permanece para rastreabilidade.
+6. SCNs reais originais r001 de C2.1/C2.2: 1.732/4.113 posições internas, desvios máximos 0,057/0,065 m, dentro da tolerância horizontal de 2 m. Altitudes dos SCNs não são validadas por esse método.
+7. A malha de entrada e o repositório de simulação não foram alterados. Alterações operacionais nessa malha exigiriam atualização do gerador/manifests e avaliação de novas simulações.
+
+Durante a validação foi acrescentado um filtro por caixas envolventes ao diagnóstico UAM × REH. Ele descarta apenas pares sem possibilidade de interseção e preserva a rotina anterior nos pares restantes; reduz o custo do processamento das réplicas.
+
+### Situação dos dados e próximo passo no Lessonia
+
+Este clone contém KPIs completos antigos C1/C2 e calibração nativa dos quatro baselines; os STATELOGs reais novos estão no Lessonia. **Não renomear C1/C2 como C1.1/C1.2/C2.1/C2.2.** A interface já oculta esses resultados antigos e informa que aguarda reprocessamento.
+
+Após o push feito pelo usuário:
+
+```bash
+cd ~/post-processing
+git pull --ff-only
+.venv/bin/python generate_reports.py --config run_config.json --workers 25
+```
+
+Esse comando produz o dashboard completo e o ranking para os quatro cenários. `generate_reports.py --baseline-manifest ...` continua sendo somente calibração nativa, independente. Não é necessário recalcular a calibração nem rodar novas simulações apenas para atualizar esta interface/heatmap. Se os logs estiverem distribuídos em outras RUNs, a seleção de dashboard precisa ser adaptada explicitamente; não substituir pela RUN antiga.
+
+A validação incluiu testes unitários de identificação e seleção, média espacial com 50 réplicas, sobreposições parciais, reversões, cruzamentos 3D, preservação da área e geração completa com dois workers e duas réplicas de cada baseline. Os testes de contrato DOM/Leaflet verificam a ocultação de dados legados, ausência de controles retirados, densidade e troca de cenário. As figuras da auditoria foram inspecionadas visualmente. O navegador integrado não alcançou o servidor HTTP local nesta sessão; não houve verificação visual do dashboard em navegador nem publicação remota.
+
+Verificação final: **75 testes Python passaram**, incluindo geração completa com dois workers. `node tests/dashboard_ui.test.cjs`, validação sintática do JavaScript, estrutura HTML e sincronismo `web/` → `docs/` também passaram. A referência desta verificação é o código local de 21/10/2026; os dados reais ainda precisam do processamento no Lessonia indicado acima.

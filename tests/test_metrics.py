@@ -64,13 +64,13 @@ class MetricsTest(unittest.TestCase):
                 Path("data/corridors/scenario_horizontal_3000ft_expanded_displaced.csv"), Path(directory)
             )
             script = (Path(directory) / "assets/uam_projection.js").read_text(encoding="utf-8")
-            collection = json.loads(script.removeprefix("window.__UAM_CORRIDOR_PROJECTION__ = ").removesuffix(";\n"))
-            self.assertEqual(count, 72)
-            self.assertEqual(len(collection["features"]), 72)
+            collection = json.loads(script.splitlines()[0].removeprefix("window.__UAM_CORRIDOR_PROJECTION__ = ").removesuffix(";"))
+            self.assertLess(count, 72)
+            self.assertEqual(collection["properties"]["route_count"], 72)
             first = collection["features"][0]
             self.assertEqual(first["geometry"]["type"], "Polygon")
             self.assertEqual(first["geometry"]["coordinates"][0][0], first["geometry"]["coordinates"][0][-1])
-            self.assertEqual(first["properties"]["width_m"], 457.0)
+            self.assertEqual(first["properties"]["widths_m"], [457.0])
 
     def test_trajectory_3d_payload_uses_five_second_windows(self) -> None:
         rows = []

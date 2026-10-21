@@ -1,6 +1,11 @@
 {
   "runs_root": "~/runs",
-  "run_name": "20260924_104519_aba5878d",
+  "run_name": "20261015_112401_6cddab52",
+  "scenario_codes": ["C1.1", "C1.2", "C2.1", "C2.2"],
+  "uam_corridor_csv_by_stage": {
+    "1": "data/corridors/scenario_horizontal_3000ft_expanded_displaced.csv",
+    "2": "data/corridors/new_scenario_horizontal_3000ft_displaced_validated.csv"
+  },
   "expected_replicas_per_scenario": 50,
   "dashboard_workers": 25,
   "ranking_workers": 25

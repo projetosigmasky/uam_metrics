@@ -101,12 +101,12 @@ class CriticalWaypointTests(unittest.TestCase):
             results = process_replica(log, [feature("X1", -46.0, -23.0, 1000), feature("X2", -46.0, -23.0, 1500)], 250, 3600, 300, 250, 5000)
             self.assertEqual([row["operations"] for row in results], [1, 0])
 
-    def test_discovery_selects_only_c1_and_c2(self):
+    def test_discovery_keeps_extended_scenario_codes(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             for name in ("STATELOG_C1_seed1.log", "STATELOG_C2_seed1.log", "STATELOG_C10_seed1.log"):
                 (root / name).touch()
-            self.assertEqual([scenario for scenario, _ in discover_logs(root)], ["C1", "C2"])
+            self.assertEqual(set(scenario for scenario, _ in discover_logs(root)), {"C1", "C2", "C10"})
 
 
 if __name__ == "__main__":

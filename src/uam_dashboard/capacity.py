@@ -567,6 +567,12 @@ def _uam_reh_crossing_features(
         for coordinate in ring
     ]
     reference_lat = float(np.mean(all_lats))
+    # Broad phase only: disjoint boxes cannot contribute overlap points. Keep
+    # the existing intersection/altitude calculation for every surviving pair.
+    bounds = {}
+    for route in (*uam_corridors, *reh_routes):
+        vertices = np.asarray([p for ring in route.get("polygons", []) for p in ring], dtype=float)
+        bounds[id(route)] = (vertices.min(axis=0), vertices.max(axis=0)) if len(vertices) else None
     located: list[tuple[np.ndarray, dict[str, Any]]] = []
     for uam_route in uam_corridors:
         altitudes = uam_route.get("altitudes_m")
@@ -574,6 +580,9 @@ def _uam_reh_crossing_features(
         if altitudes is None or len(altitudes) != len(uam_route["coordinates"]) or reh_height <= 0:
             continue
         for reh_route in reh_routes:
+            uam_box, reh_box = bounds[id(uam_route)], bounds[id(reh_route)]
+            if not uam_box or not reh_box or np.any(uam_box[1] < reh_box[0]) or np.any(reh_box[1] < uam_box[0]):
+                continue
             reh_interval = _reh_vertical_interval_m(reh_route)
             if reh_interval is None:
                 continue
@@ -880,8 +889,13 @@ def _polygon_overlap_points(
         for ring_b in polygons_b:
             lat_lon_b = np.asarray([[coordinate[1], coordinate[0]] for coordinate in ring_b], dtype=float)
             xy_b = _project_with_reference(lat_lon_b, reference_lat)
+            lower_b = np.minimum(xy_b[:-1], xy_b[1:])
+            upper_b = np.maximum(xy_b[:-1], xy_b[1:])
             for a1, a2 in zip(xy_a[:-1], xy_a[1:]):
-                for b1, b2 in zip(xy_b[:-1], xy_b[1:]):
+                candidates = np.flatnonzero(np.all(upper_b >= np.minimum(a1, a2), axis=1)
+                                           & np.all(lower_b <= np.maximum(a1, a2), axis=1))
+                for index in candidates:
+                    b1, b2 = xy_b[index], xy_b[index + 1]
                     if _segments_intersect(a1, a2, b1, b2):
                         intersection = _segment_intersection(a1, a2, b1, b2)
                         if intersection is not None:

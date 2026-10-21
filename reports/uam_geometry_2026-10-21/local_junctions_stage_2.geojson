@@ -1,0 +1,618 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "resource_id": "UAM-GJ-1969af0d7c0b6d8f",
+        "label": "Junção geométrica UAM",
+        "network_degree": 4,
+        "altitude_m": 914.4,
+        "height_m": 305.0,
+        "width_m": 457.0,
+        "route_labels": [
+          "VP-001-VP-008 (Parallel 2)",
+          "VP-001-VP-011 (Parallel 2)",
+          "VP-004-VP-005 (Parallel 2)"
+        ],
+        "status": "geometric_diagnostic_only",
+        "capacity_resource": false,
+        "method": "noded_unique_3d_centerlines_no_proximity_snap"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.82705681,
+          -23.52843677,
+          914.4
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "resource_id": "UAM-GJ-74cf06a8ce5957fa",
+        "label": "Junção geométrica UAM",
+        "network_degree": 4,
+        "altitude_m": 914.4,
+        "height_m": 305.0,
+        "width_m": 457.0,
+        "route_labels": [
+          "SBGR-VP-001 (Parallel 1)",
+          "SBMT-VP-001 (Parallel 1)",
+          "SBSP-VP-001 (Parallel 1)",
+          "VP-001-VP-002 (Parallel 2)",
+          "VP-001-VP-003 (Parallel 2)",
+          "VP-001-VP-006 (Parallel 2)",
+          "VP-001-VP-007 (Parallel 2)",
+          "VP-001-VP-009 (Parallel 2)",
+          "VP-001-VP-010 (Parallel 2)",
+          "VP-001-VP-012 (Parallel 2)",
+          "VP-004-VP-005 (Parallel 2)"
+        ],
+        "status": "geometric_diagnostic_only",
+        "capacity_resource": false,
+        "method": "noded_unique_3d_centerlines_no_proximity_snap"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.82705374,
+          -23.52782126,
+          914.4
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "resource_id": "UAM-GJ-4a92a9f8d823a8d0",
+        "label": "Junção geométrica UAM",
+        "network_degree": 4,
+        "altitude_m": 914.4,
+        "height_m": 305.0,
+        "width_m": 457.0,
+        "route_labels": [
+          "SBGR-VP-005 (Parallel 1)",
+          "SBMT-VP-005 (Parallel 1)",
+          "VP-002-VP-005 (Parallel 1)",
+          "VP-004-VP-005 (Parallel 2)",
+          "VP-005-VP-006 (Parallel 2)",
+          "VP-005-VP-009 (Parallel 2)",
+          "VP-005-VP-010 (Parallel 2)"
+        ],
+        "status": "geometric_diagnostic_only",
+        "capacity_resource": false,
+        "method": "noded_unique_3d_centerlines_no_proximity_snap"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.82704943,
+          -23.52695639,
+          914.4
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "resource_id": "UAM-GJ-0b6ceb23f283539d",
+        "label": "Junção geométrica UAM",
+        "network_degree": 4,
+        "altitude_m": 914.4,
+        "height_m": 305.0,
+        "width_m": 457.0,
+        "route_labels": [
+          "VP-001-VP-008 (Parallel 2)",
+          "VP-001-VP-011 (Parallel 2)",
+          "VP-004-VP-008 (Parallel 2)",
+          "VP-004-VP-011 (Parallel 2)"
+        ],
+        "status": "geometric_diagnostic_only",
+        "capacity_resource": false,
+        "method": "noded_unique_3d_centerlines_no_proximity_snap"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.82697842,
+          -23.52844098,
+          914.4
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "resource_id": "UAM-GJ-e17a53cc48c93990",
+        "label": "Junção geométrica UAM",
+        "network_degree": 4,
+        "altitude_m": 914.4,
+        "height_m": 305.0,
+        "width_m": 457.0,
+        "route_labels": [
+          "SBGR-VP-001 (Parallel 1)",
+          "SBMT-VP-001 (Parallel 1)",
+          "SBSP-VP-001 (Parallel 1)",
+          "VP-001-VP-002 (Parallel 2)",
+          "VP-001-VP-003 (Parallel 2)",
+          "VP-001-VP-006 (Parallel 2)",
+          "VP-001-VP-007 (Parallel 2)",
+          "VP-001-VP-009 (Parallel 2)",
+          "VP-001-VP-010 (Parallel 2)",
+          "VP-001-VP-012 (Parallel 2)",
+          "VP-004-VP-008 (Parallel 2)",
+          "VP-004-VP-011 (Parallel 2)"
+        ],
+        "status": "geometric_diagnostic_only",
+        "capacity_resource": false,
+        "method": "noded_unique_3d_centerlines_no_proximity_snap"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.82697685,
+          -23.52781436,
+          914.4
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "resource_id": "UAM-GJ-64bde1f73366bebc",
+        "label": "Junção geométrica UAM",
+        "network_degree": 4,
+        "altitude_m": 914.4,
+        "height_m": 305.0,
+        "width_m": 457.0,
+        "route_labels": [
+          "SBGR-VP-005 (Parallel 1)",
+          "SBMT-VP-005 (Parallel 1)",
+          "VP-002-VP-005 (Parallel 1)",
+          "VP-004-VP-008 (Parallel 2)",
+          "VP-004-VP-011 (Parallel 2)",
+          "VP-005-VP-006 (Parallel 2)",
+          "VP-005-VP-009 (Parallel 2)",
+          "VP-005-VP-010 (Parallel 2)"
+        ],
+        "status": "geometric_diagnostic_only",
+        "capacity_resource": false,
+        "method": "noded_unique_3d_centerlines_no_proximity_snap"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.82697471,
+          -23.52695207,
+          914.4
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "resource_id": "UAM-GJ-288895b2dd6e1063",
+        "label": "Junção geométrica UAM",
+        "network_degree": 4,
+        "altitude_m": 914.4,
+        "height_m": 305.0,
+        "width_m": 457.0,
+        "route_labels": [
+          "SBGR-VP-001 (Parallel 2)",
+          "SBMT-VP-001 (Parallel 2)",
+          "SBSP-VP-001 (Parallel 2)",
+          "VP-001-VP-002 (Parallel 1)",
+          "VP-001-VP-003 (Parallel 1)",
+          "VP-001-VP-006 (Parallel 1)",
+          "VP-001-VP-007 (Parallel 1)",
+          "VP-001-VP-008 (Parallel 1)",
+          "VP-001-VP-009 (Parallel 1)",
+          "VP-001-VP-010 (Parallel 1)",
+          "VP-001-VP-011 (Parallel 1)",
+          "VP-001-VP-012 (Parallel 1)"
+        ],
+        "status": "geometric_diagnostic_only",
+        "capacity_resource": false,
+        "method": "noded_unique_3d_centerlines_no_proximity_snap"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.82202118,
+          -23.53145132,
+          914.4
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "resource_id": "UAM-GJ-cf1faeb51a9fe127",
+        "label": "Junção geométrica UAM",
+        "network_degree": 4,
+        "altitude_m": 914.4,
+        "height_m": 305.0,
+        "width_m": 457.0,
+        "route_labels": [
+          "SBGR-VP-001 (Parallel 2)",
+          "SBMT-VP-001 (Parallel 2)",
+          "SBSP-VP-001 (Parallel 2)",
+          "VP-001-VP-002 (Parallel 1)",
+          "VP-001-VP-003 (Parallel 1)",
+          "VP-001-VP-006 (Parallel 1)",
+          "VP-001-VP-007 (Parallel 1)",
+          "VP-001-VP-009 (Parallel 1)",
+          "VP-001-VP-010 (Parallel 1)",
+          "VP-001-VP-012 (Parallel 1)",
+          "VP-004-VP-008 (Parallel 1)",
+          "VP-004-VP-011 (Parallel 1)"
+        ],
+        "status": "geometric_diagnostic_only",
+        "capacity_resource": false,
+        "method": "noded_unique_3d_centerlines_no_proximity_snap"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.81623577,
+          -23.53096034,
+          914.4
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "resource_id": "UAM-GJ-9857a4029f38f625",
+        "label": "Junção geométrica UAM",
+        "network_degree": 4,
+        "altitude_m": 914.4,
+        "height_m": 305.0,
+        "width_m": 457.0,
+        "route_labels": [
+          "SBGR-VP-005 (Parallel 2)",
+          "SBMT-VP-005 (Parallel 2)",
+          "VP-001-VP-008 (Parallel 1)",
+          "VP-001-VP-011 (Parallel 1)",
+          "VP-002-VP-005 (Parallel 2)",
+          "VP-005-VP-006 (Parallel 1)",
+          "VP-005-VP-009 (Parallel 1)",
+          "VP-005-VP-010 (Parallel 1)"
+        ],
+        "status": "geometric_diagnostic_only",
+        "capacity_resource": false,
+        "method": "noded_unique_3d_centerlines_no_proximity_snap"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.81360327,
+          -23.53119659,
+          914.4
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "resource_id": "UAM-GJ-cf3b40eedea97fd5",
+        "label": "Junção geométrica UAM",
+        "network_degree": 4,
+        "altitude_m": 914.4,
+        "height_m": 305.0,
+        "width_m": 457.0,
+        "route_labels": [
+          "SBGR-VP-005 (Parallel 2)",
+          "SBMT-VP-005 (Parallel 2)",
+          "VP-002-VP-005 (Parallel 2)",
+          "VP-004-VP-008 (Parallel 1)",
+          "VP-004-VP-011 (Parallel 1)",
+          "VP-005-VP-006 (Parallel 1)",
+          "VP-005-VP-009 (Parallel 1)",
+          "VP-005-VP-010 (Parallel 1)"
+        ],
+        "status": "geometric_diagnostic_only",
+        "capacity_resource": false,
+        "method": "noded_unique_3d_centerlines_no_proximity_snap"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.81216488,
+          -23.531019,
+          914.4
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "resource_id": "UAM-GJ-5c137c9dbf5c7eff",
+        "label": "Junção geométrica UAM",
+        "network_degree": 3,
+        "altitude_m": 914.4,
+        "height_m": 305.0,
+        "width_m": 457.0,
+        "route_labels": [
+          "VP-001-VP-008 (Parallel 1)",
+          "VP-001-VP-011 (Parallel 1)",
+          "VP-004-VP-008 (Parallel 1)",
+          "VP-004-VP-011 (Parallel 1)"
+        ],
+        "status": "geometric_diagnostic_only",
+        "capacity_resource": false,
+        "method": "noded_unique_3d_centerlines_no_proximity_snap"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.80916356,
+          -23.53106224,
+          914.4
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "resource_id": "UAM-GJ-8ab69e68ed915d56",
+        "label": "Junção geométrica UAM",
+        "network_degree": 4,
+        "altitude_m": 914.4,
+        "height_m": 305.0,
+        "width_m": 457.0,
+        "route_labels": [
+          "SBGR-VP-005 (Parallel 2)",
+          "SBMT-VP-005 (Parallel 2)",
+          "VP-001-VP-008 (Parallel 2)",
+          "VP-001-VP-011 (Parallel 2)",
+          "VP-002-VP-005 (Parallel 2)",
+          "VP-004-VP-008 (Parallel 2)",
+          "VP-004-VP-011 (Parallel 2)",
+          "VP-005-VP-006 (Parallel 1)",
+          "VP-005-VP-009 (Parallel 1)",
+          "VP-005-VP-010 (Parallel 1)"
+        ],
+        "status": "geometric_diagnostic_only",
+        "capacity_resource": false,
+        "method": "noded_unique_3d_centerlines_no_proximity_snap"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.80412832,
+          -23.53002676,
+          914.4
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "resource_id": "UAM-GJ-ed8bc68eea0ffa60",
+        "label": "Junção geométrica UAM",
+        "network_degree": 4,
+        "altitude_m": 914.4,
+        "height_m": 305.0,
+        "width_m": 457.0,
+        "route_labels": [
+          "SBGR-VP-001 (Parallel 2)",
+          "SBMT-VP-001 (Parallel 2)",
+          "SBSP-VP-001 (Parallel 2)",
+          "VP-001-VP-002 (Parallel 1)",
+          "VP-001-VP-003 (Parallel 1)",
+          "VP-001-VP-006 (Parallel 1)",
+          "VP-001-VP-007 (Parallel 1)",
+          "VP-001-VP-008 (Parallel 2)",
+          "VP-001-VP-009 (Parallel 1)",
+          "VP-001-VP-010 (Parallel 1)",
+          "VP-001-VP-011 (Parallel 2)",
+          "VP-001-VP-012 (Parallel 1)",
+          "VP-004-VP-008 (Parallel 2)",
+          "VP-004-VP-011 (Parallel 2)"
+        ],
+        "status": "geometric_diagnostic_only",
+        "capacity_resource": false,
+        "method": "noded_unique_3d_centerlines_no_proximity_snap"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.80411557,
+          -23.52993177,
+          914.4
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "resource_id": "UAM-GJ-ce30347f9f75268a",
+        "label": "Junção geométrica UAM",
+        "network_degree": 3,
+        "altitude_m": 914.4,
+        "height_m": 305.0,
+        "width_m": 457.0,
+        "route_labels": [
+          "VP-001-VP-008 (Parallel 2)",
+          "VP-001-VP-011 (Parallel 2)",
+          "VP-004-VP-008 (Parallel 2)",
+          "VP-004-VP-011 (Parallel 2)"
+        ],
+        "status": "geometric_diagnostic_only",
+        "capacity_resource": false,
+        "method": "noded_unique_3d_centerlines_no_proximity_snap"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.80408083,
+          -23.52967283,
+          914.4
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "resource_id": "UAM-GJ-c9b30f2168d7a75e",
+        "label": "Junção geométrica UAM",
+        "network_degree": 3,
+        "altitude_m": 914.4,
+        "height_m": 305.0,
+        "width_m": 457.0,
+        "route_labels": [
+          "SBGR-VP-001 (Parallel 2)",
+          "SBGR-VP-005 (Parallel 2)",
+          "SBMT-VP-001 (Parallel 2)",
+          "SBMT-VP-005 (Parallel 2)",
+          "SBSP-VP-001 (Parallel 2)",
+          "VP-001-VP-002 (Parallel 1)",
+          "VP-001-VP-003 (Parallel 1)",
+          "VP-001-VP-006 (Parallel 1)",
+          "VP-001-VP-007 (Parallel 1)",
+          "VP-001-VP-009 (Parallel 1)",
+          "VP-001-VP-010 (Parallel 1)",
+          "VP-001-VP-012 (Parallel 1)",
+          "VP-002-VP-005 (Parallel 2)",
+          "VP-005-VP-006 (Parallel 1)",
+          "VP-005-VP-009 (Parallel 1)",
+          "VP-005-VP-010 (Parallel 1)"
+        ],
+        "status": "geometric_diagnostic_only",
+        "capacity_resource": false,
+        "method": "noded_unique_3d_centerlines_no_proximity_snap"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.8016954,
+          -23.52972638,
+          914.4
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "resource_id": "UAM-GJ-025ef305b5e9ec6a",
+        "label": "Junção geométrica UAM",
+        "network_degree": 3,
+        "altitude_m": 914.4,
+        "height_m": 305.0,
+        "width_m": 457.0,
+        "route_labels": [
+          "SBGR-VP-001 (Parallel 1)",
+          "SBGR-VP-005 (Parallel 1)",
+          "SBMT-VP-001 (Parallel 1)",
+          "SBMT-VP-005 (Parallel 1)",
+          "SBSP-VP-001 (Parallel 1)",
+          "VP-001-VP-002 (Parallel 2)",
+          "VP-001-VP-003 (Parallel 2)",
+          "VP-001-VP-006 (Parallel 2)",
+          "VP-001-VP-007 (Parallel 2)",
+          "VP-001-VP-009 (Parallel 2)",
+          "VP-001-VP-010 (Parallel 2)",
+          "VP-001-VP-012 (Parallel 2)",
+          "VP-002-VP-005 (Parallel 1)",
+          "VP-005-VP-006 (Parallel 2)",
+          "VP-005-VP-009 (Parallel 2)",
+          "VP-005-VP-010 (Parallel 2)"
+        ],
+        "status": "geometric_diagnostic_only",
+        "capacity_resource": false,
+        "method": "noded_unique_3d_centerlines_no_proximity_snap"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.80003736,
+          -23.525396,
+          914.4
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "resource_id": "UAM-GJ-b5238ce78dd23b31",
+        "label": "Junção geométrica UAM",
+        "network_degree": 5,
+        "altitude_m": 914.4,
+        "height_m": 305.0,
+        "width_m": 457.0,
+        "route_labels": [
+          "SBGR-VP-001 (Parallel 2)",
+          "SBGR-VP-005 (Parallel 2)",
+          "SBMT-VP-001 (Parallel 2)",
+          "SBMT-VP-005 (Parallel 2)",
+          "SBSP-VP-001 (Parallel 2)",
+          "VP-001-VP-002 (Parallel 1)",
+          "VP-001-VP-003 (Parallel 1)",
+          "VP-001-VP-006 (Parallel 1)",
+          "VP-001-VP-007 (Parallel 1)",
+          "VP-001-VP-009 (Parallel 1)",
+          "VP-001-VP-010 (Parallel 1)",
+          "VP-001-VP-012 (Parallel 1)",
+          "VP-002-VP-005 (Parallel 2)",
+          "VP-005-VP-006 (Parallel 1)",
+          "VP-005-VP-009 (Parallel 1)",
+          "VP-005-VP-010 (Parallel 1)"
+        ],
+        "status": "geometric_diagnostic_only",
+        "capacity_resource": false,
+        "method": "noded_unique_3d_centerlines_no_proximity_snap"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.78664008,
+          -23.53591074,
+          914.4
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "resource_id": "UAM-GJ-cd55ad2149086e8f",
+        "label": "Junção geométrica UAM",
+        "network_degree": 5,
+        "altitude_m": 914.4,
+        "height_m": 305.0,
+        "width_m": 457.0,
+        "route_labels": [
+          "SBGR-VP-001 (Parallel 1)",
+          "SBGR-VP-005 (Parallel 1)",
+          "SBMT-VP-001 (Parallel 1)",
+          "SBMT-VP-005 (Parallel 1)",
+          "SBSP-VP-001 (Parallel 1)",
+          "VP-001-VP-002 (Parallel 2)",
+          "VP-001-VP-003 (Parallel 2)",
+          "VP-001-VP-006 (Parallel 2)",
+          "VP-001-VP-007 (Parallel 2)",
+          "VP-001-VP-009 (Parallel 2)",
+          "VP-001-VP-010 (Parallel 2)",
+          "VP-001-VP-012 (Parallel 2)",
+          "VP-002-VP-005 (Parallel 1)",
+          "VP-005-VP-006 (Parallel 2)",
+          "VP-005-VP-009 (Parallel 2)",
+          "VP-005-VP-010 (Parallel 2)"
+        ],
+        "status": "geometric_diagnostic_only",
+        "capacity_resource": false,
+        "method": "noded_unique_3d_centerlines_no_proximity_snap"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.78514041,
+          -23.53151477,
+          914.4
+        ]
+      }
+    }
+  ]
+}

@@ -16,6 +16,8 @@ from src.uam_dashboard.experiment import experiment_metadata, experiment_sort_ke
 from src.uam_dashboard.exports import (
     conflicts_geojson,
     heatmap_points,
+    density_grid,
+    merge_density_grids,
     planned_routes_geojson,
     trajectory_3d_payload,
     tracks_geojson,
@@ -46,6 +48,10 @@ from src.uam_dashboard.scenario_parser import (
     load_bluesky_scenario,
 )
 from src.uam_dashboard.topology import write_candidate_node_assets
+from src.uam_dashboard.topology import candidate_node_collection
+from src.uam_dashboard.corridor_geometry import uam_geometry
+from src.uam_dashboard.named_waypoints import source_record
+from src.uam_dashboard.named_waypoints import uam_selection_inventory
 from generate_crossing_waypoints import write_crossing_waypoint_asset
 from generate_uam_projection import write_uam_projection_asset
 from src.uam_dashboard.uam_corridor_parser import load_uam_corridor_network
@@ -62,19 +68,35 @@ def write_js_bundle(path: Path, payload: object) -> None:
     path.write_text(f"window.__UAM_DASHBOARD_DATA__ = {serialized};\n", encoding="utf-8")
 
 
+def scenario_candidate_nodes(routes, segments, csv, reh_xml):
+    collection = candidate_node_collection(routes, segments)
+    inventory = [f for f in uam_selection_inventory(routes, segments) if f["properties"]["network"] == "UAM"]
+    sources = {"uam": source_record(csv) if csv and routes else None,
+               "reh": source_record(reh_xml) if reh_xml else None}
+    collection["properties"].update(sources=sources, uam_named_inventory_count=len(inventory),
+                                    uam_excluded_count=sum(not f["properties"]["capacity_eligible"] for f in inventory))
+    for feature in collection["features"]:
+        feature["properties"]["source"] = sources[feature["properties"]["network"].lower()]
+    return collection
+
+
 def copy_static_assets(output_dir: Path) -> None:
     source = Path("web")
     if not source.exists():
         raise FileNotFoundError("Static source folder not found: web")
+    output_dir.mkdir(parents=True, exist_ok=True)
 
     for item in source.iterdir():
+        if item.name == "calibration.html":
+            continue
         destination = output_dir / item.name
         if item.is_dir():
-            if destination.exists():
-                shutil.rmtree(destination)
-            shutil.copytree(item, destination)
+            # Preserve generated audit data, including offline calibration.
+            shutil.copytree(item, destination, dirs_exist_ok=True,
+                            ignore=shutil.ignore_patterns("baseline_calibration*"))
         else:
             shutil.copy2(item, destination)
+    (output_dir / "calibration.html").unlink(missing_ok=True)
 
 
 def slugify(value: str) -> str:
@@ -401,9 +423,7 @@ def comparison_payload(runs: list[dict[str, Any]], average: dict[str, Any]) -> d
     variant_order = {"c1": 0, "c2": 1, "disturbed_mvp": 2, "disturbed_off": 3, "nominal_mvp": 4, "nominal_off": 5}
     for rows in by_day.values():
         rows.sort(key=lambda row: variant_order.get(row["variant_key"], 99))
-        if rows[0].get("experiment_family") == "produto2":
-            risk_reference = next((row for row in rows if row["variant_key"] == "c1"), None)
-        else:
+        if rows[0].get("experiment_family") != "produto2":
             risk_reference = next(
                 (row for row in rows if row["mvp_enabled"] is False and row["disturbed"] is False),
                 None,
@@ -414,6 +434,9 @@ def comparison_payload(runs: list[dict[str, Any]], average: dict[str, Any]) -> d
             if row["mvp_enabled"] is False
         }
         for row in rows:
+            if row.get("experiment_family") == "produto2":
+                risk_reference = next((ref for ref in rows if ref["variant_key"] == row["reference_variant_key"]), None)
+            row["is_reference"] = risk_reference is row
             row["risk_ratio_vs_reference"] = _ratio_or_none(
                 row["expected_mac_per_100k_flight_hours"],
                 risk_reference["expected_mac_per_100k_flight_hours"] if risk_reference else None,
@@ -464,13 +487,16 @@ def analyze_log(log_path: Path, config: DashboardConfig, charts_dir: Path, run_i
     reh_network = load_reh_network(config.reh_xml_path) if config.reh_xml_path else None
     reh_segments = reh_network["segments"] if reh_network else []
     metadata = log_experiment_metadata(log_path, config.scenario_paths)
-    dedicated_uam_scenarios = {"C1", "C2", "C3", "C4", "C5", "C6"}
+    selected_csv = config.uam_corridor_csv_by_scenario.get(metadata.get("scenario_key"), config.uam_corridor_csv_path)
     uam_network = (
-        load_uam_corridor_network(config.uam_corridor_csv_path)
-        if config.uam_corridor_csv_path
-        and metadata.get("scenario_key") in dedicated_uam_scenarios
+        load_uam_corridor_network(selected_csv)
+        if selected_csv and (metadata.get("airspace") == "dedicated_uam" or metadata.get("scenario_key") == "C2")
         else None
     )
+    if uam_network and metadata.get("network_stage"):
+        expected_vertiports = {"1": 6, "2": 12}[metadata["network_stage"]]
+        if len(uam_network["vertiports"]) != expected_vertiports:
+            raise ValueError(f"Wrong corridor network for {metadata['scenario_key']}: {selected_csv}")
     efficiency["ground_delay"] = {
         "available": False,
         "reason": "requer horários solicitado (S_f) e autorizado/reprogramado (R_f)",
@@ -588,14 +614,16 @@ def analyze_log(log_path: Path, config: DashboardConfig, charts_dir: Path, run_i
         "metric_catalog": metric_catalog_payload(),
     }
 
+    grid = density_grid(df, config.heatmap_grid_degrees)
     if not render_charts:
-        return {"dashboard": dashboard}
+        return {"dashboard": dashboard, "density_grid": grid}
 
     return {
         "id": chart_prefix,
         "name": log_path.name,
         "metadata": metadata,
         "dashboard": dashboard,
+        "density_grid": grid,
         "tracks": tracks,
         "planned_routes": planned_routes,
         "official_reh": reh_network["geojson"] if reh_network else {
@@ -622,7 +650,7 @@ def build_dashboard(config: DashboardConfig) -> None:
                 f"{log_path} pertence a {metadata['day_label']}. "
                 "Esta fase publica somente réplicas de demanda P100."
             )
-        if re.fullmatch(r"C\d+", log_path.parent.name, re.IGNORECASE) and matching_scenario(log_path, config.scenario_paths) is None:
+        if re.fullmatch(r"C\d+(?:[._]\d+)*", log_path.parent.name, re.IGNORECASE) and matching_scenario(log_path, config.scenario_paths) is None:
             raise ValueError(
                 f"Não foi possível associar {log_path} a um único cenário SCN. "
                 "Confira a demanda P100, a réplica e --scenario-dir, "
@@ -631,8 +659,9 @@ def build_dashboard(config: DashboardConfig) -> None:
     print("Copying HTML/CSS/JS...")
     copy_static_assets(output_dir)
     write_candidate_node_assets(output_dir, config.uam_corridor_csv_path, config.reh_xml_path)
-    write_crossing_waypoint_asset(config.uam_corridor_csv_path, config.reh_xml_path, output_dir)
-    write_uam_projection_asset(config.uam_corridor_csv_path, output_dir)
+    if config.uam_corridor_csv_path:
+        write_crossing_waypoint_asset(config.uam_corridor_csv_path, config.reh_xml_path, output_dir)
+        write_uam_projection_asset(config.uam_corridor_csv_path, output_dir)
     write_metric_catalog_asset(output_dir)
 
     charts_dir = output_dir / "assets" / "charts"
@@ -641,9 +670,11 @@ def build_dashboard(config: DashboardConfig) -> None:
     data_dir.mkdir(parents=True, exist_ok=True)
 
     # Keep only per-replica metrics in memory. Geometry, timelines and charts
-    # are published from one representative replica per scenario, preventing
+    # are published from one representative replica per scenario. The heatmap
+    # merges every position sample from all replicas on a common grid, preventing
     # a 50-replica GitHub Pages bundle from duplicating large tracks 50 times.
     dashboards_by_group: dict[tuple[str, str, bool | None], list[tuple[int, dict[str, Any]]]] = {}
+    grids_by_group: dict[tuple, list] = {}
     representatives: dict[tuple[str, str, bool | None], dict[str, Any]] = {}
     group_order: list[tuple[str, str, bool | None]] = []
     tasks = []
@@ -661,6 +692,7 @@ def build_dashboard(config: DashboardConfig) -> None:
 
     def record_result(index: int, group_key: tuple[str, str, bool | None], representative: bool, run: dict[str, Any]) -> None:
         dashboards_by_group.setdefault(group_key, []).append((index, run["dashboard"]))
+        grids_by_group.setdefault(group_key, []).append(run.pop("density_grid"))
         if representative:
             representatives[group_key] = run
 
@@ -693,7 +725,36 @@ def build_dashboard(config: DashboardConfig) -> None:
             run["metadata"] = {**run["metadata"], "variant_label": f"{run['metadata']['variant_label']} · média de {count} réplicas"}
         run["replica_count"] = count
         run["representative_log"] = run["name"]
+        run["density"] = merge_density_grids(grids_by_group[group_key], config.heatmap_grid_degrees)
         runs.append(run)
+    # One intensity scale for all scenarios: replica count never amplifies color.
+    density_max = max((cell[2] for run in runs for cell in run["density"]["cells"]), default=1.) or 1.
+    geometry_cache = {}
+    reh_segments = load_reh_network(config.reh_xml_path)["segments"] if config.reh_xml_path else []
+    for run in runs:
+        run["heatmap"] = [[lat, lon, count / density_max] for lat, lon, count in run["density"].pop("cells")]
+        run["density"]["shared_scale_max_mean_records"] = density_max
+        code = run["metadata"].get("scenario_key")
+        csv = config.uam_corridor_csv_by_scenario.get(code, config.uam_corridor_csv_path)
+        dedicated = run["metadata"].get("airspace") == "dedicated_uam" or code == "C2"
+        if csv and dedicated:
+            if csv not in geometry_cache:
+                routes = load_uam_corridor_network(csv)["routes"]
+                geometry = uam_geometry(routes)
+                geometry["audit"]["source"] = source_record(csv)
+                nodes = scenario_candidate_nodes(routes, reh_segments, csv, config.reh_xml_path)
+                geometry_cache[csv] = (geometry, nodes)
+            geometry, nodes = geometry_cache[csv]
+            run["uam_projection"] = geometry["projection"]
+            run["uam_junctions"] = geometry["junctions"]
+            run["uam_centerlines"] = geometry["centerlines"]
+            run["uam_geometry_audit"] = geometry["audit"]
+            run["candidate_nodes"] = nodes
+        else:
+            run["uam_projection"] = {"type": "FeatureCollection", "features": []}
+            run["uam_junctions"] = {"type": "FeatureCollection", "features": []}
+            run["uam_centerlines"] = {"type": "FeatureCollection", "features": []}
+            run["candidate_nodes"] = scenario_candidate_nodes([], reh_segments, None, config.reh_xml_path)
     dashboard = average_dashboard([run["dashboard"] for run in runs])
     comparison = comparison_payload(runs, dashboard)
     primary = runs[0]
@@ -884,6 +945,7 @@ def main() -> None:
         data_dir=data_dir,
         reh_xml_path=reh_xml_path,
         uam_corridor_csv_path=uam_corridor_csv_path,
+        uam_corridor_csv_by_scenario=selection.uam_corridor_csv_by_scenario if selection else {},
         flight_instance_gap_seconds=args.flight_instance_gap_seconds,
         flight_instance_reset_distance_m=args.flight_instance_reset_distance_m,
         flight_instance_jump_m=args.flight_instance_jump_m,
