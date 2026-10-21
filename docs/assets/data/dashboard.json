@@ -82469,7 +82469,7 @@
         "nmac_events": 26
       }
     },
-    "sample_seconds": 1,
+    "sample_seconds": 1.0,
     "separation_samples": 761851.485,
     "lowc_per_100_operations": 41.92891355140187,
     "lowc_per_flight_hour": 4.962851939337992,
