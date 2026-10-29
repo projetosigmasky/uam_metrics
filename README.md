@@ -4,7 +4,7 @@ Dashboard estatico para analisar logs `STATELOG` do BlueSky em cenarios de corre
 
 Este repositorio vincula as metricas ao `Produto3_vfinal_ProjetoSIGMASky.pdf` (Produto 3, versao 2.0, 31/07/2026). A saida principal e a pasta `docs/`, pronta para GitHub Pages. O PDF local e ignorado pelo Git; o catalogo versionado registra suas paginas e equacoes.
 
-Contexto para novas iteracoes: [historico tecnico](ITERATION_LOG.md). Para o relatorio de referencias de 1/2 movimentos por waypoint/5 min: [figuras selecionadas, tabelas e ressalvas](reports/baseline_capacity_2026-10-20/README.md).
+Contexto para novas iteracoes: [historico tecnico](ITERATION_LOG.md). A [conclusão da recalibração da rodada de 27/10](reports/baseline_capacity_2026-10-29/CONCLUSAO.md) mantém o parâmetro do DCB por waypoint em **2 movimentos por recurso físico/300 s**, com máximos de P95 positivo de **2, 3, 2 e 3** para C1.1, C1.2, C2.1 e C2.2. Os resultados foram informados pelo usuário a partir do Lessonia; as evidências detalhadas da nova rodada ainda precisam ser sincronizadas e geradas. O [pacote de figuras, tabelas e ressalvas de 20/10](reports/baseline_capacity_2026-10-20/README.md) é histórico e não substitui as evidências da rodada nova.
 
 
 ## Seleção dos cenários nominais — 29/10/2026

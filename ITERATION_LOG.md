@@ -1,13 +1,13 @@
-# Histórico técnico e passagem de contexto — atualizado em 21/10/2026
+# Histórico técnico e passagem de contexto — atualizado em 29/10/2026
 
-Este arquivo registra as decisões e os resultados desta sequência de trabalho para orientar novas iterações com outras LLMs. Não substitui os dados nem o código. A base quantitativa é o snapshot publicado no commit `f30f4de` (`Publica calibracao dos quatro baselines`).
+Este arquivo registra as decisões e os resultados desta sequência de trabalho para orientar novas iterações com outras LLMs. Não substitui os dados nem o código. A base quantitativa histórica das seções anteriores é o snapshot publicado no commit `f30f4de` (`Publica calibracao dos quatro baselines`). A conclusão vigente do parâmetro do DCB por waypoint está no [registro da rodada de 27/10](reports/baseline_capacity_2026-10-29/CONCLUSAO.md), com base nos máximos informados pelo usuário após a recalibração no Lessonia.
 
 **Atualização:** a seção 11 registra as mudanças de 21/10/2026 e substitui as descrições anteriores da interface pública e da seleção C1/C2. A análise quantitativa de capacidade de 20/10 permanece preservada.
 
 ## Leitura inicial para a próxima iteração
 
-1. Ler este histórico e o [pacote de evidências para o relatório](reports/baseline_capacity_2026-10-20/README.md).
-2. Consultar `docs/assets/data/baseline_calibration/comparison.csv` e `calibration.json` antes de interpretar os gráficos.
+1. Ler este histórico, a [conclusão vigente da recalibração de 27/10](reports/baseline_capacity_2026-10-29/CONCLUSAO.md) e, como histórico, o [pacote de evidências de 20/10](reports/baseline_capacity_2026-10-20/README.md).
+2. Consultar `docs/assets/data/baseline_calibration/comparison.csv` e `calibration.json` antes de interpretar os gráficos, conferindo a RUN na proveniência: os arquivos deste clone ainda podem corresponder à rodada anterior.
 3. Distinguir três conceitos: **fluxo observado**, **capacidade configurada no algoritmo** e **capacidade operacional máxima demonstrada**.
 4. Não assumir que os valores 1 da calibração atual vieram de fallback. A auditoria desta iteração mostrou que vieram de P95 de janelas positivas com passagens observadas.
 5. Não atribuir uma capacidade única apenas pelo nome do waypoint. O identificador analítico é o recurso físico/pista/altitude; nomes iguais podem corresponder a recursos diferentes.
@@ -302,3 +302,15 @@ O reprocessamento real no Lessonia concluiu as 200 análises por réplica, mas f
 A média agregada é agora limitada aos próprios extremos observados para eliminar esse erro numérico. No desenho, distâncias aos extremos são verificadas com tolerância de 64 epsilons de máquina na escala dos valores e limitadas a zero apenas para diferenças de arredondamento; inconsistências materiais e valores não finitos continuam gerando erro explícito. Não foram alterados estimandos, classes, limiares de segurança, denominadores ou dados reais publicados.
 
 Validação: 15 testes do módulo de réplicas passaram, incluindo três regressões novas: renderização real dos seis PNGs com 50 réplicas idênticas e verificação de todos os yerr; arredondamento nos dois extremos; rejeição de intervalos inválidos/não finitos. Nenhuma execução no Lessonia ou push foi realizado nesta correção. Após sincronizar o código, repetir `generate_reports.py --config run_config.json --workers 25`; a análise não possui checkpoint dos resultados dos workers e precisa reler os 200 logs. “Completed 200/200” não confirma a geração final do dashboard ou a etapa posterior de ranking.
+
+## 29/10/2026 — Recalibração da rodada de 27/10 e manutenção do parâmetro
+
+O usuário informou a conclusão da recalibração no Lessonia, usando a RUN `20261027_145945_d5905919`, os JSONs do lote `nominal_36_20261027` e WPPASS nativos dos quatro baselines sem gestão. A extração do `calibration.json` verificou 50 réplicas por cenário, fonte nativa e estados `observed` ou `no_observed_use` antes de calcular os máximos de `300:positive`.
+
+Resultado informado, em movimentos por janela positiva de 300 s: **C1.1 = 2; C1.2 = 3; C2.1 = 2; C2.2 = 3**. Pela regra experimental de tomar o menor dos quatro máximos, mantém-se **2 movimentos por recurso físico/300 s** no DCB por waypoint. Não é necessário regenerar ou executar novamente C3.1.1, C3.1.2, C7.1.1 e C7.1.2 por alteração desse parâmetro.
+
+Os mesmos máximos não demonstram igualdade das distribuições, ICs ou estabilidade por recurso entre as rodadas. O parâmetro é referência empírica para a configuração do algoritmo, sem demonstração de capacidade operacional máxima ou segurança. A equipe informou que a rodada anterior foi descartada por fallback de aeronave B744; isso não é o piso numérico de uma operação discutido nas seções históricas.
+
+Foi criado o [registro de conclusão](reports/baseline_capacity_2026-10-29/CONCLUSAO.md), com tabela dos máximos, método, proveniência da informação, limites e texto para o relatório. O README principal aponta para essa conclusão e o pacote de 20/10 recebeu um aviso de histórico. Seus dados e figuras foram preservados.
+
+As evidências detalhadas da nova calibração ainda precisam ser sincronizadas do Lessonia. Na conferência local, o `calibration.json` ainda referencia a RUN de 15/10; ele não foi reidentificado como resultado de 27/10. A adequação do gerador de evidências (data fixa de 20/10 e pressupostos de exemplos nas classes 1/2) permanece pendente. Esta atualização alterou somente documentação, sem recalcular métricas, mudar parâmetros, iniciar simulações ou publicar arquivos remotos.

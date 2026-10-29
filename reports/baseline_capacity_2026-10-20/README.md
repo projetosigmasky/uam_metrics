@@ -1,5 +1,7 @@
 # Evidências para o relatório: referência de 1 ou 2 movimentos por waypoint
 
+**Pacote histórico da rodada de 15/10.** A conclusão vigente sobre o parâmetro do DCB por waypoint está no [registro da recalibração de 27/10](../baseline_capacity_2026-10-29/CONCLUSAO.md): mantêm-se 2 movimentos por recurso físico/300 s. As figuras e contagens abaixo foram preservadas como histórico; não devem ser apresentadas como resultados da rodada nova. Links abaixo que apontam para `docs/assets/data/baseline_calibration/` referenciam uma pasta atualizável: confira a proveniência e os hashes do snapshot antes de usá-los para reproduzir este relatório histórico.
+
 Snapshot de 20/10/2026. Dados reais do commit `f30f4de940b138d3c8ab97029c159fa74999a740`, obtidos de 50 réplicas nativas de cada baseline. Gráficos derivados dos resultados publicados, sem reprocessar logs nem alterar a calibração. O [histórico completo e contexto para outras LLMs](../../ITERATION_LOG.md) registra as decisões, comandos e incidentes.
 
 ## Resultado principal e ressalva sobre o fallback
