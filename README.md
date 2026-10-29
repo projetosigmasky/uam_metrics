@@ -628,3 +628,20 @@ git pull --ff-only
 ```
 
 `--baseline-manifest` executa a calibração independente e não substitui o reprocessamento completo. Esta implementação não faz push, publicação ou execução no Lessonia.
+
+
+## Hierarquia dos indicadores e revisão de rastreabilidade (29/10/2026)
+
+O Produto III final é a referência dos KPIs. Os cartões e gráficos diretamente associados a esses indicadores aparecem primeiro. A aba Capacidade apresenta throughput, capacidade prática P95 e utilização antes da análise de recursos e hotspots. Essa análise espacial permanece como apoio, conforme a seção 5.4 do Produto III.
+
+Cada aba termina com “Métricas auxiliares e cobertura dos dados”, fechado por padrão: registros (rotulados como observações válidas do STATELOG), aeronaves, pico simultâneo, duração, perfil de altitude, cadência, cobertura, amostras de separação, aderência espacial à REH e contagens geométricas. A estabilidade dos KPIs exclui essas séries e parâmetros; sua estabilidade e cobertura continuam disponíveis dentro do dropdown auxiliar. A classificação da estabilidade está em `web/assets/dashboard.js::isPrimaryStabilityMetric`; essa separação só afeta a apresentação.
+
+A tabela de rastreabilidade e `docs/MATRIZ_KPIS_PRODUTO_3.md` são produzidas pelo mesmo catálogo em `src/uam_dashboard/metric_catalog.py`. O estado descreve implementação no código, separado da disponibilidade dos dados de cada cenário. A revisão registrou que atraso no ar não recebe referência para a família produto2, GD não usa a função legada de atraso em solo, TD depende de componentes formais e DP/IQR do tempo de voo ainda não são calculados. A fórmula P95 da Eq. 3.16 foi preservada: o painel usa média dos P95 individuais, enquanto o ranking de waypoints usa P95 das janelas completas agrupadas. Essas diferenças e as limitações de recursos/janelas estão explícitas no catálogo.
+
+Para publicar as alterações de interface e de rastreabilidade sem reprocessar STATELOGs:
+
+```bash
+python prepare_publication.py
+```
+
+O comando atualiza `docs/index.html`, JS/CSS, catálogo e matriz; preserva os resultados numéricos, rankings e geometrias. A atualização de textos não homologa os parâmetros nem transforma indicadores indisponíveis em calculados.

@@ -35,7 +35,7 @@ from src.uam_dashboard.metrics import (
     total_delay_metrics,
     trajectory_conformity,
 )
-from src.uam_dashboard.metric_catalog import SOURCE_VERSION, metric_catalog_payload, write_metric_catalog_asset
+from src.uam_dashboard.metric_catalog import SOURCE_VERSION, metric_catalog_payload, write_metric_catalog_asset, write_metric_matrix
 from src.uam_dashboard.reh_parser import load_reh_network
 from src.uam_dashboard.run_config import load_run_selection
 from src.uam_dashboard.scenario_catalog import CATALOG
@@ -651,6 +651,7 @@ def build_dashboard(config: DashboardConfig) -> None:
         write_crossing_waypoint_asset(config.uam_corridor_csv_path, config.reh_xml_path, output_dir)
         write_uam_projection_asset(config.uam_corridor_csv_path, output_dir)
     write_metric_catalog_asset(output_dir)
+    write_metric_matrix(output_dir / "MATRIZ_KPIS_PRODUTO_3.md")
 
     charts_dir = output_dir / "assets" / "charts"
     data_dir = output_dir / "assets" / "data"

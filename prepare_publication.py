@@ -10,6 +10,7 @@ from pathlib import Path
 
 from src.uam_dashboard.publication import check_publication, repack_publication
 from src.uam_dashboard.scenario_catalog import CATALOG
+from src.uam_dashboard.metric_catalog import write_metric_catalog_asset, write_metric_matrix
 
 
 def main():
@@ -21,6 +22,8 @@ def main():
     # Refresh only the loader/UI, preserving generated rankings and geometry.
     for relative in ("index.html", "assets/dashboard.js", "assets/dashboard.css"):
         shutil.copy2(source / relative, args.output / relative)
+    write_metric_catalog_asset(args.output)
+    write_metric_matrix(args.output / "MATRIZ_KPIS_PRODUTO_3.md")
     (args.output / "assets/scenario_catalog.js").write_text(
         "window.__UAM_SCENARIO_CATALOG__ = " + json.dumps(CATALOG, ensure_ascii=False) + ";\n", encoding="utf-8")
     index = args.output / "index.html"

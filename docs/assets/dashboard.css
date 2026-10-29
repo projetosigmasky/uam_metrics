@@ -1091,7 +1091,11 @@ input[type="checkbox"] {
     width: 100%;
   }
 
-  .workspace,
+  .workspace {
+    height: auto;
+    min-height: 0;
+  }
+
   .map-stage {
     height: 520px;
     min-height: 520px;
@@ -1126,3 +1130,12 @@ input[type="checkbox"] {
 .stability-plot { width: 100%; max-width: 850px; height: auto; background: white; }
 .stability-metric { margin: 12px 0; padding: 12px; border: 1px solid #d5dde8; border-radius: 8px; }
 .analysis-method-note { margin: 24px; color: #4d5a6b; }
+
+/* Keep optional diagnostics visually subordinate and usable with the keyboard. */
+.metric-hierarchy-note { color: var(--muted); font-size: 14px; margin: 0; }
+.auxiliary-metrics { box-shadow: none; }
+.auxiliary-metrics > summary { color: var(--muted); }
+.auxiliary-metrics .metric { box-shadow: none; }
+.auxiliary-stability > summary { cursor: pointer; padding: 12px 0; font-weight: 600; }
+.auxiliary-stability > summary:focus-visible { outline: 2px solid var(--blue); outline-offset: 3px; }
+.resource-analysis > .metric-grid { margin-bottom: 18px; }

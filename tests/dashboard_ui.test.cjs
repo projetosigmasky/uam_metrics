@@ -123,7 +123,7 @@ assert.equal(current.elements.get('chart-active').hidden,true);
 assert.match(current.elements.get('viewer3d-status').textContent,/Sem trajetórias/);
 console.log('3D seek/play/reset-on-scenario and aggregate-version guards: OK');
 
-model.runs[3].stability.panels.safety={example:{status:'confirmed',valid_count:50,total_count:50,stable_from_n:30,confirmed_at_n:44,trace:Array.from({length:50},(_,i)=>({replicas:i+1,mean:10+i*.01,ci95:i>1?[9,11]:null,criterion_met:i>=29}))}};
+model.runs[3].stability.panels.safety={"safety.min_severity_ratio":{status:'confirmed',valid_count:50,total_count:50,stable_from_n:30,confirmed_at_n:44,trace:Array.from({length:50},(_,i)=>({replicas:i+1,mean:10+i*.01,ci95:i>1?[9,11]:null,criterion_met:i>=29}))}};
 vm.runInContext('state.activeRunIndex=3;renderSelectedRun()',current.c);
 const stabilityHtml=current.elements.get('stability-safety').innerHTML;
 assert.match(stabilityHtml,/Confirmação em 44 réplicas/);
@@ -131,6 +131,42 @@ assert.match(stabilityHtml,/a partir de 30 réplicas/);
 assert.match(stabilityHtml,/<svg/);
 assert(!/NaN|Infinity/.test(stabilityHtml));
 console.log('Stability SVG and distinct start/confirmation labels: OK');
+
+// A mixed real-format payload must keep diagnostics out of the KPI section,
+// retaining their values/plots, unavailable states, and replica coverage.
+const fixtureMetric=model.runs[3].stability.panels.safety['safety.min_severity_ratio'];
+model.runs[3].stability.panels.overview={
+  'summary.records':structuredClone(fixtureMetric),
+  'summary.aircraft_count':structuredClone(fixtureMetric),
+  'summary.peak_simultaneous_aircraft':structuredClone(fixtureMetric),
+  'summary.duration_min':structuredClone(fixtureMetric),
+  'safety.lowc_events':structuredClone(fixtureMetric),
+  'safety.lowc_horizontal_m':{status:'configuration_or_geometry_no_inference',trace:[],valid_count:50,total_count:50},
+  'efficiency.mean_flight_time_min':{status:'unavailable',trace:[],valid_count:0,total_count:50}
+};
+model.runs[3].stability.panels.efficiency={
+  'efficiency.trajectory_conformity.spatial_adherence_pct':structuredClone(fixtureMetric),
+  'efficiency.trajectory_conformity.mean_trajectory_conformity_ratio':structuredClone(fixtureMetric)
+};
+const beforeClassification=JSON.stringify(model.runs[3].stability);
+vm.runInContext('renderStability()',current.c);
+assert.equal(JSON.stringify(model.runs[3].stability),beforeClassification,'Presentation must not mutate estimates');
+const primaryOverview=current.elements.get('stability-overview').innerHTML;
+const auxiliaryOverview=current.elements.get('auxiliary-stability-overview').innerHTML;
+assert.match(primaryOverview,/Eventos LoWC/);
+assert.match(primaryOverview,/Indisponível; sem zeros imputados/);
+for (const label of ['Observações válidas do STATELOG','Aeronaves','Pico simultâneo','Duração','Limiar horizontal LoWC']) {
+  assert(!primaryOverview.includes(label),label+' must not be a primary KPI');
+  assert(auxiliaryOverview.includes(label),label+' must remain auditable');
+}
+assert(!primaryOverview.includes('Cobertura por réplica'));
+assert.match(auxiliaryOverview,/Cobertura por réplica/);
+assert.match(auxiliaryOverview,/Confirmação em 44 réplicas/);
+assert(!current.elements.get('stability-efficiency').innerHTML.includes('Aderência REH'));
+assert.match(current.elements.get('auxiliary-stability-efficiency').innerHTML,/Aderência REH/);
+assert.match(current.elements.get('stability-efficiency').innerHTML,/Distância adicional/);
+console.log('KPI/auxiliary routing: missing data, configuration, plots, coverage and immutable results: OK');
+
 
 // Every canonical combination must remain reachable through the five controls.
 const catalog=current.c.window.__UAM_SCENARIO_CATALOG__.scenarios.filter(row=>row.condition==='nominal');

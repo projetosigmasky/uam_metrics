@@ -297,7 +297,7 @@ function renderDashboard(model) {
   renderTraceability(source?.metrics || normalized.metric_catalog || normalized.dashboard.metric_catalog || []);
   const current = normalized.dashboard?.metric_catalog_version === source?.version;
   setText("metric-source-note", source
-    ? `${source.version} · ${source.document}. ${current ? "Resultados processados com este protocolo." : "O catálogo foi atualizado; os resultados de simulação publicados ainda requerem reprocessamento com este protocolo."}`
+    ? `${source.version} · ${source.document}.${source.reviewed_on ? ` Revisão do código: ${source.reviewed_on}.` : ""} ${current ? "Resultados processados com este protocolo." : "O catálogo foi atualizado; os resultados de simulação publicados ainda requerem reprocessamento com este protocolo."}`
     : "Referência do catálogo indisponível.");
   const protocolNote = document.getElementById("protocol-data-note");
   if (protocolNote) {
@@ -925,7 +925,6 @@ function renderDayComparison() {
           <td>${formatNumber(row.distance_nm, 1)} NM</td>
           <td>${formatSigned(row.distance_delta_vs_reference_nm, 2, " NM")}</td>
           <td>${formatOptionalPercent(row.trajectory_conformity_pct)}</td>
-          <td>${formatOptionalPercent(row.spatial_adherence_pct)}</td>
           <td>${formatNumber(row.lowc_events, 1)}</td>
           <td>${formatNumber(row.lowc_per_flight_hour, 2)}</td>
           <td>${formatNumber(row.expected_mac_per_100k_flight_hours, 3)}</td>
@@ -944,7 +943,7 @@ function renderMetrics(dashboard) {
   const safety = dashboard.safety;
 
   setText("metric-aircraft", formatNumber(summary.aircraft_count));
-  setText("metric-records", `${formatNumber(summary.records)} registros`);
+  setText("metric-records", `${formatNumber(summary.records)} observações válidas do STATELOG`);
   setText("metric-peak", formatNumber(summary.peak_simultaneous_aircraft));
   setText("metric-duration", `${formatNumber(summary.duration_min, 1)} min`);
   setText("metric-flight-time", formatNumber(efficiency.mean_flight_time_min, 1));
@@ -1043,25 +1042,57 @@ function stabilitySvg(metric) {
 
 const stabilityLabels = {
   "safety.lowc_horizontal_m":"Limiar horizontal LoWC (m)", "safety.lowc_vertical_m":"Limiar vertical LoWC (m)", "safety.nmac_horizontal_m":"Limiar horizontal NMAC (m)", "safety.nmac_vertical_m":"Limiar vertical NMAC (m)", "capacity.complexity.uam_corridor_count":"Corredores UAM", "capacity.complexity.reh_segment_count":"Trechos REH",
-  "summary.aircraft_count":"Aeronaves", "summary.records":"Registros", "summary.peak_simultaneous_aircraft":"Pico simultâneo", "summary.duration_min":"Duração (min)",
+  "summary.aircraft_count":"Aeronaves", "summary.records":"Observações válidas do STATELOG", "summary.peak_simultaneous_aircraft":"Pico simultâneo", "summary.duration_min":"Duração (min)",
   "efficiency.mean_flight_time_min":"Tempo de voo (min)", "efficiency.mean_distance_nm":"Distância (NM)", "safety.lowc_events":"Eventos LoWC", "safety.nmac_events":"Eventos NMAC", "safety.lowc_per_flight_hour":"LoWC/h", "safety.expected_mac_per_100k_flight_hours":"MAC esperado/100 mil h", "safety.min_severity_ratio":"Severidade mínima (réplicas com eventos)", "safety.tls_margin":"Margem TLS (transformação da taxa média)", "safety.total_time_below_threshold_s":"Exposição abaixo do limiar (s)", "safety.sample_seconds":"Cadência LoWC (s)",
   "efficiency.mean_horizontal_inefficiency_pct":"Ineficiência horizontal (%)", "efficiency.trajectory_conformity.mean_trajectory_conformity_ratio":"Distância adicional/plano (razão)", "efficiency.trajectory_conformity.spatial_adherence_pct":"Aderência REH (%)", "efficiency.ground_delay.mean_ground_delay_s":"Atraso em solo (s)", "efficiency.airborne_delay.mean_airborne_delay_s":"Atraso no ar (s)", "efficiency.total_delay.mean_total_delay_s":"Atraso total (s)", "capacity.density.air_traffic_density_per_km2":"Densidade ATD (aeronaves/km²)", "capacity.density.hotspot_density_per_km2":"Hotspot ATD (aeronaves/km²)", "capacity.density.corridor_area_km2":"Área REH (km²)", "capacity.complexity.planned_route_count":"Rotas planejadas", "capacity.complexity.trajectory_group_count":"Grupos de trajetória", "capacity.complexity.repeated_trajectory_group_count":"Grupos recorrentes", "capacity.complexity.lowc_event_count":"Eventos LoWC"
 };
 
+// Presentation only: keep original estimates, bootstrap traces and exports intact.
+// KPI source: Produto III final, chapter 3. Diagnostics and configuration are auxiliary.
+const primaryStabilityMetrics = new Set([
+  "efficiency.mean_flight_time_min", "efficiency.mean_distance_nm",
+  "safety.lowc_events", "safety.nmac_events", "safety.lowc_per_flight_hour",
+  "safety.expected_mac_per_100k_flight_hours", "safety.min_severity_ratio",
+  "safety.tls_margin", "safety.total_time_below_threshold_s",
+  "efficiency.mean_horizontal_inefficiency_pct",
+  "efficiency.trajectory_conformity.mean_trajectory_conformity_ratio",
+  "efficiency.ground_delay.mean_ground_delay_s", "efficiency.airborne_delay.mean_airborne_delay_s",
+  "efficiency.total_delay.mean_total_delay_s"
+]);
+
+function isPrimaryStabilityMetric(key) {
+  return primaryStabilityMetrics.has(key) || /^(od_pairs|trajectory_groups|planned_reh) · /.test(key);
+}
+
+function stabilityMetricHtml([key, m]) {
+  const status = m.status==="confirmed" ? `Estabilidade confirmada: trecho a partir de ${m.stable_from_n} réplicas; confirmação obtida em ${m.confirmed_at_n}.` : m.status==="unavailable" ? "Indisponível; sem zeros imputados." : m.status==="configuration_or_geometry_no_inference" ? "Configuração/geometria: inferência estatística não se aplica." : m.status==="constant_observed_no_inference" ? `Valores constantes observados; estabilidade inferencial não confirmada com ${m.total_count} réplicas.` : `Estabilidade não confirmada com ${m.total_count} réplicas.`;
+  return `<details class="stability-metric"><summary>${escapeHtml(stabilityLabels[key] || key)} · ${m.valid_count}/${m.total_count} válidas</summary><p>${status}${m.first_confirmed_at_n != null && m.status!=="confirmed" ? ` Houve confirmação anterior em ${m.first_confirmed_at_n}, sem manutenção no final.` : ""}</p>${stabilitySvg(m)}</details>`;
+}
+
 function renderStability() {
-  for (const panel of ["overview","safety","efficiency","capacity"]) {
-    const container = document.getElementById(`stability-${panel}`);
-    container.innerHTML = `<p>Média acumulada das estimativas por réplica. IC percentil bootstrap de 95%: 1.000 reamostragens de réplicas, seed 1729. Mínimo 30 válidas; desvio máximo dos extremos do IC à média ≤5% da média, tolerância absoluta zero; confirmação por 15 prefixos consecutivos. Pontos verdes: critério atendido. Ausência quebra confirmação. Constantes e zeros observados são descritivos, sem inferência de estabilidade. Não é garantia de capacidade máxima nem de segurança operacional.</p>` + state.runs.map(run=>{
-      const data=run.stability;
-      if(run.analysis_schema_version!==1 || data?.schema_version!==1) return `<h3>${escapeHtml(run.metadata?.scenario_key || run.name)}</h3><p>Indisponível: valores individuais não preservados neste pacote. Reprocessar os STATELOGs.</p>`;
+  for (const panel of ["overview", "safety", "efficiency", "capacity"]) {
+    const primary = [], auxiliary = [];
+    for (const run of state.runs) {
+      const title = `<h3>${escapeHtml(run.metadata?.scenario_key || run.name)}</h3>`;
+      const data = run.stability;
+      if (run.analysis_schema_version !== 1 || data?.schema_version !== 1) {
+        const missing = `${title}<p>Indisponível: valores individuais não preservados neste pacote. Reprocessar os STATELOGs.</p>`;
+        primary.push(missing);
+        auxiliary.push(missing);
+        continue;
+      }
       const coverage = run.aggregate_analysis.coverage;
-      const cadence = coverage.map(c=>c.median_cadence_s).filter(v=>v!=null);
-      const coverageTable = `<details><summary>Cobertura por réplica: tempo, cadência, registros e pareamento</summary><div class="table-wrap"><table class="comparison-table"><thead><tr><th>Índice / arquivo</th><th>Início–fim (s)</th><th>Timestamps</th><th>Cadência mediana (s)</th><th>Registros</th><th>Voos pareados / total</th></tr></thead><tbody>${coverage.map((c,i)=>`<tr><td title="${escapeHtml(data.replicas[i].file)}">r${String(data.replicas[i].index).padStart(3,"0")}</td><td>${c.start_s}–${c.end_s}</td><td>${c.observed_timestamps}</td><td>${c.median_cadence_s ?? "—"}</td><td>${c.position_records}</td><td>${c.matched_flights}/${c.flight_instances}</td></tr>`).join("")}</tbody></table></div></details>`;
-      return `<h3>${escapeHtml(run.metadata?.scenario_key || run.name)}</h3><p>${run.replica_count} réplicas; cadência mediana por réplica: ${cadence.length?`${Math.min(...cadence)}–${Math.max(...cadence)} s`:"indisponível"}.</p>${coverageTable}` + Object.entries(data.panels[panel]).map(([key,m])=>{
-        const status = m.status==="confirmed" ? `Estabilidade confirmada: trecho a partir de ${m.stable_from_n} réplicas; confirmação obtida em ${m.confirmed_at_n}.` : m.status==="unavailable" ? "Indisponível; sem zeros imputados." : m.status==="configuration_or_geometry_no_inference" ? "Configuração/geometria: inferência estatística não se aplica." : m.status==="constant_observed_no_inference" ? `Valores constantes observados; estabilidade inferencial não confirmada com ${m.total_count} réplicas.` : `Estabilidade não confirmada com ${m.total_count} réplicas.`;
-        return `<details class="stability-metric"><summary>${escapeHtml(stabilityLabels[key] || key)} · ${m.valid_count}/${m.total_count} válidas</summary><p>${status}${m.first_confirmed_at_n != null && m.status!=="confirmed" ? ` Houve confirmação anterior em ${m.first_confirmed_at_n}, sem manutenção no final.` : ""}</p>${stabilitySvg(m)}</details>`;
-      }).join("");
-    }).join("");
+      const cadence = coverage.map(c => c.median_cadence_s).filter(v => v != null);
+      const coverageTable = `<details><summary>Cobertura por réplica: tempo, cadência, registros e pareamento</summary><div class="table-wrap"><table class="comparison-table"><thead><tr><th>Índice / arquivo</th><th>Início–fim (s)</th><th>Timestamps</th><th>Cadência mediana (s)</th><th>Observações válidas do STATELOG</th><th>Voos pareados / total</th></tr></thead><tbody>${coverage.map((c,i)=>`<tr><td title="${escapeHtml(data.replicas[i].file)}">r${String(data.replicas[i].index).padStart(3,"0")}</td><td>${c.start_s}–${c.end_s}</td><td>${c.observed_timestamps}</td><td>${c.median_cadence_s ?? "—"}</td><td>${c.position_records}</td><td>${c.matched_flights}/${c.flight_instances}</td></tr>`).join("")}</tbody></table></div></details>`;
+      const entries = Object.entries(data.panels[panel]);
+      const kpis = entries.filter(([key]) => isPrimaryStabilityMetric(key));
+      const diagnostics = entries.filter(([key]) => !isPrimaryStabilityMetric(key));
+      primary.push(title + (kpis.length ? kpis.map(stabilityMetricHtml).join("") : "<p>Sem séries individuais de KPIs disponíveis nesta aba.</p>"));
+      auxiliary.push(title + `<p>${run.replica_count} réplicas; cadência mediana por réplica: ${cadence.length ? `${Math.min(...cadence)}–${Math.max(...cadence)} s` : "indisponível"}.</p>` + coverageTable + diagnostics.map(stabilityMetricHtml).join(""));
+    }
+    const method = `<p>Média acumulada das estimativas por réplica. IC percentil bootstrap de 95%: 1.000 reamostragens de réplicas, seed 1729. Mínimo 30 válidas; desvio máximo dos extremos do IC à média ≤5% da média, tolerância absoluta zero; confirmação por 15 prefixos consecutivos. Pontos verdes: critério atendido. Ausência quebra confirmação. Constantes e zeros observados são descritivos, sem inferência de estabilidade. Não é garantia de capacidade máxima nem de segurança operacional.</p>`;
+    document.getElementById(`stability-${panel}`).innerHTML = method + primary.join("");
+    document.getElementById(`auxiliary-stability-${panel}`).innerHTML = method + auxiliary.join("");
   }
 }
 

@@ -10,7 +10,7 @@
       integrity="sha256-p4NxAoJBhIINfQd+g9FQXHyzyTAFi+lyLwN2Bja9fM="
       crossorigin=""
     />
-    <link rel="stylesheet" href="assets/dashboard.css?v=replicas-v1" />
+    <link rel="stylesheet" href="assets/dashboard.css?v=metric-hierarchy-v1" />
   </head>
   <body>
     <header class="topbar">
@@ -45,17 +45,8 @@
     <button id="scenario-load-retry" class="panel-button" type="button" hidden>Tentar carregar novamente</button>
     <main id="dashboard-content">
       <p id="replica-universe" class="protocol-note"></p>
+      <p class="metric-hierarchy-note">KPIs de avaliação em destaque · Recursos e hotspots na aba Capacidade · Informações técnicas em “Métricas auxiliares e cobertura dos dados”.</p>
       <section class="metric-grid" data-kpa-panel="overview" aria-label="Indicadores principais">
-        <article class="metric">
-          <span>Aeronaves</span>
-          <strong id="metric-aircraft">-</strong>
-          <small id="metric-records">- registros</small>
-        </article>
-        <article class="metric">
-          <span>Pico simultaneo</span>
-          <strong id="metric-peak">-</strong>
-          <small id="metric-duration">- min</small>
-        </article>
         <article class="metric">
           <span>Tempo medio</span>
           <strong id="metric-flight-time">-</strong>
@@ -109,11 +100,6 @@
           <strong id="kpa-time-below">-</strong>
           <small>segundos, media por replica</small>
         </article>
-        <article class="metric danger">
-          <span>Amostragem LoWC</span>
-          <strong id="kpa-safety-sample">-</strong>
-          <small>intervalo em segundos</small>
-        </article>
       </section>
 
       <section class="metric-grid" data-kpa-panel="efficiency" aria-label="Indicadores de eficiencia" hidden>
@@ -126,11 +112,6 @@
           <span>Conformidade por distancia</span>
           <strong id="kpa-conformity">-</strong>
           <small>distancia adicional em relacao ao plano</small>
-        </article>
-        <article class="metric">
-          <span>Aderencia espacial a REH</span>
-          <strong id="kpa-spatial-adherence">-</strong>
-          <small>percentual dentro dos corredores</small>
         </article>
         <article class="metric">
           <span>Atraso medio em solo</span>
@@ -149,28 +130,6 @@
         </article>
       </section>
 
-      <section class="metric-grid" data-kpa-panel="capacity" aria-label="Indicadores de capacidade e diagnosticos espaciais" hidden>
-        <article class="metric">
-          <span>Densidade ATD</span>
-          <strong id="capacity-atd">-</strong>
-          <small>aeronaves / km²</small>
-        </article>
-        <article class="metric">
-          <span>Hotspot ATD</span>
-          <strong id="capacity-hotspot">-</strong>
-          <small>aeronaves / km²</small>
-        </article>
-        <article class="metric">
-          <span>Area REH</span>
-          <strong id="capacity-area">-</strong>
-          <small>km² de corredor</small>
-        </article>
-        <article class="metric">
-          <span>Waypoints UAM × REH</span>
-          <strong id="capacity-crossings">-</strong>
-          <small>interseções geométricas 3D candidatas</small>
-        </article>
-      </section>
 
       <section data-kpa-panel="overview" class="workspace">
         <aside class="side-panel">
@@ -210,22 +169,6 @@
         </section>
       </section>
 
-      <section data-kpa-panel="overview" class="chart-section context-section" aria-label="Graficos de contexto operacional">
-        <div class="section-heading">
-          <p class="eyebrow">Contexto operacional</p>
-          <h2>Demanda simultanea e perfil de altitude</h2>
-        </div>
-        <div class="charts">
-        <article class="chart-card">
-          <h2>Aeronaves simultaneas</h2>
-          <img id="chart-active" alt="Serie temporal de aeronaves simultaneas" />
-        </article>
-        <article class="chart-card">
-          <h2>Altitude</h2>
-          <img id="chart-altitude" alt="Histograma de altitude" />
-        </article>
-        </div>
-      </section>
 
       <details class="kpa-details" data-kpa-panel="overview">
         <summary>
@@ -255,7 +198,6 @@
                     <th>Distancia</th>
                     <th>Δ distancia vs referencia</th>
                     <th>Conformidade TC</th>
-                    <th>Aderencia REH</th>
                     <th>LoWC</th>
                     <th>LoWC/h</th>
                     <th>MAC/100k h</th>
@@ -275,6 +217,8 @@
               <p class="eyebrow">Rastreabilidade</p>
               <h2>O que esta implementado e o que ainda precisa melhorar</h2>
               <p id="metric-source-note">Carregando referência do Produto 3.</p>
+              <p>Os estados abaixo descrevem o código implementado. A disponibilidade depende dos dados de cada cenário. Esta revisão não reprocessa resultados de simulação.</p>
+              <a href="MATRIZ_KPIS_PRODUTO_3.md" download>Baixar matriz de rastreabilidade</a>
             </div>
             <div class="table-wrap">
               <table class="comparison-table traceability-table">
@@ -284,7 +228,7 @@
                     <th>Formula</th>
                     <th>PDF</th>
                     <th>Codigo</th>
-                    <th>Status</th>
+                    <th>Estado no código</th>
                     <th>Dados necessarios</th>
                     <th>Implementado hoje</th>
                     <th>Melhorias e pendencias</th>
@@ -388,13 +332,9 @@
       <section data-kpa-panel="safety" hidden class="chart-section safety-section" aria-label="Graficos de seguranca">
         <div class="section-heading">
           <p class="eyebrow">Seguranca</p>
-          <h2>Separacao, LoWC e severidade</h2>
+          <h2>Severidade dos eventos LoWC</h2>
         </div>
         <div class="charts">
-        <article class="chart-card">
-          <h2>Separacao horizontal</h2>
-          <img id="chart-separation" alt="Histograma de separacao horizontal" />
-        </article>
         <article class="chart-card">
           <h2>Severidade LoWC 3D</h2>
           <img id="chart-severity" alt="Histograma de severidade LoWC" />
@@ -420,18 +360,11 @@
       </section>
 
 
-      <details class="kpa-details" data-kpa-panel="capacity" hidden>
-        <summary>
-          <span>Capacidade</span>
-          <span class="details-show">Ver detalhes</span>
-          <span class="details-hide">Ocultar detalhes</span>
-        </summary>
-        <div class="kpa-details-content">
-          <section class="chart-section capacity-section" aria-label="Metricas de capacidade">
+          <section data-kpa-panel="capacity" hidden class="chart-section capacity-section" aria-label="Metricas de capacidade">
             <div class="section-heading">
               <p class="eyebrow">Capacidade</p>
               <h2>Throughput, capacidade prática e utilização</h2>
-              <p>Densidade, hotspots e cruzamentos são diagnósticos espaciais complementares.</p>
+              <p>Indicadores de avaliação definidos no Produto III. A disponibilidade depende dos dados de cada cenário.</p>
             </div>
             <div class="table-wrap">
               <table class="comparison-table capacity-table">
@@ -448,7 +381,25 @@
                 <tbody id="capacity-table-body"></tbody>
               </table>
             </div>
-            <div id="capacity-complexity" class="comparison-summary">-</div>
+          </section>
+      <section data-kpa-panel="capacity" hidden class="chart-section resource-analysis" aria-label="Análise de recursos e hotspots">
+        <div class="section-heading">
+          <p class="eyebrow">Diagnósticos espaciais · Produto III, seção 5.4</p>
+          <h2>Recursos da rede e hotspots</h2>
+          <p>Concentração de tráfego e demanda observada apoiam a identificação de recursos para a gestão do tráfego. Junções geométricas são candidatas, sem capacidade atribuída apenas pela geometria.</p>
+        </div>
+      <section class="metric-grid" aria-label="Concentração de tráfego e hotspots">
+        <article class="metric">
+          <span>Densidade ATD</span>
+          <strong id="capacity-atd">-</strong>
+          <small>aeronaves / km²</small>
+        </article>
+        <article class="metric">
+          <span>Hotspot ATD</span>
+          <strong id="capacity-hotspot">-</strong>
+          <small>aeronaves / km²</small>
+        </article>
+      </section>
             <div class="section-heading">
               <p class="eyebrow">Waypoints explicitamente nomeados</p>
               <h3>Junções UAM referenciadas pela REH</h3>
@@ -474,8 +425,6 @@
               </table>
             </div>
           </section>
-        </div>
-      </details>
       <details class="kpa-details" data-kpa-panel="overview" >
         <summary>Estabilidade dos KPIs entre réplicas</summary>
         <div class="kpa-details-content" id="stability-overview"></div>
@@ -491,6 +440,105 @@
       <details class="kpa-details" data-kpa-panel="capacity" hidden>
         <summary>Estabilidade dos KPIs entre réplicas</summary>
         <div class="kpa-details-content" id="stability-capacity"></div>
+      </details>
+      <details class="kpa-details auxiliary-metrics" data-kpa-panel="overview" id="auxiliary-overview">
+        <summary>Métricas auxiliares e cobertura dos dados</summary>
+        <div class="kpa-details-content">
+          <p>Informações de apoio à interpretação e à auditoria. Não integram o conjunto de KPIs de avaliação do Produto III.</p>
+          <div class="metric-grid">        <article class="metric">
+          <span>Aeronaves</span>
+          <strong id="metric-aircraft">-</strong>
+          <small id="metric-records">- observações válidas do STATELOG</small>
+        </article>
+        <article class="metric">
+          <span>Pico simultaneo</span>
+          <strong id="metric-peak">-</strong>
+          <small id="metric-duration">- min</small>
+        </article>
+</div>
+                <section class="chart-section context-section" aria-label="Graficos de contexto operacional">
+        <div class="section-heading">
+          <p class="eyebrow">Contexto operacional</p>
+          <h2>Demanda simultanea e perfil de altitude</h2>
+        </div>
+        <div class="charts">
+        <article class="chart-card">
+          <h2>Aeronaves simultaneas</h2>
+          <img id="chart-active" alt="Serie temporal de aeronaves simultaneas" />
+        </article>
+        <article class="chart-card">
+          <h2>Altitude</h2>
+          <img id="chart-altitude" alt="Histograma de altitude" />
+        </article>
+        </div>
+      </section>
+
+          <details class="auxiliary-stability">
+            <summary>Estabilidade dos indicadores auxiliares e cobertura por réplica</summary>
+            <div id="auxiliary-stability-overview"></div>
+          </details>
+        </div>
+      </details>
+      <details class="kpa-details auxiliary-metrics" data-kpa-panel="safety" id="auxiliary-safety" hidden>
+        <summary>Métricas auxiliares e cobertura dos dados</summary>
+        <div class="kpa-details-content">
+          <p>Informações de apoio à interpretação e à auditoria. Não integram o conjunto de KPIs de avaliação do Produto III.</p>
+          <div class="metric-grid">        <article class="metric danger">
+          <span>Amostragem LoWC</span>
+          <strong id="kpa-safety-sample">-</strong>
+          <small>intervalo em segundos</small>
+        </article>
+</div>
+          <div class="charts">        <article class="chart-card">
+          <h2>Separacao horizontal</h2>
+          <img id="chart-separation" alt="Histograma de separacao horizontal" />
+        </article>
+</div>
+          <details class="auxiliary-stability">
+            <summary>Estabilidade dos indicadores auxiliares e cobertura por réplica</summary>
+            <div id="auxiliary-stability-safety"></div>
+          </details>
+        </div>
+      </details>
+      <details class="kpa-details auxiliary-metrics" data-kpa-panel="efficiency" id="auxiliary-efficiency" hidden>
+        <summary>Métricas auxiliares e cobertura dos dados</summary>
+        <div class="kpa-details-content">
+          <p>Informações de apoio à interpretação e à auditoria. Não integram o conjunto de KPIs de avaliação do Produto III.</p>
+          <div class="metric-grid">        <article class="metric">
+          <span>Aderencia espacial a REH</span>
+          <strong id="kpa-spatial-adherence">-</strong>
+          <small>percentual dentro dos corredores</small>
+        </article>
+</div>
+
+          <details class="auxiliary-stability">
+            <summary>Estabilidade dos indicadores auxiliares e cobertura por réplica</summary>
+            <div id="auxiliary-stability-efficiency"></div>
+          </details>
+        </div>
+      </details>
+      <details class="kpa-details auxiliary-metrics" data-kpa-panel="capacity" id="auxiliary-capacity" hidden>
+        <summary>Métricas auxiliares e cobertura dos dados</summary>
+        <div class="kpa-details-content">
+          <p>Informações de apoio à interpretação e à auditoria. Não integram o conjunto de KPIs de avaliação do Produto III.</p>
+          <div class="metric-grid">        <article class="metric">
+          <span>Area REH</span>
+          <strong id="capacity-area">-</strong>
+          <small>km² de corredor</small>
+        </article>
+        <article class="metric">
+          <span>Waypoints UAM × REH</span>
+          <strong id="capacity-crossings">-</strong>
+          <small>interseções geométricas 3D candidatas</small>
+        </article>
+</div>
+                      <div id="capacity-complexity" class="comparison-summary">-</div>
+
+          <details class="auxiliary-stability">
+            <summary>Estabilidade dos indicadores auxiliares e cobertura por réplica</summary>
+            <div id="auxiliary-stability-capacity"></div>
+          </details>
+        </div>
       </details>
       <details class="analysis-method-note"><summary>Método dos gráficos agregados</summary><p>Classes fixas comuns entre cenários; peso igual por réplica válida. Faixa azul: mínimo–máximo entre réplicas, não IC. Séries: tempo exato da simulação, sem interpolação nem zeros para instantes sem observação. Altitude: média das contagens de registros por classe de 25 m, sem correção de cadência/duração; cobertura no detalhamento. Separação: percentuais das amostras de pares abaixo de 5 km; severidade: contagem de eventos LoWC, incluindo NMAC. Distância por instância de voo; distância adicional: somente voos com pareamento válido.</p></details>
     </main>
@@ -508,6 +556,6 @@
     <script src="assets/waypoint_rankings.js?v=b41c228c891b"></script>
     <script src="assets/metric_catalog.js?v=cf897343f15b"></script>
     <script src="assets/scenario_catalog.js?v=catalog-v1"></script>
-    <script src="assets/dashboard.js?v=scenario-filters-v1"></script>
+    <script src="assets/dashboard.js?v=metric-hierarchy-v1"></script>
   </body>
 </html>
