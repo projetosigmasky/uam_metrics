@@ -319,7 +319,9 @@ def main() -> int:
         write_candidate_node_assets(args.dashboard_assets.parent,args.uam_csv,args.reh_xml)
     metadata={'method_version':'reh-uam-junctions-v3','status':'recomputed' if logs else 'geometry_only_raw_logs_unavailable',
         'sources':sources,'topology_selection':'C2 SCN interior positions validated within 2m of selected corridor centerlines' if selection else 'explicit caller selection; SCN association unverified',
-        'source_run':selection.run_dir.name if selection else None,'retired_legacy_run':retired_run,'vertiports':uam['vertiports'],'route_count':uam['route_count'],
+        'source_run':selection.run_dir.name if selection and not selection.source_runs else None,
+        'source_runs':selection.source_runs if selection else {},
+        'retired_legacy_run':retired_run,'vertiports':uam['vertiports'],'route_count':uam['route_count'],
         'scenario_codes':scenario_codes,'resource_count_by_scenario':{code:len(features_by_scenario[code]) for code in scenario_codes},
         'resource_count':len(features),'reh_selection_rule':'original degree >=3 distinct undirected neighbors; endpoint topology rounded to 6 decimals','uam_selection_rule':'named Waypoint; >=3 exact distinct physical edges; nonterminal use; exact/explicit alias REH name within 500m','named_position_counts':{net:sum(f['properties']['network']==net for f in features) for net in ('UAM','REH')},
         'capture_radius_m':args.capture_radius_m,'window_seconds':args.window_seconds,

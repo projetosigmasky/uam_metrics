@@ -10,7 +10,7 @@
       integrity="sha256-p4NxAoJBhIINfQd+g9FQXHyzyTAFi+lyLwN2Bja9fM="
       crossorigin=""
     />
-    <link rel="stylesheet" href="assets/dashboard.css?v=f232c8566384" />
+    <link rel="stylesheet" href="assets/dashboard.css?v=d9ab8d7176ec" />
   </head>
   <body>
     <header class="topbar">
@@ -19,14 +19,17 @@
         <h1>KPI/KPA Dashboard</h1>
       </div>
       <div class="topbar-controls">
-        <label>
+        <label id="day-filter">
           <span>Grupo de cenários</span>
           <select id="day-select"></select>
         </label>
-        <label>
-          <span>Cenario no mapa</span>
-          <select id="run-select"></select>
-        </label>
+        <label><span>Tipo de corredor</span><select id="corridor-select"></select></label>
+        <label><span>Tipo de desconflito</span><select id="management-select"></select></label>
+        <label><span>Condição operacional</span><select id="condition-select"></select></label>
+        <label><span>Quantidade de vertiportos</span><select id="vertiports-select"></select></label>
+        <label><span>Tempo de separação</span><select id="separation-select"></select></label>
+        <label id="legacy-run-filter" hidden><span>Cenário no mapa</span><select id="run-select"></select></label>
+        <p id="scenario-selection" class="scenario-selection" role="status" aria-live="polite"></p>
       </div>
     </header>
     <p id="protocol-data-note" class="protocol-note" hidden></p>
@@ -496,12 +499,13 @@
       crossorigin=""
     ></script>
     <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
-    <script src="assets/data_bundle.js?v=708e6ae4863b"></script>
-    <script src="assets/candidate_nodes.js?v=aac1139d1528"></script>
-    <script src="assets/crossing_waypoints_3d.js?v=93f03711898c"></script>
-    <script src="assets/uam_projection.js?v=ce626c9a828a"></script>
-    <script src="assets/waypoint_rankings.js?v=9af65576ea09"></script>
+    <script src="assets/data_bundle.js?v=50a9d7d6de2d"></script>
+    <script src="assets/candidate_nodes.js?v=e7dfbd1f0bb8"></script>
+    <script src="assets/crossing_waypoints_3d.js?v=fa02b66376ba"></script>
+    <script src="assets/uam_projection.js?v=b6b079381b35"></script>
+    <script src="assets/waypoint_rankings.js?v=df01413af211"></script>
     <script src="assets/metric_catalog.js?v=cf897343f15b"></script>
-    <script src="assets/dashboard.js?v=e7917386086c"></script>
+    <script src="assets/scenario_catalog.js?v=8b58efbd9cb1"></script>
+    <script src="assets/dashboard.js?v=da5f6f31704f"></script>
   </body>
 </html>

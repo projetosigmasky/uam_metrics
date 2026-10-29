@@ -40,6 +40,7 @@ function context(model) {
   const L = {geoJSON(data) {seen.push(data);return layer();}, layerGroup: layer, heatLayer: layer,
     circleMarker:layer, latLngBounds() {return {extend(){return this;},isValid(){return true;},pad(){return this;}};}};
   const window = {__UAM_DASHBOARD_DATA__: model, L, setTimeout(fn){fn();}};
+  vm.runInNewContext(fs.readFileSync(path.join(root, 'docs/assets/scenario_catalog.js'), 'utf8'), {window});
   const frames=new Map();let frame=0;
   const c = vm.createContext({document,window,L,console,requestAnimationFrame(fn){if(fn.name!=="animate3D"){fn();return 0;}frames.set(++frame,fn);return frame;},cancelAnimationFrame(id){frames.delete(id);}});
   vm.runInContext(script,c);
@@ -57,6 +58,9 @@ assert.equal(pending.elements.get('metric-aircraft').textContent,'');
 // Synthetic UI fixture only: no relabeling or rewriting of published results.
 const model=structuredClone(actual.__UAM_DASHBOARD_DATA__);
 const template=model.runs[0];
+// Explicit legacy fixture even after the published bundle has been reprocessed.
+template.analysis_schema_version=0;
+template.dashboard.chart_aggregation_version=0;
 model.runs=['C1.1','C1.2','C2.1','C2.2'].map(code => ({...structuredClone(template),
   metadata:{scenario_key:code,day_key:'produto2_p100',variant_label:code},
   density:{replica_count:50,position_sample_count:150},
@@ -119,3 +123,28 @@ assert.match(stabilityHtml,/a partir de 30 réplicas/);
 assert.match(stabilityHtml,/<svg/);
 assert(!/NaN|Infinity/.test(stabilityHtml));
 console.log('Stability SVG and distinct start/confirmation labels: OK');
+
+// Every canonical combination must remain reachable through the five controls.
+const catalog=current.c.window.__UAM_SCENARIO_CATALOG__.scenarios.filter(row=>row.condition==='nominal');
+const allModel={};
+allModel.runs=catalog.map(row=>({replica_count:50,metadata:{scenario_key:row.scenario,day_key:'produto2_p100',variant_label:row.scenario,scenario_dimensions:row}}));
+allModel.comparison={days:[{day_key:'produto2_p100',day_label:'P100',rows:allModel.runs.map((run,run_index)=>({run_index,...run.metadata}))}]};
+const all=context(allModel);
+vm.runInContext('state.runs=window.__UAM_DASHBOARD_DATA__.runs;state.comparison=window.__UAM_DASHBOARD_DATA__.comparison;state.activeDayKey="produto2_p100";populateScenarioFilters()',all.c);
+const fields=[['corridor-select','airspace'],['management-select','management'],['condition-select','condition'],['vertiports-select','vertiports'],['separation-select','separation_seconds']];
+for(const row of catalog){
+  for(const [index,[id,key]] of fields.entries()){
+    const select=all.elements.get(id);select.value=String(row[key]??'');vm.runInContext(`populateScenarioFilters(${index})`,all.c);
+  }
+  assert.equal(vm.runInContext('state.runs[state.activeRunIndex].metadata.scenario_key',all.c),row.scenario);
+  assert.match(all.elements.get('scenario-selection').textContent,new RegExp(row.scenario.replaceAll('.','\\.')));
+}
+assert.equal(all.elements.get('legacy-run-filter').hidden,true);
+assert.equal(all.elements.get('condition-select').disabled,true);
+assert.match(all.elements.get('condition-select').innerHTML,/value="disturbed" disabled/);
+// Leaving micro clears the headway; no fabricated baseline with 38 seconds.
+all.elements.get('management-select').value='none';
+vm.runInContext('populateScenarioFilters(1)',all.c);
+assert.equal(all.elements.get('separation-select').value,'');
+assert.equal(all.elements.get('separation-select').disabled,true);
+console.log('All 36 canonical combinations reachable; unavailable conditions and non-micro headways guarded: OK');

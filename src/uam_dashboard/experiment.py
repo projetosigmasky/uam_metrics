@@ -3,6 +3,7 @@ from __future__ import annotations
 import re
 from pathlib import Path
 from typing import Any
+from .scenario_catalog import scenario_dimensions
 
 
 EXPERIMENT_RE = re.compile(
@@ -34,6 +35,7 @@ def experiment_metadata(path: str | Path) -> dict[str, Any]:
         rank = int(parts[0])
         stage = scenario_stage(scenario)
         percentile = int(values["percentile"])
+        dimensions = scenario_dimensions(scenario)
         return {
             "experiment_family": "produto2",
             "day_key": f"produto2_p{percentile}",
@@ -44,10 +46,11 @@ def experiment_metadata(path: str | Path) -> dict[str, Any]:
             "airspace": scenario_airspace(scenario),
             "scenario_key": scenario,
             "replica": int(values["replica"]) if values["replica"] else None,
+            "scenario_dimensions": dimensions,
             "reference_variant_key": (f"c{2 if rank in {3, 4, 5, 6} else 1}.{stage}"
                                       if stage else "c1" if len(parts) == 1 else None),
             "mvp_enabled": values["mode"].lower() == "mvp",
-            "disturbed": False,
+            "disturbed": dimensions.get("condition") == "disturbed",
             "rank": rank,
             "date": None,
             "seed": None,
@@ -177,11 +180,14 @@ def experiment_sort_key(path: str | Path) -> tuple[int, int, int]:
 
 
 def scenario_stage(code: str) -> str | None:
-    """Only scenarios whose final component denotes 6/12 vertiports.
+    """Resolve network size, including canonical micro IDs ending in a profile.
 
     C5/C6/C9/C10 suffixes denote algorithms, not network sizes in the workbook.
     Their geometry must be selected explicitly when those scenarios are added.
     """
+    dimensions = scenario_dimensions(code)
+    if dimensions.get("vertiports") in {6, 12}:
+        return "1" if dimensions["vertiports"] == 6 else "2"
     parts = code.upper().replace("_", ".").split(".")
     if (parts[0] in {"C1", "C2"} and len(parts) == 2) or (parts[0] in {"C3", "C4", "C7", "C8"} and len(parts) == 3):
         return parts[-1] if parts[-1] in {"1", "2"} else None

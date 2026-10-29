@@ -1,13 +1,15 @@
-"""Resolve and validate one orchestrator run for dashboard generation."""
+"""Resolve and validate orchestrator runs for dashboard generation."""
 
 from __future__ import annotations
 
 import json
 import re
+import warnings
 from dataclasses import dataclass, field
 from pathlib import Path
 
 from src.uam_dashboard.experiment import log_experiment_metadata, matching_scenario, scenario_stage, scenario_airspace
+from .scenario_catalog import NOMINAL_CODES
 
 
 @dataclass(frozen=True)
@@ -19,10 +21,66 @@ class RunSelection:
     ranking_workers: int
     uam_corridor_csv_path: Path | None = None
     uam_corridor_csv_by_scenario: dict[str, Path] = field(default_factory=dict)
+    source_runs: dict[str, str] = field(default_factory=dict)
+    unavailable_scenarios: tuple[str, ...] = ()
 
 
 def load_run_selection(config_path: Path) -> RunSelection:
     settings = json.loads(config_path.read_text(encoding="utf-8"))
+    if settings.get("run_name") == "auto":
+        return discover_nominal_runs(settings, config_path)
+    return _load_single_run(settings, config_path)
+
+
+def discover_nominal_runs(settings: dict, config_path: Path) -> RunSelection:
+    """Choose the newest complete, validated run for each nominal variant.
+
+    Never pool replicas from different runs or substitute older micro IDs.
+    """
+    root = Path(settings.get("runs_root", "~/runs")).expanduser()
+    codes = settings.get("scenario_codes", list(NOMINAL_CODES))
+    if not codes or len(codes) != len(set(codes)) or set(codes) - set(NOMINAL_CODES):
+        raise ValueError("Automatic discovery requires distinct canonical nominal scenario_codes")
+    if not root.is_dir():
+        raise FileNotFoundError(f"Runs directory not found: {root}")
+    candidates = sorted((p for p in root.iterdir() if p.is_dir() and (p / "summary.json").is_file()),
+                        key=lambda p: p.name, reverse=True)
+    selections = {}
+    rejected = []
+    pinned = settings.get("scenario_runs")
+    if pinned is not None and (not isinstance(pinned, dict) or set(pinned) != set(codes)):
+        raise ValueError("scenario_runs must select exactly one run for every requested scenario")
+    if pinned is not None and any(not isinstance(name, str) or not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_.-]*", name)
+                                  for name in pinned.values()):
+        raise ValueError("scenario_runs values must be run directory names")
+    for code in codes:
+        for run in ([root / pinned[code]] if pinned is not None else candidates):
+            if not any((run / "output" / name).is_dir() for name in (code, code.replace(".", "_"))):
+                continue
+            try:
+                selections[code] = _load_single_run(dict(settings, run_name=run.name, scenario_codes=[code]), config_path)
+            except (ValueError, OSError) as error:
+                rejected.append(f"{run.name}/{code}: {error}")
+                continue
+            break
+    missing = tuple(code for code in codes if code not in selections)
+    if not selections or (missing and (pinned is not None or settings.get("require_all_scenarios", False))):
+        raise ValueError(f"No complete selection; unavailable scenarios: {', '.join(missing)}. " + " | ".join(rejected))
+    if missing:
+        warnings.warn("Nominal scenarios awaiting complete results: " + ", ".join(missing), stacklevel=2)
+    for message in rejected:
+        warnings.warn("Skipped " + message, stacklevel=2)
+    first = next(iter(selections.values()))
+    for code, selected in selections.items():
+        print(f"{code}: {selected.run_dir.name} ({len(selected.log_paths)} replicas)", flush=True)
+    return RunSelection(root, tuple(p for s in selections.values() for p in s.log_paths),
+                        tuple(p for s in selections.values() for p in s.scenario_paths),
+                        first.dashboard_workers, first.ranking_workers, first.uam_corridor_csv_path,
+                        {code: s.uam_corridor_csv_by_scenario[code] for code, s in selections.items()},
+                        {code: s.run_dir.name for code, s in selections.items()}, missing)
+
+
+def _load_single_run(settings: dict, config_path: Path) -> RunSelection:
     run_name = settings.get("run_name")
     if not isinstance(run_name, str) or not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_.-]*", run_name) or run_name in {".", ".."}:
         raise ValueError("run_name must be one run directory name, without path separators")
@@ -116,8 +174,9 @@ def load_run_selection(config_path: Path) -> RunSelection:
             if scenario_airspace(code) == "dedicated_uam":
                 validate_c2_corridor_scenarios([s for log, s in zip(log_paths, matched_scenarios)
                                                if log_experiment_metadata(log, scenario_paths)["scenario_key"] == code], network["routes"])
-        return RunSelection(run_dir, tuple(log_paths), scenario_paths, dashboard_workers, ranking_workers,
-                            by_scenario[scenario_codes[0]], by_scenario)
+        return RunSelection(run_dir, tuple(log_paths), tuple(matched_scenarios), dashboard_workers, ranking_workers,
+                            by_scenario[scenario_codes[0]], by_scenario,
+                            {code: run_dir.name for code in scenario_codes})
     if any("." in code for code in scenario_codes):
         raise ValueError("Dotted scenarios require uam_corridor_csv_by_stage or uam_corridor_csv_by_scenario")
     corridor = settings.get("uam_corridor_csv")

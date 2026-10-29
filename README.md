@@ -7,9 +7,26 @@ Este repositorio vincula as metricas ao `Produto3_vfinal_ProjetoSIGMASky.pdf` (P
 Contexto para novas iteracoes: [historico tecnico](ITERATION_LOG.md). Para o relatorio de referencias de 1/2 movimentos por waypoint/5 min: [figuras selecionadas, tabelas e ressalvas](reports/baseline_capacity_2026-10-20/README.md).
 
 
-## Dashboard atual — 21/10/2026
+## Seleção dos cenários nominais — 29/10/2026
 
-O fluxo padrão seleciona **C1.1, C1.2, C2.1 e C2.2**, com **50 réplicas de cada cenário** na RUN `20261015_112401_6cddab52`. `run_config.json` associa a etapa `.1` ao CSV de 6 vertiportos e `.2` ao CSV validado de 12 vertiportos. A seleção exige réplicas 1–50, pareamento único com SCNs e valida a geometria dos cenários dedicados antes de publicar.
+O padrão de `run_config.json` agora é `run_name: "auto"`: busca em `~/runs` as **36 variantes nominais** do catálogo canônico de `rmsp-uam-simulations`, selecionando a RUN concluída mais recente por código (ordem dos nomes datados do orquestrador). Cada variante exige 50 STATELOGs, índices 1–50, SCNs correspondentes e geometria validada. As réplicas de uma variante nunca são misturadas entre RUNs. Runs incompletas, pilotos e associações inválidas são descartados com aviso; variantes sem resultados completos são informadas. `require_all_scenarios: true` exige as 36 antes de gerar qualquer relatório. A seleção validada é fixada em `run_config.local.json` (`scenario_runs`), garantindo que dashboard e ranking usem as mesmas RUNs mesmo que outras simulações terminem durante o processamento. Reexecute com o config padrão para fazer nova descoberta; use `--config run_config.local.json` para reproduzir a seleção fixada.
+
+No Lessonia, após atualizar este clone:
+
+```bash
+cd ~/post-processing
+.venv/bin/python generate_reports.py --config run_config.json --workers 25
+```
+
+Para outra raiz de resultados, acrescente `--runs-root /caminho/dos/runs`. Para fixar uma RUN, use `--run-id ID`; para restringir os códigos, acrescente, por exemplo, `--scenario-codes C1.1 C1.2 C2.1 C2.2`. Overrides são validados antes de salvar `run_config.local.json`. A busca lê resultados já executados no servidor; não inicia simulações nem faz transferência SSH.
+
+O cabeçalho do site oferece cinco seletores encadeados: **tipo de corredor, desconflito, condição operacional, vertiportos e tempo de separação**. As opções dependem dos resultados disponíveis no grupo selecionado. Combinações ausentes ficam desabilitadas; o código e a quantidade de réplicas aparecem abaixo dos filtros. O tempo não se aplica aos baselines e ao DCB. “Perturbado” permanece indisponível enquanto só houver resultados nominais. Os filtros se reorganizam em telas menores. `web/` e a interface publicada em `docs/` foram atualizados; os dados numéricos existentes são preservados até reprocessamento no servidor.
+
+`data/scenario_catalog.json` é o snapshot das 44 linhas (36 nominais e 8 off-nominal) de `rmsp-uam-simulations/data/scenarios/nominal_catalog_20261027.xlsx`, com SHA-256 da fonte. A planilha original estava bloqueada para leitura; foi usada a cópia versionada documentada pelo gerador. Os nomes Micro Chen e Micro Moolchandani correspondem aos algoritmos do gerador. Códigos micro atuais seguem `C4/C8.algoritmo.estágio.perfil`: estágio 1 = 6 vertiportos; estágio 2 = 12; perfis 1/2/3 = 11/23/38 segundos e LOWC horizontal 0,3/0,6/1 NM. O pós-processamento aplica esses limiares por cenário. Códigos micro históricos sem perfil mantêm o tempo desconhecido e não são substituídos pelos novos.
+
+## Dados publicados anteriormente — 21/10/2026
+
+O pacote publicado anterior contém **C1.1, C1.2, C2.1 e C2.2**, com **50 réplicas de cada cenário** na RUN `20261015_112401_6cddab52`. `run_config.json` associa o estágio 1 ao CSV de 6 vertiportos e o estágio 2 ao CSV validado de 12 vertiportos. A seleção exige réplicas 1–50, pareamento único com SCNs e valida a geometria dos cenários dedicados antes de publicar.
 
 Após enviar estas alterações ao remoto, no Lessonia:
 

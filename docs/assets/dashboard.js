@@ -32,6 +32,22 @@ const state = {
   activeKpa: "overview",
 };
 
+const scenarioFilters = [
+  {id: "corridor-select", key: "airspace", options: [["shared_reh", "Compartilhado"], ["dedicated_uam", "Segregado"]]},
+  {id: "management-select", key: "management", options: [["none", "Sem desconflito"], ["dcb_milp_waypoint", "DCB MILP Waypoint"], ["dcb_milp_grid", "DCB MILP Quadrícula"], ["micro_milp", "Micro Chen"], ["micro_moolchandani", "Micro Moolchandani"]]},
+  {id: "condition-select", key: "condition", options: [["nominal", "Nominal"], ["disturbed", "Perturbado"]]},
+  {id: "vertiports-select", key: "vertiports", options: [["6", "6"], ["12", "12"], ["", "Não informado"]]},
+  {id: "separation-select", key: "separation_seconds", options: [["", "Não se aplica"], ["11", "11 segundos"], ["23", "23 segundos"], ["38", "38 segundos"]]},
+];
+
+function runDimensions(run) {
+  return run.metadata?.scenario_dimensions || window.__UAM_SCENARIO_CATALOG__?.scenarios?.find(row => row.scenario === run.metadata?.scenario_key) || null;
+}
+
+function filterValue(dimensions, key) {
+  return String(dimensions?.[key] ?? "");
+}
+
 const viewer3d = {
   data: null,
   conflicts: [],
@@ -156,7 +172,14 @@ function bindLayerControls() {
   });
   document.getElementById("run-select").addEventListener("change", (event) => {
     state.activeRunIndex = Number(event.target.value);
+    populateScenarioFilters();
     renderSelectedRun();
+  });
+  scenarioFilters.forEach((filter, index) => {
+    document.getElementById(filter.id).addEventListener("change", () => {
+      populateScenarioFilters(index);
+      renderSelectedRun();
+    });
   });
   document.getElementById("day-select").addEventListener("change", (event) => {
     state.activeDayKey = event.target.value;
@@ -191,6 +214,12 @@ function renderDashboard(model) {
     document.getElementById("run-select").innerHTML = ["C1.1", "C1.2", "C2.1", "C2.2"].map(code => `<option>${code} · aguardando processamento</option>`).join("");
     document.getElementById("day-select").disabled = true;
     document.getElementById("run-select").disabled = true;
+    scenarioFilters.forEach(filter => {
+      const select = document.getElementById(filter.id);
+      select.innerHTML = '<option>Aguardando resultados</option>';
+      select.disabled = true;
+    });
+    setText("scenario-selection", "Nenhum cenário processado disponível.");
     setText("comparison-summary", "Reprocesse a RUN com generate_reports.py --config run_config.json para publicar os quatro cenários e o heatmap de todas as réplicas.");
     setText("map-info-text", "Heatmap indisponível até o processamento dos STATELOGs dos novos cenários.");
     return;
@@ -740,6 +769,8 @@ function renderComparison(model) {
     .map((day) => `<option value="${escapeHtml(day.day_key)}">${escapeHtml(day.day_label)}</option>`)
     .join("");
   daySelect.value = state.activeDayKey || "";
+  daySelect.disabled = days.length <= 1;
+  document.getElementById("day-filter").hidden = days.length <= 1;
   populateRunSelect();
   setText(
     "comparison-summary",
@@ -759,7 +790,38 @@ function populateRunSelect() {
     .map((row) => `<option value="${row.run_index}">${escapeHtml(row.variant_label)}</option>`)
     .join("");
   select.value = String(state.activeRunIndex);
+  select.disabled = rows.length <= 1;
+  populateScenarioFilters();
   renderSelectedRun();
+}
+
+function populateScenarioFilters(changedIndex = -1) {
+  const day = state.comparison?.days?.find(item => item.day_key === state.activeDayKey);
+  const indices = day?.rows?.map(row => row.run_index) || state.runs.map((_, index) => index);
+  let candidates = indices.filter(index => runDimensions(state.runs[index]));
+  const fallback = !candidates.length;
+  document.getElementById("legacy-run-filter").hidden = !fallback;
+  const previous = runDimensions(state.runs[state.activeRunIndex]);
+  scenarioFilters.forEach((filter, index) => {
+    const select = document.getElementById(filter.id);
+    const available = new Set(candidates.map(i => filterValue(runDimensions(state.runs[i]), filter.key)));
+    const desired = changedIndex >= 0 && index <= changedIndex ? select.value : filterValue(previous, filter.key);
+    const value = available.has(desired) ? desired : filter.options.find(([value]) => available.has(value))?.[0] ?? "";
+    select.innerHTML = filter.options.map(([option, label]) => {
+      if (filter.key === "separation_seconds" && option === "" && candidates.some(i => runDimensions(state.runs[i]).management?.startsWith("micro_"))) label = "Não informado";
+      return `<option value="${option}"${available.has(option) ? "" : " disabled"}>${label}${available.has(option) ? "" : " · indisponível"}</option>`;
+    }).join("");
+    select.value = value;
+    select.disabled = available.size <= 1;
+    select.title = "Combinações disponíveis nos resultados processados";
+    candidates = candidates.filter(i => filterValue(runDimensions(state.runs[i]), filter.key) === value);
+  });
+  if (candidates.length) {
+    if (!candidates.includes(state.activeRunIndex)) state.activeRunIndex = candidates[0];
+    document.getElementById("run-select").value = String(state.activeRunIndex);
+  }
+  const run = state.runs[state.activeRunIndex];
+  setText("scenario-selection", run ? `Cenário ${run.metadata?.scenario_key || run.name} · ${run.replica_count || run.density?.replica_count || 1} réplicas disponíveis` : "Nenhum resultado disponível");
 }
 
 function renderDayComparison() {

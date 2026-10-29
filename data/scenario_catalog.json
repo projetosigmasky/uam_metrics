@@ -1,0 +1,402 @@
+{
+  "source": "rmsp-uam-simulations/data/scenarios/nominal_catalog_20261027.xlsx",
+  "sha256": "aa9ae5f9a225bfacbd7bef1be389dc139b94d0fe9ca96864dfe47af32b5fb12d",
+  "scenarios": [
+    {
+      "scenario": "C1.1",
+      "airspace": "shared_reh",
+      "management": "none",
+      "condition": "nominal",
+      "vertiports": 6,
+      "separation_seconds": null,
+      "lowc_distance_nm": null
+    },
+    {
+      "scenario": "C1.2",
+      "airspace": "shared_reh",
+      "management": "none",
+      "condition": "nominal",
+      "vertiports": 12,
+      "separation_seconds": null,
+      "lowc_distance_nm": null
+    },
+    {
+      "scenario": "C2.1",
+      "airspace": "dedicated_uam",
+      "management": "none",
+      "condition": "nominal",
+      "vertiports": 6,
+      "separation_seconds": null,
+      "lowc_distance_nm": null
+    },
+    {
+      "scenario": "C2.2",
+      "airspace": "dedicated_uam",
+      "management": "none",
+      "condition": "nominal",
+      "vertiports": 12,
+      "separation_seconds": null,
+      "lowc_distance_nm": null
+    },
+    {
+      "scenario": "C3.1.1",
+      "airspace": "dedicated_uam",
+      "management": "dcb_milp_waypoint",
+      "condition": "nominal",
+      "vertiports": 6,
+      "separation_seconds": null,
+      "lowc_distance_nm": null
+    },
+    {
+      "scenario": "C3.1.2",
+      "airspace": "dedicated_uam",
+      "management": "dcb_milp_waypoint",
+      "condition": "nominal",
+      "vertiports": 12,
+      "separation_seconds": null,
+      "lowc_distance_nm": null
+    },
+    {
+      "scenario": "C3.2.1",
+      "airspace": "dedicated_uam",
+      "management": "dcb_milp_grid",
+      "condition": "nominal",
+      "vertiports": 6,
+      "separation_seconds": null,
+      "lowc_distance_nm": null
+    },
+    {
+      "scenario": "C3.2.2",
+      "airspace": "dedicated_uam",
+      "management": "dcb_milp_grid",
+      "condition": "nominal",
+      "vertiports": 12,
+      "separation_seconds": null,
+      "lowc_distance_nm": null
+    },
+    {
+      "scenario": "C4.1.1.1",
+      "airspace": "dedicated_uam",
+      "management": "micro_milp",
+      "condition": "nominal",
+      "vertiports": 6,
+      "separation_seconds": 11,
+      "lowc_distance_nm": 0.3
+    },
+    {
+      "scenario": "C4.1.1.2",
+      "airspace": "dedicated_uam",
+      "management": "micro_milp",
+      "condition": "nominal",
+      "vertiports": 6,
+      "separation_seconds": 23,
+      "lowc_distance_nm": 0.6
+    },
+    {
+      "scenario": "C4.1.1.3",
+      "airspace": "dedicated_uam",
+      "management": "micro_milp",
+      "condition": "nominal",
+      "vertiports": 6,
+      "separation_seconds": 38,
+      "lowc_distance_nm": 1.0
+    },
+    {
+      "scenario": "C4.1.2.1",
+      "airspace": "dedicated_uam",
+      "management": "micro_milp",
+      "condition": "nominal",
+      "vertiports": 12,
+      "separation_seconds": 11,
+      "lowc_distance_nm": 0.3
+    },
+    {
+      "scenario": "C4.1.2.2",
+      "airspace": "dedicated_uam",
+      "management": "micro_milp",
+      "condition": "nominal",
+      "vertiports": 12,
+      "separation_seconds": 23,
+      "lowc_distance_nm": 0.6
+    },
+    {
+      "scenario": "C4.1.2.3",
+      "airspace": "dedicated_uam",
+      "management": "micro_milp",
+      "condition": "nominal",
+      "vertiports": 12,
+      "separation_seconds": 38,
+      "lowc_distance_nm": 1.0
+    },
+    {
+      "scenario": "C4.2.1.1",
+      "airspace": "dedicated_uam",
+      "management": "micro_moolchandani",
+      "condition": "nominal",
+      "vertiports": 6,
+      "separation_seconds": 11,
+      "lowc_distance_nm": 0.3
+    },
+    {
+      "scenario": "C4.2.1.2",
+      "airspace": "dedicated_uam",
+      "management": "micro_moolchandani",
+      "condition": "nominal",
+      "vertiports": 6,
+      "separation_seconds": 23,
+      "lowc_distance_nm": 0.6
+    },
+    {
+      "scenario": "C4.2.1.3",
+      "airspace": "dedicated_uam",
+      "management": "micro_moolchandani",
+      "condition": "nominal",
+      "vertiports": 6,
+      "separation_seconds": 38,
+      "lowc_distance_nm": 1.0
+    },
+    {
+      "scenario": "C4.2.2.1",
+      "airspace": "dedicated_uam",
+      "management": "micro_moolchandani",
+      "condition": "nominal",
+      "vertiports": 12,
+      "separation_seconds": 11,
+      "lowc_distance_nm": 0.3
+    },
+    {
+      "scenario": "C4.2.2.2",
+      "airspace": "dedicated_uam",
+      "management": "micro_moolchandani",
+      "condition": "nominal",
+      "vertiports": 12,
+      "separation_seconds": 23,
+      "lowc_distance_nm": 0.6
+    },
+    {
+      "scenario": "C4.2.2.3",
+      "airspace": "dedicated_uam",
+      "management": "micro_moolchandani",
+      "condition": "nominal",
+      "vertiports": 12,
+      "separation_seconds": 38,
+      "lowc_distance_nm": 1.0
+    },
+    {
+      "scenario": "C5.1",
+      "airspace": "dedicated_uam",
+      "management": "dcb_milp_waypoint",
+      "condition": "disturbed",
+      "vertiports": null,
+      "separation_seconds": null,
+      "lowc_distance_nm": null
+    },
+    {
+      "scenario": "C5.2",
+      "airspace": "dedicated_uam",
+      "management": "dcb_milp_grid",
+      "condition": "disturbed",
+      "vertiports": null,
+      "separation_seconds": null,
+      "lowc_distance_nm": null
+    },
+    {
+      "scenario": "C6.1",
+      "airspace": "dedicated_uam",
+      "management": "micro_milp",
+      "condition": "disturbed",
+      "vertiports": null,
+      "separation_seconds": null,
+      "lowc_distance_nm": null
+    },
+    {
+      "scenario": "C6.2",
+      "airspace": "dedicated_uam",
+      "management": "micro_moolchandani",
+      "condition": "disturbed",
+      "vertiports": null,
+      "separation_seconds": null,
+      "lowc_distance_nm": null
+    },
+    {
+      "scenario": "C7.1.1",
+      "airspace": "shared_reh",
+      "management": "dcb_milp_waypoint",
+      "condition": "nominal",
+      "vertiports": 6,
+      "separation_seconds": null,
+      "lowc_distance_nm": null
+    },
+    {
+      "scenario": "C7.1.2",
+      "airspace": "shared_reh",
+      "management": "dcb_milp_waypoint",
+      "condition": "nominal",
+      "vertiports": 12,
+      "separation_seconds": null,
+      "lowc_distance_nm": null
+    },
+    {
+      "scenario": "C7.2.1",
+      "airspace": "shared_reh",
+      "management": "dcb_milp_grid",
+      "condition": "nominal",
+      "vertiports": 6,
+      "separation_seconds": null,
+      "lowc_distance_nm": null
+    },
+    {
+      "scenario": "C7.2.2",
+      "airspace": "shared_reh",
+      "management": "dcb_milp_grid",
+      "condition": "nominal",
+      "vertiports": 12,
+      "separation_seconds": null,
+      "lowc_distance_nm": null
+    },
+    {
+      "scenario": "C8.1.1.1",
+      "airspace": "shared_reh",
+      "management": "micro_milp",
+      "condition": "nominal",
+      "vertiports": 6,
+      "separation_seconds": 11,
+      "lowc_distance_nm": 0.3
+    },
+    {
+      "scenario": "C8.1.1.2",
+      "airspace": "shared_reh",
+      "management": "micro_milp",
+      "condition": "nominal",
+      "vertiports": 6,
+      "separation_seconds": 23,
+      "lowc_distance_nm": 0.6
+    },
+    {
+      "scenario": "C8.1.1.3",
+      "airspace": "shared_reh",
+      "management": "micro_milp",
+      "condition": "nominal",
+      "vertiports": 6,
+      "separation_seconds": 38,
+      "lowc_distance_nm": 1.0
+    },
+    {
+      "scenario": "C8.1.2.1",
+      "airspace": "shared_reh",
+      "management": "micro_milp",
+      "condition": "nominal",
+      "vertiports": 12,
+      "separation_seconds": 11,
+      "lowc_distance_nm": 0.3
+    },
+    {
+      "scenario": "C8.1.2.2",
+      "airspace": "shared_reh",
+      "management": "micro_milp",
+      "condition": "nominal",
+      "vertiports": 12,
+      "separation_seconds": 23,
+      "lowc_distance_nm": 0.6
+    },
+    {
+      "scenario": "C8.1.2.3",
+      "airspace": "shared_reh",
+      "management": "micro_milp",
+      "condition": "nominal",
+      "vertiports": 12,
+      "separation_seconds": 38,
+      "lowc_distance_nm": 1.0
+    },
+    {
+      "scenario": "C8.2.1.1",
+      "airspace": "shared_reh",
+      "management": "micro_moolchandani",
+      "condition": "nominal",
+      "vertiports": 6,
+      "separation_seconds": 11,
+      "lowc_distance_nm": 0.3
+    },
+    {
+      "scenario": "C8.2.1.2",
+      "airspace": "shared_reh",
+      "management": "micro_moolchandani",
+      "condition": "nominal",
+      "vertiports": 6,
+      "separation_seconds": 23,
+      "lowc_distance_nm": 0.6
+    },
+    {
+      "scenario": "C8.2.1.3",
+      "airspace": "shared_reh",
+      "management": "micro_moolchandani",
+      "condition": "nominal",
+      "vertiports": 6,
+      "separation_seconds": 38,
+      "lowc_distance_nm": 1.0
+    },
+    {
+      "scenario": "C8.2.2.1",
+      "airspace": "shared_reh",
+      "management": "micro_moolchandani",
+      "condition": "nominal",
+      "vertiports": 12,
+      "separation_seconds": 11,
+      "lowc_distance_nm": 0.3
+    },
+    {
+      "scenario": "C8.2.2.2",
+      "airspace": "shared_reh",
+      "management": "micro_moolchandani",
+      "condition": "nominal",
+      "vertiports": 12,
+      "separation_seconds": 23,
+      "lowc_distance_nm": 0.6
+    },
+    {
+      "scenario": "C8.2.2.3",
+      "airspace": "shared_reh",
+      "management": "micro_moolchandani",
+      "condition": "nominal",
+      "vertiports": 12,
+      "separation_seconds": 38,
+      "lowc_distance_nm": 1.0
+    },
+    {
+      "scenario": "C9.1",
+      "airspace": "shared_reh",
+      "management": "dcb_milp_waypoint",
+      "condition": "disturbed",
+      "vertiports": null,
+      "separation_seconds": null,
+      "lowc_distance_nm": null
+    },
+    {
+      "scenario": "C9.2",
+      "airspace": "shared_reh",
+      "management": "dcb_milp_grid",
+      "condition": "disturbed",
+      "vertiports": null,
+      "separation_seconds": null,
+      "lowc_distance_nm": null
+    },
+    {
+      "scenario": "C10.1",
+      "airspace": "shared_reh",
+      "management": "micro_milp",
+      "condition": "disturbed",
+      "vertiports": null,
+      "separation_seconds": null,
+      "lowc_distance_nm": null
+    },
+    {
+      "scenario": "C10.2",
+      "airspace": "shared_reh",
+      "management": "micro_moolchandani",
+      "condition": "disturbed",
+      "vertiports": null,
+      "separation_seconds": null,
+      "lowc_distance_nm": null
+    }
+  ]
+}

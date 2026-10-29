@@ -19,14 +19,17 @@
         <h1>KPI/KPA Dashboard</h1>
       </div>
       <div class="topbar-controls">
-        <label>
+        <label id="day-filter">
           <span>Grupo de cenários</span>
           <select id="day-select"></select>
         </label>
-        <label>
-          <span>Cenario no mapa</span>
-          <select id="run-select"></select>
-        </label>
+        <label><span>Tipo de corredor</span><select id="corridor-select"></select></label>
+        <label><span>Tipo de desconflito</span><select id="management-select"></select></label>
+        <label><span>Condição operacional</span><select id="condition-select"></select></label>
+        <label><span>Quantidade de vertiportos</span><select id="vertiports-select"></select></label>
+        <label><span>Tempo de separação</span><select id="separation-select"></select></label>
+        <label id="legacy-run-filter" hidden><span>Cenário no mapa</span><select id="run-select"></select></label>
+        <p id="scenario-selection" class="scenario-selection" role="status" aria-live="polite"></p>
       </div>
     </header>
     <p id="protocol-data-note" class="protocol-note" hidden></p>
@@ -502,6 +505,7 @@
     <script src="assets/uam_projection.js?v=fee06735fd24"></script>
     <script src="assets/waypoint_rankings.js?v=b41c228c891b"></script>
     <script src="assets/metric_catalog.js?v=cf897343f15b"></script>
-    <script src="assets/dashboard.js?v=replicas-v1"></script>
+    <script src="assets/scenario_catalog.js?v=catalog-v1"></script>
+    <script src="assets/dashboard.js?v=scenario-filters-v1"></script>
   </body>
 </html>

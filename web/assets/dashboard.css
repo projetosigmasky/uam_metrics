@@ -260,6 +260,7 @@ h2 {
 
 main {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 18px;
   padding: 18px clamp(18px, 4vw, 44px) 36px;
 }
@@ -271,6 +272,14 @@ main {
   gap: 14px;
   justify-content: flex-end;
 }
+
+.topbar { flex-wrap: wrap; }
+.topbar-controls { flex: 1 1 100%; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); }
+.topbar-controls label { min-width: 0; }
+.topbar-controls label[hidden] { display: none; }
+.topbar-controls select { min-width: 0; width: 100%; font-size: 14px; }
+.scenario-selection { grid-column: 1 / -1; color: var(--muted); font-size: 13px; margin: 0; }
+#day-filter { grid-column: 1 / -1; }
 
 .topbar-controls label {
   display: grid;
@@ -289,7 +298,7 @@ main {
   border-radius: 7px;
   color: var(--ink);
   font: inherit;
-  min-width: min(360px, 36vw);
+  min-width: 0;
   padding: 9px 12px;
 }
 
@@ -394,6 +403,8 @@ main {
   grid-template-rows: min-content 1fr;
   padding: 18px;
 }
+
+.workspace > *, .side-panel > *, .stacked-control { min-width: 0; }
 
 .panel-section {
   border-bottom: 1px solid var(--line);
@@ -840,7 +851,7 @@ input[type="checkbox"] {
   border-radius: 7px;
   color: var(--ink);
   font: inherit;
-  min-width: min(460px, 48vw);
+  min-width: 0;
   padding: 9px 12px;
 }
 
@@ -1028,12 +1039,13 @@ input[type="checkbox"] {
 }
 
 @media (max-width: 1120px) {
+  .topbar-controls { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .metric-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .workspace {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .side-panel {
@@ -1044,6 +1056,7 @@ input[type="checkbox"] {
 }
 
 @media (max-width: 760px) {
+  .topbar-controls { grid-template-columns: 1fr; }
   .topbar {
     align-items: flex-start;
     flex-direction: column;
@@ -1064,7 +1077,7 @@ input[type="checkbox"] {
   .side-panel,
   .detail-grid,
   .detail-group .kpa-list {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .comparison-header {

@@ -19,26 +19,31 @@ def main() -> None:
     parser.add_argument("--workers", type=int, default=None, help="Worker processes for replica metrics and waypoint reports")
     parser.add_argument("--run-id", help="Select a completed run and save run_config.local.json")
     parser.add_argument("--runs-root", type=Path, help="Run directory root, default ~/runs when selecting a run")
+    parser.add_argument("--scenario-codes", nargs="+", help="Restrict selection to these scenario identifiers")
     parser.add_argument("--baseline-manifest", type=Path, help="Compute offline native throughput calibration only; does not regenerate the STATELOG dashboard")
     parser.add_argument("--audit-dir", type=Path, help="Optional server-side passage/window CSVs for baseline calibration")
     args = parser.parse_args()
     if args.workers is not None and args.workers <= 0:
         parser.error("--workers must be positive")
     if args.baseline_manifest is not None:
-        if args.run_id is not None or args.runs_root is not None or args.config != Path("run_config.json"):
+        if args.run_id is not None or args.runs_root is not None or args.scenario_codes is not None or args.config != Path("run_config.json"):
             parser.error("--baseline-manifest uses its own completed run paths; do not combine with legacy run/config selection")
         from generate_baseline_calibration import generate
         generate(args.baseline_manifest.resolve(), Path(__file__).resolve().parent / "docs", args.audit_dir, workers=args.workers)
         return
     if args.audit_dir is not None:
         parser.error("--audit-dir requires --baseline-manifest")
-    if args.runs_root is not None and args.run_id is None:
-        parser.error("--runs-root requires --run-id")
     repository = Path(__file__).resolve().parent
     config_path = args.config.resolve()
-    if args.run_id is not None:
+    if args.run_id is not None or args.runs_root is not None or args.scenario_codes is not None:
         settings = json.loads(config_path.read_text(encoding="utf-8"))
-        settings.update(run_name=args.run_id, runs_root=str(args.runs_root or Path("~/runs")))
+        settings.pop("scenario_runs", None)
+        if args.run_id is not None:
+            settings["run_name"] = args.run_id
+        if args.runs_root is not None:
+            settings["runs_root"] = str(args.runs_root)
+        if args.scenario_codes is not None:
+            settings["scenario_codes"] = args.scenario_codes
         # Relative geometry paths refer to the original config, including during
         # provisional validation in a temporary directory.
         def absolute_corridor(value):
@@ -59,6 +64,18 @@ def main() -> None:
         destination.write_text(json.dumps(settings, indent=2) + "\n", encoding="utf-8")
         config_path = destination
     selection = load_run_selection(config_path)
+    settings = json.loads(config_path.read_text(encoding="utf-8"))
+    if settings.get("run_name") == "auto" and not settings.get("scenario_runs"):
+        # Freeze discovery once so a run finishing during dashboard computation
+        # cannot change the sources subsequently used by the waypoint ranking.
+        settings.update(scenario_codes=list(selection.source_runs), scenario_runs=selection.source_runs,
+                        unavailable_scenarios=list(selection.unavailable_scenarios))
+        for key in ("uam_corridor_csv_by_stage", "uam_corridor_csv_by_scenario"):
+            settings[key] = {code: str(path if (path := Path(value).expanduser()).is_absolute()
+                                      else config_path.parent / path)
+                             for code, value in settings.get(key, {}).items()}
+        config_path = repository / "run_config.local.json"
+        config_path.write_text(json.dumps(settings, indent=2) + "\n", encoding="utf-8")
     if selection.uam_corridor_csv_path is None:
         raise ValueError("Set uam_corridor_csv in the run configuration before generating reports")
     print(f"Generating P100 reports from {selection.run_dir}", flush=True)
@@ -73,7 +90,7 @@ def main() -> None:
     )
     index_path = repository / "docs" / "index.html"
     html = index_path.read_text(encoding="utf-8")
-    for name in ("data_bundle.js", "waypoint_rankings.js", "candidate_nodes.js", "dashboard.js", "dashboard.css", "uam_projection.js", "crossing_waypoints_3d.js"):
+    for name in ("data_bundle.js", "waypoint_rankings.js", "candidate_nodes.js", "dashboard.js", "dashboard.css", "uam_projection.js", "crossing_waypoints_3d.js", "scenario_catalog.js"):
         asset = repository / "docs" / "assets" / name
         digest = hashlib.sha256(asset.read_bytes()).hexdigest()[:12]
         html, replacements = re.subn(

@@ -6,6 +6,7 @@ import json
 import shutil
 import re
 import math
+from dataclasses import replace
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from pathlib import Path
 from typing import Any
@@ -37,6 +38,7 @@ from src.uam_dashboard.metrics import (
 from src.uam_dashboard.metric_catalog import SOURCE_VERSION, metric_catalog_payload, write_metric_catalog_asset
 from src.uam_dashboard.reh_parser import load_reh_network
 from src.uam_dashboard.run_config import load_run_selection
+from src.uam_dashboard.scenario_catalog import CATALOG
 from src.uam_dashboard.scenario_parser import (
     annotate_aircraft_metadata,
     load_bluesky_scenario,
@@ -92,6 +94,8 @@ def copy_static_assets(output_dir: Path) -> None:
         else:
             shutil.copy2(item, destination)
     (output_dir / "calibration.html").unlink(missing_ok=True)
+    (output_dir / "assets/scenario_catalog.js").write_text(
+        "window.__UAM_SCENARIO_CATALOG__ = " + json.dumps(CATALOG, ensure_ascii=False) + ";\n", encoding="utf-8")
 
 
 def slugify(value: str) -> str:
@@ -465,6 +469,9 @@ def _difference_or_none(value: float | None, reference: float | None) -> float |
 
 
 def analyze_log(log_path: Path, config: DashboardConfig, charts_dir: Path, run_index: int, render_charts: bool = True) -> dict[str, Any]:
+    dimensions = log_experiment_metadata(log_path, config.scenario_paths).get("scenario_dimensions", {})
+    if dimensions.get("lowc_distance_nm") is not None:
+        config = replace(config, lowc_horizontal_m=dimensions["lowc_distance_nm"] * 1852.0)
     chart_prefix = f"{run_index + 1:02d}_{slugify(log_path.stem)}"
     print(f"Loading log: {log_path}")
     df = load_state_log(log_path)
