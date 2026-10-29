@@ -24,6 +24,7 @@ const state = {
   uamProjection: window.__UAM_CORRIDOR_PROJECTION__ || { type: "FeatureCollection", features: [] },
   crossingCandidates: window.__UAM_CROSSINGS_3D__ || { type: "FeatureCollection", features: [] },
   runs: [],
+  runSummaries: [],
   comparison: null,
   activeRunIndex: 0,
   activeDayKey: null,
@@ -31,6 +32,58 @@ const state = {
   conflictPairFilter: "all",
   activeKpa: "overview",
 };
+
+const pendingRunLoads = new Map();
+const runPartReceivers = new Map();
+const cachedRunIndices = new Map();
+
+window.__UAM_RUN_PART__ = (token, index, count, text) => {
+  const receiver = runPartReceivers.get(token);
+  if (!receiver || count !== receiver.length || !Number.isInteger(index) || index < 0 || index >= count || typeof text !== "string") {
+    throw new Error("Fragmento de cenário inválido");
+  }
+  receiver[index] = text;
+};
+
+function loadRunPart(path) {
+  return new Promise((resolve, reject) => {
+    const script = document.createElement("script");
+    script.src = path;
+    script.onload = () => { script.remove(); resolve(); };
+    script.onerror = () => { script.remove(); reject(new Error(`Falha ao carregar ${path}`)); };
+    document.head.appendChild(script);
+  });
+}
+
+function loadRunDetails(index) {
+  if (pendingRunLoads.has(index)) return pendingRunLoads.get(index);
+  const summary = state.runs[index];
+  const fragments = new Array(summary.data_parts.length).fill(null);
+  runPartReceivers.set(summary.data_token, fragments);
+  const promise = Promise.allSettled(summary.data_parts.map(loadRunPart)).then(results => {
+    const failed = results.find(result => result.status === "rejected");
+    if (failed) throw failed.reason;
+    if (fragments.some(part => part === null)) throw new Error("Pacote de cenário incompleto");
+    const run = JSON.parse(fragments.join(""));
+    if (run.id !== summary.id || run.metadata?.scenario_key !== summary.metadata?.scenario_key) throw new Error("Identidade do cenário divergente");
+    if (state.runs[index] !== summary || state.activeRunIndex !== index) return;
+    state.runs[index] = {...run, data_token: summary.data_token};
+    cachedRunIndices.set(index, true);
+    // Keep at most two complete scenarios; summaries stay available for filters
+    // and cross-scenario stability comparisons.
+    for (const cached of cachedRunIndices.keys()) {
+      if (cachedRunIndices.size <= 2) break;
+      if (cached === state.activeRunIndex || cached === index) continue;
+      state.runs[cached] = state.runSummaries[cached];
+      cachedRunIndices.delete(cached);
+    }
+  }).finally(() => {
+    runPartReceivers.delete(summary.data_token);
+    pendingRunLoads.delete(index);
+  });
+  pendingRunLoads.set(index, promise);
+  return promise;
+}
 
 const scenarioFilters = [
   {id: "corridor-select", key: "airspace", options: [["shared_reh", "Compartilhado"], ["dedicated_uam", "Segregado"]]},
@@ -160,6 +213,7 @@ function initMap() {
 }
 
 function bindLayerControls() {
+  document.getElementById("scenario-load-retry").addEventListener("click", renderSelectedRun);
   document.getElementById("layer-official-reh").addEventListener("change", (event) => toggleLayer("officialRehLayer", event));
   document.getElementById("layer-uam-corridors").addEventListener("change", (event) => toggleLayer("uamProjectionLayer", event));
   document.getElementById("layer-uam-junctions").addEventListener("change", (event) => toggleLayer("uamJunctionLayer", event));
@@ -233,6 +287,8 @@ function renderDashboard(model) {
     normalized.runs = retained;
   }
   state.runs = normalized.runs;
+  state.runSummaries = [...state.runs];
+  cachedRunIndices.clear();
   state.comparison = normalized.comparison;
   state.activeRunIndex = Math.min(state.activeRunIndex, state.runs.length - 1);
 
@@ -280,6 +336,35 @@ function normalizeModel(model) {
 function renderSelectedRun() {
   const run = state.runs[state.activeRunIndex] || state.runs[0];
   if (!run) return;
+  const content = document.getElementById("dashboard-content");
+  const status = document.getElementById("scenario-load-status");
+  const retry = document.getElementById("scenario-load-retry");
+  if (run.data_parts) {
+    const index = state.activeRunIndex;
+    content.hidden = true;
+    content.setAttribute("aria-busy", "true");
+    status.hidden = false;
+    retry.hidden = true;
+    status.textContent = `Carregando dados do cenário ${run.metadata?.scenario_key || run.name}…`;
+    render3DVisualization(null, null);
+    loadRunDetails(index).then(() => {
+      if (state.activeRunIndex === index) renderSelectedRun();
+    }).catch(error => {
+      console.error(error);
+      if (state.activeRunIndex !== index) return;
+      status.textContent = "Não foi possível carregar este cenário. Tente novamente ou selecione outra combinação.";
+      retry.hidden = false;
+    });
+    return;
+  }
+  content.hidden = false;
+  content.setAttribute("aria-busy", "false");
+  status.hidden = true;
+  retry.hidden = true;
+  if (cachedRunIndices.has(state.activeRunIndex)) {
+    cachedRunIndices.delete(state.activeRunIndex);
+    cachedRunIndices.set(state.activeRunIndex, true);
+  }
   const dedicated = run.metadata?.airspace === "dedicated_uam" || /^C2(?:\.|$)/.test(run.metadata?.scenario_key || "");
   for (const id of ["layer-uam-corridors", "layer-uam-junctions", "layer-complexity"]) {
     const control = document.getElementById(id);

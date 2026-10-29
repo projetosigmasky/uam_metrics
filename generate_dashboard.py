@@ -39,6 +39,7 @@ from src.uam_dashboard.metric_catalog import SOURCE_VERSION, metric_catalog_payl
 from src.uam_dashboard.reh_parser import load_reh_network
 from src.uam_dashboard.run_config import load_run_selection
 from src.uam_dashboard.scenario_catalog import CATALOG
+from src.uam_dashboard.publication import write_publication
 from src.uam_dashboard.scenario_parser import (
     annotate_aircraft_metadata,
     load_bluesky_scenario,
@@ -777,12 +778,8 @@ def build_dashboard(config: DashboardConfig) -> None:
     write_json(data_dir / "conflicts.geojson", primary["conflicts"])
     write_json(data_dir / "heatmap_points.json", primary["heatmap"])
     write_json(data_dir / "trajectory_3d.json", primary["trajectory_3d"])
-    runs_dir = data_dir / "runs"
-    for run in runs:
-        write_json(runs_dir / f"{run['id']}.json", run)
-
-    write_js_bundle(
-        output_dir / "assets" / "data_bundle.js",
+    write_publication(
+        output_dir,
         {
             "dashboard": dashboard,
             "tracks": primary["tracks"],

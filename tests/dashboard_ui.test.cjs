@@ -9,6 +9,14 @@ const script = fs.readFileSync(path.join(root, 'web/assets/dashboard.js'), 'utf8
 const ids = new Set([...html.matchAll(/\bid="([^"]+)"/g)].map(m => m[1]));
 const actual = {};
 vm.runInNewContext(fs.readFileSync(path.join(root, 'docs/assets/data_bundle.js'), 'utf8'), {window: actual});
+if(actual.__UAM_DASHBOARD_DATA__.bundle_format_version===2){
+  actual.__UAM_DASHBOARD_DATA__.runs=actual.__UAM_DASHBOARD_DATA__.runs.map(summary=>{
+    const fragments=[];
+    actual.__UAM_RUN_PART__=(token,index,count,text)=>{assert.equal(token,summary.data_token);fragments[index]=text;};
+    for(const part of summary.data_parts)vm.runInNewContext(fs.readFileSync(path.join(root,'docs',part),'utf8'),{window:actual});
+    return JSON.parse(fragments.join(''));
+  });
+}
 
 function context(model) {
   const elements = new Map();
@@ -18,7 +26,7 @@ function context(model) {
     return {id,innerHTML:'',textContent:'',hidden:false,value:'',dataset:{}, listeners:{},
       checked:html.includes(`id="${id}" checked`),
       setAttribute(name,value){this[name]=value;}, removeAttribute(name){delete this[name];},
-      addEventListener(name,fn){this.listeners[name]=fn;},
+      addEventListener(name,fn){this.listeners[name]=fn;}, remove(){this.removed=true;},
       after(node){elements.set(node.id,node);}, scrollIntoView(){}, setPointerCapture(){},
       getBoundingClientRect(){return {width:800,height:500};}, getContext(){return canvasContext;},
       querySelectorAll(selector){
@@ -148,3 +156,44 @@ vm.runInContext('populateScenarioFilters(1)',all.c);
 assert.equal(all.elements.get('separation-select').value,'');
 assert.equal(all.elements.get('separation-select').disabled,true);
 console.log('All 36 canonical combinations reachable; unavailable conditions and non-micro headways guarded: OK');
+
+async function checkLazyLoading(){
+  const summaries=['C1.1','C2.1','C1.2','C2.2'].map((code,index)=>({id:`r${index}`,metadata:{scenario_key:code},data_token:`token${index}`,data_parts:[`part${index}.js`]}));
+  const lazy=context({runs:summaries});
+  const expectedErrors=[];
+  lazy.c.console={...console,error(error){expectedErrors.push(error.message);}};
+  const scripts=new Map();
+  lazy.c.document.head={appendChild(script){scripts.set(script.src,script);}};
+  vm.runInContext('state.runs=window.__UAM_DASHBOARD_DATA__.runs;state.runSummaries=[...state.runs];renderMetrics=()=>{};renderCharts=()=>{};renderCapacity=()=>{};renderStability=()=>{};render3DVisualization=()=>{};bindLayerControls();renderSelectedRun();renderSelectedRun()',lazy.c);
+  assert.equal(scripts.size,1,'Concurrent renders reuse the same load');
+  vm.runInContext('state.activeRunIndex=1;renderSelectedRun()',lazy.c);
+  function deliver(index){
+    const summary=summaries[index];
+    lazy.c.window.__UAM_RUN_PART__(summary.data_token,0,1,JSON.stringify({id:summary.id,metadata:summary.metadata,dashboard:{},replica_count:50,name:summary.id}));
+    const promise=vm.runInContext(`pendingRunLoads.get(${index})`,lazy.c);
+    scripts.get(`part${index}.js`).onload();return promise;
+  }
+  await deliver(1);
+  await deliver(0);
+  assert.equal(vm.runInContext('state.activeRunIndex',lazy.c),1);
+  assert.equal(lazy.elements.get('dashboard-content').hidden,false);
+  assert.match(lazy.elements.get('representative-note').textContent,/r1/,'Late arrival must not render the old selection');
+  vm.runInContext('state.activeRunIndex=2;renderSelectedRun()',lazy.c);
+  await deliver(2);
+  assert(vm.runInContext('Boolean(state.runs[0].data_parts)',lazy.c),'Old details are evicted, retaining the summary');
+  vm.runInContext('state.activeRunIndex=3;renderSelectedRun()',lazy.c);
+  const failed=vm.runInContext('pendingRunLoads.get(3)',lazy.c);
+  scripts.get('part3.js').onload(); // Missing registration is an incomplete package.
+  await assert.rejects(failed,/incompleto/);
+  await new Promise(resolve=>setImmediate(resolve));
+  assert.equal(lazy.elements.get('scenario-load-retry').hidden,false);
+  assert.deepEqual(expectedErrors,['Pacote de cenário incompleto']);
+  assert.equal(lazy.elements.get('dashboard-content').hidden,true);
+  lazy.elements.get('scenario-load-retry').listeners.click();
+  await deliver(3);
+  assert.equal(lazy.elements.get('scenario-load-retry').hidden,true);
+  assert.equal(lazy.elements.get('dashboard-content').hidden,false);
+  assert.equal(vm.runInContext('cachedRunIndices.size',lazy.c),2);
+  console.log('Lazy scenario loading: deduplication, selection races, cache eviction, failure and retry: OK');
+}
+checkLazyLoading().catch(error=>{console.error(error);process.exitCode=1;});

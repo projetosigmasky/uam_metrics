@@ -9,6 +9,8 @@ Contexto para novas iteracoes: [historico tecnico](ITERATION_LOG.md). Para o rel
 
 ## Seleção dos cenários nominais — 29/10/2026
 
+A publicação agora separa os dados em fragmentos e carrega os detalhes por cenário. As auditorias brutas e os JSONs completos duplicados permanecem no servidor, fora do Git. Para converter resultados já calculados, use `.venv/bin/python prepare_publication.py`, sem repetir o processamento. Veja [formato de publicação e recuperação de push recusado por arquivos grandes](PUBLICACAO.md).
+
 O padrão de `run_config.json` agora é `run_name: "auto"`: busca em `~/runs` as **36 variantes nominais** do catálogo canônico de `rmsp-uam-simulations`, selecionando a RUN concluída mais recente por código (ordem dos nomes datados do orquestrador). Cada variante exige 50 STATELOGs, índices 1–50, SCNs correspondentes e geometria validada. As réplicas de uma variante nunca são misturadas entre RUNs. Runs incompletas, pilotos e associações inválidas são descartados com aviso; variantes sem resultados completos são informadas. `require_all_scenarios: true` exige as 36 antes de gerar qualquer relatório. A seleção validada é fixada em `run_config.local.json` (`scenario_runs`), garantindo que dashboard e ranking usem as mesmas RUNs mesmo que outras simulações terminem durante o processamento. Reexecute com o config padrão para fazer nova descoberta; use `--config run_config.local.json` para reproduzir a seleção fixada.
 
 No Lessonia, após atualizar este clone:
@@ -163,7 +165,7 @@ git pull --ff-only
 
 `generate_reports.py` valida as 50 replicas C1 e 50 C2, os 100 pareamentos STATELOG/SCN e a demanda P100 antes de calcular. Ele gera o dashboard e o ranking de waypoints em `docs/`. O ranking e calculado pela media do throughput de cada replica, separadamente para C1 e C2, e aparece no painel de capacidade.
 
-Antes de publicar, confira as contagens por cenario e o tamanho do pacote. Se `data_bundle.js` ficar grande demais para publicar, reduza a resolucao das camadas ilustrativas. Publique apenas a saida processada:
+Antes de publicar, confira as contagens por cenario e o tamanho dos arquivos. O formato atual divide os dados sem reduzir a resolução das camadas. Para resultados antigos, converta com `prepare_publication.py`; o procedimento de recuperação de um commit recusado está em [PUBLICACAO.md](PUBLICACAO.md). Publique apenas a saida processada:
 
 ```bash
 .venv/bin/python - <<'PY'
@@ -236,7 +238,7 @@ O mapa 2D usa Leaflet com o basemap padrao do OpenStreetMap, sem cadastro ou cha
 O gerador publica em `docs/`:
 
 - `docs/index.html`: dashboard principal.
-- `docs/assets/data_bundle.js`: pacote de dados usado pela pagina.
+- `docs/assets/data_bundle.js`: índice e resumos dos cenários; os detalhes são carregados de `docs/assets/run_data/` conforme a seleção.
 - `docs/assets/data/dashboard.json`: metricas agregadas ou medias.
 - `docs/assets/data/comparison.json`: tabela comparativa.
 - `docs/assets/data/runs/*.json`: dados por cenario, com metricas medias das replicas e uma trajetoria ilustrativa.

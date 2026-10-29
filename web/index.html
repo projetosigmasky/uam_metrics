@@ -41,7 +41,9 @@
       <button type="button" role="tab" aria-selected="false" data-kpa-tab="capacity">Capacidade</button>
     </nav>
 
-    <main>
+    <p id="scenario-load-status" class="protocol-note" role="status" aria-live="polite" hidden></p>
+    <button id="scenario-load-retry" class="panel-button" type="button" hidden>Tentar carregar novamente</button>
+    <main id="dashboard-content">
       <p id="replica-universe" class="protocol-note"></p>
       <section class="metric-grid" data-kpa-panel="overview" aria-label="Indicadores principais">
         <article class="metric">

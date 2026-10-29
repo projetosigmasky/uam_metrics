@@ -6,3 +6,8 @@ data/logs/
 run_config.local.json
 baseline_manifest.local.json
 calibration_audit/
+# Per-passage audit stays on the processing server; the site uses summaries.
+/docs/assets/data/critical_waypoints/passage_events.jsonl
+# Complete per-scenario JSON copies remain available for local audit/repacking.
+# The browser loads the bounded JavaScript fragments in assets/run_data instead.
+/docs/assets/data/runs/

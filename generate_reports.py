@@ -101,6 +101,8 @@ def main() -> None:
         if replacements != 1:
             raise ValueError(f"Expected one cache version for {name} in {index_path}")
     index_path.write_text(html, encoding="utf-8")
+    from src.uam_dashboard.publication import check_publication
+    check_publication(repository / "docs")
     print("Dashboard and waypoint ranking ready in docs/", flush=True)
 
 
