@@ -84,9 +84,10 @@ def write_metric_matrix(path: Path) -> None:
         lines.append("| " + " | ".join(cell(metric[key]) for key in keys) + " |")
     lines += [
         "", "## Organização da interface", "",
-        "A interface exibe exclusivamente os indicadores formais do capítulo 3, em cinco abas: Segurança, Eficiência, Capacidade, Previsibilidade e Equidade. "
+        "A primeira aba, Mapas, reúne as visualizações 2D e 3D, suas camadas e controles. "
+        "Os indicadores formais do capítulo 3 permanecem separados em cinco abas: Segurança, Eficiência, Capacidade, Previsibilidade e Equidade. "
         "Cada aba reúne seus KPIs, gráficos disponíveis e estabilidade entre réplicas. Indicadores sem cálculo ou dados ficam indisponíveis, sem imputar zeros. "
-        "Diagnósticos, cobertura técnica, geometrias e controles internos não são exibidos no site. Os dados de auditoria permanecem preservados nos arquivos.",
+        "A aba Mapas não exibe cards de KPIs nem tabelas de controle. Diagnósticos e cobertura técnica permanecem fora das abas de KPIs. Os dados de auditoria permanecem preservados nos arquivos.",
         "",
         "Capacidade P95 é definida pela Eq. 3.16 do Produto III. A média dos P95 por réplica do painel e o P95 das janelas agrupadas do ranking de waypoints são estimadores distintos. "
         "Nenhum deles representa, por si só, limite operacional seguro demonstrado.", "",

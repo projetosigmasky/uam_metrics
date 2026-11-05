@@ -39,7 +39,7 @@ class ScenarioCatalogTests(unittest.TestCase):
             assets = root / 'docs/assets'
             assets.mkdir(parents=True)
             (root / 'docs/index.html').write_text((ROOT / 'web/index.html').read_text(encoding='utf-8'), encoding='utf-8')
-            for name in ('data_bundle.js', 'waypoint_rankings.js', 'candidate_nodes.js', 'dashboard.js', 'dashboard.css', 'uam_projection.js', 'crossing_waypoints_3d.js', 'scenario_catalog.js'):
+            for name in ('data_bundle.js', 'waypoint_rankings.js', 'candidate_nodes.js', 'dashboard.js', 'dashboard.css', 'maps.js', 'metric_catalog.js', 'scenario_catalog.js'):
                 (assets / name).write_text('fixture')
             called = []
             def command(argv, **kwargs):
@@ -73,12 +73,18 @@ class ScenarioCatalogTests(unittest.TestCase):
             self.assertEqual(counts[1], counts[2])
 
     def test_canonical_catalog_profiles_and_references(self):
-        assert len(NOMINAL_CODES) == 36
+        assert len(NOMINAL_CODES) == 37
         for code in NOMINAL_CODES:
             row = SCENARIOS[code]
             metadata = experiment_metadata(f'STATELOG_produto2_{code.replace(".", "_")}_p100_r050_off.log')
             assert metadata['scenario_dimensions'] == row
             assert metadata['replica'] == 50
+            if code == 'C0':
+                assert row['vertiports'] == 0
+                assert metadata['network_stage'] is None
+                assert metadata['reference_variant_key'] is None
+                assert metadata['airspace'] == 'shared_reh'
+                continue
             assert scenario_stage(code) == ('1' if row['vertiports'] == 6 else '2')
             expected = 'c2' if code.startswith(('C3.', 'C4.')) else 'c1'
             assert metadata['reference_variant_key'] == f'{expected}.{scenario_stage(code)}'

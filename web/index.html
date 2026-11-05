@@ -4,6 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Indicadores de Desempenho UAM</title>
+  <link rel="stylesheet" href="assets/vendor/leaflet/leaflet.css" />
   <link rel="stylesheet" href="assets/dashboard.css?v=produto-iii-kpis" />
 </head>
 <body>
@@ -29,7 +30,8 @@
     <p id="protocol-data-note" class="protocol-note" hidden></p>
 
     <nav class="kpa-tabs" role="tablist" aria-label="Áreas de desempenho">
-      <button type="button" role="tab" id="tab-safety" aria-controls="panel-safety" aria-selected="true" data-kpa-tab="safety">Segurança</button>
+      <button type="button" role="tab" id="tab-maps" aria-controls="panel-maps" aria-selected="true" data-kpa-tab="maps">Mapas</button>
+      <button type="button" role="tab" id="tab-safety" aria-controls="panel-safety" aria-selected="false" data-kpa-tab="safety">Segurança</button>
       <button type="button" role="tab" id="tab-efficiency" aria-controls="panel-efficiency" aria-selected="false" data-kpa-tab="efficiency">Eficiência</button>
       <button type="button" role="tab" id="tab-capacity" aria-controls="panel-capacity" aria-selected="false" data-kpa-tab="capacity">Capacidade</button>
       <button type="button" role="tab" id="tab-predictability" aria-controls="panel-predictability" aria-selected="false" data-kpa-tab="predictability">Previsibilidade</button>
@@ -38,9 +40,101 @@
     <p id="scenario-load-status" class="protocol-note" role="status" aria-live="polite" hidden></p>
     <button id="scenario-load-retry" class="panel-button" type="button" hidden>Tentar carregar novamente</button>
     <main id="dashboard-content">
-      <p id="replica-universe" class="protocol-note"></p>
-      <p class="metric-hierarchy-note">Indicadores do Produto III · Capítulo 3</p>
-      <section id="panel-safety" data-kpa-panel="safety" role="tabpanel" aria-labelledby="tab-safety">
+      <p id="replica-universe" data-kpi-context class="protocol-note" hidden></p>
+      <p data-kpi-context class="metric-hierarchy-note" hidden>Indicadores do Produto III · Capítulo 3</p>
+      <section id="panel-maps" data-kpa-panel="maps" role="tabpanel" aria-labelledby="tab-maps">
+        <p id="map-replica-note" class="map-replica-note"></p>
+        <h2>Mapa 2D</h2>
+<div class="conflict-pair-filter" role="group" aria-label="Filtrar conflitos por combinação de veículos">
+          <span>Combinação:</span>
+          <button class="active" type="button" aria-pressed="true" data-conflict-pair="all">Todos</button>
+          <button type="button" aria-pressed="false" data-conflict-pair="evtol-evtol">eVTOL × eVTOL</button>
+          <button type="button" aria-pressed="false" data-conflict-pair="evtol-helicoptero">eVTOL × helicóptero</button>
+          <button type="button" aria-pressed="false" data-conflict-pair="helicoptero-helicoptero">Helicóptero × helicóptero</button>
+        </div>
+<section class="workspace">
+        <aside class="side-panel">
+          <div class="panel-section">
+            <h2>Camadas</h2>
+            <label><input type="checkbox" id="layer-official-reh" checked /> REH formal</label>
+            <label><input type="checkbox" id="layer-uam-corridors" checked /> Corredores UAM (projeção 2D)</label>
+            <label><input type="checkbox" id="layer-heat" checked /> Densidade (todas as réplicas)</label>
+            <label><input type="checkbox" id="layer-complexity" checked /> Cruzamentos UAM × REH (diagnóstico 3D)</label>
+            <label><input type="checkbox" id="layer-uam-junctions" checked /> Junções geométricas UAM</label>
+            <label><input type="checkbox" id="layer-candidate-nodes" checked /> Junções UAM e REH</label>
+            <label><input type="checkbox" id="layer-conflicts" checked /> Eventos LoWC/NMAC</label>
+            <button class="panel-button" id="fit-map" type="button">Reenquadrar mapa</button>
+            <div class="map-summary" aria-live="polite">
+              <strong id="map-info-title">Mapa operacional</strong>
+              <p id="map-info-text">Densidade agregada das réplicas e rede de corredores.</p>
+            </div>
+          </div>
+        </aside>
+
+        <section class="map-stage" aria-label="Mapa georreferenciado">
+          <div id="map"></div>
+          <div class="map-info" aria-live="polite">
+            <div class="map-legend">
+              <span data-legend-layer="official-reh"><i class="legend-swatch legend-official-reh"></i>REH formal</span>
+              <span data-legend-layer="uam-corridors"><i class="legend-swatch legend-uam-corridors"></i>Corredor UAM · projeção 2D</span>
+              <span data-legend-layer="heat"><i class="legend-swatch legend-heat"></i>Densidade</span>
+              <span data-legend-layer="complexity"><i class="legend-swatch legend-complexity"></i>Cruzamento UAM × REH 3D</span>
+              <span data-legend-layer="uam-junctions"><i class="legend-swatch legend-uam-node"></i>Junção geométrica UAM</span>
+              <span data-legend-layer="candidate-nodes"><i class="legend-swatch legend-uam-node"></i>Waypoint UAM nomeado</span>
+              <span data-legend-layer="candidate-nodes"><i class="legend-swatch legend-reh-node"></i>Fix REH nomeado</span>
+              <span data-legend-layer="conflicts" data-conflict="lowc"><i class="legend-swatch legend-lowc"></i>LoWC</span>
+              <span data-legend-layer="conflicts" data-conflict="nmac"><i class="legend-swatch legend-nmac"></i>NMAC</span>
+              <span data-legend-layer="conflicts" data-conflict="mac"><i class="legend-swatch legend-mac"></i>MAC</span>
+            </div>
+          </div>
+        </section>
+      </section>
+<section class="viewer3d-section" aria-labelledby="viewer3d-title">
+        <div class="section-heading viewer3d-heading">
+          <div>
+            <p class="eyebrow">Espaço aéreo em três dimensões</p>
+            <h2 id="viewer3d-title">Trajetórias e conflitos ao longo da simulação</h2>
+          </div>
+          <p class="viewer3d-note" id="viewer3d-note">Plano-base a 2.621 pés MSL. Arraste para girar e use a roda para aproximar.</p>
+        </div>
+        <div class="viewer3d-controls" aria-label="Controles da visualização 3D">
+          <button id="viewer3d-play" type="button">Reproduzir</button>
+          <label class="viewer3d-timeline">
+            <span>Tempo <strong id="viewer3d-time-label">--:--:--</strong></span>
+            <input id="viewer3d-time" type="range" min="0" max="0" step="5" value="0" />
+          </label>
+          <label>
+            <span>Velocidade</span>
+            <select id="viewer3d-speed">
+              <option value="1">1×</option>
+              <option value="5">5×</option>
+              <option value="20" selected>20×</option>
+            </select>
+          </label>
+          <label>
+            <span>Exagero vertical</span>
+            <select id="viewer3d-vertical-scale">
+              <option value="1">1×</option>
+              <option value="5" selected>5×</option>
+              <option value="10">10×</option>
+            </select>
+          </label>
+          <button id="viewer3d-reset" type="button">Restaurar vista</button>
+        </div>
+        <div class="viewer3d-stage">
+          <canvas id="viewer3d-canvas" role="img" aria-label="Representação tridimensional animada das trajetórias de aeronaves"></canvas>
+          <div class="viewer3d-status" id="viewer3d-status" aria-live="polite">Carregando dados 3D…</div>
+          <div class="viewer3d-legend" aria-label="Legenda da visualização 3D">
+            <span><i class="viewer3d-dot evtol"></i>eVTOL</span>
+            <span><i class="viewer3d-dot helicopter"></i>Helicóptero</span>
+            <span><i class="viewer3d-dot lowc"></i>LoWC</span>
+            <span><i class="viewer3d-dot nmac"></i>NMAC</span>
+            <span><i class="viewer3d-dot mac"></i>MAC</span>
+          </div>
+        </div>
+      </section>
+      </section>
+      <section id="panel-safety" data-kpa-panel="safety" role="tabpanel" aria-labelledby="tab-safety" hidden>
         <h2>Segurança</h2>
         <div class="metric-grid" id="kpis-safety"></div>
         <div id="charts-safety" class="charts"></div>
@@ -86,9 +180,14 @@
         </details>
       </section>
     </main>
+    <script src="assets/vendor/leaflet/leaflet.js"></script>
+    <script src="assets/vendor/leaflet/leaflet-heat.js"></script>
+    <script src="assets/candidate_nodes.js?v=maps-v1"></script>
+    <script src="assets/waypoint_rankings.js?v=maps-v1"></script>
     <script src="assets/data_bundle.js?v=produto-iii-kpis"></script>
     <script src="assets/metric_catalog.js?v=produto-iii-kpis"></script>
     <script src="assets/scenario_catalog.js?v=produto-iii-kpis"></script>
     <script src="assets/dashboard.js?v=produto-iii-kpis"></script>
+    <script src="assets/maps.js?v=maps-v1"></script>
 </body>
 </html>

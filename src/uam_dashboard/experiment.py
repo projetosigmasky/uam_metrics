@@ -47,7 +47,7 @@ def experiment_metadata(path: str | Path) -> dict[str, Any]:
             "scenario_key": scenario,
             "replica": int(values["replica"]) if values["replica"] else None,
             "scenario_dimensions": dimensions,
-            "reference_variant_key": (f"c{2 if rank in {3, 4, 5, 6} else 1}.{stage}"
+            "reference_variant_key": (None if scenario == "C0" else f"c{2 if rank in {3, 4, 5, 6} else 1}.{stage}"
                                       if stage else "c1" if len(parts) == 1 else None),
             "mvp_enabled": values["mode"].lower() == "mvp",
             "disturbed": dimensions.get("condition") == "disturbed",
@@ -196,7 +196,7 @@ def scenario_stage(code: str) -> str | None:
 
 def scenario_airspace(code: str) -> str | None:
     family = code.upper().split(".")[0]
-    if family in {"C1", "C7", "C8", "C9", "C10"}:
+    if family in {"C0", "C1", "C7", "C8", "C9", "C10"}:
         return "shared_reh"
     if family in {"C2", "C3", "C4", "C5", "C6"}:
         return "dedicated_uam"

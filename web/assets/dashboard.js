@@ -1,4 +1,4 @@
-const state = {runs: [], runSummaries: [], comparison: null, activeRunIndex: 0, activeDayKey: null, activeKpa: "safety"};
+const state = {runs: [], runSummaries: [], comparison: null, activeRunIndex: 0, activeDayKey: null, activeKpa: "maps"};
 const pendingRunLoads = new Map();
 const runPartReceivers = new Map();
 const cachedRunIndices = new Map();
@@ -55,7 +55,7 @@ const scenarioFilters = [
   {id: "corridor-select", key: "airspace", options: [["shared_reh", "Compartilhado"], ["dedicated_uam", "Segregado"]]},
   {id: "management-select", key: "management", options: [["none", "Sem desconflito"], ["dcb_milp_waypoint", "DCB MILP Waypoint"], ["dcb_milp_grid", "DCB MILP Quadrícula"], ["micro_milp", "Micro Chen"], ["micro_moolchandani", "Micro Moolchandani"]]},
   {id: "condition-select", key: "condition", options: [["nominal", "Nominal"], ["disturbed", "Perturbado"]]},
-  {id: "vertiports-select", key: "vertiports", options: [["6", "6"], ["12", "12"], ["", "Não informado"]]},
+  {id: "vertiports-select", key: "vertiports", options: [["0", "0 — C0, somente helicópteros"], ["6", "6"], ["12", "12"], ["", "Não informado"]]},
   {id: "separation-select", key: "separation_seconds", options: [["", "Não se aplica"], ["11", "11 segundos"], ["23", "23 segundos"], ["38", "38 segundos"]]},
 ];
 
@@ -120,7 +120,7 @@ function populateScenarioFilters(changedIndex = -1) {
     const value = available.has(desired) ? desired : filter.options.find(([value]) => available.has(value))?.[0] ?? "";
     select.innerHTML = filter.options.map(([option, label]) => {
       if (filter.key === "separation_seconds" && option === "" && candidates.some(i => runDimensions(state.runs[i]).management?.startsWith("micro_"))) label = "Não informado";
-      return `<option value="${option}"${available.has(option) ? "" : " disabled"}>${label}${available.has(option) ? "" : " · indisponível"}</option>`;
+      return `<option value="${option}"${available.has(option) ? "" : " disabled"}>${label}${available.has(option) ? "" : filter.key === "vertiports" && option === "0" ? " · aguardando dados" : " · indisponível"}</option>`;
     }).join("");
     select.value = value;
     select.disabled = available.size <= 1;
@@ -318,7 +318,7 @@ function renderStability() {
   }
 }
 function activateKpa(kpa) {
-  state.activeKpa = Object.hasOwn(kpaNames, kpa) ? kpa : "safety";
+  state.activeKpa = kpa === "maps" || Object.hasOwn(kpaNames, kpa) ? kpa : "maps";
   document.querySelectorAll("[data-kpa-tab]").forEach(button => {
     const active = button.dataset.kpaTab === state.activeKpa;
     button.classList.toggle("active", active);
@@ -326,6 +326,8 @@ function activateKpa(kpa) {
     button.tabIndex = active ? 0 : -1;
   });
   document.querySelectorAll("[data-kpa-panel]").forEach(panel => { panel.hidden = panel.dataset.kpaPanel !== state.activeKpa; });
+  document.querySelectorAll("[data-kpi-context]").forEach(node => { node.hidden = state.activeKpa === "maps"; });
+  updateMapsVisibility();
 }
 function renderDashboard(model) {
   const normalized = normalizeModel(model);
@@ -355,6 +357,7 @@ function renderSelectedRun() {
   if (run.data_parts) {
     const index = state.activeRunIndex;
     content.hidden = true;
+    render3DVisualization(null, null);
     status.hidden = false;
     retry.hidden = true;
     status.textContent = `Carregando cenário ${run.metadata?.scenario_key || run.name}…`;
@@ -369,6 +372,7 @@ function renderSelectedRun() {
   content.hidden = false;
   status.hidden = true;
   retry.hidden = true;
+  renderMaps(run);
   renderMetrics(run.dashboard);
   renderCharts(run.dashboard);
   renderCapacity(run.dashboard);
@@ -376,6 +380,7 @@ function renderSelectedRun() {
   setText("replica-universe", `Cenário ${run.metadata?.scenario_key || run.name} · Média de ${run.replica_count || 1} réplicas. Indicadores sem cálculo ou dados disponíveis são identificados como indisponíveis.`);
 }
 document.addEventListener("DOMContentLoaded", () => {
+  initMaps();
   document.getElementById("scenario-load-retry").addEventListener("click", renderSelectedRun);
   document.getElementById("run-select").addEventListener("change", event => {
     state.activeRunIndex = Number(event.target.value); populateScenarioFilters(); renderSelectedRun();
@@ -395,6 +400,6 @@ document.addEventListener("DOMContentLoaded", () => {
       event.preventDefault(); tabs[next].focus(); activateKpa(tabs[next].dataset.kpaTab);
     });
   });
-  activateKpa("safety");
+  activateKpa("maps");
   renderDashboard(window.__UAM_DASHBOARD_DATA__ || {runs: []});
 });

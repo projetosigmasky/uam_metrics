@@ -33,3 +33,24 @@ assert.equal((evaluate('replicaSvg([1,null,3], "KPI")').match(/<circle /g) || []
 assert.ok(!evaluate('replicaSvg([1,null,3], "KPI")').includes('polyline'));
 assert.equal(evaluate('normalizeModel({runs:[]}).runs.length'), 0);
 console.log('KPI visibility checks passed: formal catalog, legacy series routing, diagnostic exclusion and missing values.');
+
+assert.ok(evaluate('scenarioFilters.find(filter => filter.key === "vertiports").options.some(([value]) => value === "0")'));
+// C0 must never display UAM geometry or UAM nodes, including global fallbacks.
+vm.runInContext(fs.readFileSync('web/assets/maps.js', 'utf8'), context);
+vm.runInContext(`
+  const controls = {};
+  document.getElementById = id => controls[id] ||= {};
+  document.querySelectorAll = () => [];
+  render3DVisualization = () => {};
+  updateMapsVisibility = () => {};
+  setText = () => {};
+  const feature = network => ({properties: {network}});
+  renderMaps({metadata: {scenario_key: "C0"}, dashboard: {},
+    uam_projection: {features: [feature("UAM")]},
+    uam_junctions: {features: [feature("UAM")]},
+    candidate_nodes: {features: [feature("UAM"), feature("REH")]}});
+`, context);
+assert.equal(evaluate('state.candidateNodes.features.length'), 1);
+assert.equal(evaluate('state.candidateNodes.features[0].properties.network'), 'REH');
+assert.equal(evaluate('state.uamProjection.features.length'), 0);
+assert.equal(evaluate('controls["layer-uam-corridors"].disabled'), true);

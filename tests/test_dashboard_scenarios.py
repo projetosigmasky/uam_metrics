@@ -59,7 +59,8 @@ class DashboardScenarioTests(unittest.TestCase):
             html=(output/'index.html').read_text(encoding='utf-8')
             self.assertIn('panel-predictability',html)
             self.assertIn('panel-equity',html)
-            self.assertNotIn('viewer3d-canvas',html)
+            self.assertIn('viewer3d-canvas',html)
+            self.assertTrue((assets/'maps.js').is_file())
             self.assertNotIn('kpa-time-to-conflict',html)
             for retired in ('id="layer-tracks"','id="layer-planned"','baseline_calibration'):
                 self.assertNotIn(retired,html)

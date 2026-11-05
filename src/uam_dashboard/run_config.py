@@ -76,7 +76,8 @@ def discover_nominal_runs(settings: dict, config_path: Path) -> RunSelection:
     return RunSelection(root, tuple(p for s in selections.values() for p in s.log_paths),
                         tuple(p for s in selections.values() for p in s.scenario_paths),
                         first.dashboard_workers, first.ranking_workers, first.uam_corridor_csv_path,
-                        {code: s.uam_corridor_csv_by_scenario[code] for code, s in selections.items()},
+                        {code: s.uam_corridor_csv_by_scenario[code] for code, s in selections.items()
+                         if code in s.uam_corridor_csv_by_scenario},
                         {code: s.run_dir.name for code, s in selections.items()}, missing)
 
 
@@ -146,7 +147,7 @@ def _load_single_run(settings: dict, config_path: Path) -> RunSelection:
     if len(set(matched_scenarios)) != len(log_paths):
         raise ValueError("Each STATELOG must match a distinct SCN from the same orchestrator run")
     for code in scenario_codes:
-        if "." not in code:
+        if "." not in code and code != "C0":
             continue
         replica_numbers = {log_experiment_metadata(log, scenario_paths).get("replica")
                            for log in log_paths if log.parent.name.upper().replace("_", ".") == code}
@@ -162,11 +163,14 @@ def _load_single_run(settings: dict, config_path: Path) -> RunSelection:
         if code not in by_scenario and stage in by_stage:
             by_scenario[code] = resolve_corridor(by_stage[stage])
     if by_scenario:
-        missing = set(scenario_codes) - set(by_scenario)
+        # C0 has no UAM network or vertiport stage.
+        missing = set(scenario_codes) - {"C0"} - set(by_scenario)
         if missing: raise ValueError(f"Select a corridor CSV explicitly for: {sorted(missing)}")
         from .uam_corridor_parser import load_uam_corridor_network
         from .corridor_validation import validate_c2_corridor_scenarios
         for code in scenario_codes:
+            if code == "C0":
+                continue
             network = load_uam_corridor_network(by_scenario[code])
             stage = scenario_stage(code)
             if stage and len(network["vertiports"]) != {"1": 6, "2": 12}[stage]:
@@ -175,11 +179,15 @@ def _load_single_run(settings: dict, config_path: Path) -> RunSelection:
                 validate_c2_corridor_scenarios([s for log, s in zip(log_paths, matched_scenarios)
                                                if log_experiment_metadata(log, scenario_paths)["scenario_key"] == code], network["routes"])
         return RunSelection(run_dir, tuple(log_paths), tuple(matched_scenarios), dashboard_workers, ranking_workers,
-                            by_scenario[scenario_codes[0]], by_scenario,
+                            next(iter(by_scenario.values())), by_scenario,
                             {code: run_dir.name for code in scenario_codes})
     if any("." in code for code in scenario_codes):
         raise ValueError("Dotted scenarios require uam_corridor_csv_by_stage or uam_corridor_csv_by_scenario")
     corridor = settings.get("uam_corridor_csv")
+    # The report pipeline also exports a global geometry inventory. C0-only
+    # selection may use that CSV without assigning a UAM network to C0.
+    if not corridor and scenario_codes == ["C0"] and by_stage:
+        corridor = next(iter(by_stage.values()))
     corridor_path = Path(corridor).expanduser() if corridor else None
     if corridor_path is not None:
         if not corridor_path.is_absolute(): corridor_path = config_path.resolve().parent / corridor_path
@@ -193,4 +201,5 @@ def _load_single_run(settings: dict, config_path: Path) -> RunSelection:
             import hashlib
             if hashlib.sha256(corridor_path.read_bytes()).hexdigest() != settings["uam_corridor_sha256"]:
                 raise ValueError("Corridor source hash differs from run configuration")
-    return RunSelection(run_dir, tuple(log_paths), scenario_paths, dashboard_workers, ranking_workers, corridor_path)
+    return RunSelection(run_dir, tuple(log_paths), tuple(matched_scenarios), dashboard_workers, ranking_workers,
+                        corridor_path, source_runs={code: run_dir.name for code in scenario_codes})

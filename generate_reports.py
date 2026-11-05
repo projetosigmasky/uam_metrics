@@ -90,7 +90,7 @@ def main() -> None:
     )
     index_path = repository / "docs" / "index.html"
     html = index_path.read_text(encoding="utf-8")
-    for name in ("data_bundle.js", "waypoint_rankings.js", "candidate_nodes.js", "dashboard.js", "dashboard.css", "uam_projection.js", "crossing_waypoints_3d.js", "scenario_catalog.js"):
+    for name in ("data_bundle.js", "waypoint_rankings.js", "candidate_nodes.js", "dashboard.js", "dashboard.css", "maps.js", "metric_catalog.js", "scenario_catalog.js"):
         asset = repository / "docs" / "assets" / name
         digest = hashlib.sha256(asset.read_bytes()).hexdigest()[:12]
         html, replacements = re.subn(

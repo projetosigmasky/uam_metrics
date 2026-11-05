@@ -2,6 +2,7 @@
   "runs_root": "~/runs",
   "run_name": "auto",
   "scenario_codes": [
+    "C0",
     "C1.1",
     "C1.2",
     "C2.1",

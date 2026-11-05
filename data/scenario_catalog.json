@@ -1,7 +1,18 @@
 {
   "source": "rmsp-uam-simulations/data/scenarios/nominal_catalog_20261027.xlsx",
   "sha256": "aa9ae5f9a225bfacbd7bef1be389dc139b94d0fe9ca96864dfe47af32b5fb12d",
+  "additional_scenarios_source": "rmsp-uam-simulations/uam_sim/scenarios/nominal.py:C0_DEFINITION (2026-11-03)",
   "scenarios": [
+    {
+      "scenario": "C0",
+      "airspace": "shared_reh",
+      "management": "none",
+      "condition": "nominal",
+      "vertiports": 0,
+      "separation_seconds": null,
+      "lowc_distance_nm": null,
+      "source": "helicopter_reference"
+    },
     {
       "scenario": "C1.1",
       "airspace": "shared_reh",

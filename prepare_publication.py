@@ -20,8 +20,9 @@ def main():
     manifest = repack_publication(args.output)
     source = Path(__file__).resolve().parent / "web"
     # Refresh only the loader/UI, preserving generated rankings and geometry.
-    for relative in ("index.html", "assets/dashboard.js", "assets/dashboard.css"):
+    for relative in ("index.html", "assets/dashboard.js", "assets/dashboard.css", "assets/maps.js"):
         shutil.copy2(source / relative, args.output / relative)
+    shutil.copytree(source / "assets/vendor", args.output / "assets/vendor", dirs_exist_ok=True)
     write_metric_catalog_asset(args.output)
     write_metric_matrix(args.output / "MATRIZ_KPIS_PRODUTO_3.md")
     (args.output / "assets/scenario_catalog.js").write_text(

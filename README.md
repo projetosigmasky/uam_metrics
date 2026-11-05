@@ -1,5 +1,10 @@
 # UAM KPI/KPA Dashboard
 
+Para a nova rodada de **C0 + 36 variantes (1.850 STATELOGs)**, siga
+[Processar a rodada C0 no Lessonia](docs/PROCESSAR_RODADA_C0_LESSONIA.md).
+O suporte de processamento reconhece C0 sem estágio de vertiportos. Fixe o ID
+da RUN nova para evitar combinar políticas de roteamento de rodadas distintas.
+
 Dashboard estatico para analisar logs `STATELOG` do BlueSky em cenarios de corredor aereo urbano na RMSP.
 
 Este repositorio vincula as metricas ao `Produto3_vfinal_ProjetoSIGMASky.pdf` (Produto 3, versao 2.0, 31/07/2026). A saida principal e a pasta `docs/`, pronta para GitHub Pages. O PDF local e ignorado pelo Git; o catalogo versionado registra suas paginas e equacoes.
