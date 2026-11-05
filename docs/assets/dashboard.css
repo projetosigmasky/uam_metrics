@@ -1139,3 +1139,16 @@ input[type="checkbox"] {
 .auxiliary-stability > summary { cursor: pointer; padding: 12px 0; font-weight: 600; }
 .auxiliary-stability > summary:focus-visible { outline: 2px solid var(--blue); outline-offset: 3px; }
 .resource-analysis > .metric-grid { margin-bottom: 18px; }
+/* Product III: five independent KPA panels, with only formal KPIs. */
+[data-kpa-panel] > h2 { margin: 8px 0 20px; }
+.kpi-value { font-size: 20px; font-weight: 650; overflow-wrap: anywhere; }
+.kpi-value p { margin: 10px 0; }
+.metric h3 { font-size: 16px; margin: 0 0 12px; }
+.metric small { display: block; margin-top: 10px; color: var(--muted); }
+.charts:empty { display: none; }
+.kpa-tabs button:focus-visible { outline: 3px solid var(--blue); outline-offset: 3px; }
+
+#charts-capacity > .table-wrap { grid-column: 1 / -1; }
+@media (max-width: 600px) {
+  .kpa-tabs { flex-wrap: wrap; }
+}

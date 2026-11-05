@@ -1,5 +1,7 @@
 """Publication hierarchy and traceability links must remain auditable."""
 import ast
+import shutil
+import subprocess
 from html.parser import HTMLParser
 from pathlib import Path
 import tempfile
@@ -38,23 +40,23 @@ class Structure(HTMLParser):
 
 
 class MetricPresentationTests(unittest.TestCase):
-    def test_optional_content_is_closed_and_primary_capacity_is_visible(self):
-        dom = Structure((ROOT / 'web/index.html').read_text(encoding='utf-8'))
-        for panel in ('overview', 'safety', 'efficiency', 'capacity'):
-            node, _ = dom.nodes[f'auxiliary-{panel}']
-            self.assertEqual(node['tag'], 'details')
-            self.assertNotIn('open', node)
-        for name in ('metric-records', 'metric-aircraft', 'metric-peak', 'kpa-safety-sample',
-                     'kpa-spatial-adherence', 'capacity-area', 'capacity-crossings',
-                     'chart-active', 'chart-altitude', 'chart-separation'):
-            _, parents = dom.nodes[name]
-            self.assertTrue(any('auxiliary-metrics' in p.get('class', '') for p in parents), name)
-        for name in ('metric-lowc', 'metric-nmac', 'metric-flight-time', 'metric-distance',
-                     'chart-severity', 'capacity-table-body', 'capacity-atd', 'waypoint-ranking-table-body'):
-            _, parents = dom.nodes[name]
-            self.assertFalse(any('auxiliary-metrics' in p.get('class', '') for p in parents), name)
-        _, parents = dom.nodes['capacity-table-body']
-        self.assertFalse(any(p['tag'] == 'details' for p in parents))
+    def test_only_five_formal_kpa_panels_are_published(self):
+        html = (ROOT / 'web/index.html').read_text(encoding='utf-8')
+        dom = Structure(html)
+        for panel in ('safety', 'efficiency', 'capacity', 'predictability', 'equity'):
+            self.assertEqual(dom.nodes[f'panel-{panel}'][0]['role'], 'tabpanel')
+            self.assertIn(f'kpis-{panel}', dom.nodes)
+            self.assertIn(f'stability-{panel}', dom.nodes)
+        for removed in ('auxiliary-', 'chart-severity', 'capacity-atd', 'traceability-table', 'viewer3d', 'data-kpa-tab="overview"'):
+            self.assertNotIn(removed, html)
+        self.assertEqual({m['kpa'] for m in METRIC_CATALOG},
+                         {'Segurança', 'Eficiência', 'Capacidade', 'Previsibilidade', 'Equidade'})
+        self.assertEqual(len(METRIC_CATALOG), 22)
+        self.assertTrue(all(m['presentation_group'] == 'kpi' for m in METRIC_CATALOG))
+
+    @unittest.skipUnless(shutil.which('node'), 'Node.js required for JavaScript presentation checks')
+    def test_public_series_exclude_internal_diagnostics(self):
+        subprocess.run(['node', 'tests/test_kpi_visibility.cjs'], cwd=ROOT, check=True, capture_output=True, text=True)
 
     def test_traceability_points_to_existing_functions(self):
         ids = [m['id'] for m in METRIC_CATALOG]

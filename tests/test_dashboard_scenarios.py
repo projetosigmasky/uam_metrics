@@ -57,7 +57,9 @@ class DashboardScenarioTests(unittest.TestCase):
             self.assertFalse((output/'calibration.html').exists())
             self.assertEqual((assets/'baseline_calibration_data.js').read_text(),'actual numerical results')
             html=(output/'index.html').read_text(encoding='utf-8')
-            self.assertIn('viewer3d-canvas',html)
+            self.assertIn('panel-predictability',html)
+            self.assertIn('panel-equity',html)
+            self.assertNotIn('viewer3d-canvas',html)
             self.assertNotIn('kpa-time-to-conflict',html)
             for retired in ('id="layer-tracks"','id="layer-planned"','baseline_calibration'):
                 self.assertNotIn(retired,html)

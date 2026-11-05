@@ -1,38 +1,4 @@
-const state = {
-  map: null,
-  tracksLayer: null,
-  officialRehLayer: null,
-  uamProjectionLayer: null,
-  uamJunctionLayer: null,
-  uamCenterlines: {type: "FeatureCollection", features: []},
-  uamJunctions: window.__UAM_GEOMETRIC_JUNCTIONS__ || { type: "FeatureCollection", features: [] },
-  plannedLayer: null,
-  heatLayer: null,
-  atdHotspotLayer: null,
-  complexityLayer: null,
-  candidateNodeLayer: null,
-  conflictLayer: null,
-  resourceHighlightLayer: null,
-  baseLayers: {},
-  overlayLayers: {},
-  lastTracks: null,
-  lastConflicts: null,
-  lastOfficialReh: null,
-  lastCapacity: null,
-  candidateNodes: window.__UAM_CANDIDATE_NODES__ || { type: "FeatureCollection", features: [] },
-  waypointRankings: window.__UAM_WAYPOINT_RANKINGS__ || [],
-  uamProjection: window.__UAM_CORRIDOR_PROJECTION__ || { type: "FeatureCollection", features: [] },
-  crossingCandidates: window.__UAM_CROSSINGS_3D__ || { type: "FeatureCollection", features: [] },
-  runs: [],
-  runSummaries: [],
-  comparison: null,
-  activeRunIndex: 0,
-  activeDayKey: null,
-  trajectoryVolumeFilter: "all",
-  conflictPairFilter: "all",
-  activeKpa: "overview",
-};
-
+const state = {runs: [], runSummaries: [], comparison: null, activeRunIndex: 0, activeDayKey: null, activeKpa: "safety"};
 const pendingRunLoads = new Map();
 const runPartReceivers = new Map();
 const cachedRunIndices = new Map();
@@ -101,748 +67,12 @@ function filterValue(dimensions, key) {
   return String(dimensions?.[key] ?? "");
 }
 
-const viewer3d = {
-  data: null,
-  conflicts: [],
-  macTimestampAvailable: false,
-  currentTime: 0,
-  playing: false,
-  speed: 20,
-  verticalScale: 5,
-  yaw: -0.65,
-  pitch: 0.58,
-  zoom: 1,
-  lastFrame: null,
-  animationFrame: null,
-  dragging: false,
-  pointerX: 0,
-  pointerY: 0,
-};
-
-document.addEventListener("DOMContentLoaded", () => {
-  bindLayerControls();
-  bind3DControls();
-  bindConflictPairControls();
-  bindKpaTabs();
-  bindCapacityResourceLinks();
-  if (typeof window.L !== "undefined") {
-    initMap();
-  } else {
-    showMapUnavailable();
-  }
-  loadStaticDashboard().catch((error) => {
-    console.error(error);
-    setText("comparison-summary", "Falha ao carregar o pacote de dados do dashboard.");
-  });
-});
-
-function showMapUnavailable() {
-  const map = document.getElementById("map");
-  if (map) {
-    map.innerHTML = `
-      <div class="map-unavailable">
-        <strong>Mapa indisponivel</strong>
-        <span>O Leaflet externo nao foi carregado. Indicadores, tabelas e graficos continuam disponiveis.</span>
-      </div>`;
-  }
-}
-
-async function loadStaticDashboard() {
-  if (window.__UAM_DASHBOARD_DATA__) {
-    renderDashboard(window.__UAM_DASHBOARD_DATA__);
-    return;
-  }
-
-  const [dashboard, tracks, plannedRoutes, officialReh, conflicts, heatmap, comparison, trajectory3d] = await Promise.all([
-    fetchJson("assets/data/dashboard.json"),
-    fetchJson("assets/data/tracks.geojson"),
-    fetchJson("assets/data/planned_routes.geojson"),
-    fetchJson("assets/data/official_reh.geojson"),
-    fetchJson("assets/data/conflicts.geojson"),
-    fetchJson("assets/data/heatmap_points.json"),
-    fetchJson("assets/data/comparison.json"),
-    fetchJson("assets/data/trajectory_3d.json"),
-  ]);
-
-  renderDashboard({ dashboard, tracks, planned_routes: plannedRoutes, official_reh: officialReh, conflicts, heatmap, comparison, trajectory_3d: trajectory3d });
-}
-
-async function fetchJson(path) {
-  return new Promise((resolve, reject) => {
-    const request = new XMLHttpRequest();
-    request.open("GET", path, true);
-    request.overrideMimeType("application/json");
-    request.onload = () => {
-      if (request.status >= 200 && request.status < 300) {
-        resolve(JSON.parse(request.responseText));
-      } else {
-        reject(new Error(`Falha ao carregar ${path}`));
-      }
-    };
-    request.onerror = () => reject(new Error(`Falha ao carregar ${path}`));
-    request.send();
-  });
-}
-
-function initMap() {
-  state.map = L.map("map", {
-    preferCanvas: false,
-    zoomControl: true,
-    zoomSnap: 0.25,
-    wheelPxPerZoomLevel: 90,
-  }).setView([-23.5505, -46.6333], 10);
-
-  const heatPane = state.map.createPane("heatPane");
-  heatPane.style.zIndex = 360;
-  const routePane = state.map.createPane("routePane");
-  routePane.style.zIndex = 460;
-  const conflictPane = state.map.createPane("conflictPane");
-  conflictPane.style.zIndex = 560;
-
-  const openStreetMap = L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-    maxNativeZoom: 19,
-    maxZoom: 20,
-    updateWhenIdle: true,
-    keepBuffer: 4,
-  }).addTo(state.map);
-
-  state.baseLayers = {
-    "OpenStreetMap": openStreetMap,
-  };
-}
-
-function bindLayerControls() {
-  document.getElementById("scenario-load-retry").addEventListener("click", renderSelectedRun);
-  document.getElementById("layer-official-reh").addEventListener("change", (event) => toggleLayer("officialRehLayer", event));
-  document.getElementById("layer-uam-corridors").addEventListener("change", (event) => toggleLayer("uamProjectionLayer", event));
-  document.getElementById("layer-uam-junctions").addEventListener("change", (event) => toggleLayer("uamJunctionLayer", event));
-  document.getElementById("layer-heat").addEventListener("change", (event) => toggleLayer("heatLayer", event));
-  document.getElementById("layer-complexity").addEventListener("change", (event) => toggleLayer("complexityLayer", event));
-  document.getElementById("layer-candidate-nodes").addEventListener("change", (event) => toggleLayer("candidateNodeLayer", event));
-  document.getElementById("layer-conflicts").addEventListener("change", (event) => toggleLayer("conflictLayer", event));
-  document.getElementById("fit-map").addEventListener("click", () => {
-    if (state.map) fitMapToOperationalArea(state.lastTracks, state.lastConflicts);
-  });
-  document.getElementById("run-select").addEventListener("change", (event) => {
-    state.activeRunIndex = Number(event.target.value);
-    populateScenarioFilters();
-    renderSelectedRun();
-  });
-  scenarioFilters.forEach((filter, index) => {
-    document.getElementById(filter.id).addEventListener("change", () => {
-      populateScenarioFilters(index);
-      renderSelectedRun();
-    });
-  });
-  document.getElementById("day-select").addEventListener("change", (event) => {
-    state.activeDayKey = event.target.value;
-    renderDayComparison();
-    populateRunSelect();
-  });
-}
-
-function toggleLayer(layerName, event) {
-  const layer = state[layerName];
-  if (!layer || !state.map) {
-    updateMapLegend();
-    return;
-  }
-  if (event.target.checked) {
-    layer.addTo(state.map);
-  } else {
-    state.map.removeLayer(layer);
-  }
-  updateMapLegend();
-}
-
-function renderDashboard(model) {
-  const normalized = normalizeModel(model);
-  // Legacy C1/C2 results cannot be relabeled as the newer baseline scenarios.
-  const retained = normalized.runs.filter(run => (run.metadata?.scenario_key && !/^C[12]$/.test(run.metadata.scenario_key)) || run.metadata?.experiment_family === "bimtra");
-  if (!retained.length) {
-    const note = document.getElementById("protocol-data-note");
-    note.hidden = false;
-    note.textContent = "C1.1, C1.2, C2.1 e C2.2: aguardando o processamento dos STATELOGs. Os resultados C1/C2 anteriores foram retirados da visualização.";
-    document.getElementById("day-select").innerHTML = '<option>Demanda P100</option>';
-    document.getElementById("run-select").innerHTML = ["C1.1", "C1.2", "C2.1", "C2.2"].map(code => `<option>${code} · aguardando processamento</option>`).join("");
-    document.getElementById("day-select").disabled = true;
-    document.getElementById("run-select").disabled = true;
-    scenarioFilters.forEach(filter => {
-      const select = document.getElementById(filter.id);
-      select.innerHTML = '<option>Aguardando resultados</option>';
-      select.disabled = true;
-    });
-    setText("scenario-selection", "Nenhum cenário processado disponível.");
-    setText("comparison-summary", "Reprocesse a RUN com generate_reports.py --config run_config.json para publicar os quatro cenários e o heatmap de todas as réplicas.");
-    setText("map-info-text", "Heatmap indisponível até o processamento dos STATELOGs dos novos cenários.");
-    return;
-  }
-  if (retained.length !== normalized.runs.length) {
-    const indices = new Map(normalized.runs.map((run, index) => [run, index]));
-    const remap = new Map(retained.map((run, index) => [indices.get(run), index]));
-    normalized.comparison = {...normalized.comparison, days: (normalized.comparison?.days || []).map(day => ({...day,
-      rows: day.rows.filter(row => remap.has(row.run_index)).map(row => ({...row, run_index: remap.get(row.run_index)}))
-    })).filter(day => day.rows.length)};
-    normalized.runs = retained;
-  }
-  state.runs = normalized.runs;
-  state.runSummaries = [...state.runs];
-  cachedRunIndices.clear();
-  state.comparison = normalized.comparison;
-  state.activeRunIndex = Math.min(state.activeRunIndex, state.runs.length - 1);
-
-  renderComparison(normalized);
-  const source = window.__UAM_METRIC_CATALOG__;
-  renderTraceability(source?.metrics || normalized.metric_catalog || normalized.dashboard.metric_catalog || []);
-  const current = normalized.dashboard?.metric_catalog_version === source?.version;
-  setText("metric-source-note", source
-    ? `${source.version} · ${source.document}.${source.reviewed_on ? ` Revisão do código: ${source.reviewed_on}.` : ""} ${current ? "Resultados processados com este protocolo." : "O catálogo foi atualizado; os resultados de simulação publicados ainda requerem reprocessamento com este protocolo."}`
-    : "Referência do catálogo indisponível.");
-  const protocolNote = document.getElementById("protocol-data-note");
-  if (protocolNote) {
-    protocolNote.hidden = !source || current;
-    protocolNote.textContent = source && !current
-      ? "Catálogo vinculado ao Produto 3 final. Os indicadores numéricos publicados ainda usam dados processados anteriormente; reexecute generate_dashboard.py para aplicar os parâmetros e fórmulas atualizados."
-      : "";
-  }
-  renderSelectedRun();
-}
-
 function normalizeModel(model) {
-  if (model.runs?.length) {
-    return model;
-  }
-
-  const singleRun = {
-    id: "run_1",
-    name: model.dashboard.source_log,
-    dashboard: model.dashboard,
-    metadata: model.dashboard.metadata,
-    tracks: model.tracks,
-    planned_routes: model.planned_routes,
-    official_reh: model.official_reh || emptyFeatureCollection(),
-    conflicts: model.conflicts,
-    heatmap: model.heatmap,
-    trajectory_3d: model.trajectory_3d || null,
-  };
-  return {
-    ...model,
-    runs: [singleRun],
-    comparison: model.comparison || { run_count: 1, rows: [] },
-  };
-}
-
-function renderSelectedRun() {
-  const run = state.runs[state.activeRunIndex] || state.runs[0];
-  if (!run) return;
-  const content = document.getElementById("dashboard-content");
-  const status = document.getElementById("scenario-load-status");
-  const retry = document.getElementById("scenario-load-retry");
-  if (run.data_parts) {
-    const index = state.activeRunIndex;
-    content.hidden = true;
-    content.setAttribute("aria-busy", "true");
-    status.hidden = false;
-    retry.hidden = true;
-    status.textContent = `Carregando dados do cenário ${run.metadata?.scenario_key || run.name}…`;
-    render3DVisualization(null, null);
-    loadRunDetails(index).then(() => {
-      if (state.activeRunIndex === index) renderSelectedRun();
-    }).catch(error => {
-      console.error(error);
-      if (state.activeRunIndex !== index) return;
-      status.textContent = "Não foi possível carregar este cenário. Tente novamente ou selecione outra combinação.";
-      retry.hidden = false;
-    });
-    return;
-  }
-  content.hidden = false;
-  content.setAttribute("aria-busy", "false");
-  status.hidden = true;
-  retry.hidden = true;
-  if (cachedRunIndices.has(state.activeRunIndex)) {
-    cachedRunIndices.delete(state.activeRunIndex);
-    cachedRunIndices.set(state.activeRunIndex, true);
-  }
-  const dedicated = run.metadata?.airspace === "dedicated_uam" || /^C2(?:\.|$)/.test(run.metadata?.scenario_key || "");
-  for (const id of ["layer-uam-corridors", "layer-uam-junctions", "layer-complexity"]) {
-    const control = document.getElementById(id);
-    if (control) {
-      control.disabled = !dedicated;
-      control.title = dedicated ? "" : "Este cenário utiliza a rede REH compartilhada.";
-    }
-  }
-  state.uamProjection = run.uam_projection || emptyFeatureCollection();
-  state.uamJunctions = run.uam_junctions || emptyFeatureCollection();
-  state.uamCenterlines = run.uam_centerlines || emptyFeatureCollection();
-  state.candidateNodes = run.candidate_nodes || window.__UAM_CANDIDATE_NODES__ || emptyFeatureCollection();
-  renderMetrics(run.dashboard);
-  renderCharts(run.dashboard);
-  renderCapacity(run.dashboard);
-  render3DVisualization(run.trajectory_3d, run.conflicts);
-  const replica = run.metadata?.replica;
-  setText("replica-universe", `Cards: média de ${run.replica_count || 1} réplicas por cenário. Heatmap: todas as réplicas. Gráficos agregados: pacote v1, quando disponível.`);
-  setText("representative-note", `Ilustrativo — réplica ${replica == null ? "não informada" : "r" + String(replica).padStart(3, "0")} · ${run.representative_log || run.name}. Mapa de eventos, tabela e reprodução 3D usam este arquivo; KPIs agregados.`);
-  renderStability();
-  if (state.map) {
-    renderMapLayers(run.tracks, run.planned_routes, run.official_reh || emptyFeatureCollection(), run.conflicts, run.heatmap, run.dashboard.capacity);
-  }
-}
-
-function bind3DControls() {
-  const canvas = document.getElementById("viewer3d-canvas");
-  if (!canvas) return;
-  const play = document.getElementById("viewer3d-play");
-  const timeline = document.getElementById("viewer3d-time");
-  play.addEventListener("click", () => {
-    if (!viewer3d.data) return;
-    if (viewer3d.currentTime >= viewer3d.data.sim_end_s) viewer3d.currentTime = viewer3d.data.sim_start_s;
-    if (viewer3d.animationFrame !== null) cancelAnimationFrame(viewer3d.animationFrame);
-    viewer3d.animationFrame = null;
-    viewer3d.playing = !viewer3d.playing;
-    viewer3d.lastFrame = null;
-    update3DControls();
-    if (viewer3d.playing) viewer3d.animationFrame = requestAnimationFrame(animate3D);
-  });
-  timeline.addEventListener("input", (event) => {
-    if (viewer3d.animationFrame !== null) cancelAnimationFrame(viewer3d.animationFrame);
-    viewer3d.animationFrame = null;
-    viewer3d.lastFrame = null;
-    viewer3d.playing = false;
-    viewer3d.currentTime = Number(event.target.value);
-    update3DControls();
-    draw3D();
-  });
-  document.getElementById("viewer3d-speed").addEventListener("change", (event) => {
-    viewer3d.speed = Number(event.target.value);
-  });
-  document.getElementById("viewer3d-vertical-scale").addEventListener("change", (event) => {
-    viewer3d.verticalScale = Number(event.target.value);
-    draw3D();
-  });
-  document.getElementById("viewer3d-reset").addEventListener("click", () => {
-    viewer3d.yaw = -0.65;
-    viewer3d.pitch = 0.58;
-    viewer3d.zoom = 1;
-    draw3D();
-  });
-  canvas.addEventListener("pointerdown", (event) => {
-    viewer3d.dragging = true;
-    viewer3d.pointerX = event.clientX;
-    viewer3d.pointerY = event.clientY;
-    canvas.setPointerCapture(event.pointerId);
-  });
-  canvas.addEventListener("pointermove", (event) => {
-    if (!viewer3d.dragging) return;
-    viewer3d.yaw += (event.clientX - viewer3d.pointerX) * 0.008;
-    viewer3d.pitch = Math.max(0.08, Math.min(1.35, viewer3d.pitch + (event.clientY - viewer3d.pointerY) * 0.006));
-    viewer3d.pointerX = event.clientX;
-    viewer3d.pointerY = event.clientY;
-    draw3D();
-  });
-  canvas.addEventListener("pointerup", () => { viewer3d.dragging = false; });
-  canvas.addEventListener("pointercancel", () => { viewer3d.dragging = false; });
-  canvas.addEventListener("wheel", (event) => {
-    event.preventDefault();
-    viewer3d.zoom = Math.max(0.55, Math.min(3, viewer3d.zoom * (event.deltaY > 0 ? 0.9 : 1.1)));
-    draw3D();
-  }, { passive: false });
-  if (window.ResizeObserver) new ResizeObserver(() => draw3D()).observe(canvas);
-}
-
-function render3DVisualization(data, conflicts) {
-  if (viewer3d.animationFrame !== null) cancelAnimationFrame(viewer3d.animationFrame);
-  viewer3d.animationFrame = null;
-  viewer3d.currentTime = 0;
-  viewer3d.dragging = false;
-  viewer3d.playing = false;
-  viewer3d.lastFrame = null;
-  viewer3d.data = data?.tracks?.length ? data : null;
-  viewer3d.conflicts = conflicts?.features || [];
-  viewer3d.macTimestampAvailable = Boolean(conflicts?.properties?.mac_timestamp_available);
-  renderConflictTimeline(filteredConflictFeatures(viewer3d.conflicts), viewer3d.macTimestampAvailable);
-  if (!data?.tracks?.length) {
-    setText("viewer3d-status", "Sem trajetórias 3D para este cenário.");
-    setText("viewer3d-note", "Dados 3D indisponíveis para esta réplica.");
-    update3DControls();
-    draw3D();
-    return;
-  }
-  viewer3d.currentTime = data.sim_start_s;
-  setText(
-    "viewer3d-note",
-    `Plano-base a ${formatNumber(data.ground_plane_msl_ft, 0)} pés (${formatNumber(data.ground_plane_msl_m, 1)} m) MSL · janelas de ${data.sample_seconds} s.`
-  );
-  const timeline = document.getElementById("viewer3d-time");
-  timeline.min = data.sim_start_s;
-  timeline.max = data.sim_end_s;
-  timeline.step = data.sample_seconds;
-  timeline.value = viewer3d.currentTime;
-  update3DControls();
-  draw3D();
-}
-
-function animate3D(timestamp) {
-  if (!viewer3d.playing || !viewer3d.data) return;
-  if (viewer3d.lastFrame === null) viewer3d.lastFrame = timestamp;
-  const elapsed = (timestamp - viewer3d.lastFrame) / 1000;
-  const interval = viewer3d.data.sample_seconds;
-  const next = viewer3d.currentTime + elapsed * viewer3d.speed;
-  const aligned = viewer3d.data.sim_start_s + Math.floor((next - viewer3d.data.sim_start_s) / interval) * interval;
-  if (aligned > viewer3d.currentTime) {
-    viewer3d.currentTime = Math.min(aligned, viewer3d.data.sim_end_s);
-    viewer3d.lastFrame = timestamp;
-    update3DControls();
-    draw3D();
-  }
-  if (viewer3d.currentTime >= viewer3d.data.sim_end_s) {
-    viewer3d.playing = false;
-    update3DControls();
-    return;
-  }
-  viewer3d.animationFrame = requestAnimationFrame(animate3D);
-}
-
-function update3DControls() {
-  const play = document.getElementById("viewer3d-play");
-  const timeline = document.getElementById("viewer3d-time");
-  play.textContent = viewer3d.playing ? "Pausar" : "Reproduzir";
-  play.setAttribute("aria-pressed", String(viewer3d.playing));
-  play.disabled = !viewer3d.data;
-  timeline.disabled = !viewer3d.data;
-  if (viewer3d.data) timeline.value = viewer3d.currentTime;
-  setText("viewer3d-time-label", formatSimulationTime(viewer3d.currentTime));
-}
-
-function formatSimulationTime(seconds) {
-  const value = Math.max(0, Math.round(Number(seconds) || 0));
-  const hours = String(Math.floor(value / 3600)).padStart(2, "0");
-  const minutes = String(Math.floor((value % 3600) / 60)).padStart(2, "0");
-  const secs = String(value % 60).padStart(2, "0");
-  return `${hours}:${minutes}:${secs}`;
-}
-
-function conflictEventClass(feature) {
-  const properties = feature?.properties || feature || {};
-  if (properties.event_class === "mac" || properties.is_mac) return "mac";
-  if (properties.event_class === "nmac" || properties.is_nmac) return "nmac";
-  return "lowc";
-}
-
-function conflictEventLabel(feature) {
-  const eventClass = conflictEventClass(feature);
-  return eventClass === "mac" ? "MAC" : eventClass === "nmac" ? "NMAC" : "LoWC";
-}
-
-function conflictEventColor(feature) {
-  const eventClass = conflictEventClass(feature);
-  return eventClass === "mac" ? "#dc2626" : eventClass === "nmac" ? "#f97316" : "#facc15";
-}
-
-function conflictPairKey(feature) {
-  const pair = String(feature?.properties?.vehicle_pair || "").toLowerCase();
-  const hasEvtol = pair.includes("evtol");
-  const helicopterCount = (pair.match(/helicoptero/g) || []).length;
-  if (hasEvtol && helicopterCount) return "evtol-helicoptero";
-  if (hasEvtol) return "evtol-evtol";
-  if (helicopterCount >= 2) return "helicoptero-helicoptero";
-  return "desconhecido";
-}
-
-function filteredConflictFeatures(features) {
-  if (state.conflictPairFilter === "all") return features || [];
-  return (features || []).filter((feature) => conflictPairKey(feature) === state.conflictPairFilter);
-}
-
-function filteredConflictCollection(conflicts) {
-  return {
-    ...(conflicts || emptyFeatureCollection()),
-    features: filteredConflictFeatures(conflicts?.features || []),
-  };
-}
-
-function bindConflictPairControls() {
-  document.querySelectorAll("[data-conflict-pair]").forEach((button) => {
-    button.addEventListener("click", () => {
-      state.conflictPairFilter = button.dataset.conflictPair;
-      document.querySelectorAll("[data-conflict-pair]").forEach((item) => {
-        const active = item.dataset.conflictPair === state.conflictPairFilter;
-        item.classList.toggle("active", active);
-        item.setAttribute("aria-pressed", String(active));
-      });
-      renderConflictTimeline(filteredConflictFeatures(viewer3d.conflicts), viewer3d.macTimestampAvailable);
-      draw3D();
-      const run = state.runs[state.activeRunIndex] || state.runs[0];
-      if (run && state.map) {
-        renderMapLayers(run.tracks, run.planned_routes, run.official_reh, run.conflicts, run.heatmap, run.dashboard.capacity);
-      }
-    });
-  });
-}
-
-function bindKpaTabs() {
-  document.querySelectorAll("[data-kpa-tab]").forEach((button) => {
-    button.addEventListener("click", () => activateKpa(button.dataset.kpaTab));
-  });
-  activateKpa(state.activeKpa);
-}
-
-function activateKpa(kpa) {
-  state.activeKpa = kpa || "overview";
-  document.querySelectorAll("[data-kpa-tab]").forEach((button) => {
-    const active = button.dataset.kpaTab === state.activeKpa;
-    button.classList.toggle("active", active);
-    button.setAttribute("aria-selected", String(active));
-    button.tabIndex = active ? 0 : -1;
-  });
-  document.querySelectorAll("[data-kpa-panel]").forEach((panel) => {
-    panel.hidden = !String(panel.dataset.kpaPanel).split(/\s+/).includes(state.activeKpa);
-  });
-  document.querySelectorAll("[data-kpa-child]").forEach((child) => {
-    child.hidden = child.dataset.kpaChild !== state.activeKpa;
-  });
-  if (state.activeKpa === "safety") draw3D();
-  if (state.activeKpa === "overview" && state.map) {
-    window.setTimeout(() => state.map.invalidateSize(true), 0);
-  }
-}
-
-function bindCapacityResourceLinks() {
-  document.addEventListener("click", (event) => {
-    const button = event.target.closest("[data-map-target]");
-    if (!button) return;
-    try {
-      highlightMapResource(JSON.parse(button.dataset.mapTarget));
-    } catch (error) {
-      console.error("Invalid map target", error);
-    }
-  });
-}
-
-function renderConflictTimeline(features, macTimestampAvailable) {
-  const body = document.getElementById("conflict-timeline-body");
-  if (!body) return;
-  const ordered = [...features].sort((left, right) => left.properties.start_simt - right.properties.start_simt);
-  const counts = { lowc: 0, nmac: 0, mac: 0 };
-  for (const feature of ordered) counts[conflictEventClass(feature)] += 1;
-  setText(
-    "conflict-timeline-summary",
-    `${counts.lowc} LoWC fora de NMAC · ${counts.nmac} NMAC · ${counts.mac} MAC observados`
-  );
-  body.innerHTML = ordered.length
-    ? ordered.map((feature) => {
-        const p = feature.properties;
-        const eventClass = conflictEventClass(feature);
-        const timeButton = (value) => `<button class="conflict-time-button" type="button" data-simt="${Number(value)}" data-event-lon="${Number(feature.geometry?.coordinates?.[0])}" data-event-lat="${Number(feature.geometry?.coordinates?.[1])}">${formatSimulationTime(value)}</button>`;
-        return `<tr>
-          <td><span class="event-label ${eventClass}">${conflictEventLabel(feature)}</span></td>
-          <td>${timeButton(p.start_simt)}</td>
-          <td>${timeButton(p.simt)}</td>
-          <td>${timeButton(p.end_simt)}</td>
-          <td>${escapeHtml(p.id_a)} / ${escapeHtml(p.id_b)}</td>
-          <td>${escapeHtml(p.vehicle_pair || "tipos desconhecidos")}</td>
-          <td>${formatNumber(p.dist_h_m, 1)} m / ${formatNumber(p.dist_v_m, 1)} m</td>
-        </tr>`;
-      }).join("")
-    : `<tr><td colspan="7">Nenhum evento LoWC/NMAC observado para esta combinação.</td></tr>`;
-  body.querySelectorAll("[data-simt]").forEach((button) => {
-    button.addEventListener("click", () => {
-      seek3D(Number(button.dataset.simt));
-    });
-  });
-  setText(
-    "mac-availability",
-    macTimestampAvailable
-      ? "O log contém eventos MAC observáveis e seus timestamps estão listados em vermelho."
-      : "MAC não possui timestamp neste conjunto: o indicador atual é uma expectativa probabilística derivada de NMAC, não uma colisão observada."
-  );
-}
-
-function pointAtOrBefore(points, time) {
-  let low = 0;
-  let high = points.length - 1;
-  let result = -1;
-  while (low <= high) {
-    const middle = (low + high) >> 1;
-    if (points[middle][0] <= time) { result = middle; low = middle + 1; }
-    else high = middle - 1;
-  }
-  return result;
-}
-
-function draw3D() {
-  const canvas = document.getElementById("viewer3d-canvas");
-  if (!canvas) return;
-  const rect = canvas.getBoundingClientRect();
-  if (!rect.width || !rect.height) return;
-  const dpr = Math.min(window.devicePixelRatio || 1, 2);
-  const width = Math.round(rect.width * dpr);
-  const height = Math.round(rect.height * dpr);
-  if (canvas.width !== width || canvas.height !== height) { canvas.width = width; canvas.height = height; }
-  const ctx = canvas.getContext("2d");
-  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  ctx.clearRect(0, 0, rect.width, rect.height);
-  const data = viewer3d.data;
-  if (!data?.tracks?.length) return;
-
-  const bounds = data.bounds;
-  const centerLat = (bounds.min_lat + bounds.max_lat) / 2;
-  const centerLon = (bounds.min_lon + bounds.max_lon) / 2;
-  const metersLon = 111320 * Math.cos(centerLat * Math.PI / 180);
-  const rangeX = Math.max(1000, (bounds.max_lon - bounds.min_lon) * metersLon);
-  const rangeZ = Math.max(1000, (bounds.max_lat - bounds.min_lat) * 111320);
-  const minAlt = data.altitude_bounds_m[0];
-  const maxAlt = data.altitude_bounds_m[1];
-  const groundAlt = Number.isFinite(data.ground_plane_msl_m) ? data.ground_plane_msl_m : minAlt;
-  const cosY = Math.cos(viewer3d.yaw), sinY = Math.sin(viewer3d.yaw);
-  const cosP = Math.cos(viewer3d.pitch), sinP = Math.sin(viewer3d.pitch);
-  const verticalRange = Math.max(maxAlt, groundAlt) - Math.min(minAlt, groundAlt);
-  const scale = Math.min(rect.width / (rangeX * 1.35), rect.height / (rangeZ * 1.05 + Math.max(100, verticalRange) * viewer3d.verticalScale)) * viewer3d.zoom;
-  const originX = rect.width / 2;
-  const originY = rect.height * 0.61;
-  const project = (lon, lat, alt = groundAlt) => {
-    const x = (lon - centerLon) * metersLon;
-    const z = (lat - centerLat) * 111320;
-    const y = (alt - groundAlt) * viewer3d.verticalScale;
-    const xr = x * cosY - z * sinY;
-    const zr = x * sinY + z * cosY;
-    return { x: originX + xr * scale, y: originY - (y * cosP - zr * sinP) * scale, depth: y * sinP + zr * cosP };
-  };
-
-  draw3DGround(ctx, project, bounds, groundAlt, rect.width, data.ground_plane_msl_ft);
-  const markers = [];
-  let activeCount = 0;
-  for (const track of data.tracks) {
-    const color = track.vehicle_type === "evtol" ? "#22d3ee" : track.vehicle_type === "helicoptero" ? "#a3e635" : "#a78bfa";
-    draw3DLine(ctx, track.points, project, color, 0.11, 0, track.points.length - 1);
-    const index = pointAtOrBefore(track.points, viewer3d.currentTime);
-    if (index < 0 || viewer3d.currentTime - track.points[index][0] > data.sample_seconds) continue;
-    activeCount += 1;
-    draw3DLine(ctx, track.points, project, color, 0.82, Math.max(0, index - Math.ceil(120 / data.sample_seconds)), index);
-    const point = track.points[index];
-    const position = project(point[1], point[2], point[3]);
-    const previous = track.points[Math.max(0, index - 1)];
-    const previousPosition = project(previous[1], previous[2], previous[3]);
-    markers.push({
-      ...position,
-      color,
-      label: track.id,
-      vehicleType: track.vehicle_type,
-      angle: Math.atan2(position.y - previousPosition.y, position.x - previousPosition.x),
-    });
-  }
-  const activeConflicts = filteredConflictFeatures(viewer3d.conflicts).filter((feature) => {
-    const p = feature.properties;
-    return p.start_simt <= viewer3d.currentTime && p.end_simt >= viewer3d.currentTime;
-  });
-  for (const feature of activeConflicts) {
-    const coordinates = feature.geometry.coordinates;
-    markers.push({
-      ...project(coordinates[0], coordinates[1], coordinates[2] ?? groundAlt),
-      color: conflictEventColor(feature),
-      conflict: true,
-      eventClass: conflictEventClass(feature),
-    });
-  }
-  markers.sort((a, b) => a.depth - b.depth);
-  for (const marker of markers) {
-    if (marker.conflict) drawConflictSymbol(ctx, marker);
-    else drawAircraftSymbol(ctx, marker);
-  }
-  const activeCounts = { lowc: 0, nmac: 0, mac: 0 };
-  for (const feature of activeConflicts) activeCounts[conflictEventClass(feature)] += 1;
-  setText(
-    "viewer3d-status",
-    `${activeCount} aeronaves · ${activeCounts.lowc} LoWC fora de NMAC · ${activeCounts.nmac} NMAC · ${activeCounts.mac} MAC ativos · amostra de ${data.sample_seconds} s`
-  );
-}
-
-function drawConflictSymbol(ctx, marker) {
-  ctx.save();
-  ctx.translate(marker.x, marker.y);
-  ctx.strokeStyle = marker.color;
-  ctx.fillStyle = marker.color;
-  ctx.shadowBlur = 16;
-  ctx.shadowColor = marker.color;
-  ctx.lineWidth = 2.5;
-  ctx.beginPath();
-  ctx.arc(0, 0, marker.eventClass === "mac" ? 7 : 6, 0, Math.PI * 2);
-  ctx.stroke();
-  ctx.beginPath();
-  ctx.arc(0, 0, 2.5, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.restore();
-}
-
-function drawAircraftSymbol(ctx, marker) {
-  ctx.save();
-  ctx.translate(marker.x, marker.y);
-  ctx.rotate(marker.angle || 0);
-  ctx.strokeStyle = marker.color;
-  ctx.fillStyle = marker.color;
-  ctx.lineCap = "round";
-  ctx.lineJoin = "round";
-  ctx.shadowBlur = 5;
-  ctx.shadowColor = marker.color;
-  if (marker.vehicleType === "helicoptero") {
-    ctx.lineWidth = 1.6;
-    ctx.beginPath();
-    ctx.ellipse(0, 0, 5, 3, 0, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.beginPath();
-    ctx.moveTo(-4, 0); ctx.lineTo(-10, 0); ctx.lineTo(-12, -2);
-    ctx.moveTo(0, -7); ctx.lineTo(0, 7);
-    ctx.moveTo(-7, 0); ctx.lineTo(7, 0);
-    ctx.stroke();
-  } else {
-    ctx.lineWidth = 1.5;
-    ctx.beginPath();
-    ctx.moveTo(7, 0); ctx.lineTo(-4, -3); ctx.lineTo(-7, 0); ctx.lineTo(-4, 3); ctx.closePath();
-    ctx.fill();
-    ctx.beginPath();
-    ctx.moveTo(-2, -6); ctx.lineTo(-2, 6);
-    ctx.moveTo(2, -6); ctx.lineTo(2, 6);
-    ctx.stroke();
-    for (const x of [-2, 2]) for (const y of [-6, 6]) {
-      ctx.beginPath(); ctx.arc(x, y, 1.8, 0, Math.PI * 2); ctx.stroke();
-    }
-  }
-  ctx.restore();
-}
-
-function draw3DLine(ctx, points, project, color, alpha, start, end) {
-  if (end <= start) return;
-  ctx.beginPath();
-  ctx.strokeStyle = color;
-  ctx.globalAlpha = alpha;
-  ctx.lineWidth = alpha > 0.5 ? 1.8 : 0.7;
-  for (let index = start; index <= end; index += 1) {
-    const point = points[index];
-    const projected = project(point[1], point[2], point[3]);
-    if (index === start) ctx.moveTo(projected.x, projected.y); else ctx.lineTo(projected.x, projected.y);
-  }
-  ctx.stroke();
-  ctx.globalAlpha = 1;
-}
-
-function draw3DGround(ctx, project, bounds, altitude, width, altitudeFt) {
-  ctx.strokeStyle = "rgba(107, 145, 180, 0.22)";
-  ctx.lineWidth = 1;
-  const divisions = width < 700 ? 5 : 8;
-  for (let index = 0; index <= divisions; index += 1) {
-    const ratio = index / divisions;
-    const lon = bounds.min_lon + (bounds.max_lon - bounds.min_lon) * ratio;
-    const lat = bounds.min_lat + (bounds.max_lat - bounds.min_lat) * ratio;
-    const a = project(lon, bounds.min_lat, altitude), b = project(lon, bounds.max_lat, altitude);
-    const c = project(bounds.min_lon, lat, altitude), d = project(bounds.max_lon, lat, altitude);
-    ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(c.x, c.y); ctx.lineTo(d.x, d.y); ctx.stroke();
-  }
-  const label = project(bounds.min_lon, bounds.max_lat, altitude);
-  ctx.fillStyle = "rgba(199, 215, 231, 0.82)";
-  ctx.font = "12px Inter, sans-serif";
-  ctx.fillText(`Plano-base ${Math.round(altitudeFt)} pés MSL`, label.x + 8, label.y - 8);
+  if (model.runs) return model;
+  if (!model.dashboard) return {...model, runs: []};
+  return {...model, runs: [{id: "run_1", name: model.dashboard.source_log,
+    dashboard: model.dashboard, metadata: model.dashboard.metadata}],
+    comparison: model.comparison || {days: []}};
 }
 
 function renderComparison(model) {
@@ -857,11 +87,7 @@ function renderComparison(model) {
   daySelect.disabled = days.length <= 1;
   document.getElementById("day-filter").hidden = days.length <= 1;
   populateRunSelect();
-  setText(
-    "comparison-summary",
-    `${formatNumber(replicaCount)} réplicas em ${formatNumber(model.runs.length)} cenários. Cards: médias por cenário; densidade: todas as réplicas com escala comum. Mapa de eventos, tabela e 3D: uma réplica representativa ilustrativa. Gráficos agregados requerem pacote v1. Referências comparativas: cenário-base da mesma etapa de rede.`
-  );
-  renderDayComparison();
+
 }
 
 function populateRunSelect() {
@@ -909,122 +135,6 @@ function populateScenarioFilters(changedIndex = -1) {
   setText("scenario-selection", run ? `Cenário ${run.metadata?.scenario_key || run.name} · ${run.replica_count || run.density?.replica_count || 1} réplicas disponíveis` : "Nenhum resultado disponível");
 }
 
-function renderDayComparison() {
-  const day = state.comparison?.days?.find((item) => item.day_key === state.activeDayKey);
-  const rows = day?.rows || [];
-  document.getElementById("comparison-table-body").innerHTML = rows
-    .map(
-      (row) => `
-        <tr class="${row.is_reference ? "reference-row" : row.mvp_enabled ? "mvp-row" : ""}">
-          <td title="${escapeHtml(row.name)}">${escapeHtml(row.variant_label)}</td>
-          <td>${formatOptionalDuration(row.ground_delay_s)}</td>
-          <td>${formatOptionalDuration(row.airborne_delay_s)}</td>
-          <td>${formatOptionalDuration(row.total_delay_s)}</td>
-          <td>${formatNumber(row.flight_time_min, 1)} min</td>
-          <td>${formatSigned(row.flight_time_delta_vs_reference_min, 1, " min")}</td>
-          <td>${formatNumber(row.distance_nm, 1)} NM</td>
-          <td>${formatSigned(row.distance_delta_vs_reference_nm, 2, " NM")}</td>
-          <td>${formatOptionalPercent(row.trajectory_conformity_pct)}</td>
-          <td>${formatNumber(row.lowc_events, 1)}</td>
-          <td>${formatNumber(row.lowc_per_flight_hour, 2)}</td>
-          <td>${formatNumber(row.expected_mac_per_100k_flight_hours, 3)}</td>
-          <td>${formatTLSMargin(row.tls_margin, row.tls_compliant)}</td>
-          <td>${formatOptionalRatio(row.risk_ratio_vs_reference)}</td>
-          <td>${formatNumber(row.nmac_events, 1)}</td>
-          <td>${formatNumber(row.min_severity_ratio, 2)}</td>
-        </tr>`
-    )
-    .join("");
-}
-
-function renderMetrics(dashboard) {
-  const summary = dashboard.summary;
-  const efficiency = dashboard.efficiency;
-  const safety = dashboard.safety;
-
-  setText("metric-aircraft", formatNumber(summary.aircraft_count));
-  setText("metric-records", `${formatNumber(summary.records)} observações válidas do STATELOG`);
-  setText("metric-peak", formatNumber(summary.peak_simultaneous_aircraft));
-  setText("metric-duration", `${formatNumber(summary.duration_min, 1)} min`);
-  setText("metric-flight-time", formatNumber(efficiency.mean_flight_time_min, 1));
-  setText("metric-distance", formatNumber(efficiency.mean_distance_nm, 1));
-  setText("metric-lowc", formatNumber(safety.lowc_events, 1));
-  setText("metric-lowc-threshold", `${formatNumber(safety.lowc_horizontal_m, 0)} m H / ${formatNumber(safety.lowc_vertical_m, 2)} m V`);
-  setText("metric-nmac", formatNumber(safety.nmac_events, 1));
-  setText("metric-nmac-threshold", `${formatNumber(safety.nmac_horizontal_m, 0)} m H / ${formatNumber(safety.nmac_vertical_m, 2)} m V`);
-  setText("metric-lowc-rate", formatNumber(safety.lowc_per_flight_hour, 2));
-  setText("metric-mac-rate", formatNumber(safety.expected_mac_per_100k_flight_hours, 3));
-  setText("kpa-route-efficiency", `${formatNumber(efficiency.mean_horizontal_inefficiency_pct, 1)}%`);
-  setText(
-    "kpa-conformity",
-    efficiency.trajectory_conformity?.available
-      ? `${formatNumber(efficiency.trajectory_conformity.mean_trajectory_conformity_ratio * 100, 1)}%`
-      : "Sem SCN"
-  );
-  setText(
-    "kpa-spatial-adherence",
-    efficiency.trajectory_conformity?.spatial_adherence_pct != null
-      ? `${formatNumber(efficiency.trajectory_conformity.spatial_adherence_pct, 1)}%${
-          efficiency.trajectory_conformity.spatial_adherence_scope?.startsWith("helicopteros")
-            ? " (helicopteros)"
-            : ""
-        }`
-      : "Indisponível"
-  );
-  setText(
-    "kpa-ground-delay",
-    efficiency.ground_delay?.available
-      ? `${formatNumber(efficiency.ground_delay.mean_ground_delay_s, 0)} s`
-      : "Sem pareamento"
-  );
-  setText(
-    "kpa-airborne-delay",
-    efficiency.airborne_delay?.available
-      ? `${formatNumber(efficiency.airborne_delay.mean_airborne_delay_s, 0)} s`
-      : "Sem referencia"
-  );
-  setText(
-    "kpa-total-delay",
-    efficiency.total_delay?.available
-      ? `${formatNumber(efficiency.total_delay.mean_total_delay_s, 0)} s`
-      : "Sem pareamento"
-  );
-  setText("kpa-severity", safety.lowc_events > 0 ? formatNumber(safety.min_severity_ratio, 2) : "Sem eventos");
-  setText("kpa-mac-rate", formatNumber(safety.expected_mac_per_100k_flight_hours, 3));
-  setText("kpa-tls-margin", formatTLSMargin(safety.tls_margin, safety.tls_compliant));
-  setText("kpa-time-below", `${formatNumber(safety.total_time_below_threshold_s, 0)} s`);
-  setText("kpa-safety-sample", `${formatNumber(safety.sample_seconds, 0)} s`);
-}
-
-function renderCharts(dashboard) {
-  const keys = {"chart-active":"active_aircraft", "chart-altitude":"altitude_histogram", "chart-separation":"separation_histogram", "chart-severity":"severity_histogram", "chart-distance":"distance_histogram", "chart-conformity":"trajectory_conformity"};
-  const run = state.runs[state.activeRunIndex] || state.runs[0];
-  const available = run?.analysis_schema_version === 1 && run.aggregate_analysis?.schema_version === 1 && dashboard.chart_aggregation_version === 1;
-  for (const [id, key] of Object.entries(keys)) {
-    const img = document.getElementById(id);
-    img.hidden = !available;
-    if (available) showImageChart(id, dashboard.charts[key]);
-    else img.removeAttribute("src");
-    let note = document.getElementById(`${id}-aggregation`);
-    if (!note) { note = document.createElement("p"); note.id = `${id}-aggregation`; img.after(note); }
-    const data = run?.aggregate_analysis?.charts?.[key];
-    const valid = Array.isArray(data?.valid_replicas) ? `${Math.min(...data.valid_replicas)}–${Math.max(...data.valid_replicas)} de ${run.replica_count} por instante` : `${data?.valid_replicas}/${run.replica_count}`;
-    note.textContent = available ? `Média por réplica: ${valid} réplicas válidas. Faixa: mínimo–máximo, não IC.` : "Agregado indisponível neste pacote: reprocessar os STATELOGs no formato v1. A imagem representativa anterior foi suprimida.";
-  }
-}
-
-function seek3D(time) {
-  if (!viewer3d.data || !Number.isFinite(time)) return;
-  if (viewer3d.animationFrame !== null) cancelAnimationFrame(viewer3d.animationFrame);
-  viewer3d.animationFrame = null;
-  viewer3d.playing = false;
-  viewer3d.lastFrame = null;
-  viewer3d.currentTime = Math.max(viewer3d.data.sim_start_s, Math.min(time, viewer3d.data.sim_end_s));
-  activateKpa("safety");
-  update3DControls(); draw3D();
-  document.getElementById("viewer3d-canvas").scrollIntoView({behavior:"smooth", block:"center"});
-}
-
 function stabilitySvg(metric) {
   const rows = metric.trace.filter(p => p.mean != null);
   if (!rows.length) return "";
@@ -1040,732 +150,9 @@ function stabilitySvg(metric) {
   return `<svg class="stability-plot" viewBox="0 0 720 210" role="img" aria-label="Média acumulada, intervalo bootstrap de 95% e critério por prefixo"><text x="5" y="35">${axis(min+span)}</text><text x="5" y="165">${axis(min)}</text><line x1="70" y1="160" x2="680" y2="160" stroke="#64748b"/><polygon points="${polygon}" fill="#93c5fd" opacity=".5"/><polyline points="${line}" fill="none" stroke="#2563eb" stroke-width="2"/>${rows.filter(p=>p.criterion_met).map(p=>`<circle cx="${x(p)}" cy="${y(p.mean)}" r="3" fill="#15803d"/>`).join("")}${confirmation}<text x="70" y="180">1</text><text x="665" y="180">${metric.total_count}</text><text x="210" y="202">Réplicas incorporadas (ordem do índice)</text></svg>`;
 }
 
-const stabilityLabels = {
-  "safety.lowc_horizontal_m":"Limiar horizontal LoWC (m)", "safety.lowc_vertical_m":"Limiar vertical LoWC (m)", "safety.nmac_horizontal_m":"Limiar horizontal NMAC (m)", "safety.nmac_vertical_m":"Limiar vertical NMAC (m)", "capacity.complexity.uam_corridor_count":"Corredores UAM", "capacity.complexity.reh_segment_count":"Trechos REH",
-  "summary.aircraft_count":"Aeronaves", "summary.records":"Observações válidas do STATELOG", "summary.peak_simultaneous_aircraft":"Pico simultâneo", "summary.duration_min":"Duração (min)",
-  "efficiency.mean_flight_time_min":"Tempo de voo (min)", "efficiency.mean_distance_nm":"Distância (NM)", "safety.lowc_events":"Eventos LoWC", "safety.nmac_events":"Eventos NMAC", "safety.lowc_per_flight_hour":"LoWC/h", "safety.expected_mac_per_100k_flight_hours":"MAC esperado/100 mil h", "safety.min_severity_ratio":"Severidade mínima (réplicas com eventos)", "safety.tls_margin":"Margem TLS (transformação da taxa média)", "safety.total_time_below_threshold_s":"Exposição abaixo do limiar (s)", "safety.sample_seconds":"Cadência LoWC (s)",
-  "efficiency.mean_horizontal_inefficiency_pct":"Ineficiência horizontal (%)", "efficiency.trajectory_conformity.mean_trajectory_conformity_ratio":"Distância adicional/plano (razão)", "efficiency.trajectory_conformity.spatial_adherence_pct":"Aderência REH (%)", "efficiency.ground_delay.mean_ground_delay_s":"Atraso em solo (s)", "efficiency.airborne_delay.mean_airborne_delay_s":"Atraso no ar (s)", "efficiency.total_delay.mean_total_delay_s":"Atraso total (s)", "capacity.density.air_traffic_density_per_km2":"Densidade ATD (aeronaves/km²)", "capacity.density.hotspot_density_per_km2":"Hotspot ATD (aeronaves/km²)", "capacity.density.corridor_area_km2":"Área REH (km²)", "capacity.complexity.planned_route_count":"Rotas planejadas", "capacity.complexity.trajectory_group_count":"Grupos de trajetória", "capacity.complexity.repeated_trajectory_group_count":"Grupos recorrentes", "capacity.complexity.lowc_event_count":"Eventos LoWC"
-};
-
-// Presentation only: keep original estimates, bootstrap traces and exports intact.
-// KPI source: Produto III final, chapter 3. Diagnostics and configuration are auxiliary.
-const primaryStabilityMetrics = new Set([
-  "efficiency.mean_flight_time_min", "efficiency.mean_distance_nm",
-  "safety.lowc_events", "safety.nmac_events", "safety.lowc_per_flight_hour",
-  "safety.expected_mac_per_100k_flight_hours", "safety.min_severity_ratio",
-  "safety.tls_margin", "safety.total_time_below_threshold_s",
-  "efficiency.mean_horizontal_inefficiency_pct",
-  "efficiency.trajectory_conformity.mean_trajectory_conformity_ratio",
-  "efficiency.ground_delay.mean_ground_delay_s", "efficiency.airborne_delay.mean_airborne_delay_s",
-  "efficiency.total_delay.mean_total_delay_s"
-]);
-
-function isPrimaryStabilityMetric(key) {
-  return primaryStabilityMetrics.has(key) || /^(od_pairs|trajectory_groups|planned_reh) · /.test(key);
-}
-
 function stabilityMetricHtml([key, m]) {
   const status = m.status==="confirmed" ? `Estabilidade confirmada: trecho a partir de ${m.stable_from_n} réplicas; confirmação obtida em ${m.confirmed_at_n}.` : m.status==="unavailable" ? "Indisponível; sem zeros imputados." : m.status==="configuration_or_geometry_no_inference" ? "Configuração/geometria: inferência estatística não se aplica." : m.status==="constant_observed_no_inference" ? `Valores constantes observados; estabilidade inferencial não confirmada com ${m.total_count} réplicas.` : `Estabilidade não confirmada com ${m.total_count} réplicas.`;
   return `<details class="stability-metric"><summary>${escapeHtml(stabilityLabels[key] || key)} · ${m.valid_count}/${m.total_count} válidas</summary><p>${status}${m.first_confirmed_at_n != null && m.status!=="confirmed" ? ` Houve confirmação anterior em ${m.first_confirmed_at_n}, sem manutenção no final.` : ""}</p>${stabilitySvg(m)}</details>`;
-}
-
-function renderStability() {
-  for (const panel of ["overview", "safety", "efficiency", "capacity"]) {
-    const primary = [], auxiliary = [];
-    for (const run of state.runs) {
-      const title = `<h3>${escapeHtml(run.metadata?.scenario_key || run.name)}</h3>`;
-      const data = run.stability;
-      if (run.analysis_schema_version !== 1 || data?.schema_version !== 1) {
-        const missing = `${title}<p>Indisponível: valores individuais não preservados neste pacote. Reprocessar os STATELOGs.</p>`;
-        primary.push(missing);
-        auxiliary.push(missing);
-        continue;
-      }
-      const coverage = run.aggregate_analysis.coverage;
-      const cadence = coverage.map(c => c.median_cadence_s).filter(v => v != null);
-      const coverageTable = `<details><summary>Cobertura por réplica: tempo, cadência, registros e pareamento</summary><div class="table-wrap"><table class="comparison-table"><thead><tr><th>Índice / arquivo</th><th>Início–fim (s)</th><th>Timestamps</th><th>Cadência mediana (s)</th><th>Observações válidas do STATELOG</th><th>Voos pareados / total</th></tr></thead><tbody>${coverage.map((c,i)=>`<tr><td title="${escapeHtml(data.replicas[i].file)}">r${String(data.replicas[i].index).padStart(3,"0")}</td><td>${c.start_s}–${c.end_s}</td><td>${c.observed_timestamps}</td><td>${c.median_cadence_s ?? "—"}</td><td>${c.position_records}</td><td>${c.matched_flights}/${c.flight_instances}</td></tr>`).join("")}</tbody></table></div></details>`;
-      const entries = Object.entries(data.panels[panel]);
-      const kpis = entries.filter(([key]) => isPrimaryStabilityMetric(key));
-      const diagnostics = entries.filter(([key]) => !isPrimaryStabilityMetric(key));
-      primary.push(title + (kpis.length ? kpis.map(stabilityMetricHtml).join("") : "<p>Sem séries individuais de KPIs disponíveis nesta aba.</p>"));
-      auxiliary.push(title + `<p>${run.replica_count} réplicas; cadência mediana por réplica: ${cadence.length ? `${Math.min(...cadence)}–${Math.max(...cadence)} s` : "indisponível"}.</p>` + coverageTable + diagnostics.map(stabilityMetricHtml).join(""));
-    }
-    const method = `<p>Média acumulada das estimativas por réplica. IC percentil bootstrap de 95%: 1.000 reamostragens de réplicas, seed 1729. Mínimo 30 válidas; desvio máximo dos extremos do IC à média ≤5% da média, tolerância absoluta zero; confirmação por 15 prefixos consecutivos. Pontos verdes: critério atendido. Ausência quebra confirmação. Constantes e zeros observados são descritivos, sem inferência de estabilidade. Não é garantia de capacidade máxima nem de segurança operacional.</p>`;
-    document.getElementById(`stability-${panel}`).innerHTML = method + primary.join("");
-    document.getElementById(`auxiliary-stability-${panel}`).innerHTML = method + auxiliary.join("");
-  }
-}
-
-function renderCapacity(dashboard) {
-  const capacity = dashboard.capacity || {};
-  const density = capacity.density || {};
-  const complexity = capacity.complexity || {};
-  const crossings3d = crossingCollection(capacity);
-  setText(
-    "capacity-atd",
-    density.available ? formatNumber(density.air_traffic_density_per_km2, 3) : "-"
-  );
-  setText(
-    "capacity-hotspot",
-    density.available ? formatNumber(density.hotspot_density_per_km2, 3) : "-"
-  );
-  setText("capacity-area", density.available ? formatNumber(density.corridor_area_km2, 2) : "-");
-  setText(
-    "capacity-crossings",
-    formatNumber(crossings3d.features?.length || 0, 0)
-  );
-  setText(
-    "capacity-complexity",
-    complexity.available
-      ? `${formatNumber(complexity.uam_corridor_count, 0)} corredores UAM planejados × ` +
-          `${formatNumber(complexity.reh_segment_count, 0)} trechos REH formais, ` +
-          `${formatNumber(crossings3d.features?.length || 0)} cruzamentos 3D candidatos, ` +
-          `${formatNumber(complexity.trajectory_group_count, 0)} grupos de trajetoria, ` +
-          `${formatNumber(complexity.repeated_trajectory_group_count, 0)} grupos recorrentes e ` +
-          `${formatNumber(complexity.lowc_event_count, 0)} eventos LoWC.`
-      : "Sem dados de capacidade."
-  );
-  renderCapacityTable(capacity.throughput || {}, complexity.geometry_dimension === "3D");
-  renderCandidateNodes();
-  renderWaypointRanking();
-}
-
-function waypointMetric(feature) {
-  const scenario = (state.runs[state.activeRunIndex] || state.runs[0])?.metadata?.scenario_key;
-  return state.waypointRankings.find(row => row.scenario === scenario && row.waypoint_id === feature.properties.resource_id && row.source_sha256 === feature.properties.source?.sha256 && row.analysis_method_version === feature.properties.analysis_method_version);
-}
-
-function waypointAltitude(p) {
-  return p.vertical_intervals_m?.length
-    ? p.vertical_intervals_m.map(([lo, hi]) => `${formatNumber(lo, 1)}–${formatNumber(hi, 1)} m MSL`).join("; ")
-    : "Altitude desconhecida/inválida: sem contagem 3D";
-}
-
-function waypointTooltip(feature) {
-  const p = feature.properties, [lon, lat] = feature.geometry.coordinates, metric = waypointMetric(feature);
-  return `${escapeHtml(p.label)} · ${p.network} · ${formatNumber(lat, 6)}, ${formatNumber(lon, 6)}<br>` +
-    `${waypointAltitude(p)}<br>P95: ${metric?.p95_throughput_per_hour == null ? "indisponível" : `${formatNumber(metric.p95_throughput_per_hour, 2)} ops/h`} · ${p.name_position_count} posições deste nome`;
-}
-
-function waypointSelectionDetails(p) {
-  if (p.network === "REH") return `Junção REH: ${p.network_degree} arestas distintas, conforme o critério original.<br>`;
-  const ref = p.reh_reference;
-  if (!ref) return "Referência REH indisponível.<br>";
-  const target = { type: "candidate_node", resource_id: ref.resource_id };
-  const referenceLabel = (state.candidateNodes.features || []).some(f => f.properties.resource_id === ref.resource_id)
-    ? `<button class="resource-map-link" data-map-target="${escapeHtml(JSON.stringify(target))}">${escapeHtml(ref.label)}</button>`
-    : `${escapeHtml(ref.label)} (fixo de referência fora da seleção de junções REH)`;
-  return `Junção UAM: ${p.network_degree} arestas físicas distintas; ${p.interior_route_ids.length} rotas com uso não terminal.<br>` +
-    `Referência REH: ${referenceLabel}` +
-    ` · ${formatNumber(ref.horizontal_distance_m, 1)} m · ${ref.match_method === "documented_alias" ? "alias documentado" : "nome normalizado equivalente"}. Vínculo de referência, sem fusão de recursos.<br>`;
-}
-
-function waypointDetails(feature) {
-  const p = feature.properties, metric = waypointMetric(feature);
-  const positions = (state.candidateNodes.features || []).filter(f => f.properties.name_group_id === p.name_group_id ||
-    JSON.stringify(f.geometry.coordinates) === JSON.stringify(feature.geometry.coordinates));
-  const links = positions.map(f => {
-    const q = f.properties, [lon, lat] = f.geometry.coordinates;
-    const target = { type: "candidate_node", resource_id: q.resource_id };
-    return `<li><button class="resource-map-link" data-map-target="${escapeHtml(JSON.stringify(target))}">${escapeHtml(q.label)} · ${formatNumber(lat, 6)}, ${formatNumber(lon, 6)} · ${waypointAltitude(q)}</button><br><small>${escapeHtml(q.resource_id)}</small></li>`;
-  }).join("");
-  return `<strong>${waypointTooltip(feature)}</strong><br>ID: ${escapeHtml(p.resource_id)}<br>` +
-    `Nomes originais: ${escapeHtml(p.original_names.join(", "))} · normalizado: ${escapeHtml(p.normalized_name)}<br>` +
-    waypointSelectionDetails(p) +
-    `THR médio: ${metric?.mean_throughput_per_hour == null ? "indisponível" : formatNumber(metric.mean_throughput_per_hour, 2) + " ops/h"}<br>` +
-    `Fonte: ${escapeHtml(p.source?.file || "indisponível")}<br><small>SHA256: ${escapeHtml(p.source?.sha256 || "—")}</small><br>` +
-    `Rotas/trechos: ${escapeHtml([...p.uam_route_labels, ...p.reh_labels].join(", "))}<br>` +
-    `${p.name_position_count} posições elegíveis de ${p.name_all_position_count || p.name_position_count} posições nomeadas indexadas por rede. Coordenadas, níveis e dimensões permanecem separados; nenhuma soma de P95. Marcadores não são deslocados. Posições no mesmo local 2D também estão abaixo.<ul>${links}</ul>`;
-}
-
-function renderCandidateNodes() {
-  const features = state.candidateNodes.features || [];
-  const uam = features.filter((feature) => feature.properties?.criterion === "uam_named_waypoint").length;
-  const reh = features.filter((feature) => feature.properties?.criterion === "reh_named_waypoint").length;
-  setText("candidate-node-summary", `${formatNumber(uam)} junções UAM elegíveis de ${formatNumber(state.candidateNodes.properties?.uam_named_inventory_count || uam)} posições nomeadas (${formatNumber(state.candidateNodes.properties?.uam_excluded_count || 0)} excluídas) e ${formatNumber(reh)} junções REH (critério original: 3+ arestas distintas). UAM: 3+ arestas físicas, referência REH a até 500 m e uso não exclusivamente terminal. Marcadores nas coordenadas reais; nenhuma soma de capacidades. Fonte UAM: ${state.candidateNodes.properties?.sources?.uam?.file || "não se aplica à rede compartilhada"}. Fontes e hashes das posições estão disponíveis nos detalhes.`);
-  const body = document.getElementById("candidate-node-table-body");
-  body.innerHTML = features.length ? features.map((feature) => {
-    const p = feature.properties || {};
-    const network = p.criterion === "reh_named_waypoint" ? "REH" : "UAM";
-    const connected = p.criterion === "reh_named_waypoint" ? p.reh_labels : p.uam_route_labels;
-    const target = { type: "candidate_node", resource_id: p.resource_id };
-    const [lon, lat] = feature.geometry?.coordinates || [];
-    return `<tr>
-      <td>${network}</td>
-      <td><button class="resource-map-link" type="button" data-map-target="${escapeHtml(JSON.stringify(target))}">${escapeHtml(p.label || p.resource_id)}</button><br><small>${escapeHtml(p.resource_id)} · ${formatNumber(lat, 5)}, ${formatNumber(lon, 5)}</small></td>
-      <td>${formatNumber(p.name_position_count, 0)} posições elegíveis${p.network === "UAM" ? `<br>${formatNumber(p.network_degree, 0)} arestas físicas` : ""}<br><small>Sem total analítico por nome</small></td>
-      <td>${escapeHtml((connected || []).join(", "))}</td>
-    </tr>`;
-  }).join("") : `<tr><td colspan="4">Geometria dos nós candidatos indisponível.</td></tr>`;
-}
-
-function renderWaypointRanking() {
-  const run = state.runs[state.activeRunIndex] || state.runs[0];
-  const scenario = run?.metadata?.scenario_key;
-  const rows = state.waypointRankings.filter((row) => row.scenario === scenario &&
-    state.candidateNodes.features.some(feature => feature.properties.resource_id === row.waypoint_id && feature.properties.source?.sha256 === row.source_sha256 && row.analysis_method_version === feature.properties.analysis_method_version));
-  const rankedCount = rows.filter((row) => row.rank != null).length;
-  const body = document.getElementById("waypoint-ranking-table-body");
-  if (!body) return;
-  setText("waypoint-ranking-summary", rows.length
-    ? `${formatNumber(rankedCount)} de ${formatNumber(rows.length)} posições com P95 disponível em ${scenario}. P95 das janelas completas de ${formatNumber((rows[0]?.window_seconds || 900) / 60, 1)} min (incluindo zeros), reunidas entre réplicas; referência empírica de demanda, sem limite operacional demonstrado. ${rankedCount ? "" : "Logs brutos indisponíveis: valores antigos retirados; apenas geometria atualizada."}`
-    : "Execute generate_reports.py para calcular o ranking com as réplicas P100.");
-  body.innerHTML = rows.length ? rows.map((row) => {
-    const type = row.criterion === "reh_named_waypoint" ? "Fix REH" : "Waypoint UAM";
-    const target = {
-      type: row.criterion === "uam_reh_crossing" ? "crossing_waypoint" : "candidate_node",
-      resource_id: row.waypoint_id,
-      coordinates: [row.longitude, row.latitude],
-    };
-    return `<tr>
-      <td>${row.rank ?? "—"}</td>
-      <td>${escapeHtml(type)}</td>
-      <td><button class="resource-map-link" type="button" data-map-target="${escapeHtml(JSON.stringify(target))}">${escapeHtml(row.label)}</button><br><small>${escapeHtml(row.waypoint_id)}</small></td>
-      <td>${row.mean_operations_per_replica == null ? "—" : formatNumber(row.mean_operations_per_replica, 1)}</td>
-      <td>${row.mean_throughput_per_hour == null ? "—" : `${formatNumber(row.mean_throughput_per_hour, 2)} ops/h`}</td>
-      <td>${row.p95_throughput_per_hour == null ? "—" : `${formatNumber(row.p95_throughput_per_hour, 2)} ops/h`}</td>
-    </tr>`;
-  }).join("") : `<tr><td colspan="6">Ranking ainda não calculado para este cenário.</td></tr>`;
-}
-
-function renderCapacityTable(throughput, crossingsHave3dThroughput) {
-  const rows = [];
-  for (const [type, label] of [
-    ["od_pairs", "Par OD"],
-    ["trajectory_groups", "Grupo trajetoria"],
-    ["planned_reh", "Trecho REH formal"],
-
-  ]) {
-    if (type === "crossing_waypoints" && !crossingsHave3dThroughput) continue;
-    const group = throughput[type];
-    if (!group?.available) continue;
-    for (const resource of group.top_resources || []) {
-      rows.push({
-        type: label,
-        capacity: resource.capacity_reference_per_hour ?? group.capacity_reference_per_hour,
-        ...resource,
-      });
-    }
-  }
-  document.getElementById("capacity-table-body").innerHTML = rows.length
-    ? rows
-        .map(
-          (row) => `
-        <tr>
-          <td>${escapeHtml(row.type)}</td>
-          <td title="${escapeHtml(row.resource_id)}">${row.map_target && !["trajectory_group", "od_pair"].includes(row.map_target.type)
-            ? `<button class="resource-map-link" type="button" data-map-target="${escapeHtml(JSON.stringify(row.map_target))}">${escapeHtml(row.label)}</button>`
-            : escapeHtml(row.label)}</td>
-          <td>${formatNumber(row.operations, 0)}</td>
-          <td>${formatNumber(row.peak_throughput_per_hour, 1)} ops/h</td>
-          <td>${formatNumber(row.capacity, 1)} ops/h</td>
-          <td>${formatPercentRatio(row.utilization_peak)}</td>
-        </tr>`
-        )
-        .join("")
-    : `<tr><td colspan="6">Sem recursos de capacidade calculados.</td></tr>`;
-}
-
-function showImageChart(imageId, src) {
-  const image = document.getElementById(imageId);
-  image.src = src;
-}
-
-function renderMapLayers(tracks, plannedRoutes, officialReh, conflicts, heatmap, capacity) {
-  if (!state.map || typeof window.L === "undefined") return;
-  state.lastTracks = tracks;
-  state.lastConflicts = conflicts;
-  state.lastOfficialReh = officialReh;
-  state.lastCapacity = capacity;
-  const visibleConflicts = filteredConflictCollection(conflicts);
-  const visibleTracks = emptyFeatureCollection();
-  clearLayer("tracksLayer");
-  clearLayer("officialRehLayer");
-  clearLayer("uamProjectionLayer");
-  clearLayer("uamJunctionLayer");
-  clearLayer("plannedLayer");
-  clearLayer("heatLayer");
-  clearLayer("atdHotspotLayer");
-  clearLayer("complexityLayer");
-  clearLayer("candidateNodeLayer");
-  clearLayer("conflictLayer");
-  clearLayer("resourceHighlightLayer");
-
-  // Executed and planned paths are intentionally excluded from map rendering.
-  state.officialRehLayer = L.geoJSON(officialReh || emptyFeatureCollection(), {
-    pane: "routePane",
-    style: (feature) => ({
-      className: "official-reh-feature",
-      color: feature.properties.route_type === "Obrig" ? "#075985" : "#0f766e",
-      fillColor: feature.properties.route_type === "Obrig" ? "#38bdf8" : "#5eead4",
-      opacity: 0.82,
-      fillOpacity: 0.12,
-      weight: 1.5,
-    }),
-    onEachFeature: (feature, layer) => {
-      const p = feature.properties || {};
-      layer.bindTooltip(`${escapeHtml(p.label)} - ${escapeHtml(p.route_type || "REH")}`, { sticky: true });
-      layer.bindPopup(
-        `<strong>${escapeHtml(p.label)}</strong><br>` +
-          `Tipo ${escapeHtml(p.route_type || "nao informado")} / classe ${escapeHtml(p.airspace_class || "nao informada")}<br>` +
-          `Semilargura ${formatNumber(p.semi_width_m, 0)} m` +
-          (p.fix_a_name || p.fix_b_name
-            ? `<br>${escapeHtml(p.fix_a_name || "-")} -> ${escapeHtml(p.fix_b_name || "-")}`
-            : "") +
-          (p.altitude_min_ft != null || p.altitude_max_ft != null
-            ? `<br>Altitude ${formatNumber(p.altitude_min_ft, 0)}-${formatNumber(p.altitude_max_ft, 0)} ft`
-            : p.altitude_compulsory_ft != null
-              ? `<br>Altitude compulsoria ${formatNumber(p.altitude_compulsory_ft, 0)} ft`
-              : "") +
-          (p.source_identifier ? `<br>Fonte ${escapeHtml(p.source_identifier)}` : "")
-      );
-    },
-  });
-
-  const uamArea = L.geoJSON(state.uamProjection, {
-    pane: "routePane",
-    style: () => ({
-      color: "#be185d",
-      fillColor: "#f472b6",
-      opacity: 0.9,
-      fillOpacity: 0.13,
-      weight: 1.7,
-      // Dissolved area: no repeated OD boundaries.
-    }),
-    onEachFeature: (feature, layer) => {
-      const p = feature.properties || {};
-      layer.bindTooltip(`${escapeHtml(p.label || "Corredor UAM")} · projeção 2D`, { sticky: true });
-      layer.bindPopup(
-        `<strong>${escapeHtml(p.label || "Corredor UAM")}</strong><br>` +
-        `Projeção horizontal do corredor 3D<br>` +
-        `Área consolidada de ${formatNumber(p.source_route_count || 0)} rotas; a projeção não implica conexão entre altitudes.<br>` +
-        `Altitude do eixo ${formatNumber(p.altitude_min_m, 0)}–${formatNumber(p.altitude_max_m, 0)} m MSL`
-      );
-    },
-  });
-
-  const uamAxes = L.geoJSON(state.uamCenterlines, {
-    pane: "routePane", interactive: false,
-    style: {color: "#9d174d", weight: 1, opacity: .45},
-  });
-  state.uamProjectionLayer = L.layerGroup([uamArea, uamAxes]);
-
-  const conflictMarkers = L.geoJSON(visibleConflicts, {
-    pane: "conflictPane",
-    pointToLayer: (feature, latlng) =>
-      L.circleMarker(latlng, {
-        radius: 11,
-        color: conflictEventColor(feature),
-        weight: 3,
-        fillColor: conflictEventColor(feature),
-        fillOpacity: 0.94,
-      }),
-    onEachFeature: (feature, layer) => {
-      const p = feature.properties;
-      layer.bindTooltip(`${conflictEventLabel(feature)} ${escapeHtml(p.id_a)} / ${escapeHtml(p.id_b)}`, {
-        sticky: true,
-      });
-      layer.bindPopup(
-        `<strong>Evento ${conflictEventLabel(feature)}</strong><br>` +
-          `${escapeHtml(p.id_a)} / ${escapeHtml(p.id_b)}<br>` +
-          `${formatNumber(p.dist_h_m, 1)} m horizontal / ${formatNumber(p.dist_v_m, 1)} m vertical<br>` +
-          `${escapeHtml(p.vehicle_pair || "tipos desconhecidos")}<br>` +
-          `Severidade ${formatNumber(p.severity_ratio, 2)}<br>` +
-          `Razao H ${formatNumber(p.horizontal_ratio, 3)} / V ${formatNumber(p.vertical_ratio, 3)}<br>` +
-          `Horizonte DTLOOK (nao TTC observado) ${formatNumber(p.time_to_conflict_s, 0)} s<br>` +
-          `Duracao ${formatNumber(p.duration_s, 0)} s<br>` +
-          `t = ${formatNumber(p.simt, 0)} s`
-      );
-    },
-  });
-
-  const conflictPulse = L.geoJSON(visibleConflicts, {
-    interactive: false,
-    pane: "conflictPane",
-    pointToLayer: (feature, latlng) =>
-      L.circleMarker(latlng, {
-        radius: 22,
-        color: conflictEventColor(feature),
-        weight: 2,
-        fillColor: conflictEventColor(feature),
-        fillOpacity: 0.12,
-        opacity: 0.45,
-      }),
-  });
-  state.conflictLayer = L.layerGroup([conflictPulse, conflictMarkers]);
-
-
-  if (L.heatLayer) {
-    state.heatLayer = L.heatLayer(heatmap, {
-      pane: "heatPane",
-      radius: 9,
-      blur: 10,
-      minOpacity: 0.08,
-      maxZoom: 14,
-      gradient: {
-        0.15: "#2dd4bf",
-        0.45: "#2563eb",
-        0.7: "#f59e0b",
-        1.0: "#dc2626",
-      },
-    });
-  } else {
-    state.heatLayer = L.layerGroup(
-      heatmap.map((point) =>
-        L.circleMarker([point[0], point[1]], {
-          radius: 3,
-          stroke: false,
-          fillOpacity: Math.max(0.08, point[2]),
-          fillColor: "#2563eb",
-        })
-      )
-    );
-  }
-
-  state.complexityLayer = L.geoJSON(crossingCollection(capacity), {
-    pane: "conflictPane",
-    pointToLayer: (_feature, latlng) =>
-      L.circleMarker(latlng, {
-        radius: 7,
-        color: "#581c87",
-        weight: 2,
-        fillColor: "#a855f7",
-        fillOpacity: 0.88,
-      }),
-    onEachFeature: (feature, layer) => {
-      const p = feature.properties || {};
-      layer.bindTooltip(`${escapeHtml(p.label || "Cruzamento UAM × REH")} · ${formatNumber(p.altitude_m, 0)} m MSL`, {
-        sticky: true,
-      });
-      layer.bindPopup(
-        `<strong>${escapeHtml(p.label || "Cruzamento UAM × REH")}</strong><br>` +
-          `Corredor UAM: ${escapeHtml((p.uam_route_labels || []).join(", "))}<br>` +
-          `REH: ${escapeHtml((p.reh_labels || []).join(", "))}<br>` +
-          `Altitude de interseção: ${formatNumber(p.altitude_m, 1)} m MSL<br>` +
-          `Diagnóstico geométrico separado; não é recurso de capacidade neste modo.`
-      );
-    },
-  });
-
-  state.candidateNodeLayer = L.geoJSON(state.candidateNodes, {
-    pane: "conflictPane",
-    pointToLayer: (feature, latlng) => {
-      const reh = feature.properties?.criterion === "reh_named_waypoint";
-      return L.circleMarker(latlng, {
-        radius: 6, color: reh ? "#92400e" : "#0e7490", weight: 2,
-        fillColor: reh ? "#f59e0b" : "#22d3ee", fillOpacity: 0.9,
-      });
-    },
-    onEachFeature: (feature, layer) => {
-      layer.bindTooltip(waypointTooltip(feature), { sticky: true });
-      layer.bindPopup(waypointDetails(feature), { maxWidth: 520, maxHeight: 360 });
-    }
-  });
-
-  state.uamJunctionLayer = L.geoJSON(state.uamJunctions, {
-    pane: "conflictPane",
-    pointToLayer: (_feature, latlng) => L.circleMarker(latlng, {
-      radius: 4, color: "#075985", fillColor: "#67e8f9", fillOpacity: .9, weight: 1.5,
-    }),
-    onEachFeature: (feature, layer) => {
-      const p = feature.properties;
-      layer.bindTooltip(`${escapeHtml(p.label)} · grau ${p.network_degree} · ${formatNumber(p.altitude_m, 1)} m MSL`, {sticky: true});
-      layer.bindPopup(`<strong>${escapeHtml(p.label)}</strong><br>Grau ${p.network_degree} · ${formatNumber(p.altitude_m, 1)} m MSL<br>Junção dos eixos 3D. Diagnóstico geométrico; não define capacidade.<br>${(p.route_labels || []).map(escapeHtml).join("<br>")}`, {maxHeight: 240});
-    },
-  });
-  applyCheckedLayer("layer-uam-junctions", state.uamJunctionLayer);
-  applyCheckedLayer("layer-heat", state.heatLayer);
-  applyCheckedLayer("layer-official-reh", state.officialRehLayer);
-  applyCheckedLayer("layer-uam-corridors", state.uamProjectionLayer);
-  applyCheckedLayer("layer-complexity", state.complexityLayer);
-  applyCheckedLayer("layer-candidate-nodes", state.candidateNodeLayer);
-  applyCheckedLayer("layer-conflicts", state.conflictLayer);
-
-  fitMapToOperationalArea(visibleTracks, visibleConflicts);
-  updateMapInfo(tracks, visibleTracks, plannedRoutes, officialReh, visibleConflicts, heatmap, capacity);
-}
-
-function buildEndpointLayer(tracks) {
-  const points = [];
-  for (const feature of tracks.features || []) {
-    const coordinates = feature.geometry?.coordinates || [];
-    if (!coordinates.length) continue;
-    const first = coordinates[0];
-    const last = coordinates[coordinates.length - 1];
-    points.push({ type: "inicio", id: feature.properties.id, coordinate: first });
-    points.push({ type: "fim", id: feature.properties.id, coordinate: last });
-  }
-
-  return L.layerGroup(
-    points.map((point) =>
-      L.circleMarker([point.coordinate[1], point.coordinate[0]], {
-        pane: "routePane",
-        radius: point.type === "inicio" ? 4 : 5,
-        color: point.type === "inicio" ? "#0f766e" : "#7c3aed",
-        weight: 1.5,
-        fillColor: "#ffffff",
-        fillOpacity: 0.95,
-      }).bindTooltip(`${point.type === "inicio" ? "Inicio" : "Fim"} ${escapeHtml(point.id)}`, {
-        sticky: true,
-      })
-    )
-  );
-}
-
-function fitMapToOperationalArea(tracks, conflicts) {
-  if (!state.map || typeof window.L === "undefined") return;
-  if (!tracks || !conflicts) {
-    state.map.invalidateSize(true);
-    state.map.setView([-23.5505, -46.6333], 10);
-    return;
-  }
-
-  const bounds = L.latLngBounds([]);
-  const run = state.runs[state.activeRunIndex];
-  for (const [lat, lon] of run?.heatmap || []) bounds.extend([lat, lon]);
-  const operationalBounds = run?.dashboard?.summary?.bounds;
-  if (operationalBounds) {
-    bounds.extend([operationalBounds.min_lat, operationalBounds.min_lon]);
-    bounds.extend([operationalBounds.max_lat, operationalBounds.max_lon]);
-  }
-  for (const feature of conflicts.features || []) {
-    const coordinate = feature.geometry?.coordinates;
-    if (coordinate) bounds.extend([coordinate[1], coordinate[0]]);
-  }
-  if (document.getElementById("layer-uam-corridors")?.checked) {
-    for (const feature of state.uamProjection.features || []) {
-      for (const ring of feature.geometry?.coordinates || []) {
-        for (const [lon, lat] of ring) bounds.extend([lat, lon]);
-      }
-    }
-  }
-
-  state.map.invalidateSize(true);
-  if (bounds.isValid()) {
-    state.map.fitBounds(bounds.pad(0.18), {
-      animate: false,
-      maxZoom: 11,
-      paddingTopLeft: [16, 16],
-      paddingBottomRight: [16, 16],
-    });
-  } else {
-    state.map.setView([-23.5505, -46.6333], 10);
-  }
-
-  requestAnimationFrame(() => {
-    state.map.invalidateSize(true);
-    if (bounds.isValid()) {
-      state.map.fitBounds(bounds.pad(0.18), {
-        animate: false,
-        maxZoom: 11,
-        paddingTopLeft: [16, 16],
-        paddingBottomRight: [16, 16],
-      });
-    }
-  });
-}
-
-function updateMapInfo(tracks, visibleTracks, plannedRoutes, officialReh, conflicts, heatmap, capacity) {
-  const trajectories = tracks.features?.length || 0;
-  const visible = visibleTracks.features?.length || 0;
-  const groups = tracks.properties?.trajectory_group_count || new Set(
-    (tracks.features || []).map((feature) => feature.properties.trajectory_group)
-  ).size;
-  const conflictFeatures = conflicts.features || [];
-  const lowc = conflictFeatures.filter((feature) => conflictEventClass(feature) === "lowc").length;
-  const nmac = conflictFeatures.filter((feature) => conflictEventClass(feature) === "nmac").length;
-  const mac = conflictFeatures.filter((feature) => conflictEventClass(feature) === "mac").length;
-  const planned = plannedRoutes?.features?.length || 0;
-  const officialSegments = officialReh?.features?.length || 0;
-  const uamCorridors = state.uamProjection.features?.length || 0;
-  const density = heatmap.length || 0;
-  const atdHotspots = capacity?.density?.hotspots?.features?.length || 0;
-  const crossings = crossingCollection(capacity).features?.length || 0;
-  const candidates = state.candidateNodes.features?.length || 0;
-  setText("map-info-title", "Mapa operacional");
-  setText(
-    "map-info-text",
-    (() => {
-      const run = state.runs[state.activeRunIndex];
-      const density = run?.density;
-      return `Densidade de ${formatNumber(density?.replica_count || 1)} réplicas; ${formatNumber(density?.position_sample_count || heatmap.length)} registros em ${formatNumber(heatmap.length)} células. Média por réplica, escala comum entre cenários. ${formatNumber(officialSegments)} trechos REH; ${formatNumber(state.uamJunctions.features.length)} junções geométricas UAM. Eventos ilustrativos: réplica ${run?.metadata?.replica ?? "não informada"} · ${run?.representative_log || run?.name || "arquivo não informado"}.`;
-    })()
-  );
-  updateMapLegend();
-}
-
-function updateMapLegend() {
-  const volume = document.getElementById("trajectory-volume-filter")?.value || "all";
-  const classes = new Set((state.lastConflicts?.features || []).map(conflictEventClass));
-  let visible = 0;
-  document.querySelectorAll(".map-legend [data-legend-layer]").forEach((item) => {
-    const layer = item.dataset.legendLayer;
-    const control = document.getElementById(`layer-${layer}`);
-    const checked = Boolean(control?.checked && !control.disabled);
-    const showVolume = !item.dataset.volume || volume === "all" || item.dataset.volume === volume;
-    const showConflict = !item.dataset.conflict || classes.has(item.dataset.conflict);
-    item.hidden = !(checked && showVolume && showConflict);
-    if (!item.hidden) visible += 1;
-  });
-  const panel = document.querySelector(".map-info");
-  if (panel) panel.hidden = visible === 0;
-}
-
-function crossingCollection(capacity) {
-  return capacity?.complexity?.geometry_dimension === "3D"
-    ? capacity.complexity.crossings || emptyFeatureCollection()
-    : emptyFeatureCollection();
-}
-
-function highlightMapResource(target) {
-  if (!state.map || typeof window.L === "undefined" || !target) return;
-  if (["trajectory_group", "od_pair"].includes(target.type)) return;
-  activateKpa("overview");
-  clearLayer("resourceHighlightLayer");
-  let geojson = emptyFeatureCollection();
-  if (target.type === "od_pair" && target.coordinates?.length === 2) {
-    geojson = {
-      type: "FeatureCollection",
-      features: [{ type: "Feature", properties: {}, geometry: { type: "LineString", coordinates: target.coordinates } }],
-    };
-  } else if (target.type === "trajectory_group") {
-    geojson = {
-      ...(state.lastTracks || emptyFeatureCollection()),
-      features: (state.lastTracks?.features || []).filter(
-        (feature) => feature.properties?.trajectory_group === target.resource_id
-      ),
-    };
-  } else if (target.type === "reh_segment") {
-    geojson = {
-      ...(state.lastOfficialReh || emptyFeatureCollection()),
-      features: (state.lastOfficialReh?.features || []).filter(
-        (feature) => feature.properties?.resource_id === target.resource_id
-      ),
-    };
-  } else if (target.type === "crossing_waypoint") {
-    const matchingFeatures = (crossingCollection(state.lastCapacity).features || []).filter(
-      (feature) => feature.properties?.resource_id === target.resource_id
-    );
-    geojson = {
-      type: "FeatureCollection",
-      features: matchingFeatures.length
-        ? matchingFeatures
-        : target.coordinates?.length === 2
-          ? [{ type: "Feature", properties: { resource_id: target.resource_id }, geometry: { type: "Point", coordinates: target.coordinates } }]
-          : [],
-    };
-  } else if (target.type === "candidate_node") {
-    geojson = {
-      type: "FeatureCollection",
-      features: (state.candidateNodes.features || []).filter(
-        (feature) => feature.properties?.resource_id === target.resource_id
-      ),
-    };
-  }
-  state.resourceHighlightLayer = L.geoJSON(geojson, {
-    pane: "conflictPane",
-    style: { color: "#db2777", fillColor: "#f472b6", fillOpacity: 0.34, weight: 7, opacity: 1 },
-    pointToLayer: (_feature, latlng) => L.circleMarker(latlng, {
-      pane: "conflictPane", radius: 13, color: "#831843", fillColor: "#f472b6", weight: 4, fillOpacity: 0.92,
-    }),
-    onEachFeature: (feature, layer) => {
-      if (feature.properties?.name_group_id) layer.bindPopup(waypointDetails(feature), { maxWidth: 520, maxHeight: 360 });
-    },
-  }).addTo(state.map);
-  const bounds = state.resourceHighlightLayer.getBounds();
-  if (bounds.isValid()) state.map.fitBounds(bounds.pad(0.35), { maxZoom: 15, animate: false });
-  state.resourceHighlightLayer.eachLayer(layer => { if (layer.getPopup()) layer.openPopup(); });
-  document.querySelector("#map")?.scrollIntoView({ behavior: "smooth", block: "center" });
-}
-
-function filterTracksByVolume(tracks, filter) {
-  if (!tracks || filter === "all") return tracks;
-  return {
-    ...tracks,
-    features: (tracks.features || []).filter((feature) => feature.properties.volume_class === filter),
-  };
-}
-
-function clearLayer(layerName) {
-  const layer = state[layerName];
-  if (layer && state.map && state.map.hasLayer(layer)) {
-    state.map.removeLayer(layer);
-  }
-  state[layerName] = null;
-}
-
-function applyCheckedLayer(controlId, layer) {
-  if (state.map && document.getElementById(controlId)?.checked && !document.getElementById(controlId)?.disabled && layer) {
-    layer.addTo(state.map);
-  }
-}
-
-function renderTraceability(catalog) {
-  const body = document.getElementById("traceability-table-body");
-  if (!body) return;
-  const groups = groupTraceability(catalog || []);
-  body.innerHTML = groups
-    .map(
-      (group) => `
-        <tr class="traceability-group-row">
-          <td colspan="8">${escapeHtml(group.label)}</td>
-        </tr>
-        ${group.items
-          .map(
-            (metric) => `
-        <tr>
-          <td>${escapeHtml(metric.name)}</td>
-          <td>${escapeHtml(metric.formula)}</td>
-          <td>${escapeHtml(metric.pdf_reference)}</td>
-          <td>${escapeHtml(metric.code_reference)}</td>
-          <td>${escapeHtml(metric.status)}</td>
-          <td>${escapeHtml(metric.data_required)}</td>
-          <td>${escapeHtml(metric.implemented)}</td>
-          <td>${escapeHtml(metric.improvements_needed)}</td>
-        </tr>`
-          )
-          .join("")}`
-    )
-    .join("");
-}
-
-function groupTraceability(catalog) {
-  const order = ["Segurança", "Eficiência", "Capacidade", "Previsibilidade", "Equidade", "Diagnóstico complementar"];
-  const labels = {
-    "Segurança": "Segurança",
-    "Eficiência": "Eficiência",
-    "Capacidade": "Capacidade",
-    "Previsibilidade": "Previsibilidade",
-    "Equidade": "Equidade",
-    "Diagnóstico complementar": "Diagnósticos complementares do painel",
-  };
-  const groups = Object.fromEntries(order.map((key) => [key, []]));
-  for (const metric of catalog) {
-    const group = metric.kpa || "Diagnóstico complementar";
-    if (groups[group]) groups[group].push(metric);
-  }
-  return order
-    .filter((key) => groups[key].length)
-    .map((key) => ({ label: labels[key], items: groups[key] }));
-}
-
-function colorForVolume(volumeRatio) {
-  const ratio = Math.max(0, Math.min(1, Number(volumeRatio) || 0));
-  if (ratio >= 0.67) return "#dc2626";
-  if (ratio >= 0.34) return "#f59e0b";
-  return "#0ea5e9";
-}
-
-function colorForHotspot(densityRatio) {
-  const ratio = Math.max(0, Math.min(1, Number(densityRatio) || 0));
-  if (ratio >= 0.75) return "#dc2626";
-  if (ratio >= 0.45) return "#f97316";
-  if (ratio >= 0.2) return "#facc15";
-  return "#14b8a6";
-}
-
-function emptyFeatureCollection() {
-  return { type: "FeatureCollection", features: [] };
 }
 
 function formatNumber(value, digits = 0) {
@@ -1774,45 +161,6 @@ function formatNumber(value, digits = 0) {
     maximumFractionDigits: digits,
     minimumFractionDigits: digits,
   });
-}
-
-function formatOptionalPercent(value) {
-  return value !== null && value !== undefined && Number.isFinite(Number(value))
-    ? `${formatNumber(value, 1)}%`
-    : "-";
-}
-
-function formatOptionalDuration(value) {
-  return value !== null && value !== undefined && Number.isFinite(Number(value))
-    ? `${formatNumber(value, 0)} s`
-    : "-";
-}
-
-function formatOptionalRatio(value) {
-  return value !== null && value !== undefined && Number.isFinite(Number(value))
-    ? formatNumber(value, 2)
-    : "-";
-}
-
-function formatPercentRatio(value) {
-  return value !== null && value !== undefined && Number.isFinite(Number(value))
-    ? `${formatNumber(Number(value) * 100, 1)}%`
-    : "-";
-}
-
-function formatTLSMargin(value, compliant) {
-  if (value === null || value === undefined || !Number.isFinite(Number(value))) return "-";
-  const number = Number(value);
-  if (number > 999999) return compliant ? ">999999" : formatNumber(number, 1);
-  if (number >= 1000) return formatNumber(number, 0);
-  if (number >= 10) return formatNumber(number, 1);
-  return formatNumber(number, 2);
-}
-
-function formatSigned(value, digits, suffix = "") {
-  if (value === null || value === undefined || !Number.isFinite(Number(value))) return "-";
-  const number = Number(value);
-  return `${number > 0 ? "+" : ""}${formatNumber(number, digits)}${suffix}`;
 }
 
 function setText(id, value) {
@@ -1828,3 +176,225 @@ function escapeHtml(value) {
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
 }
+
+const kpaNames = {safety: "Segurança", efficiency: "Eficiência", capacity: "Capacidade", predictability: "Previsibilidade", equity: "Equidade"};
+// Only explicitly listed Product III KPIs may cross the presentation boundary.
+// The raw publication and internal audit fields remain unchanged.
+const kpiSeries = {
+  loss_of_separation: [["safety.lowc_events", "eventos"], ["safety.lowc_per_flight_hour", "eventos/h de voo"]],
+  nmac: [["safety.nmac_events", "eventos"]],
+  estimated_mac: [["safety.expected_mac", "eventos estimados"]],
+  safety_level: [["safety.expected_mac_per_100k_flight_hours", "MAC/100.000 h de voo"]],
+  tls: [], risk_ratio: [],
+  ground_delay: [["efficiency.ground_delay.mean_ground_delay_s", "s"]],
+  airborne_delay: [["efficiency.airborne_delay.mean_airborne_delay_s", "s"]],
+  total_delay: [["efficiency.total_delay.mean_total_delay_s", "s"]],
+  flight_time: [["efficiency.mean_flight_time_min", "min"]],
+  distance: [["efficiency.mean_distance_nm", "NM"]],
+  horizontal_efficiency: [
+    ["efficiency.trajectory_conformity.mean_planned_horizontal_inefficiency_ratio", "razão planejada"],
+    ["efficiency.trajectory_conformity.mean_executed_horizontal_inefficiency_ratio", "razão executada"]],
+  trajectory_conformity: [["efficiency.trajectory_conformity.mean_trajectory_conformity_ratio", "TC (razão)"],
+    ["efficiency.trajectory_conformity.mean_additional_distance_m", "ED (m)"]],
+  throughput: [], practical_capacity: [], utilization: [],
+  flight_time_variability: [], punctuality: [], relative_degradation: [],
+  group_mean_delay: [], delay_dispersion: [], delay_cv: []
+};
+const resourceSeries = {
+  throughput: "Pico (ops/h)", practical_capacity: "Referência P95 (ops/h)", utilization: "Utilização (razão)"
+};
+const stabilityLabels = {};
+function publicCatalog(panel) {
+  return (window.__UAM_METRIC_CATALOG__?.metrics || []).filter(m => m.kpa === kpaNames[panel] && Object.hasOwn(kpiSeries, m.id));
+}
+function valueAt(object, path) {
+  let value = object;
+  for (const part of path.split(".")) {
+    if (value?.available === false) return null;
+    value = value?.[part];
+  }
+  return typeof value === "number" && Number.isFinite(value) ? value : null;
+}
+function numericValue(dashboard, path) {
+  // A zero-exposure rate is undefined, even if a legacy payload stores zero.
+  if (path.includes("flight_hour") && path !== "safety.tls_target_per_flight_hour" && !(dashboard.efficiency?.total_flight_hours > 0)) return null;
+  return valueAt(dashboard, path);
+}
+function displayValue(value, unit) {
+  if (value == null) return "Indisponível";
+  const number = value !== 0 && Math.abs(value) < .01 ? value.toExponential(3) : formatNumber(value, 3);
+  return `${number} ${unit}`.trim();
+}
+function comparisonRow() {
+  return state.comparison?.days?.flatMap(day => day.rows || []).find(row => row.run_index === state.activeRunIndex);
+}
+function renderMetrics(dashboard) {
+  const run = state.runs[state.activeRunIndex];
+  for (const panel of Object.keys(kpaNames)) {
+    document.getElementById(`kpis-${panel}`).innerHTML = publicCatalog(panel).map(metric => {
+      let values = (kpiSeries[metric.id] || []).map(([path, unit]) => {
+        const value = numericValue(dashboard, path);
+        return `<p>${escapeHtml(displayValue(value, unit))}</p>`;
+      }).join("");
+      if (metric.id === "tls") {
+        const target = numericValue(dashboard, "safety.tls_target_per_flight_hour");
+        const rate = numericValue(dashboard, "safety.expected_mac_per_100k_flight_hours");
+        values = `<p>${escapeHtml(displayValue(target == null ? null : target * 100000, "MAC/100.000 h de voo"))}</p><p>${rate == null || target == null ? "Comparação indisponível" : rate <= target * 100000 ? "Nível de Segurança ≤ TLS" : "Nível de Segurança > TLS"}</p>`;
+      }
+      if (metric.id === "risk_ratio") values = `<p>${escapeHtml(displayValue(valueAt(comparisonRow(), "risk_ratio_vs_reference"), ""))}</p>`;
+      if (resourceSeries[metric.id]) values = "<p>Resultados por recurso na tabela abaixo.</p>";
+      if (!values) values = "<p>Indisponível</p><small>Sem cálculo ou dados disponíveis para este indicador.</small>";
+      const estimate = metric.id === "estimated_mac" ? "<small>Estimativa probabilística pela Eq. 3.2.</small>" : "";
+      return `<article class="metric" data-kpi="${metric.id}"><h3>${escapeHtml(metric.name)}</h3><div class="kpi-value">${values}</div>${estimate}<small>${escapeHtml(metric.pdf_reference)}</small></article>`;
+    }).join("");
+  }
+}
+function replicaSvg(values, label) {
+  const rows = values.map((value, index) => ({value, index})).filter(row => typeof row.value === "number" && Number.isFinite(row.value));
+  if (!rows.length) return "<p>Gráfico indisponível: sem valores individuais deste KPI.</p>";
+  const min = Math.min(...rows.map(row => row.value)), max = Math.max(...rows.map(row => row.value));
+  const span = max - min || Math.abs(max) * .1 || 1;
+  const x = index => 75 + index / Math.max(1, values.length - 1) * 595;
+  const y = value => 160 - (value - min) / span * 125;
+  // Show observations individually; missing replicas never become zero or interpolated lines.
+  return `<svg class="stability-plot" viewBox="0 0 720 210" role="img" aria-label="${escapeHtml(label)} por réplica"><text x="5" y="35">${escapeHtml(displayValue(min + span, ""))}</text><text x="5" y="165">${escapeHtml(displayValue(min, ""))}</text><line x1="75" y1="160" x2="670" y2="160" stroke="#64748b"/>${rows.map(row => `<circle cx="${x(row.index)}" cy="${y(row.value)}" r="3" fill="#2563eb"/>`).join("")}<text x="75" y="180">1</text><text x="650" y="180">${values.length}</text><text x="290" y="202">Réplica</text></svg>`;
+}
+function renderCharts(dashboard) {
+  const run = state.runs[state.activeRunIndex];
+  for (const panel of Object.keys(kpaNames)) {
+    document.getElementById(`charts-${panel}`).innerHTML = publicCatalog(panel).flatMap(metric =>
+      publicStabilityEntries(run, metric).filter(([key, data]) => (kpiSeries[metric.id] || []).some(([path]) => path === key) && Array.isArray(data.values))
+        .map(([key, data]) => `<article class="chart-card"><h3>${escapeHtml(stabilityLabels[key])}</h3>${replicaSvg(data.values, stabilityLabels[key])}</article>`)
+    ).join("");
+  }
+  const target = document.getElementById("charts-efficiency");
+  const available = run.analysis_schema_version === 1 && run.aggregate_analysis?.schema_version === 1 && dashboard.chart_aggregation_version === 1;
+  const charts = [["distance_histogram", "Distância de Voo"], ["trajectory_conformity", "Conformidade da Trajetória"]];
+  target.innerHTML += charts.map(([key, title]) => {
+    const src = available ? dashboard.charts?.[key] : null;
+    // Source paths are generated by the pipeline and must remain local assets.
+    const safe = typeof src === "string" && /^assets\/[\w./-]+\.png$/.test(src) && !src.includes("..");
+    return `<article class="chart-card"><h3>${title}</h3>${safe ? `<img src="${escapeHtml(src)}" alt="${title}: distribuição média por réplica" /><p>Média por réplica válida; faixa mínimo–máximo entre réplicas.</p>` : "<p>Gráfico indisponível neste cenário.</p>"}</article>`;
+  }).join("");
+}
+function renderCapacity(dashboard) {
+  const rows = [];
+  for (const [key, label] of [["od_pairs", "Par OD"], ["trajectory_groups", "Grupo de trajetória"], ["planned_reh", "Trecho REH"]]) {
+    const group = dashboard.capacity?.throughput?.[key];
+    if (!group?.available) continue;
+    for (const resource of group.top_resources || []) {
+      rows.push(`<tr><td>${escapeHtml(label)}</td><td>${escapeHtml(resource.label || resource.resource_id)}</td><td>${displayValue(valueAt(resource, "peak_throughput_per_hour"), "ops/h")}</td><td>${displayValue(valueAt(resource, "capacity_reference_per_hour") ?? valueAt(group, "capacity_reference_per_hour"), "ops/h")}</td><td>${displayValue(valueAt(resource, "utilization_peak"), "")}</td></tr>`);
+    }
+  }
+  document.getElementById("charts-capacity").innerHTML = `<div class="table-wrap"><table class="comparison-table"><thead><tr><th>Tipo de recurso</th><th>Recurso</th><th>Throughput por Recurso (pico)</th><th>Capacidade Prática de Recurso (P95)</th><th>Utilização de Recurso (pico)</th></tr></thead><tbody>${rows.join("") || '<tr><td colspan="5">Indicadores indisponíveis neste cenário.</td></tr>'}</tbody></table><p>P95 calculado por réplica e agregado por média. Throughput baseado em inícios de voo e atribuição à rota planejada.</p></div>`;
+}
+function publicStabilityEntries(run, metric) {
+  const panels = run.stability?.panels || {};
+  const entries = Object.entries(Object.assign({}, ...Object.values(panels)));
+  const paths = new Map(kpiSeries[metric.id] || []);
+  // Legacy packages preserve executed HFE in percent, not as a ratio.
+  if (metric.id === "horizontal_efficiency" && !entries.some(([key]) => key === "efficiency.trajectory_conformity.mean_executed_horizontal_inefficiency_ratio")) {
+    paths.set("efficiency.mean_horizontal_inefficiency_pct", "% executada");
+  }
+  return entries.filter(([key]) => paths.has(key) || (resourceSeries[metric.id] && /^(od_pairs|trajectory_groups|planned_reh) · /.test(key) && key.endsWith(` · ${resourceSeries[metric.id]}`)))
+    .map(([key, data]) => {
+      const label = paths.has(key) ? `${metric.name} (${paths.get(key)})` : `${metric.name} · ${key.split(" · ").slice(0, -1).join(" · ")}`;
+      stabilityLabels[key] = label;
+      return [key, data];
+    });
+}
+function renderStability() {
+  const run = state.runs[state.activeRunIndex];
+  const valid = run.analysis_schema_version === 1 && run.stability?.schema_version === 1;
+  const method = "<p>Média acumulada por réplica; IC bootstrap de 95%, 1.000 reamostragens. Mínimo de 30 réplicas válidas, tolerância relativa de 5% e confirmação por 15 prefixos consecutivos. Pontos verdes: critério atendido. Constantes e zeros observados não confirmam estabilidade inferencial.</p>";
+  for (const panel of Object.keys(kpaNames)) {
+    const content = publicCatalog(panel).map(metric => {
+      const entries = valid ? publicStabilityEntries(run, metric) : [];
+      // TLS is a target, not a stochastic outcome. Do not substitute TLS margin.
+      if (metric.id === "tls") return `<h3>TLS</h3><p>Nível-alvo de referência; a estabilização é avaliada no Nível de Segurança.</p>`;
+      return entries.length ? entries.map(stabilityMetricHtml).join("") : `<h3>${escapeHtml(metric.name)}</h3><p>Estabilidade indisponível: sem série individual deste KPI neste cenário.</p>`;
+    }).join("");
+    document.getElementById(`stability-${panel}`).innerHTML = method + content;
+  }
+}
+function activateKpa(kpa) {
+  state.activeKpa = Object.hasOwn(kpaNames, kpa) ? kpa : "safety";
+  document.querySelectorAll("[data-kpa-tab]").forEach(button => {
+    const active = button.dataset.kpaTab === state.activeKpa;
+    button.classList.toggle("active", active);
+    button.setAttribute("aria-selected", String(active));
+    button.tabIndex = active ? 0 : -1;
+  });
+  document.querySelectorAll("[data-kpa-panel]").forEach(panel => { panel.hidden = panel.dataset.kpaPanel !== state.activeKpa; });
+}
+function renderDashboard(model) {
+  const normalized = normalizeModel(model);
+  // Preserve the existing exclusion of retired scenario definitions.
+  const retained = normalized.runs.filter(run => (run.metadata?.scenario_key && !/^C[12]$/.test(run.metadata.scenario_key)) || run.metadata?.experiment_family === "bimtra");
+  const remap = new Map(retained.map((run, index) => [normalized.runs.indexOf(run), index]));
+  state.runs = retained;
+  state.runSummaries = [...retained];
+  cachedRunIndices.clear();
+  state.comparison = {...normalized.comparison, days: (normalized.comparison?.days || []).map(day => ({...day,
+    rows: day.rows.filter(row => remap.has(row.run_index)).map(row => ({...row, run_index: remap.get(row.run_index)}))
+  })).filter(day => day.rows.length)};
+  if (!retained.length) {
+    setText("scenario-load-status", "Nenhum cenário processado disponível.");
+    document.getElementById("scenario-load-status").hidden = false;
+    document.getElementById("dashboard-content").hidden = true;
+    return;
+  }
+  renderComparison({...normalized, runs: retained, comparison: state.comparison});
+}
+function renderSelectedRun() {
+  const run = state.runs[state.activeRunIndex];
+  if (!run) return;
+  const content = document.getElementById("dashboard-content");
+  const status = document.getElementById("scenario-load-status");
+  const retry = document.getElementById("scenario-load-retry");
+  if (run.data_parts) {
+    const index = state.activeRunIndex;
+    content.hidden = true;
+    status.hidden = false;
+    retry.hidden = true;
+    status.textContent = `Carregando cenário ${run.metadata?.scenario_key || run.name}…`;
+    loadRunDetails(index).then(() => { if (state.activeRunIndex === index) renderSelectedRun(); }).catch(error => {
+      console.error(error);
+      if (state.activeRunIndex !== index) return;
+      status.textContent = "Não foi possível carregar este cenário.";
+      retry.hidden = false;
+    });
+    return;
+  }
+  content.hidden = false;
+  status.hidden = true;
+  retry.hidden = true;
+  renderMetrics(run.dashboard);
+  renderCharts(run.dashboard);
+  renderCapacity(run.dashboard);
+  renderStability();
+  setText("replica-universe", `Cenário ${run.metadata?.scenario_key || run.name} · Média de ${run.replica_count || 1} réplicas. Indicadores sem cálculo ou dados disponíveis são identificados como indisponíveis.`);
+}
+document.addEventListener("DOMContentLoaded", () => {
+  document.getElementById("scenario-load-retry").addEventListener("click", renderSelectedRun);
+  document.getElementById("run-select").addEventListener("change", event => {
+    state.activeRunIndex = Number(event.target.value); populateScenarioFilters(); renderSelectedRun();
+  });
+  document.getElementById("day-select").addEventListener("change", event => {
+    state.activeDayKey = event.target.value; populateRunSelect();
+  });
+  scenarioFilters.forEach((filter, index) => document.getElementById(filter.id).addEventListener("change", () => {
+    populateScenarioFilters(index); renderSelectedRun();
+  }));
+  const tabs = [...document.querySelectorAll("[data-kpa-tab]")];
+  tabs.forEach((button, index) => {
+    button.addEventListener("click", () => activateKpa(button.dataset.kpaTab));
+    button.addEventListener("keydown", event => {
+      const next = event.key === "ArrowRight" ? (index + 1) % tabs.length : event.key === "ArrowLeft" ? (index + tabs.length - 1) % tabs.length : event.key === "Home" ? 0 : event.key === "End" ? tabs.length - 1 : null;
+      if (next == null) return;
+      event.preventDefault(); tabs[next].focus(); activateKpa(tabs[next].dataset.kpaTab);
+    });
+  });
+  activateKpa("safety");
+  renderDashboard(window.__UAM_DASHBOARD_DATA__ || {runs: []});
+});
