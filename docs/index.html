@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Indicadores de Desempenho UAM</title>
   <link rel="stylesheet" href="assets/vendor/leaflet/leaflet.css" />
-  <link rel="stylesheet" href="assets/dashboard.css?v=1ee73b74c907" />
+  <link rel="stylesheet" href="assets/dashboard.css?v=fafbca08fcfd" />
 </head>
 <body>
     <header class="topbar">
@@ -18,11 +18,11 @@
           <span>Grupo de cenários</span>
           <select id="day-select"></select>
         </label>
-        <label><span>Tipo de corredor</span><select id="corridor-select"></select></label>
-        <label><span>Tipo de desconflito</span><select id="management-select"></select></label>
+        <label><span>Gestão do espaço aéreo</span><select id="corridor-select"></select></label>
+        <label><span>Gestão do tráfego</span><select id="management-select"></select></label>
         <label><span>Condição operacional</span><select id="condition-select"></select></label>
-        <label><span>Quantidade de vertiportos</span><select id="vertiports-select"></select></label>
-        <label><span>Tempo de separação</span><select id="separation-select"></select></label>
+        <label><span>Demanda</span><select id="vertiports-select"></select></label>
+        <label><span>Critérios de separação</span><select id="separation-select"></select></label>
         <label id="legacy-run-filter" hidden><span>Cenário</span><select id="run-select"></select></label>
         <p id="scenario-selection" class="scenario-selection" role="status" aria-live="polite"></p>
       </div>
@@ -30,7 +30,7 @@
     <p id="protocol-data-note" class="protocol-note" hidden></p>
 
     <nav class="kpa-tabs" role="tablist" aria-label="Áreas de desempenho">
-      <button type="button" role="tab" id="tab-maps" aria-controls="panel-maps" aria-selected="true" data-kpa-tab="maps">Mapas</button>
+      <button type="button" role="tab" id="tab-maps" aria-controls="panel-maps" aria-selected="true" data-kpa-tab="maps">Visão geral</button>
       <button type="button" role="tab" id="tab-safety" aria-controls="panel-safety" aria-selected="false" data-kpa-tab="safety">Segurança</button>
       <button type="button" role="tab" id="tab-efficiency" aria-controls="panel-efficiency" aria-selected="false" data-kpa-tab="efficiency">Eficiência</button>
       <button type="button" role="tab" id="tab-capacity" aria-controls="panel-capacity" aria-selected="false" data-kpa-tab="capacity">Capacidade</button>
@@ -41,11 +41,26 @@
     <button id="scenario-load-retry" class="panel-button" type="button" hidden>Tentar carregar novamente</button>
     <main id="dashboard-content">
       <p id="replica-universe" data-kpi-context class="protocol-note" hidden></p>
-      <p data-kpi-context class="metric-hierarchy-note" hidden>Indicadores do Produto III · Capítulo 3</p>
+      <p data-kpi-context class="metric-hierarchy-note" hidden>Cada aba corresponde a uma área de desempenho (KPA). Os indicadores (KPIs) seguem o capítulo 3 do Produto III.</p>
       <section id="panel-maps" data-kpa-panel="maps" role="tabpanel" aria-labelledby="tab-maps">
+        <div class="overview-heading">
+          <h2>Visão geral do cenário</h2>
+          <p>Veja o volume de voos simulados, a configuração selecionada e a rede de corredores. Use as demais abas para explorar os indicadores por área de desempenho.</p>
+        </div>
+        <div class="overview-summary" aria-live="polite">
+          <article class="metric">
+            <h3>Total de voos simulados</h3>
+            <strong id="overview-flight-total">—</strong>
+            <p id="overview-flight-detail"></p>
+          </article>
+          <article class="metric">
+            <h3 id="overview-scenario">Cenário selecionado</h3>
+            <dl id="overview-filters" class="overview-filters"></dl>
+          </article>
+        </div>
+        <h3 class="overview-map-title">Rede de corredores</h3>
         <p id="map-replica-note" class="map-replica-note"></p>
-        <h2>Mapa 2D</h2>
-<div class="conflict-pair-filter" role="group" aria-label="Filtrar conflitos por combinação de veículos">
+        <div class="conflict-pair-filter" role="group" aria-label="Filtrar conflitos por combinação de veículos">
           <span>Combinação:</span>
           <button class="active" type="button" aria-pressed="true" data-conflict-pair="all">Todos</button>
           <button type="button" aria-pressed="false" data-conflict-pair="evtol-evtol">eVTOL × eVTOL</button>
@@ -58,11 +73,11 @@
             <h2>Camadas</h2>
             <label><input type="checkbox" id="layer-official-reh" checked /> REH formal</label>
             <label><input type="checkbox" id="layer-uam-corridors" checked /> Corredores UAM (projeção 2D)</label>
-            <label><input type="checkbox" id="layer-heat" checked /> Densidade (todas as réplicas)</label>
-            <label><input type="checkbox" id="layer-complexity" checked /> Cruzamentos UAM × REH (diagnóstico 3D)</label>
-            <label><input type="checkbox" id="layer-uam-junctions" checked /> Junções geométricas UAM</label>
-            <label><input type="checkbox" id="layer-candidate-nodes" checked /> Junções UAM e REH</label>
-            <label><input type="checkbox" id="layer-conflicts" checked /> Eventos LoWC/NMAC</label>
+            <label><input type="checkbox" id="layer-heat" /> Densidade (todas as réplicas)</label>
+            <label><input type="checkbox" id="layer-complexity" /> Cruzamentos UAM × REH (diagnóstico 3D)</label>
+            <label><input type="checkbox" id="layer-uam-junctions" /> Junções geométricas UAM</label>
+            <label><input type="checkbox" id="layer-candidate-nodes" /> Junções UAM e REH</label>
+            <label><input type="checkbox" id="layer-conflicts" /> Eventos LoWC/NMAC</label>
             <button class="panel-button" id="fit-map" type="button">Reenquadrar mapa</button>
             <div class="map-summary" aria-live="polite">
               <strong id="map-info-title">Mapa operacional</strong>
@@ -75,7 +90,7 @@
           <div id="map"></div>
           <div class="map-info" aria-live="polite">
             <div class="map-legend">
-              <span data-legend-layer="official-reh"><i class="legend-swatch legend-official-reh"></i>REH formal</span>
+              <span data-legend-layer="official-reh"><i class="legend-swatch legend-official-reh"></i>Rotas Especiais de Helicópteros (REH)</span>
               <span data-legend-layer="uam-corridors"><i class="legend-swatch legend-uam-corridors"></i>Corredor UAM · projeção 2D</span>
               <span data-legend-layer="heat"><i class="legend-swatch legend-heat"></i>Densidade</span>
               <span data-legend-layer="complexity"><i class="legend-swatch legend-complexity"></i>Cruzamento UAM × REH 3D</span>
@@ -182,12 +197,12 @@
     </main>
     <script src="assets/vendor/leaflet/leaflet.js"></script>
     <script src="assets/vendor/leaflet/leaflet-heat.js"></script>
-    <script src="assets/candidate_nodes.js?v=aac1139d1528"></script>
-    <script src="assets/waypoint_rankings.js?v=2b01a3ea2109"></script>
-    <script src="assets/data_bundle.js?v=ab090919c2e8"></script>
-    <script src="assets/metric_catalog.js?v=1a0e9a56e768"></script>
-    <script src="assets/scenario_catalog.js?v=7d82ec2bd1c7"></script>
-    <script src="assets/dashboard.js?v=d7b279d8481a"></script>
-    <script src="assets/maps.js?v=c988b3fdd4ba"></script>
+    <script src="assets/candidate_nodes.js?v=e7dfbd1f0bb8"></script>
+    <script src="assets/waypoint_rankings.js?v=316c83ff7dee"></script>
+    <script src="assets/data_bundle.js?v=90f5e8a75760"></script>
+    <script src="assets/metric_catalog.js?v=5d481787cee4"></script>
+    <script src="assets/scenario_catalog.js?v=80c43c91e38c"></script>
+    <script src="assets/dashboard.js?v=f668cc53363c"></script>
+    <script src="assets/maps.js?v=2f2238e2e3db"></script>
 </body>
 </html>

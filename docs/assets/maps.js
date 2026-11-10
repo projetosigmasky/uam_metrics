@@ -965,7 +965,7 @@ function updateMapsVisibility() {
 }
 
 function renderMaps(run) {
-  const dedicated = run.metadata?.airspace === "dedicated_uam" || /^C2(?:\.|$)/.test(run.metadata?.scenario_key || "");
+  const dedicated = (runDimensions(run)?.airspace || run.metadata?.airspace) === "dedicated_uam" || /^C2(?:\.|$)/.test(run.metadata?.scenario_key || "");
   for (const id of ["layer-uam-corridors", "layer-uam-junctions", "layer-complexity"]) {
     const control = document.getElementById(id);
     control.disabled = !dedicated;
@@ -989,7 +989,7 @@ function renderMaps(run) {
     button.setAttribute("aria-pressed", String(active));
   });
   const replica = run.metadata?.replica;
-  setText("map-replica-note", `Heatmap: todas as ${run.replica_count || 1} réplicas do cenário. Eventos e reprodução 3D: réplica ilustrativa ${replica == null ? "não informada" : "r" + String(replica).padStart(3, "0")}.`);
+  setText("map-replica-note", `A camada de densidade reúne as ${run.replica_count || 1} réplicas do cenário. Os eventos e a reprodução 3D usam uma réplica ilustrativa${replica == null ? "" : ` (r${String(replica).padStart(3, "0")})`}.`);
   state.mapRun = run;
   state.mapNeedsRender = true;
   render3DVisualization(run.trajectory_3d, run.conflicts);

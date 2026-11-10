@@ -52,11 +52,11 @@ function loadRunDetails(index) {
 }
 
 const scenarioFilters = [
-  {id: "corridor-select", key: "airspace", options: [["shared_reh", "Compartilhado"], ["dedicated_uam", "Segregado"]]},
-  {id: "management-select", key: "management", options: [["none", "Sem desconflito"], ["dcb_milp_waypoint", "DCB MILP Waypoint"], ["dcb_milp_grid", "DCB MILP Quadrícula"], ["micro_milp", "Micro Chen"], ["micro_moolchandani", "Micro Moolchandani"]]},
-  {id: "condition-select", key: "condition", options: [["nominal", "Nominal"], ["disturbed", "Perturbado"]]},
-  {id: "vertiports-select", key: "vertiports", options: [["0", "0 — C0, somente helicópteros"], ["6", "6"], ["12", "12"], ["", "Não informado"]]},
-  {id: "separation-select", key: "separation_seconds", options: [["", "Não se aplica"], ["11", "11 segundos"], ["23", "23 segundos"], ["38", "38 segundos"]]},
+  {id: "corridor-select", key: "airspace", options: [["shared_reh", "Compartilhamento de REH"], ["dedicated_uam", "Corredores UAM dedicados"]]},
+  {id: "management-select", key: "management", options: [["none", "Sem gestão estratégica"], ["dcb_milp_waypoint", "DCB por waypoint", "Balanceamento demanda-capacidade (DCB)"], ["dcb_milp_grid", "DCB por quadrícula", "Balanceamento demanda-capacidade (DCB)"], ["micro_milp", "Desconflito (Chen)", "Desconflito de trajetórias"], ["micro_moolchandani", "Desconflito (Moolchandani)", "Desconflito de trajetórias"]]},
+  {id: "condition-select", key: "condition", options: [["nominal", "Nominal"], ["disturbed", "Fora da condição nominal"]]},
+  {id: "vertiports-select", key: "vertiports", options: [["0", "C0 · somente helicópteros"], ["6", "Estágio inicial (6 vertiportos)"], ["12", "Estágio intermediário (12 vertiportos)"], ["", "Não informado"]]},
+  {id: "separation-select", key: "separation_seconds", options: [["", "Não se aplica"], ["11", "11 s · LoWC 0,3 NM"], ["23", "23 s · LoWC 0,6 NM"], ["38", "38 s · LoWC 1,0 NM"]]},
 ];
 
 function runDimensions(run) {
@@ -77,7 +77,6 @@ function normalizeModel(model) {
 
 function renderComparison(model) {
   const days = model.comparison?.days || [];
-  const replicaCount = model.runs.reduce((total, run) => total + (run.replica_count || 1), 0);
   state.activeDayKey = state.activeDayKey || days[0]?.day_key || null;
   const daySelect = document.getElementById("day-select");
   daySelect.innerHTML = days
@@ -118,10 +117,16 @@ function populateScenarioFilters(changedIndex = -1) {
     const available = new Set(candidates.map(i => filterValue(runDimensions(state.runs[i]), filter.key)));
     const desired = changedIndex >= 0 && index <= changedIndex ? select.value : filterValue(previous, filter.key);
     const value = available.has(desired) ? desired : filter.options.find(([value]) => available.has(value))?.[0] ?? "";
-    select.innerHTML = filter.options.map(([option, label]) => {
-      if (filter.key === "separation_seconds" && option === "" && candidates.some(i => runDimensions(state.runs[i]).management?.startsWith("micro_"))) label = "Não informado";
-      return `<option value="${option}"${available.has(option) ? "" : " disabled"}>${label}${available.has(option) ? "" : filter.key === "vertiports" && option === "0" ? " · aguardando dados" : " · indisponível"}</option>`;
-    }).join("");
+    const groups = new Map();
+    for (const [option, name, group] of filter.options) {
+      const label = option === "" && filter.key === "separation_seconds" && candidates.some(i => runDimensions(state.runs[i]).management?.startsWith("micro_"))
+        ? "Não informado" : name;
+      const enabled = available.has(option);
+      const suffix = enabled ? "" : filter.key === "vertiports" && option === "0" ? " · aguardando dados" : " · indisponível";
+      const item = `<option value="${option}"${enabled ? "" : " disabled"}>${label}${suffix}</option>`;
+      groups.set(group, (groups.get(group) || "") + item);
+    }
+    select.innerHTML = [...groups].map(([group, items]) => group ? `<optgroup label="${group}">${items}</optgroup>` : items).join("");
     select.value = value;
     select.disabled = available.size <= 1;
     select.title = "Combinações disponíveis nos resultados processados";
@@ -222,7 +227,10 @@ function numericValue(dashboard, path) {
 }
 function displayValue(value, unit) {
   if (value == null) return "Indisponível";
-  const number = value !== 0 && Math.abs(value) < .01 ? value.toExponential(3) : formatNumber(value, 3);
+  const count = unit === "eventos";
+  // Preserve the scale of very small nonzero estimates and rates.
+  const number = !count && value !== 0 && Math.abs(value) < .01
+    ? value.toExponential(2).replace(".", ",") : formatNumber(value, count ? 0 : 2);
   return `${number} ${unit}`.trim();
 }
 function comparisonRow() {
@@ -348,6 +356,34 @@ function renderDashboard(model) {
   }
   renderComparison({...normalized, runs: retained, comparison: state.comparison});
 }
+function renderOverview(run) {
+  const dashboard = run.dashboard;
+  const replicas = run.replica_count || run.density?.replica_count || 1;
+  // The aggregate stores the mean number of flight instances over all replicas.
+  const flights = valueAt(dashboard, "summary.operation_count") ?? valueAt(dashboard, "efficiency.flight_instances");
+  const total = flights == null ? null : Math.round(flights * replicas);
+  setText("overview-flight-total", total == null ? "Indisponível" : formatNumber(total));
+  setText("overview-flight-detail", replicas > 1
+    ? `${formatNumber(replicas)} réplicas${flights == null ? "" : ` · média de ${formatNumber(flights, 2)} voos por réplica`}`
+    : "1 réplica");
+  setText("overview-scenario", `Cenário ${run.metadata?.scenario_key || run.name}`);
+
+  const dimensions = runDimensions(run);
+  const labels = ["Gestão do espaço aéreo", "Gestão do tráfego", "Condição operacional", "Demanda", "Critérios de separação"];
+  const filters = scenarioFilters.map(({key, options}, index) => {
+    const value = filterValue(dimensions, key);
+    let label = options.find(([option]) => option === value)?.[1] || "Não informado";
+    if (!value && key === "separation_seconds" && dimensions?.management?.startsWith("micro_")) label = "Não informado";
+    return [labels[index], label];
+  });
+  const days = state.comparison?.days || [];
+  const group = days.find(day => day.day_key === state.activeDayKey);
+  if (days.length > 1 && group) filters.unshift(["Grupo de cenários", group.day_label]);
+  document.getElementById("overview-filters").innerHTML = dimensions
+    ? filters.map(([label, value]) => `<div><dt>${escapeHtml(label)}</dt><dd>${escapeHtml(value)}</dd></div>`).join("")
+    : "<div><dt>Configuração</dt><dd>Detalhes dos filtros indisponíveis para este cenário.</dd></div>";
+}
+
 function renderSelectedRun() {
   const run = state.runs[state.activeRunIndex];
   if (!run) return;
@@ -372,6 +408,7 @@ function renderSelectedRun() {
   content.hidden = false;
   status.hidden = true;
   retry.hidden = true;
+  renderOverview(run);
   renderMaps(run);
   renderMetrics(run.dashboard);
   renderCharts(run.dashboard);
