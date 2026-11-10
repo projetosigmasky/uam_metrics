@@ -12,6 +12,7 @@ from pathlib import Path
 from typing import Any
 
 from src.uam_dashboard.capacity import capacity_metrics
+from src.uam_dashboard.indicator_maps import IndicatorMaps, summarize_indicator_maps
 from src.uam_dashboard.aggregation import average_resource_group
 from src.uam_dashboard.replica_analysis import summarize_replica, aggregate_summaries, stability_payload, plot_aggregates, metric_value, metric_audit, KPI_PATHS, SCHEMA_VERSION
 from src.uam_dashboard.config import DEFAULT_REH_XML_PATH, DashboardConfig, SAO_PAULO_CENTER
@@ -32,6 +33,7 @@ from src.uam_dashboard.metrics import (
     build_summary,
     detect_lowc_events,
     efficiency_metrics,
+    flight_instance_frame,
     total_delay_metrics,
     trajectory_conformity,
 )
@@ -518,6 +520,8 @@ def analyze_log(log_path: Path, config: DashboardConfig, charts_dir: Path, run_i
         efficiency["ground_delay"],
         efficiency["airborne_delay"],
     )
+    instances = flight_instance_frame(df, config.flight_instance_gap_seconds,
+                                     config.flight_instance_reset_distance_m, config.flight_instance_jump_m)
     conformity, conformity_by_instance = trajectory_conformity(
         df,
         planned_flights,
@@ -526,7 +530,11 @@ def analyze_log(log_path: Path, config: DashboardConfig, charts_dir: Path, run_i
         reset_distance_m=config.flight_instance_reset_distance_m,
         jump_m=config.flight_instance_jump_m,
         reh_segments=reh_segments,
+        instances=instances,
     )
+    indicator_summary = summarize_indicator_maps(instances, planned_flights, conformity_by_instance,
+                                                 config.trajectory_shape_points)
+    del instances
     efficiency["trajectory_conformity"] = conformity
     lowc_events, separation_samples, safety = detect_lowc_events(
         df,
@@ -604,7 +612,7 @@ def analyze_log(log_path: Path, config: DashboardConfig, charts_dir: Path, run_i
     dashboard["replica_summary"] = summarize_replica(df, series, separation_samples, lowc_events, conformity_by_instance, config)
     grid = density_grid(df, config.heatmap_grid_degrees)
     if not render_charts:
-        return {"dashboard": dashboard, "density_grid": grid}
+        return {"dashboard": dashboard, "density_grid": grid, "indicator_summary": indicator_summary}
 
     return {
         "id": chart_prefix,
@@ -612,6 +620,7 @@ def analyze_log(log_path: Path, config: DashboardConfig, charts_dir: Path, run_i
         "metadata": metadata,
         "dashboard": dashboard,
         "density_grid": grid,
+        "indicator_summary": indicator_summary,
         "tracks": tracks,
         "planned_routes": planned_routes,
         "official_reh": reh_network["geojson"] if reh_network else {
@@ -665,6 +674,7 @@ def build_dashboard(config: DashboardConfig) -> None:
     # a 50-replica GitHub Pages bundle from duplicating large tracks 50 times.
     dashboards_by_group: dict[tuple[str, str, bool | None], list[tuple[int, dict[str, Any]]]] = {}
     grids_by_group: dict[tuple, list] = {}
+    maps_by_group: dict[tuple, IndicatorMaps] = {}
     representatives: dict[tuple[str, str, bool | None], dict[str, Any]] = {}
     group_order: list[tuple[str, str, bool | None]] = []
     tasks = []
@@ -684,6 +694,7 @@ def build_dashboard(config: DashboardConfig) -> None:
     def record_result(index: int, group_key: tuple[str, str, bool | None], representative: bool, run: dict[str, Any]) -> None:
         dashboards_by_group.setdefault(group_key, []).append((index, run["dashboard"]))
         grids_by_group.setdefault(group_key, []).append(run.pop("density_grid"))
+        maps_by_group.setdefault(group_key, IndicatorMaps()).add(run.pop("indicator_summary"))
         if representative:
             representatives[group_key] = run
 
@@ -737,6 +748,7 @@ def build_dashboard(config: DashboardConfig) -> None:
         run["replica_count"] = count
         run["representative_log"] = run["name"]
         run["density"] = merge_density_grids(grids_by_group[group_key], config.heatmap_grid_degrees)
+        run["indicator_maps"] = maps_by_group.pop(group_key).payload()
         runs.append(run)
     # One intensity scale for all scenarios: replica count never amplifies color.
     density_max = max((cell[2] for run in runs for cell in run["density"]["cells"]), default=1.) or 1.

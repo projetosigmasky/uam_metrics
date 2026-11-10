@@ -11,7 +11,8 @@ from pathlib import Path
 PREFIX = "window.__UAM_DASHBOARD_DATA__ = "
 PART_CHARACTERS = 2 * 1024 * 1024
 MAX_ASSET_BYTES = 50 * 1024 * 1024
-LOCAL_AUDIT = Path("assets/data/critical_waypoints/passage_events.jsonl")
+LOCAL_AUDITS = {Path("assets/data/critical_waypoints") / name
+                for name in ("passage_events.jsonl", "waypoints_by_replica.csv")}
 LOCAL_RUNS = Path("assets/data/runs")
 
 
@@ -121,7 +122,7 @@ def repack_publication(output_dir: Path) -> dict:
 
 def check_publication(output_dir: Path) -> None:
     oversized = [str(path.relative_to(output_dir)) for path in output_dir.rglob("*")
-        if path.is_file() and path.relative_to(output_dir) != LOCAL_AUDIT
+        if path.is_file() and path.relative_to(output_dir) not in LOCAL_AUDITS
         and not path.relative_to(output_dir).is_relative_to(LOCAL_RUNS) and path.stat().st_size >= MAX_ASSET_BYTES]
     if oversized:
         raise ValueError("Public assets exceed the 50 MiB budget: " + ", ".join(oversized))

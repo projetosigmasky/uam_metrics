@@ -36,6 +36,7 @@
       <button type="button" role="tab" id="tab-capacity" aria-controls="panel-capacity" aria-selected="false" data-kpa-tab="capacity">Capacidade</button>
       <button type="button" role="tab" id="tab-predictability" aria-controls="panel-predictability" aria-selected="false" data-kpa-tab="predictability">Previsibilidade</button>
       <button type="button" role="tab" id="tab-equity" aria-controls="panel-equity" aria-selected="false" data-kpa-tab="equity">Equidade</button>
+      <button type="button" role="tab" id="tab-resources" aria-controls="panel-resources" aria-selected="false" data-kpa-tab="resources">Explorar recursos</button>
     </nav>
     <p id="scenario-load-status" class="protocol-note" role="status" aria-live="polite" hidden></p>
     <button id="scenario-load-retry" class="panel-button" type="button" hidden>Tentar carregar novamente</button>
@@ -58,53 +59,35 @@
             <dl id="overview-filters" class="overview-filters"></dl>
           </article>
         </div>
-        <h3 class="overview-map-title">Rede de corredores</h3>
+        <section class="indicator-map" aria-labelledby="indicator-title-maps">
+          <h3 id="indicator-title-maps">Rede de corredores</h3>
+          <p>Rotas Especiais de Helicópteros (REH) e corredores UAM dedicados quando aplicáveis.</p>
+          <p id="indicator-status-maps" class="indicator-status" role="status"></p>
+          <div id="indicator-map-maps" class="indicator-map-canvas" aria-label="Rede de corredores"></div>
+          <ul id="indicator-legend-maps" class="indicator-legend" aria-label="Legenda do mapa"></ul>
+        </section>
+      </section>
+      <section id="panel-safety" data-kpa-panel="safety" role="tabpanel" aria-labelledby="tab-safety" hidden>
+        <h2>Segurança</h2>
+        <div class="metric-grid" id="kpis-safety"></div>
+        <div id="charts-safety" class="charts"></div>
         <p id="map-replica-note" class="map-replica-note"></p>
-        <div class="conflict-pair-filter" role="group" aria-label="Filtrar conflitos por combinação de veículos">
+        <section class="indicator-map" aria-labelledby="indicator-title-safety">
+          <h3 id="indicator-title-safety">Mapa de eventos de risco</h3>
+          <p>Localização dos eventos na réplica ilustrativa. O filtro também se aplica à reprodução 3D.</p>
+          <div class="conflict-pair-filter" role="group" aria-label="Filtrar conflitos por combinação de veículos">
           <span>Combinação:</span>
           <button class="active" type="button" aria-pressed="true" data-conflict-pair="all">Todos</button>
           <button type="button" aria-pressed="false" data-conflict-pair="evtol-evtol">eVTOL × eVTOL</button>
           <button type="button" aria-pressed="false" data-conflict-pair="evtol-helicoptero">eVTOL × helicóptero</button>
           <button type="button" aria-pressed="false" data-conflict-pair="helicoptero-helicoptero">Helicóptero × helicóptero</button>
         </div>
-<section class="workspace">
-        <aside class="side-panel">
-          <div class="panel-section">
-            <h2>Camadas</h2>
-            <label><input type="checkbox" id="layer-official-reh" checked /> REH formal</label>
-            <label><input type="checkbox" id="layer-uam-corridors" checked /> Corredores UAM (projeção 2D)</label>
-            <label><input type="checkbox" id="layer-heat" /> Densidade (todas as réplicas)</label>
-            <label><input type="checkbox" id="layer-complexity" /> Cruzamentos UAM × REH (diagnóstico 3D)</label>
-            <label><input type="checkbox" id="layer-uam-junctions" /> Junções geométricas UAM</label>
-            <label><input type="checkbox" id="layer-candidate-nodes" /> Junções UAM e REH</label>
-            <label><input type="checkbox" id="layer-conflicts" /> Eventos LoWC/NMAC</label>
-            <button class="panel-button" id="fit-map" type="button">Reenquadrar mapa</button>
-            <div class="map-summary" aria-live="polite">
-              <strong id="map-info-title">Mapa operacional</strong>
-              <p id="map-info-text">Densidade agregada das réplicas e rede de corredores.</p>
-            </div>
-          </div>
-        </aside>
 
-        <section class="map-stage" aria-label="Mapa georreferenciado">
-          <div id="map"></div>
-          <div class="map-info" aria-live="polite">
-            <div class="map-legend">
-              <span data-legend-layer="official-reh"><i class="legend-swatch legend-official-reh"></i>Rotas Especiais de Helicópteros (REH)</span>
-              <span data-legend-layer="uam-corridors"><i class="legend-swatch legend-uam-corridors"></i>Corredor UAM · projeção 2D</span>
-              <span data-legend-layer="heat"><i class="legend-swatch legend-heat"></i>Densidade</span>
-              <span data-legend-layer="complexity"><i class="legend-swatch legend-complexity"></i>Cruzamento UAM × REH 3D</span>
-              <span data-legend-layer="uam-junctions"><i class="legend-swatch legend-uam-node"></i>Junção geométrica UAM</span>
-              <span data-legend-layer="candidate-nodes"><i class="legend-swatch legend-uam-node"></i>Waypoint UAM nomeado</span>
-              <span data-legend-layer="candidate-nodes"><i class="legend-swatch legend-reh-node"></i>Fix REH nomeado</span>
-              <span data-legend-layer="conflicts" data-conflict="lowc"><i class="legend-swatch legend-lowc"></i>LoWC</span>
-              <span data-legend-layer="conflicts" data-conflict="nmac"><i class="legend-swatch legend-nmac"></i>NMAC</span>
-              <span data-legend-layer="conflicts" data-conflict="mac"><i class="legend-swatch legend-mac"></i>MAC</span>
-            </div>
-          </div>
+          <p id="indicator-status-safety" class="indicator-status" role="status"></p>
+          <div id="indicator-map-safety" class="indicator-map-canvas" aria-label="Mapa de eventos de risco"></div>
+          <ul id="indicator-legend-safety" class="indicator-legend" aria-label="Legenda do mapa"></ul>
         </section>
-      </section>
-<section class="viewer3d-section" aria-labelledby="viewer3d-title">
+        <section class="viewer3d-section" aria-labelledby="viewer3d-title">
         <div class="section-heading viewer3d-heading">
           <div>
             <p class="eyebrow">Espaço aéreo em três dimensões</p>
@@ -148,51 +131,99 @@
           </div>
         </div>
       </section>
-      </section>
-      <section id="panel-safety" data-kpa-panel="safety" role="tabpanel" aria-labelledby="tab-safety" hidden>
-        <h2>Segurança</h2>
-        <div class="metric-grid" id="kpis-safety"></div>
-        <div id="charts-safety" class="charts"></div>
-        <details class="kpa-details">
-          <summary>Estabilidade dos KPIs entre réplicas</summary>
-          <div class="kpa-details-content" id="stability-safety"></div>
-        </details>
+
       </section>
       <section id="panel-efficiency" data-kpa-panel="efficiency" role="tabpanel" aria-labelledby="tab-efficiency" hidden>
         <h2>Eficiência</h2>
         <div class="metric-grid" id="kpis-efficiency"></div>
         <div id="charts-efficiency" class="charts"></div>
-        <details class="kpa-details">
-          <summary>Estabilidade dos KPIs entre réplicas</summary>
-          <div class="kpa-details-content" id="stability-efficiency"></div>
-        </details>
+        <section class="indicator-map" aria-labelledby="indicator-title-efficiency">
+          <h3 id="indicator-title-efficiency">Rotas planejadas e trajetórias médias</h3>
+          <p>Compare o plano com a trajetória média dos voos associados à mesma rota. As cores indicam a distância excedente média: quanto menor, mais direta ou mais próxima do plano foi a execução.</p>
+          <div class="indicator-controls"><label>Colorir por <select id="efficiency-map-metric"><option value="horizontal_excess_pct">Eficiência horizontal</option><option value="conformity_excess_pct">Conformidade com o plano</option></select></label><label><input type="checkbox" id="efficiency-map-planned" checked /> Rotas planejadas</label></div>
+          <p id="indicator-status-efficiency" class="indicator-status" role="status"></p>
+          <div id="indicator-map-efficiency" class="indicator-map-canvas" aria-label="Rotas planejadas e trajetórias médias"></div>
+          <ul id="indicator-legend-efficiency" class="indicator-legend" aria-label="Legenda do mapa"></ul>
+        </section>
       </section>
       <section id="panel-capacity" data-kpa-panel="capacity" role="tabpanel" aria-labelledby="tab-capacity" hidden>
         <h2>Capacidade</h2>
         <div class="metric-grid" id="kpis-capacity"></div>
         <div id="charts-capacity" class="charts"></div>
-        <details class="kpa-details">
-          <summary>Estabilidade dos KPIs entre réplicas</summary>
-          <div class="kpa-details-content" id="stability-capacity"></div>
-        </details>
+        <section class="indicator-map" aria-labelledby="indicator-title-capacity">
+          <h3 id="indicator-title-capacity">Carga nos waypoints e na quadrícula</h3>
+          <p>As cores identificam concentração de tráfego. Os waypoints usam o P95 observado em operações por hora. Cada célula usa a média dos picos por réplica de voos distintos em 5 minutos.</p>
+          <div class="indicator-controls"><label><input type="checkbox" id="capacity-map-waypoints" checked /> Waypoints com capacidade estimada</label><label><input type="checkbox" id="capacity-map-grid" checked /> Quadrícula analítica</label></div>
+          <p id="indicator-status-capacity" class="indicator-status" role="status"></p>
+          <div id="indicator-map-capacity" class="indicator-map-canvas" aria-label="Carga nos waypoints e na quadrícula"></div>
+          <ul id="indicator-legend-capacity" class="indicator-legend" aria-label="Legenda do mapa"></ul>
+        </section>
       </section>
       <section id="panel-predictability" data-kpa-panel="predictability" role="tabpanel" aria-labelledby="tab-predictability" hidden>
         <h2>Previsibilidade</h2>
         <div class="metric-grid" id="kpis-predictability"></div>
         <div id="charts-predictability" class="charts"></div>
-        <details class="kpa-details">
-          <summary>Estabilidade dos KPIs entre réplicas</summary>
-          <div class="kpa-details-content" id="stability-predictability"></div>
-        </details>
+        <section class="indicator-map" aria-labelledby="indicator-title-predictability">
+          <h3 id="indicator-title-predictability">Variabilidade do tempo de voo por par OD</h3>
+          <p>As linhas ligam a origem ao destino planejados. O intervalo interquartil (IQR) mede a amplitude da metade central dos tempos de voo. Valores maiores indicam menor previsibilidade.</p>
+          <div class="indicator-controls"><label>Colorir por <select id="predictability-map-metric"><option value="iqr_s">Intervalo interquartil</option><option value="std_s">Desvio padrão</option></select></label></div>
+          <p id="indicator-status-predictability" class="indicator-status" role="status"></p>
+          <div id="indicator-map-predictability" class="indicator-map-canvas" aria-label="Variabilidade do tempo de voo por par OD"></div>
+          <ul id="indicator-legend-predictability" class="indicator-legend" aria-label="Legenda do mapa"></ul>
+        </section>
       </section>
       <section id="panel-equity" data-kpa-panel="equity" role="tabpanel" aria-labelledby="tab-equity" hidden>
         <h2>Equidade</h2>
         <div class="metric-grid" id="kpis-equity"></div>
         <div id="charts-equity" class="charts"></div>
-        <details class="kpa-details">
-          <summary>Estabilidade dos KPIs entre réplicas</summary>
-          <div class="kpa-details-content" id="stability-equity"></div>
-        </details>
+        <section class="indicator-map" aria-labelledby="indicator-title-equity">
+          <h3 id="indicator-title-equity">Pares origem–destino</h3>
+          <p>Os pares aparecem como contexto geográfico. A análise de equidade por atraso está indisponível.</p>
+          <p id="indicator-status-equity" class="indicator-status" role="status"></p>
+          <div id="indicator-map-equity" class="indicator-map-canvas" aria-label="Pares origem–destino"></div>
+          <ul id="indicator-legend-equity" class="indicator-legend" aria-label="Legenda do mapa"></ul>
+        </section>
+      </section>
+      <section id="panel-resources" data-kpa-panel="resources" role="tabpanel" aria-labelledby="tab-resources" hidden>
+        <h2>Explorar recursos</h2>
+        <p>Inspecione os corredores, as junções e a densidade de registros de posição agregada entre réplicas.</p>
+        <section class="workspace">
+        <aside class="side-panel">
+          <div class="panel-section">
+            <h2>Camadas</h2>
+            <label><input type="checkbox" id="layer-official-reh" checked /> REH formal</label>
+            <label><input type="checkbox" id="layer-uam-corridors" checked /> Corredores UAM (projeção 2D)</label>
+            <label><input type="checkbox" id="layer-heat" /> Densidade (todas as réplicas)</label>
+            <label><input type="checkbox" id="layer-complexity" /> Cruzamentos UAM × REH (diagnóstico 3D)</label>
+            <label><input type="checkbox" id="layer-uam-junctions" /> Junções geométricas UAM</label>
+            <label><input type="checkbox" id="layer-candidate-nodes" /> Junções UAM e REH</label>
+            <label><input type="checkbox" id="layer-conflicts" /> Eventos LoWC/NMAC</label>
+            <button class="panel-button" id="fit-map" type="button">Reenquadrar mapa</button>
+            <div class="map-summary" aria-live="polite">
+              <strong id="map-info-title">Mapa operacional</strong>
+              <p id="map-info-text">Densidade agregada das réplicas e rede de corredores.</p>
+            </div>
+          </div>
+        </aside>
+
+        <section class="map-stage" aria-label="Mapa georreferenciado">
+          <div id="map"></div>
+          <div class="map-info" aria-live="polite">
+            <div class="map-legend">
+              <span data-legend-layer="official-reh"><i class="legend-swatch legend-official-reh"></i>Rotas Especiais de Helicópteros (REH)</span>
+              <span data-legend-layer="uam-corridors"><i class="legend-swatch legend-uam-corridors"></i>Corredor UAM · projeção 2D</span>
+              <span data-legend-layer="heat"><i class="legend-swatch legend-heat"></i>Densidade</span>
+              <span data-legend-layer="complexity"><i class="legend-swatch legend-complexity"></i>Cruzamento UAM × REH 3D</span>
+              <span data-legend-layer="uam-junctions"><i class="legend-swatch legend-uam-node"></i>Junção geométrica UAM</span>
+              <span data-legend-layer="candidate-nodes"><i class="legend-swatch legend-uam-node"></i>Waypoint UAM nomeado</span>
+              <span data-legend-layer="candidate-nodes"><i class="legend-swatch legend-reh-node"></i>Fix REH nomeado</span>
+              <span data-legend-layer="conflicts" data-conflict="lowc"><i class="legend-swatch legend-lowc"></i>LoWC</span>
+              <span data-legend-layer="conflicts" data-conflict="nmac"><i class="legend-swatch legend-nmac"></i>NMAC</span>
+              <span data-legend-layer="conflicts" data-conflict="mac"><i class="legend-swatch legend-mac"></i>MAC</span>
+            </div>
+          </div>
+        </section>
+      </section>
       </section>
     </main>
     <script src="assets/vendor/leaflet/leaflet.js"></script>

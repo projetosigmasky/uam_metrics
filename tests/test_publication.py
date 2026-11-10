@@ -45,6 +45,7 @@ class PublicationTests(unittest.TestCase):
             root = Path(directory)
             audit = root / 'assets/data/critical_waypoints/passage_events.jsonl'
             audit.parent.mkdir(parents=True); audit.write_text('x' * 100)
+            audit.with_name('waypoints_by_replica.csv').write_text('x' * 100)
             local_run = root / 'assets/data/runs/r1.json'
             local_run.parent.mkdir(parents=True); local_run.write_text('x' * 100)
             with patch('src.uam_dashboard.publication.MAX_ASSET_BYTES', 50):

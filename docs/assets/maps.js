@@ -292,10 +292,8 @@ function bindConflictPairControls() {
         item.setAttribute("aria-pressed", String(active));
       });
       draw3D();
-      const run = state.runs[state.activeRunIndex] || state.runs[0];
-      if (run && state.map) {
-        renderMapLayers(run.tracks, run.planned_routes, run.official_reh, run.conflicts, run.heatmap, run.dashboard.capacity);
-      }
+      state.mapNeedsRender = true;
+      renderIndicatorMap(true);
     });
   });
 }
@@ -928,6 +926,9 @@ function updateMapInfo() {
 function initMaps() {
   bind3DControls();
   bindConflictPairControls();
+  for (const id of ["efficiency-map-metric", "efficiency-map-planned", "capacity-map-waypoints", "capacity-map-grid", "predictability-map-metric"]) {
+    document.getElementById(id).addEventListener("change", () => renderIndicatorMap(true));
+  }
   for (const [id, layer] of [
     ["official-reh", "officialRehLayer"], ["uam-corridors", "uamProjectionLayer"],
     ["uam-junctions", "uamJunctionLayer"], ["heat", "heatLayer"],
@@ -944,17 +945,20 @@ function initMaps() {
 }
 
 function updateMapsVisibility() {
-  if (state.activeKpa === "maps") {
+  if (state.activeKpa !== "resources") requestAnimationFrame(() => renderIndicatorMap());
+  if (state.activeKpa === "resources") {
     requestAnimationFrame(() => {
-      if (state.activeKpa !== "maps") return;
+      if (state.activeKpa !== "resources") return;
       state.map?.invalidateSize(true);
       const run = state.mapRun;
       if (state.mapNeedsRender && run) {
         renderMapLayers(run.tracks || emptyFeatureCollection(), run.planned_routes || emptyFeatureCollection(), run.official_reh || emptyFeatureCollection(), run.conflicts || emptyFeatureCollection(), run.heatmap || [], run.dashboard.capacity);
         state.mapNeedsRender = false;
       }
-      draw3D();
     });
+  }
+  if (state.activeKpa === "safety") {
+    requestAnimationFrame(() => { if (state.activeKpa === "safety") draw3D(); });
   } else {
     if (viewer3d.animationFrame !== null) cancelAnimationFrame(viewer3d.animationFrame);
     viewer3d.animationFrame = null;
@@ -989,9 +993,172 @@ function renderMaps(run) {
     button.setAttribute("aria-pressed", String(active));
   });
   const replica = run.metadata?.replica;
-  setText("map-replica-note", `A camada de densidade reúne as ${run.replica_count || 1} réplicas do cenário. Os eventos e a reprodução 3D usam uma réplica ilustrativa${replica == null ? "" : ` (r${String(replica).padStart(3, "0")})`}.`);
+  setText("map-replica-note", `Os eventos e a reprodução 3D usam uma réplica ilustrativa${replica == null ? "" : ` (r${String(replica).padStart(3, "0")})`}.`);
+  for (const view of indicatorViews.values()) {
+    view.context.clearLayers();
+    view.data.clearLayers();
+    view.rendered = false;
+  }
   state.mapRun = run;
   state.mapNeedsRender = true;
   render3DVisualization(run.trajectory_3d, run.conflicts);
   updateMapsVisibility();
+}
+
+const indicatorViews = new Map();
+const indicatorColors = ["#146a86", "#507f38", "#b45309", "#b42338"];
+const unavailableColor = "#64748b";
+
+function indicatorColor(value, thresholds) {
+  if (!Number.isFinite(value)) return unavailableColor;
+  const index = thresholds.findIndex(limit => value <= limit);
+  return indicatorColors[index < 0 ? thresholds.length : index];
+}
+
+function indicatorLegend(id, items) {
+  document.getElementById(`indicator-legend-${id}`).innerHTML = items.map(([color, label]) =>
+    `<li><i style="background:${color}"></i>${escapeHtml(label)}</li>`).join("");
+}
+
+function indicatorMap(id) {
+  if (indicatorViews.has(id)) return indicatorViews.get(id);
+  const map = L.map(`indicator-map-${id}`, {scrollWheelZoom: false}).setView([-23.5505, -46.6333], 10);
+  L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    maxNativeZoom: 19,
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+  }).addTo(map);
+  const entry = {map, context: L.featureGroup().addTo(map), data: L.featureGroup().addTo(map), rendered: false};
+  indicatorViews.set(id, entry);
+  return entry;
+}
+
+function renderIndicatorMap(refresh = false) {
+  const id = state.activeKpa;
+  const run = state.mapRun;
+  const node = document.getElementById(`indicator-map-${id}`);
+  if (!node || !run || document.getElementById("dashboard-content").hidden) return;
+  if (!window.L) {
+    setText(`indicator-status-${id}`, "Mapa indisponível neste navegador.");
+    return;
+  }
+  const view = indicatorMap(id);
+  view.map.invalidateSize();
+  const firstRender = !view.rendered;
+  if (!firstRender && !refresh) return;
+  const backdrop = id === "maps";
+  if (firstRender) {
+    view.context.clearLayers();
+    const route = (data, color) => L.geoJSON(data || emptyFeatureCollection(), {
+      interactive: false, style: {color, weight: backdrop ? 2 : 1, opacity: backdrop ? .9 : .32, fillOpacity: backdrop ? .16 : .04}
+    }).addTo(view.context);
+    route(run.official_reh, "#036985");
+    route(state.uamProjection, "#be185d");
+    route(state.uamCenterlines, "#be185d");
+  }
+  view.data.clearLayers();
+
+  const layers = run.indicator_maps?.schema_version === 1 ? run.indicator_maps : {};
+  const legend = [];
+  const messages = [];
+  const draw = (collection, options) => L.geoJSON(collection || emptyFeatureCollection(), options).addTo(view.data);
+  const present = collection => collection?.features?.length > 0;
+  const scale = labels => labels.forEach((label, i) => legend.push([indicatorColors[i], label]));
+  const percent = value => displayValue(value, "%");
+  const seconds = value => displayValue(value, "s");
+
+  if (id === "maps") {
+    legend.push(["#036985", "Rede REH"]);
+    if (present(state.uamProjection) || present(state.uamCenterlines)) legend.push(["#be185d", "Corredores UAM"]);
+    if (!view.context.getBounds().isValid()) messages.push("Sem geometria de corredores para este cenário.");
+  }
+  if (id === "safety") {
+    const events = filteredConflictCollection(run.conflicts);
+    draw(events, {
+      pointToLayer: (feature, latlng) => L.circleMarker(latlng, {
+        radius: 5, color: conflictEventColor(feature), fillOpacity: .75, weight: 2
+      }),
+      onEachFeature: (feature, layer) => layer.bindTooltip(
+        `${conflictEventLabel(feature)} · ${escapeHtml(feature.properties.id_a)} × ${escapeHtml(feature.properties.id_b)}`)
+    });
+    for (const type of ["lowc", "nmac", "mac"]) {
+      const example = events.features.find(feature => conflictEventClass(feature) === type);
+      if (example) legend.push([conflictEventColor(example), conflictEventLabel(example)]);
+    }
+    if (!events.features.length) messages.push(run.conflicts ? "Nenhum evento para esta seleção na réplica ilustrativa." : "Dados de eventos indisponíveis.");
+  }
+  if (id === "efficiency") {
+    const planned = document.getElementById("efficiency-map-planned").checked;
+    const metric = document.getElementById("efficiency-map-metric").value;
+    if (planned && present(layers.planned_routes)) {
+      draw(layers.planned_routes, {style: {color: "#475569", weight: 5, dashArray: "6 6", opacity: .8},
+        onEachFeature: (feature, layer) => layer.bindTooltip(`${escapeHtml(feature.properties.route_id)} · rota planejada`)});
+      legend.push(["#475569", "Traçado planejado (tracejado)"]);
+    }
+    if (present(layers.mean_tracks)) {
+      draw(layers.mean_tracks, {style: feature => ({color: indicatorColor(feature.properties[metric], [5, 15, 30]), weight: 3, opacity: .9}),
+        onEachFeature: ({properties: p}, layer) => layer.bindTooltip(
+          `${escapeHtml(p.route_id)} · ${formatNumber(p.flights)} voos<br>Excesso horizontal: ${percent(p.horizontal_excess_pct)}<br>Excesso sobre o plano: ${percent(p.conformity_excess_pct)}`)});
+      scale(["Até 5%", ">5 a 15%", ">15 a 30%", "Acima de 30%"]);
+    } else messages.push(layers.mean_tracks ? "Nenhum voo com cobertura suficiente para comparar plano e execução." : "Trajetórias médias disponíveis após reprocessar os STATELOGs.");
+  }
+  if (id === "capacity") {
+    const grid = layers.capacity_grid;
+    if (document.getElementById("capacity-map-grid").checked) {
+      if (grid?.cells?.length) {
+        for (const [lat, lon, peak] of grid.cells) {
+          const step = grid.cell_degrees;
+          L.rectangle([[lat * step, lon * step], [(lat + 1) * step, (lon + 1) * step]], {
+            color: indicatorColor(peak, [1, 2, 4]), fillOpacity: .5, weight: 1
+          }).bindTooltip(`Média dos picos: ${formatNumber(peak, 2)} voos/5 min<br>${formatNumber(grid.replicas)} réplicas`).addTo(view.data);
+        }
+        scale(["Célula: até 1 voo/5 min", "Célula: >1 a 2", "Célula: >2 a 4", "Célula: acima de 4"]);
+      } else messages.push(grid ? "Sem janelas completas com registros para a quadrícula." : "Quadrícula disponível após reprocessar os STATELOGs.");
+    }
+    if (document.getElementById("capacity-map-waypoints").checked) {
+      let count = 0;
+      for (const feature of state.candidateNodes.features || []) {
+        if (feature.properties.capacity_eligible === false) continue;
+        const ranking = waypointMetric(feature);
+        if (!Number.isFinite(ranking?.capacity_reference_per_hour) || !(ranking.mean_operations_per_replica > 0)) continue;
+        const [lon, lat] = feature.geometry.coordinates;
+        L.circleMarker([lat, lon], {radius: 6, color: "#172033", weight: 1.5,
+          fillColor: indicatorColor(ranking.capacity_reference_per_hour, [12, 24, 48]), fillOpacity: 1
+        }).bindTooltip(`${escapeHtml(feature.properties.label)} · ${displayValue(ranking.capacity_reference_per_hour, "ops/h")} (P95)`).addTo(view.data);
+        count++;
+      }
+      if (count) scale(["Waypoint: até 12 ops/h", "Waypoint: >12 a 24", "Waypoint: >24 a 48", "Waypoint: acima de 48"]);
+      else messages.push("Sem waypoints com passagens e estimativa de capacidade neste cenário.");
+    }
+  }
+  if (id === "predictability" || id === "equity") {
+    const predictability = id === "predictability";
+    const metric = document.getElementById("predictability-map-metric").value;
+    if (present(layers.od_pairs)) {
+      draw(layers.od_pairs, {
+        style: ({properties: p}) => ({color: predictability ? indicatorColor(p[metric], [30, 60, 120]) : unavailableColor,
+          weight: 3, opacity: .84, dashArray: predictability && p[metric] == null ? "5 5" : null}),
+        onEachFeature: ({properties: p, geometry}, layer) => {
+          const [olon, olat] = geometry.coordinates[0];
+          const [dlon, dlat] = geometry.coordinates.at(-1);
+          const endpoints = `${formatNumber(olat, 4)}, ${formatNumber(olon, 4)} → ${formatNumber(dlat, 4)}, ${formatNumber(dlon, 4)}`;
+          layer.bindTooltip(`${escapeHtml(p.od_id)} · ${formatNumber(p.flights)} voos<br>${endpoints}` +
+            (predictability ? `<br>IQR: ${seconds(p.iqr_s)}<br>Desvio padrão: ${seconds(p.std_s)}` : ""));
+        }
+      });
+      if (predictability) {
+        scale(["Até 30 s", ">30 a 60 s", ">60 a 120 s", "Acima de 120 s"]);
+        if (layers.od_pairs.features.some(feature => feature.properties[metric] == null)) legend.push([unavailableColor, "Menos de dois voos"]);
+      } else legend.push([unavailableColor, "Par OD"]);
+    } else messages.push(layers.od_pairs ? "Sem pares OD observados com cobertura suficiente." : "Pares OD disponíveis após reprocessar os STATELOGs.");
+  }
+
+  setText(`indicator-status-${id}`, messages.join(" "));
+  indicatorLegend(id, legend);
+  if (firstRender) {
+    const dataBounds = view.data.getBounds();
+    const bounds = dataBounds.isValid() ? dataBounds : view.context.getBounds();
+    if (bounds.isValid()) view.map.fitBounds(bounds.pad(.12), {animate: false, maxZoom: 12});
+    else view.map.setView([-23.5505, -46.6333], 10);
+  }
+  view.rendered = true;
 }

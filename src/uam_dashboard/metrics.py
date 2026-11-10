@@ -228,10 +228,12 @@ def trajectory_conformity(
     reset_distance_m: float,
     jump_m: float,
     reh_segments: list[dict[str, Any]] | None = None,
+    *,
+    instances: pd.DataFrame | None = None,
 ) -> tuple[dict[str, Any], dict[str, dict[str, Any]]]:
     """Compare execution with its plan and, when available, official REH polygons."""
 
-    annotated = flight_instance_frame(df, gap_seconds, reset_distance_m, jump_m)
+    annotated = instances if instances is not None else flight_instance_frame(df, gap_seconds, reset_distance_m, jump_m)
     by_instance: dict[str, dict[str, Any]] = {}
     unused_planned = set(range(len(planned_flights)))
     all_deviations: list[float] = []

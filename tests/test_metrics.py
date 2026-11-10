@@ -35,7 +35,7 @@ from src.uam_dashboard.metric_catalog import METRIC_CATALOG, SOURCE_DOCUMENT, SO
 class MetricsTest(unittest.TestCase):
     def test_metric_catalog_references_final_product_three(self) -> None:
         self.assertEqual({metric["kpa"] for metric in METRIC_CATALOG}, {
-            "Segurança", "Eficiência", "Capacidade", "Previsibilidade", "Equidade", "Diagnóstico complementar",
+            "Segurança", "Eficiência", "Capacidade", "Previsibilidade", "Equidade",
         })
         self.assertTrue(all(metric["source_document"] == SOURCE_DOCUMENT for metric in METRIC_CATALOG))
         self.assertTrue(all(SOURCE_VERSION in metric["pdf_reference"] for metric in METRIC_CATALOG))

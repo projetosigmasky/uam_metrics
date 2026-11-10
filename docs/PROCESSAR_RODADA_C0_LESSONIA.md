@@ -91,3 +91,49 @@ Ela continua dedicada aos quatro baselines C1.1/C1.2/C2.1/C2.2, não aos 37 cen�
 Caso seja necessária uma nova calibração, use os JSONs originais e WPPASS
 **desta rodada**. A política REH mudou para `legacy_right_hand_v1`; não reutilize
 automaticamente os números antigos como se fossem medições desta geometria.
+
+## Mapas por área de desempenho
+
+Os boxplots usam os valores individuais por réplica já publicados. As novas
+camadas de eficiência, quadrícula e previsibilidade precisam dos STATELOGs
+e SCNs. Para regenerar as camadas para todos os 37 cenários, no Lessonia:
+
+```bash
+cd ~/post-processing
+git pull --ff-only
+.venv/bin/python generate_reports.py --config run_config.json \
+  --run-id 20261103_155621_68fee947 \
+  --runs-root /dados/matosdfm/runs --workers 25
+```
+
+O ID fixa a mesma RUN dos 37 cenários publicados em novembro. O gerador
+não executa novas simulações.
+
+- **Eficiência:** agrupa voos pela geometria planejada e calcula uma trajetória
+  média com amostras alinhadas pela fração da distância percorrida. As cores
+  usam o excesso médio sobre a distância direta ou sobre o plano, com piso
+  zero para excesso negativo. A comparação usa voos com pelo menos duas
+  observações e início e fim a até 1 km das extremidades planejadas.
+- **Capacidade:** exibe waypoints elegíveis com passagens observadas e P95
+  estimado. A quadrícula analítica de 0,01° mostra a média dos picos de
+  voos distintos por célula em janelas completas de 5 min. Cada voo conta
+  uma vez por célula e janela. As duas camadas medem carga observada e
+  ajudam a localizar concentrações de tráfego.
+- **Previsibilidade:** agrupa as durações observadas por par OD planejado e
+  sentido, usando o mesmo critério de cobertura da eficiência. O mapa mostra
+  IQR ou desvio padrão amostral com pelo menos dois voos. A pontualidade de
+  chegada e os atrasos em solo exigem outras fontes.
+- **Segurança:** os eventos e o 3D mostram a réplica ilustrativa. Em
+  **Equidade**, a geometria OD é exibida como contexto.
+
+Ao final, revise e publique os arquivos gerados:
+
+```bash
+git add -A docs/
+git diff --cached --stat
+git commit -m "Publica camadas temáticas dos 37 cenários"
+git push origin HEAD:main
+```
+
+As auditorias locais `waypoints_by_replica.csv` e `passage_events.jsonl`
+ficam fora da publicação, assim como as cópias JSON completas por cenário.

@@ -112,6 +112,10 @@ class DashboardScenarioTests(unittest.TestCase):
                 self.assertTrue(any(p[0]<-23.555 for p in run['heatmap']))
                 self.assertIn('tracks',run)  # Calculation/audit feature retained.
                 self.assertIn('planned_routes',run)
+                layers = run['indicator_maps']
+                self.assertEqual(len(layers['mean_tracks']['features']), 2)
+                self.assertEqual(sum(f['properties']['flights'] for f in layers['mean_tracks']['features']), 2)
+                self.assertEqual(layers['capacity_grid']['replicas'], 0)
                 if run['metadata']['scenario_key'].startswith('C1'):
                     self.assertEqual(run['uam_projection']['features'],[])
                     self.assertTrue(all(f['properties']['network']=='REH' for f in run['candidate_nodes']['features']))
@@ -124,7 +128,7 @@ class DashboardScenarioTests(unittest.TestCase):
                            for r in [json.loads(p.read_text(encoding='utf-8'))]}
             for run in runs:
                 serial = serial_runs[run['metadata']['scenario_key']]
-                for field in ('aggregate_analysis','stability','density','representative_log'):
+                for field in ('aggregate_analysis','stability','density','representative_log','indicator_maps'):
                     self.assertEqual(run[field],serial[field])
             comparison=json.loads((output/'assets/data/comparison.json').read_text(encoding='utf-8'))
             rows=comparison['days'][0]['rows']

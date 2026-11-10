@@ -29,8 +29,14 @@ for (const id of ['throughput', 'practical_capacity', 'utilization']) {
 assert.equal(evaluate('numericValue({efficiency:{total_flight_hours:0}, safety:{expected_mac_per_100k_flight_hours:0}}, "safety.expected_mac_per_100k_flight_hours")'), null);
 assert.equal(evaluate('valueAt({available:false, mean:0}, "mean")'), null);
 assert.equal(evaluate('valueAt({mean:0}, "mean")'), 0);
-assert.equal((evaluate('replicaSvg([1,null,3], "KPI")').match(/<circle /g) || []).length, 2);
-assert.ok(!evaluate('replicaSvg([1,null,3], "KPI")').includes('polyline'));
+const boxplot = evaluate('boxplotSvg([1,2,3,4,100,null], "KPI")');
+assert.match(boxplot, /boxplot-box/);
+assert.match(boxplot, /boxplot-whisker/);
+assert.match(boxplot, /Mediana 3,00 · Q1 2,00 · Q3 4,00/);
+assert.match(boxplot, /5 de 6 réplicas válidas/);
+assert.equal((boxplot.match(/class="boxplot-outlier"/g) || []).length, 1);
+assert.doesNotMatch(evaluate('boxplotSvg([0,0,null], "KPI")'), /NaN|Infinity/);
+assert.match(evaluate('boxplotSvg([null], "KPI")'), /indisponível/);
 assert.equal(evaluate('normalizeModel({runs:[]}).runs.length'), 0);
 console.log('KPI visibility checks passed: formal catalog, legacy series routing, diagnostic exclusion and missing values.');
 

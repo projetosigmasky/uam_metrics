@@ -140,26 +140,6 @@ function populateScenarioFilters(changedIndex = -1) {
   setText("scenario-selection", run ? `Cenário ${run.metadata?.scenario_key || run.name} · ${run.replica_count || run.density?.replica_count || 1} réplicas disponíveis` : "Nenhum resultado disponível");
 }
 
-function stabilitySvg(metric) {
-  const rows = metric.trace.filter(p => p.mean != null);
-  if (!rows.length) return "";
-  const ys = rows.flatMap(p => p.ci95 ? [...p.ci95, p.mean] : [p.mean]);
-  const min = Math.min(...ys), max = Math.max(...ys), span = max-min || Math.abs(max)*.1 || 1;
-  const x = p => 70 + (p.replicas-1) / Math.max(1,metric.total_count-1)*610;
-  const y = v => 160-(v-min)/span*125;
-  const axis = v => Math.abs(v)>1e5 || (v!==0 && Math.abs(v)<.001) ? Number(v).toExponential(2) : formatNumber(v,3);
-  const line = rows.map(p => `${x(p)},${y(p.mean)}`).join(" ");
-  const bands = rows.filter(p=>p.ci95);
-  const polygon = [...bands.map(p=>`${x(p)},${y(p.ci95[0])}`),...bands.slice().reverse().map(p=>`${x(p)},${y(p.ci95[1])}`)].join(" ");
-  const confirmation = metric.confirmed_at_n == null ? "" : `<line x1="${x({replicas:metric.confirmed_at_n})}" x2="${x({replicas:metric.confirmed_at_n})}" y1="25" y2="160" stroke="#15803d" stroke-dasharray="5 3"/><text x="80" y="18">Confirmação em ${metric.confirmed_at_n} réplicas</text>`;
-  return `<svg class="stability-plot" viewBox="0 0 720 210" role="img" aria-label="Média acumulada, intervalo bootstrap de 95% e critério por prefixo"><text x="5" y="35">${axis(min+span)}</text><text x="5" y="165">${axis(min)}</text><line x1="70" y1="160" x2="680" y2="160" stroke="#64748b"/><polygon points="${polygon}" fill="#93c5fd" opacity=".5"/><polyline points="${line}" fill="none" stroke="#2563eb" stroke-width="2"/>${rows.filter(p=>p.criterion_met).map(p=>`<circle cx="${x(p)}" cy="${y(p.mean)}" r="3" fill="#15803d"/>`).join("")}${confirmation}<text x="70" y="180">1</text><text x="665" y="180">${metric.total_count}</text><text x="210" y="202">Réplicas incorporadas (ordem do índice)</text></svg>`;
-}
-
-function stabilityMetricHtml([key, m]) {
-  const status = m.status==="confirmed" ? `Estabilidade confirmada: trecho a partir de ${m.stable_from_n} réplicas; confirmação obtida em ${m.confirmed_at_n}.` : m.status==="unavailable" ? "Indisponível; sem zeros imputados." : m.status==="configuration_or_geometry_no_inference" ? "Configuração/geometria: inferência estatística não se aplica." : m.status==="constant_observed_no_inference" ? `Valores constantes observados; estabilidade inferencial não confirmada com ${m.total_count} réplicas.` : `Estabilidade não confirmada com ${m.total_count} réplicas.`;
-  return `<details class="stability-metric"><summary>${escapeHtml(stabilityLabels[key] || key)} · ${m.valid_count}/${m.total_count} válidas</summary><p>${status}${m.first_confirmed_at_n != null && m.status!=="confirmed" ? ` Houve confirmação anterior em ${m.first_confirmed_at_n}, sem manutenção no final.` : ""}</p>${stabilitySvg(m)}</details>`;
-}
-
 function formatNumber(value, digits = 0) {
   if (value == null || !Number.isFinite(Number(value))) return "—";
   return Number(value).toLocaleString("pt-BR", {
@@ -251,28 +231,57 @@ function renderMetrics(dashboard) {
       }
       if (metric.id === "risk_ratio") values = `<p>${escapeHtml(displayValue(valueAt(comparisonRow(), "risk_ratio_vs_reference"), ""))}</p>`;
       if (resourceSeries[metric.id]) values = "<p>Resultados por recurso na tabela abaixo.</p>";
+      if (metric.id === "flight_time_variability" && run.indicator_maps?.od_pairs?.features?.some(feature => feature.properties.iqr_s != null)) {
+        values = "<p>IQR e desvio padrão por par OD no mapa.</p>";
+      }
       if (!values) values = "<p>Indisponível</p><small>Sem cálculo ou dados disponíveis para este indicador.</small>";
       const estimate = metric.id === "estimated_mac" ? "<small>Estimativa probabilística pela Eq. 3.2.</small>" : "";
       return `<article class="metric" data-kpi="${metric.id}"><h3>${escapeHtml(metric.name)}</h3><div class="kpi-value">${values}</div>${estimate}<small>${escapeHtml(metric.pdf_reference)}</small></article>`;
     }).join("");
   }
 }
-function replicaSvg(values, label) {
-  const rows = values.map((value, index) => ({value, index})).filter(row => typeof row.value === "number" && Number.isFinite(row.value));
-  if (!rows.length) return "<p>Gráfico indisponível: sem valores individuais deste KPI.</p>";
-  const min = Math.min(...rows.map(row => row.value)), max = Math.max(...rows.map(row => row.value));
-  const span = max - min || Math.abs(max) * .1 || 1;
-  const x = index => 75 + index / Math.max(1, values.length - 1) * 595;
-  const y = value => 160 - (value - min) / span * 125;
-  // Show observations individually; missing replicas never become zero or interpolated lines.
-  return `<svg class="stability-plot" viewBox="0 0 720 210" role="img" aria-label="${escapeHtml(label)} por réplica"><text x="5" y="35">${escapeHtml(displayValue(min + span, ""))}</text><text x="5" y="165">${escapeHtml(displayValue(min, ""))}</text><line x1="75" y1="160" x2="670" y2="160" stroke="#64748b"/>${rows.map(row => `<circle cx="${x(row.index)}" cy="${y(row.value)}" r="3" fill="#2563eb"/>`).join("")}<text x="75" y="180">1</text><text x="650" y="180">${values.length}</text><text x="290" y="202">Réplica</text></svg>`;
+function boxplotSvg(values, label) {
+  const rows = values.filter(Number.isFinite).sort((a, b) => a - b);
+  if (!rows.length) return "<p>Boxplot indisponível: sem valores por réplica.</p>";
+  const quantile = p => {
+    const index = p * (rows.length - 1);
+    const lo = Math.floor(index);
+    return rows[lo] + (rows[Math.ceil(index)] - rows[lo]) * (index - lo);
+  };
+  const [q1, median, q3] = [.25, .5, .75].map(quantile);
+  const iqr = q3 - q1;
+  const lower = rows.find(value => value >= q1 - 1.5 * iqr);
+  const upper = rows.findLast(value => value <= q3 + 1.5 * iqr);
+  const average = rows.reduce((sum, value) => sum + value, 0) / rows.length;
+  const min = rows[0], max = rows.at(-1);
+  const padding = (max - min) * .1 || Math.abs(min) * .1 || 1;
+  const y = value => 174 - 156 * (value - min + padding) / (max - min + 2 * padding);
+  const number = value => displayValue(value, "");
+  const summary = `Mediana ${number(median)} · Q1 ${number(q1)} · Q3 ${number(q3)} · média ${number(average)}`;
+  const ticks = [...new Set([min, median, max])];
+  return `<figure class="replica-boxplot">
+    <svg viewBox="0 0 320 192" role="img" aria-label="${escapeHtml(label)}. ${summary}">
+      ${ticks.map(value => `<text x="65" y="${y(value) + 4}" text-anchor="end">${number(value)}</text><path class="boxplot-guide" d="M76 ${y(value)} H305"/>`).join("")}
+      <path class="boxplot-whisker" d="M160 ${y(upper)} V${y(lower)} M140 ${y(upper)} H180 M140 ${y(lower)} H180"/>
+      <rect class="boxplot-box" x="124" y="${y(q3)}" width="72" height="${Math.max(1, y(q1) - y(q3))}"/>
+      <path class="boxplot-median" d="M124 ${y(median)} H196"/>
+      <path class="boxplot-mean" d="M124 ${y(average)} H196"/>
+      ${rows.filter(value => value < lower || value > upper).map(value => `<circle class="boxplot-outlier" cx="160" cy="${y(value)}" r="3"><title>${number(value)}</title></circle>`).join("")}
+    </svg>
+    <figcaption>${summary}<br>${rows.length} de ${values.length} réplicas válidas. Caixa de Q1 a Q3, média tracejada e bigodes até 1,5 × IQR.</figcaption>
+  </figure>`;
 }
+
 function renderCharts(dashboard) {
   const run = state.runs[state.activeRunIndex];
   for (const panel of Object.keys(kpaNames)) {
     document.getElementById(`charts-${panel}`).innerHTML = publicCatalog(panel).flatMap(metric =>
-      publicStabilityEntries(run, metric).filter(([key, data]) => (kpiSeries[metric.id] || []).some(([path]) => path === key) && Array.isArray(data.values))
-        .map(([key, data]) => `<article class="chart-card"><h3>${escapeHtml(stabilityLabels[key])}</h3>${replicaSvg(data.values, stabilityLabels[key])}</article>`)
+      publicStabilityEntries(run, metric).filter(([, data]) => Array.isArray(data.values))
+        .map(([key, data]) => {
+          const values = data.denominators ? data.values.map((value, i) =>
+            value == null || !(data.denominators[i] > 0) ? null : value / data.denominators[i]) : data.values;
+          return `<article class="chart-card"><h3>${escapeHtml(stabilityLabels[key])}</h3>${boxplotSvg(values, stabilityLabels[key])}</article>`;
+        })
     ).join("");
   }
   const target = document.getElementById("charts-efficiency");
@@ -294,7 +303,7 @@ function renderCapacity(dashboard) {
       rows.push(`<tr><td>${escapeHtml(label)}</td><td>${escapeHtml(resource.label || resource.resource_id)}</td><td>${displayValue(valueAt(resource, "peak_throughput_per_hour"), "ops/h")}</td><td>${displayValue(valueAt(resource, "capacity_reference_per_hour") ?? valueAt(group, "capacity_reference_per_hour"), "ops/h")}</td><td>${displayValue(valueAt(resource, "utilization_peak"), "")}</td></tr>`);
     }
   }
-  document.getElementById("charts-capacity").innerHTML = `<div class="table-wrap"><table class="comparison-table"><thead><tr><th>Tipo de recurso</th><th>Recurso</th><th>Throughput por Recurso (pico)</th><th>Capacidade Prática de Recurso (P95)</th><th>Utilização de Recurso (pico)</th></tr></thead><tbody>${rows.join("") || '<tr><td colspan="5">Indicadores indisponíveis neste cenário.</td></tr>'}</tbody></table><p>P95 calculado por réplica e agregado por média. Throughput baseado em inícios de voo e atribuição à rota planejada.</p></div>`;
+  document.getElementById("charts-capacity").innerHTML += `<div class="table-wrap"><table class="comparison-table"><thead><tr><th>Tipo de recurso</th><th>Recurso</th><th>Throughput por Recurso (pico)</th><th>Capacidade Prática de Recurso (P95)</th><th>Utilização de Recurso (pico)</th></tr></thead><tbody>${rows.join("") || '<tr><td colspan="5">Indicadores indisponíveis neste cenário.</td></tr>'}</tbody></table><p>P95 calculado por réplica e agregado por média. Throughput baseado em inícios de voo e atribuição à rota planejada.</p></div>`;
 }
 function publicStabilityEntries(run, metric) {
   const panels = run.stability?.panels || {};
@@ -311,22 +320,8 @@ function publicStabilityEntries(run, metric) {
       return [key, data];
     });
 }
-function renderStability() {
-  const run = state.runs[state.activeRunIndex];
-  const valid = run.analysis_schema_version === 1 && run.stability?.schema_version === 1;
-  const method = "<p>Média acumulada por réplica; IC bootstrap de 95%, 1.000 reamostragens. Mínimo de 30 réplicas válidas, tolerância relativa de 5% e confirmação por 15 prefixos consecutivos. Pontos verdes: critério atendido. Constantes e zeros observados não confirmam estabilidade inferencial.</p>";
-  for (const panel of Object.keys(kpaNames)) {
-    const content = publicCatalog(panel).map(metric => {
-      const entries = valid ? publicStabilityEntries(run, metric) : [];
-      // TLS is a target, not a stochastic outcome. Do not substitute TLS margin.
-      if (metric.id === "tls") return `<h3>TLS</h3><p>Nível-alvo de referência; a estabilização é avaliada no Nível de Segurança.</p>`;
-      return entries.length ? entries.map(stabilityMetricHtml).join("") : `<h3>${escapeHtml(metric.name)}</h3><p>Estabilidade indisponível: sem série individual deste KPI neste cenário.</p>`;
-    }).join("");
-    document.getElementById(`stability-${panel}`).innerHTML = method + content;
-  }
-}
 function activateKpa(kpa) {
-  state.activeKpa = kpa === "maps" || Object.hasOwn(kpaNames, kpa) ? kpa : "maps";
+  state.activeKpa = kpa === "maps" || kpa === "resources" || Object.hasOwn(kpaNames, kpa) ? kpa : "maps";
   document.querySelectorAll("[data-kpa-tab]").forEach(button => {
     const active = button.dataset.kpaTab === state.activeKpa;
     button.classList.toggle("active", active);
@@ -334,7 +329,7 @@ function activateKpa(kpa) {
     button.tabIndex = active ? 0 : -1;
   });
   document.querySelectorAll("[data-kpa-panel]").forEach(panel => { panel.hidden = panel.dataset.kpaPanel !== state.activeKpa; });
-  document.querySelectorAll("[data-kpi-context]").forEach(node => { node.hidden = state.activeKpa === "maps"; });
+  document.querySelectorAll("[data-kpi-context]").forEach(node => { node.hidden = !Object.hasOwn(kpaNames, state.activeKpa); });
   updateMapsVisibility();
 }
 function renderDashboard(model) {
@@ -413,7 +408,6 @@ function renderSelectedRun() {
   renderMetrics(run.dashboard);
   renderCharts(run.dashboard);
   renderCapacity(run.dashboard);
-  renderStability();
   setText("replica-universe", `Cenário ${run.metadata?.scenario_key || run.name} · Média de ${run.replica_count || 1} réplicas. Indicadores sem cálculo ou dados disponíveis são identificados como indisponíveis.`);
 }
 document.addEventListener("DOMContentLoaded", () => {

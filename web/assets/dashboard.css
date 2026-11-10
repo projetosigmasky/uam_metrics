@@ -1160,16 +1160,42 @@ input[type="checkbox"] {
 .overview-filters { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 150px), 1fr)); gap: 12px; margin: 0; }
 .overview-filters dt { color: var(--muted); font-size: 13px; font-weight: 650; }
 .overview-filters dd { margin: 4px 0 0; }
-.overview-map-title { margin: 4px 0 0; }
+
 @media (max-width: 640px) {
   .overview-summary { grid-template-columns: 1fr; }
 }
 #panel-maps { display: grid; gap: 18px; min-width: 0; }
 #panel-maps[hidden] { display: none; }
-#panel-maps .workspace { height: auto; }
-#panel-maps .map-stage { height: 650px; min-height: 0; }
-#panel-maps .map-replica-note { color: var(--muted); font-size: 14px; margin: 0; }
+#panel-resources .workspace { height: auto; }
+#panel-resources .map-stage { height: 650px; min-height: 0; }
+.map-replica-note { color: var(--muted); font-size: 14px; margin: 0; }
 @media (max-width: 760px) {
-  #panel-maps .workspace { height: auto; }
-  #panel-maps .map-stage { height: 520px; }
+  #panel-resources .workspace { height: auto; }
+  #panel-resources .map-stage { height: 520px; }
 }
+
+.indicator-map {
+  margin: 20px 0;
+  padding: clamp(12px, 2vw, 20px);
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+.indicator-map h3 { margin: 0; }
+.indicator-map p { color: var(--muted); }
+.indicator-map-canvas { height: clamp(280px, 55vh, 520px); border-radius: 6px; }
+.indicator-status:empty { display: none; }
+.indicator-controls, .indicator-legend { display: flex; flex-wrap: wrap; gap: 8px 16px; margin: 12px 0; }
+.indicator-controls select { padding: 4px; max-width: 100%; }
+.indicator-legend { list-style: none; padding: 0; font-size: 13px; }
+.indicator-legend:empty { display: none; }
+.indicator-legend i { display: inline-block; width: .8em; height: .8em; border-radius: 2px; margin-right: 6px; }
+.replica-boxplot { margin: 0; }
+.replica-boxplot svg { display: block; width: 100%; max-width: 420px; margin: auto; }
+.replica-boxplot text, .replica-boxplot figcaption { fill: var(--ink); font-size: 12px; }
+.replica-boxplot figcaption { color: var(--muted); line-height: 1.5; }
+.boxplot-guide { stroke: var(--line); }
+.boxplot-box { fill: #99d1dc; stroke: #146a86; stroke-width: 1.5; }
+.boxplot-whisker, .boxplot-median, .boxplot-mean { fill: none; stroke: #124b61; stroke-width: 2; }
+.boxplot-mean { stroke-dasharray: 4 3; }
+.boxplot-outlier { fill: #146a86; }

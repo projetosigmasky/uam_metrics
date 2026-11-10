@@ -46,7 +46,8 @@ class MetricPresentationTests(unittest.TestCase):
         for panel in ('safety', 'efficiency', 'capacity', 'predictability', 'equity'):
             self.assertEqual(dom.nodes[f'panel-{panel}'][0]['role'], 'tabpanel')
             self.assertIn(f'kpis-{panel}', dom.nodes)
-            self.assertIn(f'stability-{panel}', dom.nodes)
+            self.assertIn(f'charts-{panel}', dom.nodes)
+            self.assertNotIn(f'stability-{panel}', dom.nodes)
         for removed in ('auxiliary-', 'chart-severity', 'capacity-atd', 'traceability-table', 'data-kpa-tab="overview"'):
             self.assertNotIn(removed, html)
         self.assertEqual({m['kpa'] for m in METRIC_CATALOG},
@@ -54,15 +55,15 @@ class MetricPresentationTests(unittest.TestCase):
         self.assertEqual(len(METRIC_CATALOG), 22)
         self.assertTrue(all(m['presentation_group'] == 'kpi' for m in METRIC_CATALOG))
 
-    def test_maps_are_first_and_contain_only_spatial_views(self):
+    def test_overview_and_each_kpa_have_separate_maps(self):
         html = (ROOT / 'web/index.html').read_text(encoding='utf-8')
         dom = Structure(html)
         self.assertLess(html.index('data-kpa-tab="maps"'), html.index('data-kpa-tab="safety"'))
         self.assertEqual(dom.nodes['tab-maps'][0]['aria-selected'], 'true')
-        for name in ('map', 'viewer3d-canvas', 'layer-heat', 'layer-conflicts', 'layer-candidate-nodes'):
-            self.assertTrue(any(p.get('id') == 'panel-maps' for p in dom.nodes[name][1]))
-        for name in ('kpis-safety', 'stability-safety', 'kpis-capacity'):
-            self.assertFalse(any(p.get('id') == 'panel-maps' for p in dom.nodes[name][1]))
+        for panel in ('maps', 'safety', 'efficiency', 'capacity', 'predictability', 'equity'):
+            self.assertTrue(any(p.get('id') == f'panel-{panel}' for p in dom.nodes[f'indicator-map-{panel}'][1]))
+        self.assertTrue(any(p.get('id') == 'panel-safety' for p in dom.nodes['viewer3d-canvas'][1]))
+        self.assertTrue(any(p.get('id') == 'panel-resources' for p in dom.nodes['map'][1]))
         self.assertNotIn('conflict-timeline-body', dom.nodes)
 
     @unittest.skipUnless(shutil.which('node'), 'Node.js required for JavaScript presentation checks')
