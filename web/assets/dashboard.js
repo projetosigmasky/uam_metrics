@@ -240,6 +240,40 @@ function renderMetrics(dashboard) {
     }).join("");
   }
 }
+// eVTOL x airport traffic (FR24): a separate analysis; helicopters stay in the cards above.
+function evtolAirportCards(data) {
+  if (!data?.available) {
+    const reason = data?.reason === "scenario without eVTOL" ? "Não se aplica: cenário sem eVTOL." : "Indisponível: análise não calculada para este cenário.";
+    return [["eVTOL × tráfego aeroportuário", [reason]]];
+  }
+  const airports = data.events_by_airport || {};
+  const perAirport = ["SBSP", "SBGR", "SBKP"].map(code =>
+    `${code}: ${formatNumber(airports[code]?.lowc_events ?? 0, 2)} LoWC · ${formatNumber(airports[code]?.nmac_events ?? 0, 2)} NMAC`);
+  return [
+    ["Perda de separação (LoWC)", [displayValue(data.lowc_events, "eventos"), displayValue(data.lowc_per_flight_hour, "eventos/h de voo eVTOL")]],
+    ["NMAC", [displayValue(data.nmac_events, "eventos"), displayValue(data.nmac_per_flight_hour, "eventos/h de voo eVTOL")]],
+    ["Eventos por aeroporto", perAirport],
+    ["MAC estimada", [displayValue(data.expected_mac_per_100k_flight_hours, "MAC/100.000 h de voo eVTOL")]],
+    ["Menor separação horizontal no mesmo nível", [displayValue(data.min_horizontal_m_co_altitude, "m")]],
+    ["Voos com LoWC", [`${formatNumber(data.evtol_flights_with_lowc, 2)} eVTOL · ${formatNumber(data.airport_flights_with_lowc, 2)} aeronaves FR24`]],
+  ];
+}
+function evtolAirportNote(data) {
+  const source = data?.source || {};
+  const t = data?.thresholds || {};
+  const day = source.peak_day_local ? `dia de pico de ${source.peak_day_local.split("-").reverse().join("/")} (SBSP)` : "dia de pico";
+  const limits = t.lowc_horizontal_m == null ? "" : ` LoWC: H < ${formatNumber(t.lowc_horizontal_m)} m e V < ${formatNumber(t.lowc_vertical_m, 2)} m; NMAC: H < ${formatNumber(t.nmac_horizontal_m)} m e V < ${formatNumber(t.nmac_vertical_m)} m.`;
+  const replicas = data?.available ? ` Média de ${data.replica_count || 1} réplicas.` : "";
+  return `Análise separada: somente eVTOLs contra o tráfego FR24 de SBSP, SBGR e SBKP do ${day}, como fundo fixo interpolado a 1 s; helicópteros ficam na análise acima. Taxas por operação e hora de voo de eVTOL.${limits}${replicas}`;
+}
+function renderEvtolAirport(dashboard) {
+  const container = document.getElementById("evtol-airport-safety");
+  if (!container) return;
+  const data = dashboard?.evtol_airport_safety;
+  container.innerHTML = evtolAirportCards(data).map(([title, lines]) =>
+    `<article class="metric" data-kpi="evtol_airport"><h3>${escapeHtml(title)}</h3><div class="kpi-value">${lines.map(line => `<p>${escapeHtml(line)}</p>`).join("")}</div></article>`).join("");
+  setText("evtol-airport-note", evtolAirportNote(data));
+}
 function boxplotSvg(values, label) {
   const rows = values.filter(Number.isFinite).sort((a, b) => a - b);
   if (!rows.length) return "<p>Boxplot indisponível: sem valores por réplica.</p>";
@@ -406,6 +440,7 @@ function renderSelectedRun() {
   renderOverview(run);
   renderMaps(run);
   renderMetrics(run.dashboard);
+  renderEvtolAirport(run.dashboard);
   renderCharts(run.dashboard);
   renderCapacity(run.dashboard);
   setText("replica-universe", `Cenário ${run.metadata?.scenario_key || run.name} · Média de ${run.replica_count || 1} réplicas. Indicadores sem cálculo ou dados disponíveis são identificados como indisponíveis.`);

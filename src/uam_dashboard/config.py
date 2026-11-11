@@ -65,3 +65,13 @@ class DashboardConfig:
     crossing_capture_radius_m: float = 250.0
     heatmap_sample_stride: int = 10
     heatmap_grid_degrees: float = 0.001
+    # Background airport traffic (FR24 peak day). None disables the extra set.
+    airport_traffic_path: Path | None = None
+    airport_traffic_max_gap_seconds: float = 60.0
+    # Fixed for every scenario: the airport traffic is not managed by the UAM
+    # deconfliction, so its threshold does not follow the scenario LoWC.
+    airport_lowc_horizontal_m: float = 500.0
+    airport_lowc_vertical_m: float = 137.16
+    # Terminal hovers never deleted by BlueSky (see log_cleaning.py); 0 disables.
+    trim_terminal_hover_seconds: float = 60.0
+    terminal_hover_speed_mps: float = 1.0

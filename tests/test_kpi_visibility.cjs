@@ -60,3 +60,14 @@ assert.equal(evaluate('state.candidateNodes.features.length'), 1);
 assert.equal(evaluate('state.candidateNodes.features[0].properties.network'), 'REH');
 assert.equal(evaluate('state.uamProjection.features.length'), 0);
 assert.equal(evaluate('controls["layer-uam-corridors"].disabled'), true);
+
+// eVTOL x airport traffic cards: separate analysis, not applicable without eVTOL.
+const airportCards = evaluate(`evtolAirportCards({available: true, lowc_events: 12.5, nmac_events: 0, lowc_per_flight_hour: .32,
+  nmac_per_flight_hour: 0, expected_mac_per_100k_flight_hours: 0, min_horizontal_m_co_altitude: 122.4,
+  evtol_flights_with_lowc: 12, airport_flights_with_lowc: 11, events_by_airport: {SBSP: {lowc_events: 10.5, nmac_events: 0}}})`);
+assert.equal(airportCards.length, 6);
+assert.match(airportCards[2][1][0], /^SBSP: 10,50 LoWC · 0,00 NMAC$/);
+assert.match(airportCards[2][1][1], /^SBGR: 0,00 LoWC/);
+assert.match(evaluate('evtolAirportCards({available: false, reason: "scenario without eVTOL"})[0][1][0]'), /cenário sem eVTOL/);
+assert.match(evaluate('evtolAirportNote({available: true, replica_count: 50, source: {peak_day_local: "2022-12-01"}, thresholds: {lowc_horizontal_m: 500, lowc_vertical_m: 137.16, nmac_horizontal_m: 152, nmac_vertical_m: 30}})'),
+  /01\/12\/2022.*Média de 50 réplicas/);

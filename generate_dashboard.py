@@ -27,6 +27,14 @@ from src.uam_dashboard.exports import (
     tracks_geojson,
 )
 from src.uam_dashboard.log_parser import load_state_log
+from src.uam_dashboard.log_cleaning import trim_terminal_hover
+from src.uam_dashboard.airport_traffic import (
+    DEFAULT_AIRPORT_TRAFFIC_PATH,
+    average_evtol_airport,
+    evtol_airport_safety,
+    load_airport_traffic,
+    traffic_metadata,
+)
 from src.uam_dashboard.metrics import (
     active_aircraft_series,
     airborne_delay_metrics,
@@ -212,6 +220,13 @@ def average_dashboard(run_dashboards: list[dict[str, Any]]) -> dict[str, Any]:
                 [d["safety"]["expected_mac_rate_per_flight_hour"] for d in run_dashboards]
             ) <= run_dashboards[0]["safety"]["tls_target_per_flight_hour"],
         },
+        "evtol_airport_safety": average_evtol_airport([d.get("evtol_airport_safety") for d in run_dashboards]),
+        "data_cleaning": {"terminal_hover": {
+            "trimmed_flights": mean([d.get("data_cleaning", {}).get("terminal_hover", {}).get("trimmed_flights", 0)
+                                     for d in run_dashboards]),
+            "trimmed_records": mean([d.get("data_cleaning", {}).get("terminal_hover", {}).get("trimmed_records", 0)
+                                     for d in run_dashboards]),
+        }},
         "charts": run_dashboards[0]["charts"],
         "metric_catalog": metric_catalog_payload(),
     }
@@ -419,6 +434,7 @@ def comparison_payload(runs: list[dict[str, Any]], average: dict[str, Any]) -> d
             "lowc_per_flight_hour": d["safety"]["lowc_per_flight_hour"],
             "lowc_per_100_operations": d["safety"]["lowc_per_100_operations"],
             "min_severity_ratio": d["safety"]["min_severity_ratio"],
+            **_airport_comparison(d.get("evtol_airport_safety")),
         }
         by_day.setdefault(metadata["day_key"], []).append(row)
 
@@ -459,6 +475,72 @@ def comparison_payload(runs: list[dict[str, Any]], average: dict[str, Any]) -> d
     return {"run_count": len(runs), "day_count": len(days), "days": days}
 
 
+def _airport_comparison(payload: dict[str, Any] | None) -> dict[str, Any]:
+    """Comparison-table columns of the eVTOL x airport-traffic set (None when unavailable)."""
+    available = bool(payload and payload.get("available"))
+    value = (lambda key: payload.get(key)) if available else (lambda key: None)
+    return {
+        "evtol_airport_lowc_events": value("lowc_events"),
+        "evtol_airport_nmac_events": value("nmac_events"),
+        "evtol_airport_sbsp_lowc_events": (payload.get("events_by_airport", {}).get("SBSP", {}).get("lowc_events", 0)
+                                           if available else None),
+        "evtol_airport_lowc_per_flight_hour": value("lowc_per_flight_hour"),
+        "evtol_airport_expected_mac_per_100k_flight_hours": value("expected_mac_per_100k_flight_hours"),
+        "evtol_airport_tls_margin": value("tls_margin"),
+    }
+
+
+AIRPORT_SUMMARY_COLUMNS = [
+    "scenario", "replicas", "evtol_operations", "evtol_flight_hours",
+    "lowc", "nmac", "lowc_SBSP", "nmac_SBSP", "lowc_SBGR", "nmac_SBGR", "lowc_SBKP", "nmac_SBKP",
+    "lowc_per_100_operations", "lowc_per_flight_hour", "nmac_per_flight_hour", "expected_mac",
+    "expected_mac_per_100k_flight_hours", "tls_margin", "tls_compliant", "min_severity_ratio",
+    "total_time_below_threshold_s", "airport_flights_with_lowc", "evtol_flights_with_lowc",
+    "airport_flights_within_5km_co_altitude", "min_horizontal_m_co_altitude", "hover_trimmed_flights", "status",
+]
+
+
+def airport_summary_row(run: dict[str, Any]) -> dict[str, Any]:
+    d = run["dashboard"]
+    payload = d.get("evtol_airport_safety") or {}
+    available = bool(payload.get("available"))
+    row = {"scenario": run["metadata"].get("scenario_key", run["name"]), "replicas": run.get("replica_count", 1),
+           "hover_trimmed_flights": d.get("data_cleaning", {}).get("terminal_hover", {}).get("trimmed_flights"),
+           "status": "ok" if available else payload.get("reason", "unavailable")}
+    if not available:
+        return row
+    for key in ("evtol_operations", "evtol_flight_hours", "lowc_per_100_operations", "lowc_per_flight_hour",
+                "nmac_per_flight_hour", "expected_mac", "expected_mac_per_100k_flight_hours", "tls_margin",
+                "tls_compliant", "min_severity_ratio", "total_time_below_threshold_s", "airport_flights_with_lowc",
+                "evtol_flights_with_lowc", "airport_flights_within_5km_co_altitude", "min_horizontal_m_co_altitude"):
+        row[key] = payload.get(key)
+    row["lowc"], row["nmac"] = payload["lowc_events"], payload["nmac_events"]
+    for airport in ("SBSP", "SBGR", "SBKP"):
+        counts = payload.get("events_by_airport", {}).get(airport, {})
+        row[f"lowc_{airport}"] = counts.get("lowc_events", 0.0)
+        row[f"nmac_{airport}"] = counts.get("nmac_events", 0.0)
+    return row
+
+
+def write_airport_outputs(data_dir: Path, runs: list[dict[str, Any]], events: list[dict[str, Any]]) -> None:
+    """Scenario means (CSV) and every eVTOL x airport-traffic event of every replica (CSV)."""
+    import csv
+    folder = data_dir / "airport_traffic"
+    folder.mkdir(parents=True, exist_ok=True)
+    with (folder / "evtol_airport_safety_by_scenario.csv").open("w", newline="", encoding="utf-8") as stream:
+        writer = csv.DictWriter(stream, fieldnames=AIRPORT_SUMMARY_COLUMNS)
+        writer.writeheader()
+        for run in runs:
+            writer.writerow(airport_summary_row(run))
+    columns = ["scenario", "replica", "source_log", "simt", "start_simt", "end_simt", "duration_s", "id_a",
+               "fr24_id", "callsign", "equip", "airport", "movement", "dist_h_m", "dist_v_m", "severity_ratio",
+               "is_nmac", "lat", "lon", "alt"]
+    with (folder / "evtol_airport_events.csv").open("w", newline="", encoding="utf-8") as stream:
+        writer = csv.DictWriter(stream, fieldnames=columns, extrasaction="ignore")
+        writer.writeheader()
+        writer.writerows(sorted(events, key=lambda e: (str(e.get("scenario")), e.get("replica") or 0, e["simt"])))
+
+
 def _ratio_or_none(value: float | None, reference: float | None) -> float | None:
     if value is None or reference is None or reference <= 0:
         return None
@@ -477,7 +559,8 @@ def analyze_log(log_path: Path, config: DashboardConfig, charts_dir: Path, run_i
         config = replace(config, lowc_horizontal_m=dimensions["lowc_distance_nm"] * 1852.0)
     chart_prefix = f"{run_index + 1:02d}_{slugify(log_path.stem)}"
     print(f"Loading log: {log_path}")
-    df = load_state_log(log_path)
+    df, terminal_hover = trim_terminal_hover(load_state_log(log_path), config.trim_terminal_hover_seconds,
+                                             config.terminal_hover_speed_mps)
 
     print("Computing metrics and sampled LoWC events...")
     scenario_path = find_matching_scenario(log_path, config.scenario_paths)
@@ -508,7 +591,8 @@ def analyze_log(log_path: Path, config: DashboardConfig, charts_dir: Path, run_i
         "reason": "requer horários solicitado (S_f) e autorizado/reprogramado (R_f)",
     }
     reference_log_path = find_reference_off_log(metadata, config.log_paths)
-    reference_df = load_state_log(reference_log_path) if reference_log_path else None
+    reference_df = (trim_terminal_hover(load_state_log(reference_log_path), config.trim_terminal_hover_seconds,
+                                        config.terminal_hover_speed_mps)[0] if reference_log_path else None)
     efficiency["airborne_delay"] = airborne_delay_metrics(
         df,
         reference_df,
@@ -553,6 +637,27 @@ def analyze_log(log_path: Path, config: DashboardConfig, charts_dir: Path, run_i
         nmac_vertical_threshold_m=config.nmac_vertical_m,
         operation_count=efficiency["flight_instances"],
     )
+    airport_events, airport_safety = [], {"available": False, "reason": "airport traffic disabled"}
+    if config.airport_traffic_path:
+        airport_events, airport_safety = evtol_airport_safety(
+            df,
+            load_airport_traffic(str(config.airport_traffic_path), config.airport_traffic_max_gap_seconds),
+            lowc_horizontal_m=config.airport_lowc_horizontal_m,
+            lowc_vertical_m=config.airport_lowc_vertical_m,
+            nmac_horizontal_m=config.nmac_horizontal_m,
+            nmac_vertical_m=config.nmac_vertical_m,
+            sample_seconds=config.conflict_sample_seconds,
+            gap_seconds=config.flight_instance_gap_seconds,
+            reset_distance_m=config.flight_instance_reset_distance_m,
+            jump_m=config.flight_instance_jump_m,
+            mac_beta=config.mac_beta,
+            mac_probability_given_nmac=config.mac_probability_given_nmac,
+            tls_target_per_flight_hour=config.tls_target_per_flight_hour,
+            tls_epsilon=config.tls_epsilon,
+            source=traffic_metadata(config.airport_traffic_path),
+        )
+        for event in airport_events:
+            event.update(scenario=metadata.get("scenario_key"), replica=metadata.get("replica"), source_log=log_path.name)
 
     chart_paths = {
         "active_aircraft": f"assets/charts/{chart_prefix}_active_aircraft.png",
@@ -604,6 +709,8 @@ def analyze_log(log_path: Path, config: DashboardConfig, charts_dir: Path, run_i
         "summary": summary,
         "efficiency": efficiency,
         "safety": safety,
+        "evtol_airport_safety": airport_safety,
+        "data_cleaning": {"terminal_hover": terminal_hover},
         "capacity": capacity,
         "charts": chart_paths,
         "metric_catalog": metric_catalog_payload(),
@@ -612,7 +719,8 @@ def analyze_log(log_path: Path, config: DashboardConfig, charts_dir: Path, run_i
     dashboard["replica_summary"] = summarize_replica(df, series, separation_samples, lowc_events, conformity_by_instance, config)
     grid = density_grid(df, config.heatmap_grid_degrees)
     if not render_charts:
-        return {"dashboard": dashboard, "density_grid": grid, "indicator_summary": indicator_summary}
+        return {"dashboard": dashboard, "density_grid": grid, "indicator_summary": indicator_summary,
+                "airport_events": airport_events}
 
     return {
         "id": chart_prefix,
@@ -621,6 +729,7 @@ def analyze_log(log_path: Path, config: DashboardConfig, charts_dir: Path, run_i
         "dashboard": dashboard,
         "density_grid": grid,
         "indicator_summary": indicator_summary,
+        "airport_events": airport_events,
         "tracks": tracks,
         "planned_routes": planned_routes,
         "official_reh": reh_network["geojson"] if reh_network else {
@@ -677,6 +786,7 @@ def build_dashboard(config: DashboardConfig) -> None:
     maps_by_group: dict[tuple, IndicatorMaps] = {}
     representatives: dict[tuple[str, str, bool | None], dict[str, Any]] = {}
     group_order: list[tuple[str, str, bool | None]] = []
+    airport_events: list[dict[str, Any]] = []
     tasks = []
     for index, log_path in enumerate(sorted(config.log_paths, key=lambda path: (
             experiment_sort_key(path), log_experiment_metadata(path, config.scenario_paths).get("replica") or 0, str(path)))):
@@ -695,6 +805,7 @@ def build_dashboard(config: DashboardConfig) -> None:
         dashboards_by_group.setdefault(group_key, []).append((index, run["dashboard"]))
         grids_by_group.setdefault(group_key, []).append(run.pop("density_grid"))
         maps_by_group.setdefault(group_key, IndicatorMaps()).add(run.pop("indicator_summary"))
+        airport_events.extend(run.pop("airport_events", []))
         if representative:
             representatives[group_key] = run
 
@@ -785,6 +896,8 @@ def build_dashboard(config: DashboardConfig) -> None:
     print("Writing static data files...")
     write_json(data_dir / "dashboard.json", dashboard)
     write_json(data_dir / "comparison.json", comparison)
+    if config.airport_traffic_path:
+        write_airport_outputs(data_dir, runs, airport_events)
     write_json(data_dir / "tracks.geojson", primary["tracks"])
     write_json(data_dir / "planned_routes.geojson", primary["planned_routes"])
     write_json(data_dir / "official_reh.geojson", primary["official_reh"])
@@ -850,6 +963,14 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--capacity-window-seconds", type=int, default=900)
     parser.add_argument("--capacity-reference-percentile", type=float, default=0.95)
     parser.add_argument("--crossing-capture-radius-m", type=float, default=250.0)
+    parser.add_argument("--airport-traffic", default=str(DEFAULT_AIRPORT_TRAFFIC_PATH),
+                        help="FR24 airport-traffic CSV for the eVTOL x airport-traffic set; 'none' disables it.")
+    parser.add_argument("--airport-traffic-max-gap-seconds", type=float, default=60.0)
+    parser.add_argument("--airport-lowc-horizontal-m", type=float, default=500.0)
+    parser.add_argument("--airport-lowc-vertical-m", type=float, default=137.16)
+    parser.add_argument("--trim-terminal-hover-seconds", type=float, default=60.0,
+                        help="Cut trailing stops (gs below --terminal-hover-speed-mps) at least this long; 0 disables.")
+    parser.add_argument("--terminal-hover-speed-mps", type=float, default=1.0)
     return parser.parse_args()
 
 
@@ -986,6 +1107,12 @@ def main() -> None:
         capacity_window_seconds=args.capacity_window_seconds,
         capacity_reference_percentile=args.capacity_reference_percentile,
         crossing_capture_radius_m=args.crossing_capture_radius_m,
+        airport_traffic_path=None if args.airport_traffic.lower() == "none" else Path(args.airport_traffic),
+        airport_traffic_max_gap_seconds=args.airport_traffic_max_gap_seconds,
+        airport_lowc_horizontal_m=args.airport_lowc_horizontal_m,
+        airport_lowc_vertical_m=args.airport_lowc_vertical_m,
+        trim_terminal_hover_seconds=args.trim_terminal_hover_seconds,
+        terminal_hover_speed_mps=args.terminal_hover_speed_mps,
     )
     build_dashboard(config)
 

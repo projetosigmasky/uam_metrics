@@ -650,3 +650,57 @@ python prepare_publication.py
 ```
 
 O comando atualiza `docs/index.html`, JS/CSS, catálogo e matriz; preserva os resultados numéricos, rankings e geometrias. A atualização de textos não homologa os parâmetros nem transforma indicadores indisponíveis em calculados.
+
+
+## eVTOL × tráfego aeroportuário (FR24) — 11/11/2026
+
+Análise **separada** da segurança existente. Os indicadores atuais (pares entre
+aeronaves simuladas) não mudam; esta análise compara somente **eVTOLs** com o
+fluxo dos aeroportos registrado pelo Flightradar24.
+
+- **Dados:** `data/airport_traffic/fr24_sbsp_peak_20221201.csv.gz` e o `.json`
+  ao lado (fonte, regra do pico, filtros, SHA-256). Para reconstruir a partir dos
+  arquivos diários `.Rda` de dez/2022: `python scripts/build_fr24_peak_day.py <pasta 12/>`
+  (requer `pyreadr`, fora do `requirements.txt`).
+- **Dia de pico:** data local (UTC−3) com mais movimentos em SBSP em dez/2022:
+  **01/12/2022**, 497 movimentos (251 pousos, 246 decolagens); 14/12 vem em
+  seguida com 492. O arquivo tem voos comerciais de SBSP, SBGR e SBKP (sem SBMT,
+  helicópteros ou aviação geral) acima do solo e abaixo de 10.000 ft em
+  lat −24,2..−23,0 e lon −47,3..−46,0: 1.825 voos, 123.043 pontos, amostragem
+  mediana de 4 s.
+- **Relógio:** os cenários contam segundos desde 00:00 UTC (horas BIMTRA e janelas
+  de bloqueio em UTC). `sim_time_s` = instante FR24 − 2022-12-01T00:00Z, de 0 a 28 h,
+  o que cobre o dia local inteiro.
+- **Método:** posições FR24 interpoladas linearmente a cada 1 s (lacunas maiores
+  que 60 s ficam vazias) e comparadas às posições dos eVTOLs no mesmo segundo.
+  Helicópteros não entram. LoWC H < 500 m e V < 137,16 m fixos para todos os
+  cenários (o tráfego aeroportuário não é gerenciado, então o limiar não segue o
+  LoWC do perfil micro); NMAC H < 152 m e V < 30 m. Eventos, severidade, MAC
+  (Eq. 3.2) e TLS usam as mesmas funções da análise existente. Taxas por operação
+  e por hora de voo de **eVTOL**. Em C0 (sem eVTOL) a análise não se aplica.
+- **Saídas:** `dashboard.evtol_airport_safety` em cada cenário (média das réplicas;
+  classes de evento ausentes contam zero; margem TLS pela taxa média), colunas
+  `evtol_airport_*` em `comparison.json`,
+  `docs/assets/data/airport_traffic/evtol_airport_safety_by_scenario.csv`,
+  `docs/assets/data/airport_traffic/evtol_airport_events.csv` (todos os eventos de
+  todas as réplicas, com voo FR24, aeroporto e pouso/decolagem) e uma seção na aba
+  Segurança. Valores individuais ficam em `replica_metrics`.
+- **Opções:** `--airport-traffic none` desliga; `--airport-traffic-max-gap-seconds`,
+  `--airport-lowc-horizontal-m`, `--airport-lowc-vertical-m`.
+- **Limitações:** altitude FR24 barométrica como entregue (pousos em SBSP leem
+  ~2.650 ft para 2.631 ft de elevação); o tráfego é um fundo fixo e não reage aos
+  eVTOLs; esta análise ainda não entra na estabilidade/IC por réplicas.
+
+## Corte de pairados terminais (rodada de vento de 06/11/2026)
+
+Na rodada de vento, helicópteros param a ~1 m do último waypoint, contra o vento,
+com velocidade de solo ~0,2 m/s, e o BlueSky nunca os remove (`DEL` só dispara ao
+passar o waypoint). Sem corte, 18.000 voos pairam até o fim do cenário e 1.152
+ficam parados por minutos antes de sair. O gerador corta, por aeronave, a parada
+final (velocidade de solo < 1 m/s até a última amostra) que dure pelo menos 60 s,
+mantendo a amostra de chegada. Fases lentas seguidas de voo e chegadas normais não
+mudam. O corte vale para todos os logs e é registrado em
+`dashboard.data_cleaning.terminal_hover`; nas rodadas nominal, de partida e de bloqueio
+de 06/11 ele não remove nada (verificado nos 5.450 STATELOGs). Opções: `--trim-terminal-hover-seconds`
+(0 desliga) e `--terminal-hover-speed-mps`. `critical_waypoints.py` lê os
+STATELOGs por conta própria e não aplica o corte.

@@ -1,0 +1,194 @@
+{
+  "source": "Flightradar24 daily .Rda files, December 2022 (12.zip shared by the project, 2026-11-11)",
+  "source_files": [
+    "2022-12-01.Rda",
+    "2022-12-02.Rda"
+  ],
+  "content": "commercial flights only (FR24 types ALL_BR/ARR_BR/DEP_BR/ALL_EXT); no helicopters, no general aviation, no SBMT",
+  "peak_rule": "local date (UTC-3) with most SBSP arrivals + departures in the month",
+  "peak_day_local": "2022-12-01",
+  "daily_movements": {
+    "2022-12-01": {
+      "SBGR": 693,
+      "SBKP": 380,
+      "SBSP": 497
+    },
+    "2022-12-02": {
+      "SBGR": 692,
+      "SBKP": 383,
+      "SBSP": 427
+    },
+    "2022-12-03": {
+      "SBGR": 639,
+      "SBKP": 283,
+      "SBSP": 355
+    },
+    "2022-12-04": {
+      "SBGR": 667,
+      "SBKP": 325,
+      "SBSP": 414
+    },
+    "2022-12-05": {
+      "SBGR": 679,
+      "SBKP": 370,
+      "SBSP": 475
+    },
+    "2022-12-06": {
+      "SBGR": 655,
+      "SBKP": 346,
+      "SBSP": 457
+    },
+    "2022-12-07": {
+      "SBGR": 669,
+      "SBKP": 369,
+      "SBSP": 445
+    },
+    "2022-12-08": {
+      "SBGR": 610,
+      "SBKP": 347,
+      "SBSP": 459
+    },
+    "2022-12-09": {
+      "SBGR": 671,
+      "SBKP": 355,
+      "SBSP": 464
+    },
+    "2022-12-10": {
+      "SBGR": 642,
+      "SBKP": 277,
+      "SBSP": 368
+    },
+    "2022-12-11": {
+      "SBGR": 638,
+      "SBKP": 328,
+      "SBSP": 409
+    },
+    "2022-12-12": {
+      "SBGR": 676,
+      "SBKP": 349,
+      "SBSP": 466
+    },
+    "2022-12-13": {
+      "SBGR": 656,
+      "SBKP": 358,
+      "SBSP": 444
+    },
+    "2022-12-14": {
+      "SBGR": 682,
+      "SBKP": 370,
+      "SBSP": 492
+    },
+    "2022-12-15": {
+      "SBGR": 726,
+      "SBKP": 371,
+      "SBSP": 477
+    },
+    "2022-12-16": {
+      "SBGR": 728,
+      "SBKP": 378,
+      "SBSP": 487
+    },
+    "2022-12-17": {
+      "SBGR": 682,
+      "SBKP": 282,
+      "SBSP": 374
+    },
+    "2022-12-18": {
+      "SBGR": 658,
+      "SBKP": 303,
+      "SBSP": 394
+    },
+    "2022-12-19": {
+      "SBGR": 695,
+      "SBKP": 330,
+      "SBSP": 474
+    },
+    "2022-12-20": {
+      "SBGR": 721,
+      "SBKP": 325,
+      "SBSP": 460
+    },
+    "2022-12-21": {
+      "SBGR": 704,
+      "SBKP": 319,
+      "SBSP": 454
+    },
+    "2022-12-22": {
+      "SBGR": 721,
+      "SBKP": 344,
+      "SBSP": 475
+    },
+    "2022-12-23": {
+      "SBGR": 731,
+      "SBKP": 311,
+      "SBSP": 485
+    },
+    "2022-12-24": {
+      "SBGR": 609,
+      "SBKP": 210,
+      "SBSP": 304
+    },
+    "2022-12-25": {
+      "SBGR": 557,
+      "SBKP": 208,
+      "SBSP": 350
+    },
+    "2022-12-26": {
+      "SBGR": 683,
+      "SBKP": 320,
+      "SBSP": 475
+    },
+    "2022-12-27": {
+      "SBGR": 721,
+      "SBKP": 289,
+      "SBSP": 486
+    },
+    "2022-12-28": {
+      "SBGR": 703,
+      "SBKP": 295,
+      "SBSP": 473
+    },
+    "2022-12-29": {
+      "SBGR": 716,
+      "SBKP": 315,
+      "SBSP": 475
+    },
+    "2022-12-30": {
+      "SBGR": 711,
+      "SBKP": 279,
+      "SBSP": 459
+    },
+    "2022-12-31": {
+      "SBGR": 525,
+      "SBKP": 179,
+      "SBSP": 312
+    }
+  },
+  "sim_time_origin_utc": "2022-12-01T00:00:00Z",
+  "sim_time_window_s": [
+    0,
+    100800
+  ],
+  "filters": {
+    "box_lat": [
+      -24.2,
+      -23.0
+    ],
+    "box_lon": [
+      -47.3,
+      -46.0
+    ],
+    "airborne": "alt_ft > 0",
+    "max_alt_ft": 10000
+  },
+  "altitude": "FR24 altitude in ft as delivered (ADS-B barometric); ground points (0 ft) removed",
+  "airports": [
+    "SBSP",
+    "SBGR",
+    "SBKP"
+  ],
+  "rows": 123043,
+  "flights": 1825,
+  "csv": "fr24_sbsp_peak_20221201.csv.gz",
+  "csv_sha256": "a3f368020fdd36f4a855a59538d169a575ea19a634bf898318ab6cb43f53e069"
+}
