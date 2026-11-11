@@ -704,3 +704,20 @@ mudam. O corte vale para todos os logs e é registrado em
 de 06/11 ele não remove nada (verificado nos 5.450 STATELOGs). Opções: `--trim-terminal-hover-seconds`
 (0 desliga) e `--terminal-hover-speed-mps`. `critical_waypoints.py` lê os
 STATELOGs por conta própria e não aplica o corte.
+
+## Rodadas fora da condição nominal (06/11/2026)
+
+Os lotes off-nominal do gerador mantêm o código do cenário e acrescentam a
+perturbação antes do modo: `produto2_C4.1.2.3_p100_r001_wind_off` (também
+`departure` e `blockage`). O parser registra `disturbance`, marca `disturbed` e
+a dimensão `condition = disturbed` (o filtro “Condição operacional” da página
+passa a mostrar “Fora da condição nominal · vento”, por exemplo) e acrescenta a
+perturbação aos rótulos. Cada RUN do orquestrador contém uma perturbação e é
+processada e publicada separadamente; a seleção recusa misturar condições. Essas
+RUNs não têm C0, então informe os 36 códigos:
+
+```bash
+.venv/bin/python generate_reports.py --config run_config.json --run-id RUN_ID \
+  --runs-root /dados/orbolato/runs/sim_off_nominal_20261106/wind \
+  --scenario-codes C1.1 C1.2 C2.1 C2.2 ... C8.2.2.3 --workers 20
+```

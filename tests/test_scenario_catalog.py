@@ -134,3 +134,23 @@ class ScenarioCatalogTests(unittest.TestCase):
         config.write_text(json.dumps(settings))
         with patch('src.uam_dashboard.corridor_validation.validate_c2_corridor_scenarios'), self.assertRaisesRegex(ValueError, 'C8.1.1.1'):
             load_run_selection(config)
+
+
+class OffNominalNameTests(unittest.TestCase):
+    def test_disturbance_token_is_parsed_and_scn_matching_respects_it(self):
+        from pathlib import Path
+        from src.uam_dashboard.experiment import experiment_metadata, matching_scenario
+        log = Path("output/C4_1_2_3/STATELOG_orch_r_014_produto2_C4.1.2.3_p100_r001_wind_off_20261109_05-03-06.log")
+        metadata = experiment_metadata(log)
+        self.assertEqual((metadata["scenario_key"], metadata["replica"], metadata["day_key"]), ("C4.1.2.3", 1, "produto2_p100"))
+        self.assertEqual(metadata["disturbance"], "wind")
+        self.assertTrue(metadata["disturbed"])
+        self.assertEqual(metadata["scenario_dimensions"]["condition"], "disturbed")
+        self.assertEqual(metadata["scenario_dimensions"]["separation_seconds"], 38)
+        self.assertIn("vento", metadata["variant_label"])
+        scns = (Path("scenario/C4_1_2_3/014_produto2_C4.1.2.3_p100_r001_wind_off.scn"),
+                Path("scenario/C4_1_2_3/014_produto2_C4.1.2.3_p100_r001_off.scn"))
+        self.assertEqual(matching_scenario(log, scns), scns[0])
+        nominal = experiment_metadata(Path("STATELOG_orch_r_014_produto2_C4.1.2.3_p100_r001_off_20261107.log"))
+        self.assertIsNone(nominal["disturbance"])
+        self.assertEqual(nominal["scenario_dimensions"]["condition"], "nominal")

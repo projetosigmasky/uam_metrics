@@ -762,6 +762,9 @@ def build_dashboard(config: DashboardConfig) -> None:
                 "Confira a demanda P100, a réplica e --scenario-dir, "
                 "ou informe --scenarios explicitamente."
             )
+    disturbances = {log_experiment_metadata(path, config.scenario_paths).get("disturbance") for path in config.log_paths}
+    if len(disturbances) > 1:
+        raise ValueError(f"Process each disturbance separately; found {sorted(map(str, disturbances))}")
     print("Copying HTML/CSS/JS...")
     copy_static_assets(output_dir)
     write_candidate_node_assets(output_dir, config.uam_corridor_csv_path, config.reh_xml_path)

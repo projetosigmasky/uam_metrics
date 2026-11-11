@@ -20,9 +20,13 @@ PRODUCT2_RE = re.compile(
 )
 PRODUCT2_PERCENTILE_RE = re.compile(
     r"(?:^|_)produto2_(?P<scenario>C\d+(?:[._]\d+)*)_p(?P<percentile>\d+)"
-    r"(?:_r(?P<replica>\d+))?_(?P<mode>mvp|off)(?:_|$)",
+    r"(?:_r(?P<replica>\d+))?(?:_(?P<disturbance>departure|wind|blockage))?_(?P<mode>mvp|off)(?:_|$)",
     re.IGNORECASE,
 )
+# Off-nominal batches (rmsp-uam-simulations off-nominal-batch) keep the nominal
+# scenario code and add the disturbance before the mode: ..._p100_r001_wind_off.
+# One orchestrator run holds one disturbance; it is published separately.
+DISTURBANCE_LABELS = {"departure": "atraso de partida", "wind": "vento", "blockage": "bloqueio de espaço aéreo"}
 
 
 def experiment_metadata(path: str | Path) -> dict[str, Any]:
@@ -36,12 +40,18 @@ def experiment_metadata(path: str | Path) -> dict[str, Any]:
         stage = scenario_stage(scenario)
         percentile = int(values["percentile"])
         dimensions = scenario_dimensions(scenario)
+        disturbance = values["disturbance"].lower() if values["disturbance"] else None
+        suffix = f" · {DISTURBANCE_LABELS[disturbance]}" if disturbance else ""
+        if disturbance and dimensions:
+            # Same scenario design, run under a disturbance: the page filters on these.
+            dimensions = {**dimensions, "condition": "disturbed", "disturbance": disturbance}
         return {
             "experiment_family": "produto2",
             "day_key": f"produto2_p{percentile}",
-            "day_label": f"Produto 2 - demanda P{percentile}",
+            "day_label": f"Produto 2 - demanda P{percentile}{suffix}",
             "variant_key": scenario.lower(),
-            "variant_label": f"{scenario} - cenário P{percentile}",
+            "variant_label": f"{scenario} - cenário P{percentile}{suffix}",
+            "disturbance": disturbance,
             "network_stage": stage,
             "airspace": scenario_airspace(scenario),
             "scenario_key": scenario,
@@ -50,7 +60,7 @@ def experiment_metadata(path: str | Path) -> dict[str, Any]:
             "reference_variant_key": (None if scenario == "C0" else f"c{2 if rank in {3, 4, 5, 6} else 1}.{stage}"
                                       if stage else "c1" if len(parts) == 1 else None),
             "mvp_enabled": values["mode"].lower() == "mvp",
-            "disturbed": dimensions.get("condition") == "disturbed",
+            "disturbed": bool(disturbance) or dimensions.get("condition") == "disturbed",
             "rank": rank,
             "date": None,
             "seed": None,
@@ -127,6 +137,7 @@ def matching_scenario(path: str | Path, scenario_paths: tuple[Path, ...]) -> Pat
             if (scenario_metadata := experiment_metadata(scenario)).get("scenario_key") == metadata.get("scenario_key")
             and scenario_metadata["day_key"] == metadata["day_key"]
             and scenario_metadata["mvp_enabled"] == metadata["mvp_enabled"]
+            and scenario_metadata.get("disturbance") == metadata.get("disturbance")
         ]
         replica = metadata.get("replica")
         if replica is not None:

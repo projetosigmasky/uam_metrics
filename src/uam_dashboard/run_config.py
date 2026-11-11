@@ -71,6 +71,10 @@ def discover_nominal_runs(settings: dict, config_path: Path) -> RunSelection:
     for message in rejected:
         warnings.warn("Skipped " + message, stacklevel=2)
     first = next(iter(selections.values()))
+    found = {log_experiment_metadata(log, s.scenario_paths).get("disturbance")
+             for s in selections.values() for log in s.log_paths[:1]}
+    if len(found) > 1:
+        raise ValueError(f"Selected runs mix conditions {sorted(map(str, found))}; process each disturbance separately")
     for code, selected in selections.items():
         print(f"{code}: {selected.run_dir.name} ({len(selected.log_paths)} replicas)", flush=True)
     return RunSelection(root, tuple(p for s in selections.values() for p in s.log_paths),
@@ -146,6 +150,9 @@ def _load_single_run(settings: dict, config_path: Path) -> RunSelection:
         matched_scenarios.append(scenario)
     if len(set(matched_scenarios)) != len(log_paths):
         raise ValueError("Each STATELOG must match a distinct SCN from the same orchestrator run")
+    disturbances = {log_experiment_metadata(log, scenario_paths).get("disturbance") for log in log_paths}
+    if len(disturbances) > 1:
+        raise ValueError(f"One run must hold one condition; found disturbances {sorted(map(str, disturbances))}")
     for code in scenario_codes:
         if "." not in code and code != "C0":
             continue

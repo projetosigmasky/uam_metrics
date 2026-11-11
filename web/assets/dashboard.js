@@ -59,6 +59,8 @@ const scenarioFilters = [
   {id: "separation-select", key: "separation_seconds", options: [["", "Não se aplica"], ["11", "11 s · LoWC 0,3 NM"], ["23", "23 s · LoWC 0,6 NM"], ["38", "38 s · LoWC 1,0 NM"]]},
 ];
 
+// Off-nominal runs keep the scenario code and carry the disturbance in their dimensions.
+const disturbanceLabels = {departure: "atraso de partida", wind: "vento", blockage: "bloqueio de espaço aéreo"};
 function runDimensions(run) {
   return run.metadata?.scenario_dimensions || window.__UAM_SCENARIO_CATALOG__?.scenarios?.find(row => row.scenario === run.metadata?.scenario_key) || null;
 }
@@ -403,6 +405,7 @@ function renderOverview(run) {
     const value = filterValue(dimensions, key);
     let label = options.find(([option]) => option === value)?.[1] || "Não informado";
     if (!value && key === "separation_seconds" && dimensions?.management?.startsWith("micro_")) label = "Não informado";
+    if (key === "condition" && disturbanceLabels[dimensions?.disturbance]) label += ` · ${disturbanceLabels[dimensions.disturbance]}`;
     return [labels[index], label];
   });
   const days = state.comparison?.days || [];
