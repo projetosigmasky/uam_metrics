@@ -104137,12 +104137,12 @@
       "formula": "σ_Tvoo e IQR=P75(T_voo)−P25(T_voo)",
       "pdf_reference": "Produto 3 v2.0 (31/07/2026), p. 28, Eq. 3.18",
       "source_document": "Produto3_vfinal_ProjetoSIGMASky.pdf",
-      "code_reference": "metrics.py::efficiency_metrics",
-      "status": "indisponivel",
-      "availability": "indisponivel",
-      "data_required": "duração por voo e par OD",
-      "implemented": "efficiency_metrics exporta mediana e P95 de duração, mas não calcula σ_Tvoo nem IQR da Eq. 3.18.",
-      "improvements_needed": "Implementar desvio padrão e IQR por par OD; percentis atuais não substituem os indicadores formais."
+      "code_reference": "indicator_maps.py::summarize_indicator_maps",
+      "status": "parcial",
+      "availability": "parcial",
+      "data_required": "duração por voo e par OD planejado",
+      "implemented": "O mapa calcula desvio padrão amostral e IQR por par OD e sentido, sobre as durações observadas nas réplicas com cobertura suficiente. Exige pelo menos dois voos por par.",
+      "improvements_needed": "A visualização espacial requer reprocessar os STATELOGs e SCNs."
     },
     {
       "reviewed_on": "2026-11-05",
