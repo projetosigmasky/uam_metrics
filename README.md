@@ -721,3 +721,10 @@ RUNs não têm C0, então informe os 36 códigos:
   --runs-root /dados/orbolato/runs/sim_off_nominal_20261106/wind \
   --scenario-codes C1.1 C1.2 C2.1 C2.2 ... C8.2.2.3 --workers 20
 ```
+
+As rodadas de 06/11/2026 fora da condição nominal estão publicadas em sites
+próprios (cada um com cerca de 0,8 GB; juntos passariam do limite de 1 GB do
+GitHub Pages deste site): [atraso de partida](https://projetosigmasky.github.io/uam_metrics_departure/),
+[vento](https://projetosigmasky.github.io/uam_metrics_wind/) e
+[bloqueio de espaço aéreo](https://projetosigmasky.github.io/uam_metrics_blockage/).
+O menu “Rodada” no topo da página liga os quatro sites e destaca o que está aberto.

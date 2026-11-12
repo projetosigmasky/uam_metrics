@@ -366,8 +366,17 @@ function activateKpa(kpa) {
   document.querySelectorAll("[data-kpi-context]").forEach(node => { node.hidden = !Object.hasOwn(kpaNames, state.activeKpa); });
   updateMapsVisibility();
 }
+// Published runs of 06/11/2026: one site per condition; highlight the one on screen.
+function markRunMenu(model) {
+  const kind = (model?.runs || []).find(run => run.metadata)?.metadata?.disturbance || "nominal";
+  for (const link of document.querySelectorAll("[data-run-link]")) {
+    if (link.dataset.runLink === kind) link.setAttribute("aria-current", "page");
+    else link.removeAttribute("aria-current");
+  }
+}
 function renderDashboard(model) {
   const normalized = normalizeModel(model);
+  markRunMenu(normalized);
   // Preserve the existing exclusion of retired scenario definitions.
   const retained = normalized.runs.filter(run => (run.metadata?.scenario_key && !/^C[12]$/.test(run.metadata.scenario_key)) || run.metadata?.experiment_family === "bimtra");
   const remap = new Map(retained.map((run, index) => [normalized.runs.indexOf(run), index]));

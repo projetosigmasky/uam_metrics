@@ -1199,3 +1199,11 @@ input[type="checkbox"] {
 .boxplot-whisker, .boxplot-median, .boxplot-mean { fill: none; stroke: #124b61; stroke-width: 2; }
 .boxplot-mean { stroke-dasharray: 4 3; }
 .boxplot-outlier { fill: #146a86; }
+
+/* Published runs of 06/11/2026: one site per operating condition. */
+.run-menu { align-items: center; display: flex; flex-wrap: wrap; gap: 6px; }
+.run-menu-label { color: var(--muted); font-size: 12px; font-weight: 700; margin-right: 4px; }
+.run-menu a { background: #ffffff; border: 1px solid var(--line); border-radius: 999px; color: var(--ink);
+  font-size: 13px; font-weight: 600; padding: 6px 12px; text-decoration: none; }
+.run-menu a:hover, .run-menu a:focus-visible { border-color: var(--blue); color: var(--blue); }
+.run-menu a[aria-current="page"] { background: var(--blue); border-color: var(--blue); color: #ffffff; }
