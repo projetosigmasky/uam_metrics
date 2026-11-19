@@ -78,7 +78,7 @@ function initMap() {
 function addCartoBasemap(map) {
   return L.tileLayer("https://basemaps.cartocdn.com/rastertiles/light_all/{z}/{x}/{y}{r}.png?key={apiKey}", {
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
-    apiKey: "eyJhbGciOiJIUzI1NiJ9.eyJhIjoiYWNfNDU5NngwdjgiLCJqdGkiOiJhMWRmYTQ0MmQzYTgwMGQzNGQyYzhlYTJjODBlZDYzNiJ9.kIQ154FeLlYru2ae4gsRquB4NrA-P0D3wE5qwaWQKdQ", crossOrigin: true, maxNativeZoom: 19, maxZoom: 20, updateWhenIdle: true, keepBuffer: 4
+    apiKey: "cb1_5cad_1_68678856722854692b947577", crossOrigin: true, maxNativeZoom: 19, maxZoom: 20, updateWhenIdle: true, keepBuffer: 4
   }).addTo(map);
 }
 
