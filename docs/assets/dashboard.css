@@ -723,9 +723,9 @@ input[type="checkbox"] {
 .viewer3d-dot { background: #94a3b8; border-radius: 50%; height: 8px; width: 8px; }
 .viewer3d-dot.evtol { background: #22d3ee; }
 .viewer3d-dot.helicopter { background: #a3e635; }
-.viewer3d-dot.lowc { background: #facc15; box-shadow: 0 0 7px #facc15; }
-.viewer3d-dot.nmac { background: #f97316; box-shadow: 0 0 7px #f97316; }
-.viewer3d-dot.mac { background: #dc2626; box-shadow: 0 0 7px #dc2626; }
+.viewer3d-dot.lowc { background: #818232; box-shadow: 0 0 7px #818232; }
+.viewer3d-dot.nmac { background: #F19D6B; box-shadow: 0 0 7px #F19D6B; }
+.viewer3d-dot.mac { background: #215F61; box-shadow: 0 0 7px #215F61; }
 
 .conflict-timeline {
   border-top: 1px solid #274564;
@@ -759,9 +759,9 @@ input[type="checkbox"] {
 }
 .event-label { align-items: center; display: inline-flex; font-weight: 760; gap: 6px; }
 .event-label::before { border-radius: 50%; content: ""; height: 8px; width: 8px; }
-.event-label.lowc::before { background: #facc15; }
-.event-label.nmac::before { background: #f97316; }
-.event-label.mac::before { background: #dc2626; }
+.event-label.lowc::before { background: #818232; }
+.event-label.nmac::before { background: #F19D6B; }
+.event-label.mac::before { background: #215F61; }
 .mac-availability { margin: 0; }
 
 .map-unavailable {
@@ -969,7 +969,7 @@ input[type="checkbox"] {
 }
 
 .legend-heat {
-  background: linear-gradient(90deg, #2dd4bf, #2563eb, #f59e0b, #dc2626);
+  background: linear-gradient(90deg, #FDAC9E, #D29343 35%, #3C6D56 70%, #011959);
 }
 
 .legend-atd {
@@ -985,10 +985,10 @@ input[type="checkbox"] {
 .candidate-node-table-wrap { max-height: 430px; overflow: auto; }
 
 .legend-lowc {
-  background: #facc15;
+  background: #818232;
 }
-.legend-nmac { background: #f97316; }
-.legend-mac { background: #dc2626; }
+.legend-nmac { background: #F19D6B; }
+.legend-mac { background: #215F61; }
 
 .charts {
   display: grid;
@@ -1207,3 +1207,6 @@ input[type="checkbox"] {
   font-size: 13px; font-weight: 600; padding: 6px 12px; text-decoration: none; }
 .run-menu a:hover, .run-menu a:focus-visible { border-color: var(--blue); color: var(--blue); }
 .run-menu a[aria-current="page"] { background: var(--blue); border-color: var(--blue); color: #ffffff; }
+
+.kpi-picker { display: flex; flex-wrap: wrap; align-items: center; gap: .6rem; margin: 1rem 0; }
+.kpi-picker select { max-width: 100%; padding: .45rem; font: inherit; }

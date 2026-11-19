@@ -71,17 +71,15 @@ function initMap() {
   const conflictPane = state.map.createPane("conflictPane");
   conflictPane.style.zIndex = 560;
 
-  const openStreetMap = L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-    maxNativeZoom: 19,
-    maxZoom: 20,
-    updateWhenIdle: true,
-    keepBuffer: 4,
-  }).addTo(state.map);
+  const positron = addCartoBasemap(state.map);
+  state.baseLayers = {"CARTO Positron": positron};
+}
 
-  state.baseLayers = {
-    "OpenStreetMap": openStreetMap,
-  };
+function addCartoBasemap(map) {
+  return L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
+    subdomains: "abcd", maxNativeZoom: 19, maxZoom: 20, updateWhenIdle: true, keepBuffer: 4
+  }).addTo(map);
 }
 
 
@@ -251,9 +249,10 @@ function conflictEventLabel(feature) {
 }
 
 
+// Event classes use the categorical batlowS palette.
 function conflictEventColor(feature) {
   const eventClass = conflictEventClass(feature);
-  return eventClass === "mac" ? "#dc2626" : eventClass === "nmac" ? "#f97316" : "#facc15";
+  return eventClass === "mac" ? "#215F61" : eventClass === "nmac" ? "#F19D6B" : "#818232";
 }
 
 
@@ -672,10 +671,10 @@ function renderMapLayers(tracks, plannedRoutes, officialReh, conflicts, heatmap,
       minOpacity: 0.08,
       maxZoom: 14,
       gradient: {
-        0.15: "#2dd4bf",
-        0.45: "#2563eb",
-        0.7: "#f59e0b",
-        1.0: "#dc2626",
+        0.0: "#FDAC9E",
+        0.35: "#D29343",
+        0.7: "#3C6D56",
+        1.0: "#011959",
       },
     });
   } else {
@@ -685,7 +684,7 @@ function renderMapLayers(tracks, plannedRoutes, officialReh, conflicts, heatmap,
           radius: 3,
           stroke: false,
           fillOpacity: Math.max(0.08, point[2]),
-          fillColor: "#2563eb",
+          fillColor: indicatorColor(point[2], [.175, .525, .85]),
         })
       )
     );
@@ -1006,7 +1005,9 @@ function renderMaps(run) {
 }
 
 const indicatorViews = new Map();
-const indicatorColors = ["#146a86", "#507f38", "#b45309", "#b42338"];
+// Batlow (inverted), Scientific colour maps 9, Fabio Crameri, MIT.
+// Larger values are darker against the light basemap.
+const indicatorColors = ["#FDAC9E", "#D29343", "#3C6D56", "#011959"];
 const unavailableColor = "#64748b";
 
 function indicatorColor(value, thresholds) {
@@ -1023,10 +1024,7 @@ function indicatorLegend(id, items) {
 function indicatorMap(id) {
   if (indicatorViews.has(id)) return indicatorViews.get(id);
   const map = L.map(`indicator-map-${id}`, {scrollWheelZoom: false}).setView([-23.5505, -46.6333], 10);
-  L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
-    maxNativeZoom: 19,
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-  }).addTo(map);
+  addCartoBasemap(map);
   const entry = {map, context: L.featureGroup().addTo(map), data: L.featureGroup().addTo(map), rendered: false};
   indicatorViews.set(id, entry);
   return entry;
@@ -1162,3 +1160,20 @@ function renderIndicatorMap(refresh = false) {
   }
   view.rendered = true;
 }
+
+/* Scientific colour maps 9, Copyright (c) 2026 Fabio Crameri.
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE. */

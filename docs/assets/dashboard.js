@@ -59,6 +59,8 @@ const scenarioFilters = [
   {id: "separation-select", key: "separation_seconds", options: [["", "Não se aplica"], ["11", "11 s · LoWC 0,3 NM"], ["23", "23 s · LoWC 0,6 NM"], ["38", "38 s · LoWC 1,0 NM"]]},
 ];
 
+// Off-nominal runs keep the scenario code and carry the disturbance in their dimensions.
+const disturbanceLabels = {departure: "atraso de partida", wind: "vento", blockage: "bloqueio de espaço aéreo"};
 function runDimensions(run) {
   return run.metadata?.scenario_dimensions || window.__UAM_SCENARIO_CATALOG__?.scenarios?.find(row => row.scenario === run.metadata?.scenario_key) || null;
 }
@@ -213,6 +215,24 @@ function displayValue(value, unit) {
     ? value.toExponential(2).replace(".", ",") : formatNumber(value, count ? 0 : 2);
   return `${number} ${unit}`.trim();
 }
+function eventCount(value, replicas) {
+  return displayValue(value, replicas > 1 ? "eventos por réplica (média)" : "eventos");
+}
+
+function applyKpiSelection(panel, selected) {
+  document.getElementById(`panel-${panel}`).querySelectorAll("[data-kpi]").forEach(node => {
+    node.hidden = Boolean(selected && node.dataset.kpi !== selected);
+  });
+}
+
+function initKpiPickers() {
+  for (const panel of Object.keys(kpaNames)) {
+    const picker = document.getElementById(`select-kpi-${panel}`);
+    for (const metric of publicCatalog(panel)) picker.add(new Option(metric.name, metric.id));
+    picker.addEventListener("change", () => applyKpiSelection(panel, picker.value));
+  }
+}
+
 function comparisonRow() {
   return state.comparison?.days?.flatMap(day => day.rows || []).find(row => row.run_index === state.activeRunIndex);
 }
@@ -222,14 +242,18 @@ function renderMetrics(dashboard) {
     document.getElementById(`kpis-${panel}`).innerHTML = publicCatalog(panel).map(metric => {
       let values = (kpiSeries[metric.id] || []).map(([path, unit]) => {
         const value = numericValue(dashboard, path);
-        return `<p>${escapeHtml(displayValue(value, unit))}</p>`;
+        return `<p>${escapeHtml(unit === "eventos" ? eventCount(value, run.replica_count) : displayValue(value, unit))}</p>`;
       }).join("");
       if (metric.id === "tls") {
         const target = numericValue(dashboard, "safety.tls_target_per_flight_hour");
         const rate = numericValue(dashboard, "safety.expected_mac_per_100k_flight_hours");
         values = `<p>${escapeHtml(displayValue(target == null ? null : target * 100000, "MAC/100.000 h de voo"))}</p><p>${rate == null || target == null ? "Comparação indisponível" : rate <= target * 100000 ? "Nível de Segurança ≤ TLS" : "Nível de Segurança > TLS"}</p>`;
       }
-      if (metric.id === "risk_ratio") values = `<p>${escapeHtml(displayValue(valueAt(comparisonRow(), "risk_ratio_vs_reference"), ""))}</p>`;
+      if (metric.id === "risk_ratio") {
+        const row = comparisonRow();
+        const reference = row?.reference_variant_key;
+        values = `<p>${escapeHtml(displayValue(valueAt(row, "risk_ratio_vs_reference"), ""))}</p><small>${reference ? "Referência configurada · " + escapeHtml(reference.toUpperCase()) : "Referência não informada"}</small>`;
+      }
       if (resourceSeries[metric.id]) values = "<p>Resultados por recurso na tabela abaixo.</p>";
       if (metric.id === "flight_time_variability" && run.indicator_maps?.od_pairs?.features?.some(feature => feature.properties.iqr_s != null)) {
         values = "<p>IQR e desvio padrão por par OD no mapa.</p>";
@@ -250,8 +274,8 @@ function evtolAirportCards(data) {
   const perAirport = ["SBSP", "SBGR", "SBKP"].map(code =>
     `${code}: ${formatNumber(airports[code]?.lowc_events ?? 0, 2)} LoWC · ${formatNumber(airports[code]?.nmac_events ?? 0, 2)} NMAC`);
   return [
-    ["Perda de separação (LoWC)", [displayValue(data.lowc_events, "eventos"), displayValue(data.lowc_per_flight_hour, "eventos/h de voo eVTOL")]],
-    ["NMAC", [displayValue(data.nmac_events, "eventos"), displayValue(data.nmac_per_flight_hour, "eventos/h de voo eVTOL")]],
+    ["Perda de separação (LoWC)", [eventCount(data.lowc_events, data.replica_count), displayValue(data.lowc_per_flight_hour, "eventos/h de voo eVTOL")]],
+    ["NMAC", [eventCount(data.nmac_events, data.replica_count), displayValue(data.nmac_per_flight_hour, "eventos/h de voo eVTOL")]],
     ["Eventos por aeroporto", perAirport],
     ["MAC estimada", [displayValue(data.expected_mac_per_100k_flight_hours, "MAC/100.000 h de voo eVTOL")]],
     ["Menor separação horizontal no mesmo nível", [displayValue(data.min_horizontal_m_co_altitude, "m")]],
@@ -291,7 +315,7 @@ function boxplotSvg(values, label) {
   const padding = (max - min) * .1 || Math.abs(min) * .1 || 1;
   const y = value => 174 - 156 * (value - min + padding) / (max - min + 2 * padding);
   const number = value => displayValue(value, "");
-  const summary = `Mediana ${number(median)} · Q1 ${number(q1)} · Q3 ${number(q3)} · média ${number(average)}`;
+  const summary = `Mediana ${number(median)} · Q1 ${number(q1)} · Q3 ${number(q3)} · média ${number(average)} · mínimo ${number(min)} · máximo ${number(max)}`;
   const ticks = [...new Set([min, median, max])];
   return `<figure class="replica-boxplot">
     <svg viewBox="0 0 320 192" role="img" aria-label="${escapeHtml(label)}. ${summary}">
@@ -314,7 +338,7 @@ function renderCharts(dashboard) {
         .map(([key, data]) => {
           const values = data.denominators ? data.values.map((value, i) =>
             value == null || !(data.denominators[i] > 0) ? null : value / data.denominators[i]) : data.values;
-          return `<article class="chart-card"><h3>${escapeHtml(stabilityLabels[key])}</h3>${boxplotSvg(values, stabilityLabels[key])}</article>`;
+          return `<article class="chart-card" data-kpi="${metric.id}"><h3>${escapeHtml(stabilityLabels[key])}</h3>${boxplotSvg(values, stabilityLabels[key])}</article>`;
         })
     ).join("");
   }
@@ -325,7 +349,7 @@ function renderCharts(dashboard) {
     const src = available ? dashboard.charts?.[key] : null;
     // Source paths are generated by the pipeline and must remain local assets.
     const safe = typeof src === "string" && /^assets\/[\w./-]+\.png$/.test(src) && !src.includes("..");
-    return `<article class="chart-card"><h3>${title}</h3>${safe ? `<img src="${escapeHtml(src)}" alt="${title}: distribuição média por réplica" /><p>Média por réplica válida; faixa mínimo–máximo entre réplicas.</p>` : "<p>Gráfico indisponível neste cenário.</p>"}</article>`;
+    return `<article class="chart-card" data-kpi="${key === "distance_histogram" ? "distance" : key}"><h3>${title}</h3>${safe ? `<img src="${escapeHtml(src)}" alt="${title}: distribuição média por réplica" /><p>Média por réplica válida; faixa mínimo–máximo entre réplicas.</p>` : "<p>Gráfico indisponível neste cenário.</p>"}</article>`;
   }).join("");
 }
 function renderCapacity(dashboard) {
@@ -412,6 +436,7 @@ function renderOverview(run) {
     const value = filterValue(dimensions, key);
     let label = options.find(([option]) => option === value)?.[1] || "Não informado";
     if (!value && key === "separation_seconds" && dimensions?.management?.startsWith("micro_")) label = "Não informado";
+    if (key === "condition" && disturbanceLabels[dimensions?.disturbance]) label += ` · ${disturbanceLabels[dimensions.disturbance]}`;
     return [labels[index], label];
   });
   const days = state.comparison?.days || [];
@@ -452,10 +477,12 @@ function renderSelectedRun() {
   renderEvtolAirport(run.dashboard);
   renderCharts(run.dashboard);
   renderCapacity(run.dashboard);
+  for (const panel of Object.keys(kpaNames)) applyKpiSelection(panel, document.getElementById(`select-kpi-${panel}`).value);
   setText("replica-universe", `Cenário ${run.metadata?.scenario_key || run.name} · Média de ${run.replica_count || 1} réplicas. Indicadores sem cálculo ou dados disponíveis são identificados como indisponíveis.`);
 }
 document.addEventListener("DOMContentLoaded", () => {
   initMaps();
+  initKpiPickers();
   document.getElementById("scenario-load-retry").addEventListener("click", renderSelectedRun);
   document.getElementById("run-select").addEventListener("change", event => {
     state.activeRunIndex = Number(event.target.value); populateScenarioFilters(); renderSelectedRun();
