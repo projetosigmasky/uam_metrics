@@ -925,7 +925,10 @@ function updateMapInfo() {
 function initMaps() {
   bind3DControls();
   bindConflictPairControls();
-  for (const id of ["efficiency-map-metric", "efficiency-map-planned", "capacity-map-waypoints", "capacity-map-grid", "predictability-map-metric"]) {
+  document.querySelectorAll(".od-filters").forEach(filters => {
+    filters.addEventListener("change", () => renderIndicatorMap(true));
+  });
+  for (const id of ["efficiency-map-metric", "efficiency-map-planned", "capacity-map-waypoints", "capacity-map-grid"]) {
     document.getElementById(id).addEventListener("change", () => renderIndicatorMap(true));
   }
   for (const [id, layer] of [
@@ -1030,6 +1033,71 @@ function indicatorMap(id) {
   return entry;
 }
 
+function bindCapacityResources(view, resources) {
+  const details = document.getElementById("capacity-details");
+  const ranking = document.getElementById("capacity-ranking");
+  details.hidden = true;
+  details.replaceChildren();
+  const select = (resource, centerMap) => {
+    if (view.selectedResource) view.selectedResource.layer.setStyle(view.selectedResource.style);
+    const {layer, label, center, type, metrics} = resource;
+    const style = {weight: layer.options.weight, color: layer.options.color, fillColor: layer.options.fillColor || layer.options.color};
+    view.selectedResource = {layer, style};
+    layer.setStyle({...style, color: "#172033", weight: 4});
+    if (centerMap) {
+      view.map.setView(center, Math.max(view.map.getZoom(), 13), {animate: false});
+      view.map.getContainer().scrollIntoView({block: "center"});
+    }
+    layer.openTooltip();
+    details.innerHTML = `<h3>${escapeHtml(type)} · ${escapeHtml(label)}</h3><div class="metric-grid">${metrics.map(([title, value, unit]) =>
+      `<article class="metric"><h4>${escapeHtml(title)}</h4><strong>${escapeHtml(displayValue(value, unit))}</strong></article>`).join("")}</div>`;
+    details.hidden = false;
+  };
+  view.selectedResource = null;
+  for (const resource of resources) resource.layer.on("click", () => select(resource, false));
+  const groups = [["Waypoint", "Waypoints por capacidade de referência (P95)"], ["Quadrícula", "Quadrículas por média dos picos"]];
+  ranking.replaceChildren();
+  for (const [type, title] of groups) {
+    const top = resources.filter(resource => resource.type === type)
+      .sort((a, b) => b.score - a.score || a.label.localeCompare(b.label, "pt-BR")).slice(0, 5);
+    if (!top.length) continue;
+    const table = document.createElement("table");
+    table.className = "comparison-table";
+    table.innerHTML = `<caption>${title} · Top 5</caption><thead><tr><th scope="col">Recurso</th><th scope="col">${type === "Waypoint" ? "P95 (ops/h)" : "Pico médio (voos/5 min)"}</th></tr></thead><tbody>${top.map(resource =>
+      `<tr><td><button type="button" class="resource-map-link">${escapeHtml(resource.label)}</button></td><td>${formatNumber(resource.score, 2)}</td></tr>`).join("")}</tbody>`;
+    table.querySelectorAll("button").forEach((button, i) => button.addEventListener("click", () => select(top[i], true)));
+    ranking.append(table);
+  }
+}
+
+function selectOdFeatures(id, features, metric, resetPair) {
+  const control = key => document.getElementById(`${id}-${key}`);
+  const minimum = Number(control("minimum").value);
+  const predictability = id === "predictability";
+  const band = predictability ? control("band").value : "";
+  const eligible = features.filter(({properties: p}) => {
+    if (p.flights < minimum) return false;
+    if (!predictability) return true;
+    const value = p[metric];
+    if (band === "missing") return !Number.isFinite(value);
+    if (!Number.isFinite(value)) return false;
+    return band === "all" || Number(band) === [30, 60, 120, Infinity].findIndex(limit => value <= limit);
+  }).sort((a, b) => {
+    const key = predictability && band !== "missing" ? metric : "flights";
+    return b.properties[key] - a.properties[key] || a.properties.od_id.localeCompare(b.properties.od_id);
+  });
+  const picker = control("pair");
+  const selected = resetPair ? "" : picker.value;
+  picker.replaceChildren(new Option("Todos do recorte", ""));
+  for (const {properties: p} of eligible) picker.add(new Option(`${p.od_id} · ${p.flights} voos`, p.od_id));
+  if (eligible.some(f => f.properties.od_id === selected)) picker.value = selected;
+  const limit = control("limit");
+  limit.disabled = Boolean(picker.value);
+  const visible = picker.value ? eligible.filter(f => f.properties.od_id === picker.value) :
+    eligible.slice(0, Number(limit.value) || eligible.length);
+  return {visible, count: eligible.length};
+}
+
 function renderIndicatorMap(refresh = false) {
   const id = state.activeKpa;
   const run = state.mapRun;
@@ -1049,9 +1117,11 @@ function renderIndicatorMap(refresh = false) {
     const route = (data, color) => L.geoJSON(data || emptyFeatureCollection(), {
       interactive: false, style: {color, weight: backdrop ? 2 : 1, opacity: backdrop ? .9 : .32, fillOpacity: backdrop ? .16 : .04}
     }).addTo(view.context);
-    route(run.official_reh, "#036985");
+    if (id !== "predictability" && id !== "equity") {
+      route(run.official_reh, "#036985");
     route(state.uamProjection, "#be185d");
     route(state.uamCenterlines, "#be185d");
+    }
   }
   view.data.clearLayers();
 
@@ -1100,14 +1170,19 @@ function renderIndicatorMap(refresh = false) {
     } else messages.push(layers.mean_tracks ? "Nenhum voo com cobertura suficiente para comparar plano e execução." : "Trajetórias médias disponíveis após reprocessar os STATELOGs.");
   }
   if (id === "capacity") {
+    const resources = [];
     const grid = layers.capacity_grid;
     if (document.getElementById("capacity-map-grid").checked) {
       if (grid?.cells?.length) {
         for (const [lat, lon, peak] of grid.cells) {
           const step = grid.cell_degrees;
-          L.rectangle([[lat * step, lon * step], [(lat + 1) * step, (lon + 1) * step]], {
+          const layer = L.rectangle([[lat * step, lon * step], [(lat + 1) * step, (lon + 1) * step]], {
             color: indicatorColor(peak, [1, 2, 4]), fillOpacity: .5, weight: 1
           }).bindTooltip(`Média dos picos: ${formatNumber(peak, 2)} voos/5 min<br>${formatNumber(grid.replicas)} réplicas`).addTo(view.data);
+          const center = layer.getBounds().getCenter();
+          resources.push({type: "Quadrícula", label: `Célula ${formatNumber(center.lat, 3)}°, ${formatNumber(center.lng, 3)}°`,
+            center, layer, score: peak, unit: "voos/5 min",
+            metrics: [["Média dos picos por réplica", peak, "voos/5 min"], ["Réplicas com janela completa", grid.replicas, "réplicas"]]});
         }
         scale(["Célula: até 1 voo/5 min", "Célula: >1 a 2", "Célula: >2 a 4", "Célula: acima de 4"]);
       } else messages.push(grid ? "Sem janelas completas com registros para a quadrícula." : "Quadrícula disponível após reprocessar os STATELOGs.");
@@ -1119,20 +1194,29 @@ function renderIndicatorMap(refresh = false) {
         const ranking = waypointMetric(feature);
         if (!Number.isFinite(ranking?.capacity_reference_per_hour) || !(ranking.mean_operations_per_replica > 0)) continue;
         const [lon, lat] = feature.geometry.coordinates;
-        L.circleMarker([lat, lon], {radius: 6, color: "#172033", weight: 1.5,
+        const layer = L.circleMarker([lat, lon], {radius: 6, color: "#172033", weight: 1.5,
           fillColor: indicatorColor(ranking.capacity_reference_per_hour, [12, 24, 48]), fillOpacity: 1
         }).bindTooltip(`${escapeHtml(feature.properties.label)} · ${displayValue(ranking.capacity_reference_per_hour, "ops/h")} (P95)`).addTo(view.data);
+        resources.push({type: "Waypoint", label: feature.properties.label, center: layer.getLatLng(), layer,
+          score: ranking.capacity_reference_per_hour, unit: "ops/h",
+          metrics: [["Capacidade de referência (P95)", ranking.capacity_reference_per_hour, "ops/h"],
+            ["Média dos picos por réplica", ranking.mean_peak_throughput_per_hour, "ops/h"],
+            ["Throughput médio", ranking.mean_throughput_per_hour, "ops/h"]]});
         count++;
       }
       if (count) scale(["Waypoint: até 12 ops/h", "Waypoint: >12 a 24", "Waypoint: >24 a 48", "Waypoint: acima de 48"]);
       else messages.push("Sem waypoints com passagens e estimativa de capacidade neste cenário.");
     }
+    bindCapacityResources(view, resources);
   }
   if (id === "predictability" || id === "equity") {
     const predictability = id === "predictability";
     const metric = document.getElementById("predictability-map-metric").value;
-    if (present(layers.od_pairs)) {
-      draw(layers.od_pairs, {
+    const features = layers.od_pairs?.features || [];
+    const {visible, count} = selectOdFeatures(id, features, metric, firstRender);
+    if (features.length) {
+      messages.push(`${visible.length} de ${count} pares do recorte no mapa · ${features.length} pares no cenário.`);
+      draw({type: "FeatureCollection", features: visible}, {
         style: ({properties: p}) => ({color: predictability ? indicatorColor(p[metric], [30, 60, 120]) : unavailableColor,
           weight: 3, opacity: .84, dashArray: predictability && p[metric] == null ? "5 5" : null}),
         onEachFeature: ({properties: p, geometry}, layer) => {
@@ -1144,15 +1228,15 @@ function renderIndicatorMap(refresh = false) {
         }
       });
       if (predictability) {
-        scale(["Até 30 s", ">30 a 60 s", ">60 a 120 s", "Acima de 120 s"]);
-        if (layers.od_pairs.features.some(feature => feature.properties[metric] == null)) legend.push([unavailableColor, "Menos de dois voos"]);
+        if (visible.some(f => Number.isFinite(f.properties[metric]))) scale(["Até 30 s", ">30 a 60 s", ">60 a 120 s", "Acima de 120 s"]);
+        if (visible.some(feature => feature.properties[metric] == null)) legend.push([unavailableColor, "Menos de dois voos"]);
       } else legend.push([unavailableColor, "Par OD"]);
     } else messages.push(layers.od_pairs ? "Sem pares OD observados com cobertura suficiente." : "Pares OD disponíveis após reprocessar os STATELOGs.");
   }
 
   setText(`indicator-status-${id}`, messages.join(" "));
   indicatorLegend(id, legend);
-  if (firstRender) {
+  if (firstRender || (refresh && ["predictability", "equity"].includes(id))) {
     const dataBounds = view.data.getBounds();
     const bounds = dataBounds.isValid() ? dataBounds : view.context.getBounds();
     if (bounds.isValid()) view.map.fitBounds(bounds.pad(.12), {animate: false, maxZoom: 12});

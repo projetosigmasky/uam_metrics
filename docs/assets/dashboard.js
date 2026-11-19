@@ -165,6 +165,7 @@ function escapeHtml(value) {
 }
 
 const kpaNames = {safety: "Segurança", efficiency: "Eficiência", capacity: "Capacidade", predictability: "Previsibilidade", equity: "Equidade"};
+const cardPanels = Object.keys(kpaNames).filter(panel => panel !== "capacity");
 // Only explicitly listed Product III KPIs may cross the presentation boundary.
 // The raw publication and internal audit fields remain unchanged.
 const kpiSeries = {
@@ -226,7 +227,7 @@ function applyKpiSelection(panel, selected) {
 }
 
 function initKpiPickers() {
-  for (const panel of Object.keys(kpaNames)) {
+  for (const panel of cardPanels) {
     const picker = document.getElementById(`select-kpi-${panel}`);
     for (const metric of publicCatalog(panel)) picker.add(new Option(metric.name, metric.id));
     picker.addEventListener("change", () => applyKpiSelection(panel, picker.value));
@@ -238,7 +239,7 @@ function comparisonRow() {
 }
 function renderMetrics(dashboard) {
   const run = state.runs[state.activeRunIndex];
-  for (const panel of Object.keys(kpaNames)) {
+  for (const panel of cardPanels) {
     document.getElementById(`kpis-${panel}`).innerHTML = publicCatalog(panel).map(metric => {
       let values = (kpiSeries[metric.id] || []).map(([path, unit]) => {
         const value = numericValue(dashboard, path);
@@ -332,7 +333,7 @@ function boxplotSvg(values, label) {
 
 function renderCharts(dashboard) {
   const run = state.runs[state.activeRunIndex];
-  for (const panel of Object.keys(kpaNames)) {
+  for (const panel of cardPanels) {
     document.getElementById(`charts-${panel}`).innerHTML = publicCatalog(panel).flatMap(metric =>
       publicStabilityEntries(run, metric).filter(([, data]) => Array.isArray(data.values))
         .map(([key, data]) => {
@@ -351,17 +352,6 @@ function renderCharts(dashboard) {
     const safe = typeof src === "string" && /^assets\/[\w./-]+\.png$/.test(src) && !src.includes("..");
     return `<article class="chart-card" data-kpi="${key === "distance_histogram" ? "distance" : key}"><h3>${title}</h3>${safe ? `<img src="${escapeHtml(src)}" alt="${title}: distribuição média por réplica" /><p>Média por réplica válida; faixa mínimo–máximo entre réplicas.</p>` : "<p>Gráfico indisponível neste cenário.</p>"}</article>`;
   }).join("");
-}
-function renderCapacity(dashboard) {
-  const rows = [];
-  for (const [key, label] of [["od_pairs", "Par OD"], ["trajectory_groups", "Grupo de trajetória"], ["planned_reh", "Trecho REH"]]) {
-    const group = dashboard.capacity?.throughput?.[key];
-    if (!group?.available) continue;
-    for (const resource of group.top_resources || []) {
-      rows.push(`<tr><td>${escapeHtml(label)}</td><td>${escapeHtml(resource.label || resource.resource_id)}</td><td>${displayValue(valueAt(resource, "peak_throughput_per_hour"), "ops/h")}</td><td>${displayValue(valueAt(resource, "capacity_reference_per_hour") ?? valueAt(group, "capacity_reference_per_hour"), "ops/h")}</td><td>${displayValue(valueAt(resource, "utilization_peak"), "")}</td></tr>`);
-    }
-  }
-  document.getElementById("charts-capacity").innerHTML += `<div class="table-wrap"><table class="comparison-table"><thead><tr><th>Tipo de recurso</th><th>Recurso</th><th>Throughput por Recurso (pico)</th><th>Capacidade Prática de Recurso (P95)</th><th>Utilização de Recurso (pico)</th></tr></thead><tbody>${rows.join("") || '<tr><td colspan="5">Indicadores indisponíveis neste cenário.</td></tr>'}</tbody></table><p>P95 calculado por réplica e agregado por média. Throughput baseado em inícios de voo e atribuição à rota planejada.</p></div>`;
 }
 function publicStabilityEntries(run, metric) {
   const panels = run.stability?.panels || {};
@@ -476,8 +466,7 @@ function renderSelectedRun() {
   renderMetrics(run.dashboard);
   renderEvtolAirport(run.dashboard);
   renderCharts(run.dashboard);
-  renderCapacity(run.dashboard);
-  for (const panel of Object.keys(kpaNames)) applyKpiSelection(panel, document.getElementById(`select-kpi-${panel}`).value);
+  for (const panel of cardPanels) applyKpiSelection(panel, document.getElementById(`select-kpi-${panel}`).value);
   setText("replica-universe", `Cenário ${run.metadata?.scenario_key || run.name} · Média de ${run.replica_count || 1} réplicas. Indicadores sem cálculo ou dados disponíveis são identificados como indisponíveis.`);
 }
 document.addEventListener("DOMContentLoaded", () => {

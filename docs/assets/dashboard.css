@@ -1210,3 +1210,13 @@ input[type="checkbox"] {
 
 .kpi-picker { display: flex; flex-wrap: wrap; align-items: center; gap: .6rem; margin: 1rem 0; }
 .kpi-picker select { max-width: 100%; padding: .45rem; font: inherit; }
+
+.od-layout { display: grid; grid-template-columns: minmax(12rem, 15rem) minmax(0, 1fr); gap: 1rem; }
+.od-filters { display: grid; align-content: start; gap: .8rem; padding: 1rem; background: var(--panel, #fff); }
+.od-filters label { display: grid; gap: .25rem; }
+.od-filters select { width: 100%; min-width: 0; padding: .4rem; font: inherit; }
+#capacity-ranking caption { text-align: left; font-weight: 650; padding: .8rem 0; }
+@media (max-width: 720px) {
+  .od-layout { grid-template-columns: minmax(0, 1fr); }
+  .od-filters { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}

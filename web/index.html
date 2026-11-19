@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Indicadores de Desempenho UAM</title>
   <link rel="stylesheet" href="assets/vendor/leaflet/leaflet.css" />
-  <link rel="stylesheet" href="assets/dashboard.css?v=c93750684e39" />
+  <link rel="stylesheet" href="assets/dashboard.css?v=9a2200ca50e7" />
 </head>
 <body>
     <header class="topbar">
@@ -162,17 +162,16 @@
       </section>
       <section id="panel-capacity" data-kpa-panel="capacity" role="tabpanel" aria-labelledby="tab-capacity" hidden>
         <h2>Capacidade</h2>
-        <label class="kpi-picker">Indicador nos cartões e gráficos <select id="select-kpi-capacity"><option value="">Todos os indicadores</option></select></label>
-        <div class="metric-grid" id="kpis-capacity"></div>
-        <div id="charts-capacity" class="charts"></div>
         <section class="indicator-map" aria-labelledby="indicator-title-capacity">
           <h3 id="indicator-title-capacity">Carga nos waypoints e na quadrícula</h3>
-          <p>As cores identificam concentração de tráfego. Os waypoints usam o P95 observado em operações por hora. Cada célula usa a média dos picos por réplica de voos distintos em 5 minutos.</p>
+          <p>Selecione um recurso no mapa ou no ranking para ver suas métricas. Os waypoints usam o P95 observado em operações por hora. A malha analítica de 0,01° × 0,01° usa a média dos picos por réplica de voos distintos em 5 minutos.</p>
           <div class="indicator-controls"><label><input type="checkbox" id="capacity-map-waypoints" checked /> Waypoints com capacidade estimada</label><label><input type="checkbox" id="capacity-map-grid" checked /> Quadrícula analítica</label></div>
           <p id="indicator-status-capacity" class="indicator-status" role="status"></p>
           <div id="indicator-map-capacity" class="indicator-map-canvas" aria-label="Carga nos waypoints e na quadrícula"></div>
           <ul id="indicator-legend-capacity" class="indicator-legend" aria-label="Legenda do mapa"></ul>
         </section>
+        <div id="capacity-details" aria-live="polite" hidden></div>
+        <div id="capacity-ranking" class="table-wrap"></div>
       </section>
       <section id="panel-predictability" data-kpa-panel="predictability" role="tabpanel" aria-labelledby="tab-predictability" hidden>
         <h2>Previsibilidade</h2>
@@ -182,10 +181,18 @@
         <section class="indicator-map" aria-labelledby="indicator-title-predictability">
           <h3 id="indicator-title-predictability">Variabilidade do tempo de voo por par OD</h3>
           <p>As linhas ligam a origem ao destino planejados. O intervalo interquartil (IQR) mede a amplitude da metade central dos tempos de voo. Valores maiores indicam menor previsibilidade.</p>
-          <div class="indicator-controls"><label>Colorir por <select id="predictability-map-metric"><option value="iqr_s">Intervalo interquartil</option><option value="std_s">Desvio padrão</option></select></label></div>
+          <div class="od-layout"><aside class="od-filters" aria-label="Filtros de pares OD">
+            <label>Medida<select id="predictability-map-metric"><option value="iqr_s">Intervalo interquartil</option><option value="std_s">Desvio padrão</option></select></label>
+            <label>Variabilidade<select id="predictability-band"><option value="all">Todas com estimativa</option><option value="0">Até 30 s</option><option value="1">Mais de 30 até 60 s</option><option value="2">Mais de 60 até 120 s</option><option value="3">Acima de 120 s</option><option value="missing">Sem estimativa</option></select></label>
+            <label>Voos por par<select id="predictability-minimum"><option value="1">Qualquer quantidade</option><option value="5">Pelo menos 5</option><option value="10">Pelo menos 10</option><option value="50">Pelo menos 50</option></select></label>
+            <label>Exibir<select id="predictability-limit"><option value="5">5 pares</option><option value="10">10 pares</option><option value="25">25 pares</option><option value="0">Todos</option></select></label>
+            <label>Par origem–destino<select id="predictability-pair"><option value="">Todos do recorte</option></select></label>
+            <small>Pares em ordem de variabilidade decrescente. Pares sem estimativa são ordenados por número de voos.</small>
+          </aside><div>
           <p id="indicator-status-predictability" class="indicator-status" role="status"></p>
           <div id="indicator-map-predictability" class="indicator-map-canvas" aria-label="Variabilidade do tempo de voo por par OD"></div>
           <ul id="indicator-legend-predictability" class="indicator-legend" aria-label="Legenda do mapa"></ul>
+          </div></div>
         </section>
       </section>
       <section id="panel-equity" data-kpa-panel="equity" role="tabpanel" aria-labelledby="tab-equity" hidden>
@@ -196,9 +203,16 @@
         <section class="indicator-map" aria-labelledby="indicator-title-equity">
           <h3 id="indicator-title-equity">Pares origem–destino</h3>
           <p>Os pares aparecem como contexto geográfico. A análise de equidade por atraso está indisponível.</p>
+          <div class="od-layout"><aside class="od-filters" aria-label="Filtros de pares OD">
+            <label>Voos por par<select id="equity-minimum"><option value="1">Qualquer quantidade</option><option value="5">Pelo menos 5</option><option value="10">Pelo menos 10</option><option value="50">Pelo menos 50</option></select></label>
+            <label>Exibir<select id="equity-limit"><option value="5">5 pares</option><option value="10">10 pares</option><option value="25">25 pares</option><option value="0">Todos</option></select></label>
+            <label>Par origem–destino<select id="equity-pair"><option value="">Todos do recorte</option></select></label>
+            <small>Pares em ordem de número de voos, do maior para o menor.</small>
+          </aside><div>
           <p id="indicator-status-equity" class="indicator-status" role="status"></p>
           <div id="indicator-map-equity" class="indicator-map-canvas" aria-label="Pares origem–destino"></div>
           <ul id="indicator-legend-equity" class="indicator-legend" aria-label="Legenda do mapa"></ul>
+          </div></div>
         </section>
       </section>
       <section id="panel-resources" data-kpa-panel="resources" role="tabpanel" aria-labelledby="tab-resources" hidden>
@@ -250,7 +264,7 @@
     <script src="assets/data_bundle.js?v=produto-iii-kpis"></script>
     <script src="assets/metric_catalog.js?v=produto-iii-kpis"></script>
     <script src="assets/scenario_catalog.js?v=produto-iii-kpis"></script>
-    <script src="assets/dashboard.js?v=f2eafecb6e3a"></script>
-    <script src="assets/maps.js?v=e5e02980aa34"></script>
+    <script src="assets/dashboard.js?v=10717f5cff63"></script>
+    <script src="assets/maps.js?v=200f26dfc609"></script>
 </body>
 </html>
