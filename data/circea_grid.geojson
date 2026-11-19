@@ -1,0 +1,693 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "resource_id": "A1",
+        "capacity": 1,
+        "time_bin_seconds": 1,
+        "mode": "occupancy",
+        "official_internal_boundary": false,
+        "altitude_policy": "all_modelled_altitudes"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -46.69861111111111,
+              -23.64361111111111
+            ],
+            [
+              -46.70902777777778,
+              -23.62851851851852
+            ],
+            [
+              -46.67825287190149,
+              -23.610454986808524
+            ],
+            [
+              -46.66773956190939,
+              -23.62549085397097
+            ],
+            [
+              -46.69861111111111,
+              -23.64361111111111
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "resource_id": "CENTRAL-1",
+        "capacity": 1,
+        "time_bin_seconds": 1,
+        "mode": "occupancy",
+        "official_internal_boundary": false,
+        "altitude_policy": "all_modelled_altitudes"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -46.66773956190939,
+              -23.62549085397097
+            ],
+            [
+              -46.67825287190149,
+              -23.610454986808524
+            ],
+            [
+              -46.66281709730063,
+              -23.601394858238454
+            ],
+            [
+              -46.65230378730853,
+              -23.6164307254009
+            ],
+            [
+              -46.66773956190939,
+              -23.62549085397097
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "resource_id": "B1",
+        "capacity": 1,
+        "time_bin_seconds": 1,
+        "mode": "occupancy",
+        "official_internal_boundary": false,
+        "altitude_policy": "all_modelled_altitudes"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -46.621944444444445,
+              -23.598611111111108
+            ],
+            [
+              -46.65230378730853,
+              -23.6164307254009
+            ],
+            [
+              -46.66281709730063,
+              -23.601394858238454
+            ],
+            [
+              -46.63234813268689,
+              -23.583510900747783
+            ],
+            [
+              -46.621944444444445,
+              -23.598611111111108
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "resource_id": "A2",
+        "capacity": 1,
+        "time_bin_seconds": 1,
+        "mode": "occupancy",
+        "official_internal_boundary": false,
+        "altitude_policy": "all_modelled_altitudes"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -46.70902777777778,
+              -23.62851851851852
+            ],
+            [
+              -46.71944444444445,
+              -23.613425925925924
+            ],
+            [
+              -46.6887661818936,
+              -23.595419119646078
+            ],
+            [
+              -46.67825287190149,
+              -23.610454986808524
+            ],
+            [
+              -46.70902777777778,
+              -23.62851851851852
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "resource_id": "CENTRAL-2",
+        "capacity": 1,
+        "time_bin_seconds": 1,
+        "mode": "occupancy",
+        "official_internal_boundary": false,
+        "altitude_policy": "all_modelled_altitudes"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -46.67825287190149,
+              -23.610454986808524
+            ],
+            [
+              -46.6887661818936,
+              -23.595419119646078
+            ],
+            [
+              -46.67333040729274,
+              -23.58635899107601
+            ],
+            [
+              -46.66281709730063,
+              -23.601394858238454
+            ],
+            [
+              -46.67825287190149,
+              -23.610454986808524
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "resource_id": "B2",
+        "capacity": 1,
+        "time_bin_seconds": 1,
+        "mode": "occupancy",
+        "official_internal_boundary": false,
+        "altitude_policy": "all_modelled_altitudes"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -46.63234813268689,
+              -23.583510900747783
+            ],
+            [
+              -46.66281709730063,
+              -23.601394858238454
+            ],
+            [
+              -46.67333040729274,
+              -23.58635899107601
+            ],
+            [
+              -46.64275182092934,
+              -23.568410690384457
+            ],
+            [
+              -46.63234813268689,
+              -23.583510900747783
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "resource_id": "A3",
+        "capacity": 1,
+        "time_bin_seconds": 1,
+        "mode": "occupancy",
+        "official_internal_boundary": false,
+        "altitude_policy": "all_modelled_altitudes"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -46.71944444444445,
+              -23.613425925925924
+            ],
+            [
+              -46.72986111111111,
+              -23.598333333333336
+            ],
+            [
+              -46.6992794918857,
+              -23.580383252483635
+            ],
+            [
+              -46.6887661818936,
+              -23.595419119646078
+            ],
+            [
+              -46.71944444444445,
+              -23.613425925925924
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "resource_id": "CENTRAL-3",
+        "capacity": 1,
+        "time_bin_seconds": 1,
+        "mode": "occupancy",
+        "official_internal_boundary": false,
+        "altitude_policy": "all_modelled_altitudes"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -46.6887661818936,
+              -23.595419119646078
+            ],
+            [
+              -46.6992794918857,
+              -23.580383252483635
+            ],
+            [
+              -46.68384371728484,
+              -23.571323123913565
+            ],
+            [
+              -46.67333040729274,
+              -23.58635899107601
+            ],
+            [
+              -46.6887661818936,
+              -23.595419119646078
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "resource_id": "B3",
+        "capacity": 1,
+        "time_bin_seconds": 1,
+        "mode": "occupancy",
+        "official_internal_boundary": false,
+        "altitude_policy": "all_modelled_altitudes"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -46.64275182092934,
+              -23.568410690384457
+            ],
+            [
+              -46.67333040729274,
+              -23.58635899107601
+            ],
+            [
+              -46.68384371728484,
+              -23.571323123913565
+            ],
+            [
+              -46.653155509171796,
+              -23.553310480021125
+            ],
+            [
+              -46.64275182092934,
+              -23.568410690384457
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "resource_id": "A4",
+        "capacity": 1,
+        "time_bin_seconds": 1,
+        "mode": "occupancy",
+        "official_internal_boundary": false,
+        "altitude_policy": "all_modelled_altitudes"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -46.72986111111111,
+              -23.598333333333336
+            ],
+            [
+              -46.74027777777778,
+              -23.58324074074074
+            ],
+            [
+              -46.7097928018778,
+              -23.56534738532119
+            ],
+            [
+              -46.6992794918857,
+              -23.580383252483635
+            ],
+            [
+              -46.72986111111111,
+              -23.598333333333336
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "resource_id": "CENTRAL-4",
+        "capacity": 1,
+        "time_bin_seconds": 1,
+        "mode": "occupancy",
+        "official_internal_boundary": false,
+        "altitude_policy": "all_modelled_altitudes"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -46.6992794918857,
+              -23.580383252483635
+            ],
+            [
+              -46.7097928018778,
+              -23.56534738532119
+            ],
+            [
+              -46.694357027276936,
+              -23.55628725675112
+            ],
+            [
+              -46.68384371728484,
+              -23.571323123913565
+            ],
+            [
+              -46.6992794918857,
+              -23.580383252483635
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "resource_id": "B4",
+        "capacity": 1,
+        "time_bin_seconds": 1,
+        "mode": "occupancy",
+        "official_internal_boundary": false,
+        "altitude_policy": "all_modelled_altitudes"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -46.653155509171796,
+              -23.553310480021125
+            ],
+            [
+              -46.68384371728484,
+              -23.571323123913565
+            ],
+            [
+              -46.694357027276936,
+              -23.55628725675112
+            ],
+            [
+              -46.663559197414244,
+              -23.5382102696578
+            ],
+            [
+              -46.653155509171796,
+              -23.553310480021125
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "resource_id": "A5",
+        "capacity": 1,
+        "time_bin_seconds": 1,
+        "mode": "occupancy",
+        "official_internal_boundary": false,
+        "altitude_policy": "all_modelled_altitudes"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -46.74027777777778,
+              -23.58324074074074
+            ],
+            [
+              -46.75069444444445,
+              -23.56814814814815
+            ],
+            [
+              -46.7203061118699,
+              -23.550311518158743
+            ],
+            [
+              -46.7097928018778,
+              -23.56534738532119
+            ],
+            [
+              -46.74027777777778,
+              -23.58324074074074
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "resource_id": "CENTRAL-5",
+        "capacity": 1,
+        "time_bin_seconds": 1,
+        "mode": "occupancy",
+        "official_internal_boundary": false,
+        "altitude_policy": "all_modelled_altitudes"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -46.7097928018778,
+              -23.56534738532119
+            ],
+            [
+              -46.7203061118699,
+              -23.550311518158743
+            ],
+            [
+              -46.70487033726904,
+              -23.541251389588673
+            ],
+            [
+              -46.694357027276936,
+              -23.55628725675112
+            ],
+            [
+              -46.7097928018778,
+              -23.56534738532119
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "resource_id": "B5",
+        "capacity": 1,
+        "time_bin_seconds": 1,
+        "mode": "occupancy",
+        "official_internal_boundary": false,
+        "altitude_policy": "all_modelled_altitudes"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -46.663559197414244,
+              -23.5382102696578
+            ],
+            [
+              -46.694357027276936,
+              -23.55628725675112
+            ],
+            [
+              -46.70487033726904,
+              -23.541251389588673
+            ],
+            [
+              -46.6815677310227,
+              -23.527573772878867
+            ],
+            [
+              -46.67055555555555,
+              -23.528055555555554
+            ],
+            [
+              -46.663559197414244,
+              -23.5382102696578
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "resource_id": "A6",
+        "capacity": 1,
+        "time_bin_seconds": 1,
+        "mode": "occupancy",
+        "official_internal_boundary": false,
+        "altitude_policy": "all_modelled_altitudes"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -46.75069444444445,
+              -23.56814814814815
+            ],
+            [
+              -46.76111111111111,
+              -23.553055555555556
+            ],
+            [
+              -46.730780038049346,
+              -23.535331976718254
+            ],
+            [
+              -46.7203061118699,
+              -23.550311518158743
+            ],
+            [
+              -46.75069444444445,
+              -23.56814814814815
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "resource_id": "CENTRAL-6",
+        "capacity": 1,
+        "time_bin_seconds": 1,
+        "mode": "occupancy",
+        "official_internal_boundary": false,
+        "altitude_policy": "all_modelled_altitudes"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -46.7203061118699,
+              -23.550311518158743
+            ],
+            [
+              -46.730780038049346,
+              -23.535331976718254
+            ],
+            [
+              -46.715324194588995,
+              -23.52630055011793
+            ],
+            [
+              -46.70487033726904,
+              -23.541251389588673
+            ],
+            [
+              -46.7203061118699,
+              -23.550311518158743
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "resource_id": "B6",
+        "capacity": 1,
+        "time_bin_seconds": 1,
+        "mode": "occupancy",
+        "official_internal_boundary": false,
+        "altitude_policy": "all_modelled_altitudes"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -46.715,
+              -23.52611111111111
+            ],
+            [
+              -46.6815677310227,
+              -23.527573772878867
+            ],
+            [
+              -46.70487033726904,
+              -23.541251389588673
+            ],
+            [
+              -46.715324194588995,
+              -23.52630055011793
+            ],
+            [
+              -46.715,
+              -23.52611111111111
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}

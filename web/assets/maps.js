@@ -925,6 +925,7 @@ function updateMapInfo() {
 function initMaps() {
   bind3DControls();
   bindConflictPairControls();
+  document.getElementById("capacity-map-circea").addEventListener("change", () => renderIndicatorMap(true));
   document.querySelectorAll(".od-filters").forEach(filters => {
     filters.addEventListener("change", () => renderIndicatorMap(true));
   });
@@ -1098,6 +1099,40 @@ function selectOdFeatures(id, features, metric, resetPair) {
   return {visible, count: eligible.length};
 }
 
+function drawCirceaGrid(view, run, layers, legend, messages) {
+  const model = window.CIRCEA_MODEL;
+  const full = layers.circea_occupancy;
+  const data = full || model?.sampled_runs[run.data_token];
+  const resources = [];
+  if (!model) {
+    messages.push("Geometria das quadrículas indisponível.");
+    return resources;
+  }
+  const replica = run.metadata?.replica;
+  const source = full ? `${full.replicas} réplicas · uma observação por segundo com registro` :
+    data ? `Réplica ilustrativa ${replica ?? ""} · amostragem de ${data.step} s` : "";
+  messages.push("18 quadrículas do simulador. Os limites internos aproximam o desenho da CIRCEA 100-116. Todas as altitudes simuladas.");
+  if (data) messages.push(`${source}. Percentual estimado nos instantes com registros, usando o limite do modelo nominal como referência.`);
+  else messages.push("Ocupação indisponível para este cenário.");
+  for (const feature of model.grid.features) {
+    const {resource_id: label, capacity} = feature.properties;
+    const cell = data?.cells[label];
+    const pct = cell && data.observations > 0 ? 100 * cell.at_limit / data.observations : null;
+    const fillColor = indicatorColor(pct, [0, 5, 20]);
+    const layer = L.polygon(L.GeoJSON.coordsToLatLngs(feature.geometry.coordinates, 1), {
+      color: "#334155", weight: 1.5, fillColor, fillOpacity: .72
+    }).addTo(view.data);
+    layer.bindTooltip(`${escapeHtml(label)} · ${escapeHtml(displayValue(pct, "%"))}`);
+    resources.push({type: "Quadrícula do simulador", label, layer, center: layer.getBounds().getCenter(),
+      metrics: [["Tempo observado no limite ou acima", pct, "%"], ["Limite de referência do simulador", capacity, "aeronave(s)"],
+        ["Ocupação máxima observada", cell?.peak, "aeronave(s)"], ["Instantes no limite ou acima", cell?.at_limit, "amostras"],
+        ["Total de instantes observados", data?.observations, "amostras"]]});
+  }
+  if (data) ["0%", ">0 a 5%", ">5 a 20%", "Acima de 20%"].forEach((label, i) => legend.push([indicatorColors[i], label]));
+  else legend.push([unavailableColor, "Sem observações"]);
+  return resources;
+}
+
 function renderIndicatorMap(refresh = false) {
   const id = state.activeKpa;
   const run = state.mapRun;
@@ -1169,7 +1204,15 @@ function renderIndicatorMap(refresh = false) {
       scale(["Até 5%", ">5 a 15%", ">15 a 30%", "Acima de 30%"]);
     } else messages.push(layers.mean_tracks ? "Nenhum voo com cobertura suficiente para comparar plano e execução." : "Trajetórias médias disponíveis após reprocessar os STATELOGs.");
   }
+  const circea = id === "capacity" && document.getElementById("capacity-map-circea").checked;
   if (id === "capacity") {
+    for (const key of ["waypoints", "grid"]) document.getElementById(`capacity-map-${key}`).disabled = circea;
+    if (circea) view.map.removeLayer(view.context);
+    else if (!view.map.hasLayer(view.context)) view.context.addTo(view.map);
+  }
+  if (circea) {
+    bindCapacityResources(view, drawCirceaGrid(view, run, layers, legend, messages));
+  } else if (id === "capacity") {
     const resources = [];
     const grid = layers.capacity_grid;
     if (document.getElementById("capacity-map-grid").checked) {
@@ -1236,12 +1279,13 @@ function renderIndicatorMap(refresh = false) {
 
   setText(`indicator-status-${id}`, messages.join(" "));
   indicatorLegend(id, legend);
-  if (firstRender || (refresh && ["predictability", "equity"].includes(id))) {
+  if (firstRender || (id === "capacity" && Boolean(view.circea) !== circea) || (refresh && ["predictability", "equity"].includes(id))) {
     const dataBounds = view.data.getBounds();
     const bounds = dataBounds.isValid() ? dataBounds : view.context.getBounds();
     if (bounds.isValid()) view.map.fitBounds(bounds.pad(.12), {animate: false, maxZoom: 12});
     else view.map.setView([-23.5505, -46.6333], 10);
   }
+  view.circea = circea;
   view.rendered = true;
 }
 

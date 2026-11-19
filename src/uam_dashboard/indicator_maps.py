@@ -3,6 +3,7 @@ from collections import defaultdict
 
 import numpy as np
 
+from .circea_occupancy import merge_occupancy, occupancy_sample
 from .exports import _trajectory_signature
 from .metrics import haversine_m
 
@@ -50,7 +51,7 @@ def summarize_indicator_maps(instances, planned_flights, conformity, shape_point
         positions[["lat", "lon"]] = np.floor(positions[["lat", "lon"]] / GRID_DEGREES).astype(int)
         by_window = positions.drop_duplicates().groupby(["lat", "lon", "window"]).size()
         cells = by_window.groupby(level=[0, 1]).max().to_dict()
-    return routes, od_times, cells, bool(complete_windows)
+    return routes, od_times, cells, bool(complete_windows), occupancy_sample(instances)
 
 
 def _feature(geometry, coordinates, **properties):
@@ -65,9 +66,11 @@ class IndicatorMaps:
         self.od_times = defaultdict(list)
         self.cells = defaultdict(int)
         self.grid_replicas = 0
+        self.occupancy_samples = []
 
     def add(self, summary):
-        routes, od_times, cells, valid_grid = summary
+        routes, od_times, cells, valid_grid, occupancy = summary
+        self.occupancy_samples.append(occupancy)
         for key, (count, coordinates, hfe, conformity) in routes.items():
             row = self.routes.setdefault(key, [0, np.zeros_like(coordinates), 0., 0.])
             row[0] += count
@@ -105,6 +108,7 @@ class IndicatorMaps:
                     planned_routes=dict(type="FeatureCollection", features=planned),
                     mean_tracks=dict(type="FeatureCollection", features=executed),
                     od_pairs=dict(type="FeatureCollection", features=od_pairs),
+                    circea_occupancy=merge_occupancy(self.occupancy_samples),
                     capacity_grid=dict(cell_degrees=GRID_DEGREES, window_s=GRID_WINDOW_S,
                                        replicas=self.grid_replicas,
                                        cells=[[int(lat), int(lon), round(peak / self.grid_replicas, 3)]

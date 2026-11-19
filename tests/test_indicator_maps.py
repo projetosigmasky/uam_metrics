@@ -2,10 +2,28 @@ import unittest
 
 import pandas as pd
 
+from shapely.geometry import shape
+
+from src.uam_dashboard.circea_occupancy import model_grid, occupancy_sample, merge_occupancy
 from src.uam_dashboard.indicator_maps import IndicatorMaps, summarize_indicator_maps
 
 
 class IndicatorMapTests(unittest.TestCase):
+    def test_circea_uses_observed_seconds_and_distinct_concurrent_flights(self):
+        feature = model_grid()["features"][0]
+        point = shape(feature["geometry"]).representative_point()
+        rows = [("one", 0, point.x, point.y), ("one", 0, point.x, point.y),
+                ("two", 0, point.x, point.y), ("three", 0.8, point.x, point.y),
+                ("elsewhere", 10, -47., -24.)]
+        frame = pd.DataFrame(rows, columns=["flight_instance", "simt", "lon", "lat"])
+        sample = occupancy_sample(frame)
+        combined = merge_occupancy([sample, occupancy_sample(frame.tail(1))])
+        self.assertEqual(combined["observations"], 3)
+        self.assertEqual(combined["replicas"], 2)
+        self.assertEqual(len(combined["cells"]), 18)
+        self.assertEqual(combined["cells"][feature["properties"]["resource_id"]],
+                         {"at_limit": 1, "peak": 2})
+
     def test_aggregation_excludes_truncated_tracks_and_counts_distinct_flights_per_window(self):
         plans = [{"flight_instance": "plan", "coordinates": [[-46.635, -23.555], [-46.625, -23.555]]}]
         match = {"planned_flight_instance": "plan", "executed_horizontal_inefficiency_ratio": .2,
