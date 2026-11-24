@@ -1290,11 +1290,11 @@ function renderIndicatorMap(refresh = false) {
         if (feature.properties.capacity_eligible === false) continue;
         const ranking = waypointMetric(feature);
         if (!Number.isFinite(ranking?.capacity_reference_per_hour) || !(ranking.mean_operations_per_replica > 0)) continue;
-        const band = indicatorBand(ranking.capacity_reference_per_hour, [12, 24, 48]);
+        const band = indicatorBand(ranking.capacity_reference_per_hour, [1, 3, 6]);
         if (!document.getElementById(`capacity-band-${band}`).checked) continue;
         const [lon, lat] = feature.geometry.coordinates;
         const layer = L.circleMarker([lat, lon], {radius: 6, color: "#172033", weight: 1.5,
-          fillColor: indicatorColor(ranking.capacity_reference_per_hour, [12, 24, 48]), fillOpacity: 1
+          fillColor: indicatorColors[band], fillOpacity: 1
         }).bindTooltip(`${escapeHtml(feature.properties.label)} · ${displayValue(ranking.capacity_reference_per_hour, "ops/h")} (P95)`).addTo(view.data);
         resources.push({type: "Waypoint", label: feature.properties.label, center: layer.getLatLng(), layer,
           score: ranking.capacity_reference_per_hour, unit: "ops/h",
@@ -1303,7 +1303,7 @@ function renderIndicatorMap(refresh = false) {
             ["Throughput médio", ranking.mean_throughput_per_hour, "ops/h"]]});
         count++;
       }
-      ["Até 12", ">12 a 24", ">24 a 48", "Acima de 48"].forEach((label, i) => {
+      ["Até 1", ">1 a 3", ">3 a 6", "Acima de 6"].forEach((label, i) => {
         if (document.getElementById(`capacity-band-${i}`).checked) legend.push([indicatorColors[i], `Waypoint: ${label} ops/h`]);
       });
       if (!count) messages.push("Nenhum waypoint com estimativa nas faixas selecionadas.");
