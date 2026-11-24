@@ -175,10 +175,10 @@
           <p>Selecione um recurso no mapa ou no ranking para ver suas métricas. Os waypoints usam o P95 observado em operações por hora. A malha analítica tem células de aproximadamente 5 km², alinhadas aos eixos norte–sul e leste–oeste, e conta voos distintos em janelas de 5 minutos. Na malha de Congonhas, a porcentagem indica em quantos dos instantes observados a célula atingiu ou ultrapassou seu limite de aeronaves simultâneas. Por exemplo, 5% corresponde a 5 de cada 100 instantes.</p>
           <div class="indicator-controls"><label><input type="checkbox" id="capacity-map-waypoints" checked /> Waypoints com capacidade estimada</label><label><input type="checkbox" id="capacity-map-grid" checked /> Quadrícula analítica</label><label><input type="checkbox" id="capacity-map-circea" /> Congonhas · 18 quadrículas do simulador</label></div>
           <fieldset id="capacity-bands" class="indicator-controls"><legend>Waypoints por P95 (operações/h)</legend>
-            <label><input type="checkbox" id="capacity-band-0" checked /> Até 1</label>
-            <label><input type="checkbox" id="capacity-band-1" checked /> Mais de 1 até 3</label>
-            <label><input type="checkbox" id="capacity-band-2" checked /> Mais de 3 até 6</label>
-            <label><input type="checkbox" id="capacity-band-3" checked /> Acima de 6</label>
+            <label><input type="checkbox" id="capacity-band-0" checked /> 0</label>
+            <label><input type="checkbox" id="capacity-band-1" checked /> 4</label>
+            <label><input type="checkbox" id="capacity-band-2" checked /> 8</label>
+            <label><input type="checkbox" id="capacity-band-3" checked /> 12 ou mais</label>
           </fieldset>
           <p id="indicator-status-capacity" class="indicator-status" role="status"></p>
           <div id="indicator-map-capacity" class="indicator-map-canvas" aria-label="Carga nos waypoints e na quadrícula"></div>
@@ -278,6 +278,6 @@
     <script src="assets/scenario_catalog.js?v=produto-iii-kpis"></script>
     <script src="assets/dashboard.js?v=10717f5cff63"></script>
     <script src="assets/circea_model.js?v=cdb84f6afe57"></script>
-    <script src="assets/maps.js?v=ade5a442b713"></script>
+    <script src="assets/maps.js?v=35564c6cd5f1"></script>
 </body>
 </html>
