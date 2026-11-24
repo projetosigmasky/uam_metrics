@@ -7,7 +7,9 @@ from .circea_occupancy import merge_occupancy, occupancy_sample
 from .exports import _trajectory_signature
 from .metrics import haversine_m
 
-GRID_DEGREES = 0.01
+# Local north-aligned grid with equal side lengths at the latitude of São Paulo.
+GRID_LAT_STEP = np.degrees(np.sqrt(5) / 6371.0)
+GRID_LON_STEP = GRID_LAT_STEP / np.cos(np.radians(23.55))
 GRID_WINDOW_S = 300
 ENDPOINT_TOLERANCE_M = 1_000
 
@@ -48,7 +50,7 @@ def summarize_indicator_maps(instances, planned_flights, conformity, shape_point
         bucket = ((instances.simt - instances.simt.min()) // GRID_WINDOW_S).astype(int)
         positions = instances.loc[bucket < complete_windows, ["flight_instance", "lat", "lon"]].copy()
         positions["window"] = bucket
-        positions[["lat", "lon"]] = np.floor(positions[["lat", "lon"]] / GRID_DEGREES).astype(int)
+        positions[["lat", "lon"]] = np.floor(positions[["lat", "lon"]] / [GRID_LAT_STEP, GRID_LON_STEP]).astype(int)
         by_window = positions.drop_duplicates().groupby(["lat", "lon", "window"]).size()
         cells = by_window.groupby(level=[0, 1]).max().to_dict()
     return routes, od_times, cells, bool(complete_windows), occupancy_sample(instances)
@@ -109,7 +111,7 @@ class IndicatorMaps:
                     mean_tracks=dict(type="FeatureCollection", features=executed),
                     od_pairs=dict(type="FeatureCollection", features=od_pairs),
                     circea_occupancy=merge_occupancy(self.occupancy_samples),
-                    capacity_grid=dict(cell_degrees=GRID_DEGREES, window_s=GRID_WINDOW_S,
+                    capacity_grid=dict(lat_step=GRID_LAT_STEP, lon_step=GRID_LON_STEP, window_s=GRID_WINDOW_S,
                                        replicas=self.grid_replicas,
                                        cells=[[int(lat), int(lon), round(peak / self.grid_replicas, 3)]
                                               for (lat, lon), peak in sorted(self.cells.items())]))

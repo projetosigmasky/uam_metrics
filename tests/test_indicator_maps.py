@@ -51,6 +51,7 @@ class IndicatorMapTests(unittest.TestCase):
         self.assertEqual(od["properties"]["iqr_s"], 50)
         self.assertAlmostEqual(od["properties"]["std_s"], 70.71, places=2)
         grid = payload["capacity_grid"]
+        self.assertAlmostEqual(grid["lat_step"] * 111.195 * grid["lon_step"] * 101.94, 5, places=2)
         self.assertEqual(grid["replicas"], 2)
         self.assertEqual({(lat, lon): peak for lat, lon, peak in grid["cells"]},
-                         {(-2356, -4664): 1.5, (-2356, -4663): 2.0})
+                         {(-1172, -2126): 2.5})

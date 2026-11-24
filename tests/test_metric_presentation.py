@@ -45,8 +45,13 @@ class MetricPresentationTests(unittest.TestCase):
         dom = Structure(html)
         for panel in ('safety', 'efficiency', 'capacity', 'predictability', 'equity'):
             self.assertEqual(dom.nodes[f'panel-{panel}'][0]['role'], 'tabpanel')
-            self.assertIn(f'kpis-{panel}', dom.nodes)
-            self.assertIn(f'charts-{panel}', dom.nodes)
+            if panel == 'capacity':
+                self.assertIn('capacity-ranking', dom.nodes)
+                self.assertIn('capacity-details', dom.nodes)
+            else:
+                self.assertIn(f'kpis-{panel}', dom.nodes)
+                self.assertIn(f'charts-{panel}', dom.nodes)
+                self.assertLess(html.index(f'id="indicator-map-{panel}"'), html.index(f'id="select-kpi-{panel}"'))
             self.assertNotIn(f'stability-{panel}', dom.nodes)
         for removed in ('auxiliary-', 'chart-severity', 'capacity-atd', 'traceability-table', 'data-kpa-tab="overview"'):
             self.assertNotIn(removed, html)

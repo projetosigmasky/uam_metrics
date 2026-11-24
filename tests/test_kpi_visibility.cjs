@@ -71,3 +71,17 @@ assert.match(airportCards[2][1][1], /^SBGR: 0,00 LoWC/);
 assert.match(evaluate('evtolAirportCards({available: false, reason: "scenario without eVTOL"})[0][1][0]'), /cenário sem eVTOL/);
 assert.match(evaluate('evtolAirportNote({available: true, replica_count: 50, source: {peak_day_local: "2022-12-01"}, thresholds: {lowc_horizontal_m: 500, lowc_vertical_m: 137.16, nmac_horizontal_m: 152, nmac_vertical_m: 30}})'),
   /01\/12\/2022.*Média de 50 réplicas/);
+
+// Repeated samples of one flight count once per cell/window. The last
+// incomplete window cannot raise a cell's peak in a historical replay.
+const sampled = evaluate(`sampledCapacityGrid({trajectory_3d: {
+  sim_start_s: 10, sim_end_s: 620, tracks: [
+    {points:[[10,-46.63,-23.55],[15,-46.63,-23.55],[310,-46.63,-23.55],[610,-47,-24]]},
+    {points:[[20,-46.63,-23.55],[310,-46.8,-23.55]]}
+  ]}})`);
+assert.equal(sampled.sampled, true);
+assert.equal(sampled.replicas, 1);
+assert.deepEqual(Array.from(sampled.cells, cell => cell[2]).sort(), [1, 2]);
+for (const [value, expected] of [[0,0], [5,0], [5.01,1], [15,1], [30,2], [30.01,3]]) {
+  assert.equal(evaluate(`indicatorBand(${value}, [5,15,30])`), expected);
+}
