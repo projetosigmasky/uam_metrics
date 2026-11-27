@@ -1,0 +1,2918 @@
+{
+  "type": "FeatureCollection",
+  "properties": {
+    "mac_timestamp_available": false
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "simt": 659.0,
+        "start_simt": 659.0,
+        "end_simt": 688.0,
+        "duration_s": 30.0,
+        "id_a": "HP100_0002",
+        "id_b": "HP100_0003",
+        "dist_h_m": 1764.0235064700819,
+        "dist_v_m": 0.0,
+        "horizontal_ratio": 0.9524964937743423,
+        "vertical_ratio": 0.0,
+        "vehicle_type_a": "helicoptero",
+        "vehicle_type_b": "helicoptero",
+        "vehicle_pair": "helicoptero - helicoptero",
+        "severity_ratio": 0.0,
+        "is_nmac": false,
+        "is_mac": false,
+        "event_class": "lowc"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.585207260000004,
+          -23.542067395,
+          1005.84
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "simt": 27289.0,
+        "start_simt": 27289.0,
+        "end_simt": 27566.0,
+        "duration_s": 278.0,
+        "id_a": "HP100_0022",
+        "id_b": "HP100_0023",
+        "dist_h_m": 0.0,
+        "dist_v_m": 0.0,
+        "horizontal_ratio": 0.0,
+        "vertical_ratio": 0.0,
+        "vehicle_type_a": "helicoptero",
+        "vehicle_type_b": "helicoptero",
+        "vehicle_pair": "helicoptero - helicoptero",
+        "severity_ratio": 0.0,
+        "is_nmac": true,
+        "is_mac": false,
+        "event_class": "nmac"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.655833,
+          -23.564167,
+          904.9512
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "simt": 33984.0,
+        "start_simt": 33882.0,
+        "end_simt": 33984.0,
+        "duration_s": 103.0,
+        "id_a": "HP100_0026",
+        "id_b": "HP100_0027",
+        "dist_h_m": 1850.5038723255252,
+        "dist_v_m": 19.535048000000074,
+        "horizontal_ratio": 0.999192155683329,
+        "vertical_ratio": 0.12818272965879313,
+        "vehicle_type_a": "helicoptero",
+        "vehicle_type_b": "helicoptero",
+        "vehicle_pair": "helicoptero - helicoptero",
+        "severity_ratio": 0.12818272965879313,
+        "is_nmac": false,
+        "is_mac": false,
+        "event_class": "lowc"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.47825939,
+          -23.480726585,
+          996.072476
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "simt": 34027.0,
+        "start_simt": 33891.0,
+        "end_simt": 34030.0,
+        "duration_s": 140.0,
+        "id_a": "HP100_0027",
+        "id_b": "HP100_0028",
+        "dist_h_m": 1801.4581210546953,
+        "dist_v_m": 0.0,
+        "horizontal_ratio": 0.9727095686040471,
+        "vertical_ratio": 0.0,
+        "vehicle_type_a": "helicoptero",
+        "vehicle_type_b": "helicoptero",
+        "vehicle_pair": "helicoptero - helicoptero",
+        "severity_ratio": 0.0,
+        "is_nmac": false,
+        "is_mac": false,
+        "event_class": "lowc"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.480001975,
+          -23.482666595,
+          1005.84
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "simt": 35176.0,
+        "start_simt": 35176.0,
+        "end_simt": 35202.0,
+        "duration_s": 27.0,
+        "id_a": "HP100_0029",
+        "id_b": "HP100_0030",
+        "dist_h_m": 1769.4393784448298,
+        "dist_v_m": 0.0,
+        "horizontal_ratio": 0.9554208306937526,
+        "vertical_ratio": 0.0,
+        "vehicle_type_a": "helicoptero",
+        "vehicle_type_b": "helicoptero",
+        "vehicle_pair": "helicoptero - helicoptero",
+        "severity_ratio": 0.0,
+        "is_nmac": false,
+        "is_mac": false,
+        "event_class": "lowc"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.716250775000006,
+          -23.515779485000003,
+          975.36
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "simt": 37200.0,
+        "start_simt": 37169.0,
+        "end_simt": 37212.0,
+        "duration_s": 44.0,
+        "id_a": "HP100_0034",
+        "id_b": "HP100_0035",
+        "dist_h_m": 836.2464332638976,
+        "dist_v_m": 0.12226600000008148,
+        "horizontal_ratio": 0.4515369510064242,
+        "vertical_ratio": 0.0008022703412078837,
+        "vehicle_type_a": "helicoptero",
+        "vehicle_type_b": "helicoptero",
+        "vehicle_pair": "helicoptero - helicoptero",
+        "severity_ratio": 0.0008022703412078837,
+        "is_nmac": false,
+        "is_mac": false,
+        "event_class": "lowc"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.695343120000004,
+          -23.598193735,
+          1005.778867
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "simt": 38055.0,
+        "start_simt": 38051.0,
+        "end_simt": 38089.0,
+        "duration_s": 39.0,
+        "id_a": "HP100_0037",
+        "id_b": "HP100_0038",
+        "dist_h_m": 432.7758385967428,
+        "dist_v_m": 1.0973279999999477,
+        "horizontal_ratio": 0.2336802584215674,
+        "vertical_ratio": 0.007200314960629578,
+        "vehicle_type_a": "helicoptero",
+        "vehicle_type_b": "helicoptero",
+        "vehicle_pair": "helicoptero - helicoptero",
+        "severity_ratio": 0.007200314960629578,
+        "is_nmac": false,
+        "is_mac": false,
+        "event_class": "lowc"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.691136900000004,
+          -23.591429945,
+          857.463336
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "simt": 38405.0,
+        "start_simt": 38405.0,
+        "end_simt": 38431.0,
+        "duration_s": 27.0,
+        "id_a": "HP100_0039",
+        "id_b": "HP100_0040",
+        "dist_h_m": 1828.0747234269847,
+        "dist_v_m": 0.0,
+        "horizontal_ratio": 0.9870813841398406,
+        "vertical_ratio": 0.0,
+        "vehicle_type_a": "helicoptero",
+        "vehicle_type_b": "helicoptero",
+        "vehicle_pair": "helicoptero - helicoptero",
+        "severity_ratio": 0.0,
+        "is_nmac": false,
+        "is_mac": false,
+        "event_class": "lowc"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.554083445,
+          -23.51695097,
+          1005.84
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "simt": 40667.0,
+        "start_simt": 40667.0,
+        "end_simt": 40683.0,
+        "duration_s": 17.0,
+        "id_a": "HP100_0044",
+        "id_b": "HP100_0045",
+        "dist_h_m": 1828.8607440254125,
+        "dist_v_m": 91.44000000000005,
+        "horizontal_ratio": 0.987505801309618,
+        "vertical_ratio": 0.6000000000000003,
+        "vehicle_type_a": "helicoptero",
+        "vehicle_type_b": "helicoptero",
+        "vehicle_pair": "helicoptero - helicoptero",
+        "severity_ratio": 0.6000000000000003,
+        "is_nmac": false,
+        "is_mac": false,
+        "event_class": "lowc"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.505500685,
+          -23.483079745,
+          960.12
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "simt": 40756.0,
+        "start_simt": 40756.0,
+        "end_simt": 40764.0,
+        "duration_s": 9.0,
+        "id_a": "HP100_0044",
+        "id_b": "HP100_0046",
+        "dist_h_m": 1850.8209360776946,
+        "dist_v_m": 109.11872200000005,
+        "horizontal_ratio": 0.999363356413442,
+        "vertical_ratio": 0.7160021128608927,
+        "vehicle_type_a": "helicoptero",
+        "vehicle_type_b": "helicoptero",
+        "vehicle_pair": "helicoptero - helicoptero",
+        "severity_ratio": 0.7160021128608927,
+        "is_nmac": false,
+        "is_mac": false,
+        "event_class": "lowc"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.48036988,
+          -23.45871687,
+          829.665761
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "simt": 40917.0,
+        "start_simt": 40894.0,
+        "end_simt": 40963.0,
+        "duration_s": 70.0,
+        "id_a": "HP100_0045",
+        "id_b": "HP100_0047",
+        "dist_h_m": 263.2182563572874,
+        "dist_v_m": 0.0,
+        "horizontal_ratio": 0.14212648831387006,
+        "vertical_ratio": 0.0,
+        "vehicle_type_a": "helicoptero",
+        "vehicle_type_b": "helicoptero",
+        "vehicle_pair": "helicoptero - helicoptero",
+        "severity_ratio": 0.0,
+        "is_nmac": true,
+        "is_mac": false,
+        "event_class": "nmac"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.647606214999996,
+          -23.52752709,
+          944.88
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "simt": 41048.0,
+        "start_simt": 41044.0,
+        "end_simt": 41078.0,
+        "duration_s": 35.0,
+        "id_a": "HP100_0046",
+        "id_b": "HP100_0049",
+        "dist_h_m": 1403.112940463117,
+        "dist_v_m": 1.6977040000000443,
+        "horizontal_ratio": 0.7576203782198255,
+        "vertical_ratio": 0.01113979002624701,
+        "vehicle_type_a": "helicoptero",
+        "vehicle_type_b": "helicoptero",
+        "vehicle_pair": "helicoptero - helicoptero",
+        "severity_ratio": 0.01113979002624701,
+        "is_nmac": false,
+        "is_mac": false,
+        "event_class": "lowc"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.60914027,
+          -23.543855775,
+          1004.9911480000001
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "simt": 43234.0,
+        "start_simt": 43234.0,
+        "end_simt": 43237.0,
+        "duration_s": 4.0,
+        "id_a": "HP100_0056",
+        "id_b": "HP100_0057",
+        "dist_h_m": 1411.0424317894517,
+        "dist_v_m": 145.62600399999997,
+        "horizontal_ratio": 0.7619019610094232,
+        "vertical_ratio": 0.955551207349081,
+        "vehicle_type_a": "helicoptero",
+        "vehicle_type_b": "helicoptero",
+        "vehicle_pair": "helicoptero - helicoptero",
+        "severity_ratio": 0.7619019610094232,
+        "is_nmac": false,
+        "is_mac": false,
+        "event_class": "lowc"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.68774417,
+          -23.59149043,
+          893.944202
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "simt": 43423.0,
+        "start_simt": 43410.0,
+        "end_simt": 43432.0,
+        "duration_s": 23.0,
+        "id_a": "HP100_0055",
+        "id_b": "HP100_0058",
+        "dist_h_m": 1359.0823343590544,
+        "dist_v_m": 1.7732460000000856,
+        "horizontal_ratio": 0.7338457528936578,
+        "vertical_ratio": 0.011635472440945442,
+        "vehicle_type_a": "helicoptero",
+        "vehicle_type_b": "helicoptero",
+        "vehicle_pair": "helicoptero - helicoptero",
+        "severity_ratio": 0.011635472440945442,
+        "is_nmac": false,
+        "is_mac": false,
+        "event_class": "lowc"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.716619535,
+          -23.605842685,
+          908.009523
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "simt": 43468.0,
+        "start_simt": 43447.0,
+        "end_simt": 43483.0,
+        "duration_s": 37.0,
+        "id_a": "HP100_0057",
+        "id_b": "HP100_0059",
+        "dist_h_m": 22.09600527241427,
+        "dist_v_m": 88.60309200000006,
+        "horizontal_ratio": 0.011930888376033623,
+        "vertical_ratio": 0.5813851181102366,
+        "vehicle_type_a": "helicoptero",
+        "vehicle_type_b": "helicoptero",
+        "vehicle_pair": "helicoptero - helicoptero",
+        "severity_ratio": 0.011930888376033623,
+        "is_nmac": false,
+        "is_mac": false,
+        "event_class": "lowc"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.63914664000001,
+          -23.517728929999997,
+          767.287146
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "simt": 43626.0,
+        "start_simt": 43626.0,
+        "end_simt": 43658.0,
+        "duration_s": 33.0,
+        "id_a": "HP100_0058",
+        "id_b": "HP100_0059",
+        "dist_h_m": 1820.405766031981,
+        "dist_v_m": 0.0,
+        "horizontal_ratio": 0.9829404784189962,
+        "vertical_ratio": 0.0,
+        "vehicle_type_a": "helicoptero",
+        "vehicle_type_b": "helicoptero",
+        "vehicle_pair": "helicoptero - helicoptero",
+        "severity_ratio": 0.0,
+        "is_nmac": true,
+        "is_mac": false,
+        "event_class": "nmac"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.743708795,
+          -23.522001484999997,
+          1005.84
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "simt": 46573.0,
+        "start_simt": 46551.0,
+        "end_simt": 46586.0,
+        "duration_s": 36.0,
+        "id_a": "HP100_0071",
+        "id_b": "HP100_0072",
+        "dist_h_m": 23.458554687486988,
+        "dist_v_m": 103.01875500000006,
+        "horizontal_ratio": 0.012666606202746754,
+        "vertical_ratio": 0.6759760826771657,
+        "vehicle_type_a": "helicoptero",
+        "vehicle_type_b": "helicoptero",
+        "vehicle_pair": "helicoptero - helicoptero",
+        "severity_ratio": 0.012666606202746754,
+        "is_nmac": false,
+        "is_mac": false,
+        "event_class": "lowc"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.63982541,
+          -23.518726535,
+          774.4949775
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "simt": 47120.0,
+        "start_simt": 47120.0,
+        "end_simt": 47151.0,
+        "duration_s": 32.0,
+        "id_a": "HP100_0074",
+        "id_b": "HP100_0076",
+        "dist_h_m": 1846.640671727085,
+        "dist_v_m": 4.802218999999923,
+        "horizontal_ratio": 0.9971061942370869,
+        "vertical_ratio": 0.03151062335957954,
+        "vehicle_type_a": "helicoptero",
+        "vehicle_type_b": "helicoptero",
+        "vehicle_pair": "helicoptero - helicoptero",
+        "severity_ratio": 0.03151062335957954,
+        "is_nmac": false,
+        "is_mac": false,
+        "event_class": "lowc"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.75275782,
+          -23.536972130000002,
+          1008.2411095
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "simt": 47256.0,
+        "start_simt": 47238.0,
+        "end_simt": 47275.0,
+        "duration_s": 38.0,
+        "id_a": "HP100_0076",
+        "id_b": "HP100_0079",
+        "dist_h_m": 108.68449714627485,
+        "dist_v_m": 45.719999999999914,
+        "horizontal_ratio": 0.05868493366429527,
+        "vertical_ratio": 0.29999999999999943,
+        "vehicle_type_a": "helicoptero",
+        "vehicle_type_b": "helicoptero",
+        "vehicle_pair": "helicoptero - helicoptero",
+        "severity_ratio": 0.05868493366429527,
+        "is_nmac": false,
+        "is_mac": false,
+        "event_class": "lowc"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.730806584999996,
+          -23.587982345,
+          1043.94
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "simt": 47287.0,
+        "start_simt": 47275.0,
+        "end_simt": 47314.0,
+        "duration_s": 40.0,
+        "id_a": "HP100_0078",
+        "id_b": "HP100_0080",
+        "dist_h_m": 888.0530915943162,
+        "dist_v_m": 0.026477999999997337,
+        "horizontal_ratio": 0.4795103086362399,
+        "vertical_ratio": 0.0001737401574802975,
+        "vehicle_type_a": "helicoptero",
+        "vehicle_type_b": "helicoptero",
+        "vehicle_pair": "helicoptero - helicoptero",
+        "severity_ratio": 0.0001737401574802975,
+        "is_nmac": false,
+        "is_mac": false,
+        "event_class": "lowc"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.639063230000005,
+          -23.51722802,
+          762.961851
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "simt": 47323.0,
+        "start_simt": 47323.0,
+        "end_simt": 47331.0,
+        "duration_s": 9.0,
+        "id_a": "HP100_0078",
+        "id_b": "HP100_0081",
+        "dist_h_m": 233.97067479524532,
+        "dist_v_m": 0.0,
+        "horizontal_ratio": 0.12633405766481928,
+        "vertical_ratio": 0.0,
+        "vehicle_type_a": "helicoptero",
+        "vehicle_type_b": "helicoptero",
+        "vehicle_pair": "helicoptero - helicoptero",
+        "severity_ratio": 0.0,
+        "is_nmac": true,
+        "is_mac": false,
+        "event_class": "nmac"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.633654535000005,
+          -23.50986407,
+          722.9856
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "simt": 49920.0,
+        "start_simt": 49809.0,
+        "end_simt": 50035.0,
+        "duration_s": 227.0,
+        "id_a": "HP100_0089",
+        "id_b": "HP100_0090",
+        "dist_h_m": 1427.1256301181918,
+        "dist_v_m": 0.0,
+        "horizontal_ratio": 0.7705861933683541,
+        "vertical_ratio": 0.0,
+        "vehicle_type_a": "helicoptero",
+        "vehicle_type_b": "helicoptero",
+        "vehicle_pair": "helicoptero - helicoptero",
+        "severity_ratio": 0.0,
+        "is_nmac": false,
+        "is_mac": false,
+        "event_class": "lowc"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.478632915,
+          -23.482229435,
+          1005.84
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "simt": 50606.0,
+        "start_simt": 50604.0,
+        "end_simt": 50629.0,
+        "duration_s": 26.0,
+        "id_a": "HP100_0091",
+        "id_b": "HP100_0092",
+        "dist_h_m": 1450.9376853658566,
+        "dist_v_m": 0.0,
+        "horizontal_ratio": 0.7834436746035943,
+        "vertical_ratio": 0.0,
+        "vehicle_type_a": "helicoptero",
+        "vehicle_type_b": "helicoptero",
+        "vehicle_pair": "helicoptero - helicoptero",
+        "severity_ratio": 0.0,
+        "is_nmac": false,
+        "is_mac": false,
+        "event_class": "lowc"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.62791636,
+          -23.53831093,
+          975.36
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "simt": 50655.0,
+        "start_simt": 50625.0,
+        "end_simt": 50664.0,
+        "duration_s": 40.0,
+        "id_a": "HP100_0091",
+        "id_b": "HP100_0093",
+        "dist_h_m": 776.6451611646042,
+        "dist_v_m": 0.0,
+        "horizontal_ratio": 0.41935483864179496,
+        "vertical_ratio": 0.0,
+        "vehicle_type_a": "helicoptero",
+        "vehicle_type_b": "helicoptero",
+        "vehicle_pair": "helicoptero - helicoptero",
+        "severity_ratio": 0.0,
+        "is_nmac": true,
+        "is_mac": false,
+        "event_class": "nmac"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.644032210000006,
+          -23.529912095,
+          944.88
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "simt": 51048.0,
+        "start_simt": 51031.0,
+        "end_simt": 51077.0,
+        "duration_s": 47.0,
+        "id_a": "HP100_0091",
+        "id_b": "HP100_0094",
+        "dist_h_m": 754.3132799863591,
+        "dist_v_m": 2.1618610000000444,
+        "horizontal_ratio": 0.4072965874656367,
+        "vertical_ratio": 0.014185439632546223,
+        "vehicle_type_a": "helicoptero",
+        "vehicle_type_b": "helicoptero",
+        "vehicle_pair": "helicoptero - helicoptero",
+        "severity_ratio": 0.014185439632546223,
+        "is_nmac": false,
+        "is_mac": false,
+        "event_class": "lowc"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.706392945000005,
+          -23.610002825000002,
+          886.6455215
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "simt": 52414.0,
+        "start_simt": 52408.0,
+        "end_simt": 52450.0,
+        "duration_s": 43.0,
+        "id_a": "HP100_0098",
+        "id_b": "HP100_0100",
+        "dist_h_m": 1295.874841271636,
+        "dist_v_m": 0.8221499999999651,
+        "horizontal_ratio": 0.6997164369717256,
+        "vertical_ratio": 0.005394685039369849,
+        "vehicle_type_a": "helicoptero",
+        "vehicle_type_b": "helicoptero",
+        "vehicle_pair": "helicoptero - helicoptero",
+        "severity_ratio": 0.005394685039369849,
+        "is_nmac": false,
+        "is_mac": false,
+        "event_class": "lowc"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.472595585,
+          -23.470261245,
+          913.988925
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "simt": 53454.0,
+        "start_simt": 53454.0,
+        "end_simt": 53487.0,
+        "duration_s": 34.0,
+        "id_a": "HP100_0104",
+        "id_b": "HP100_0105",
+        "dist_h_m": 1810.7388950439129,
+        "dist_v_m": 0.0,
+        "horizontal_ratio": 0.9777207856608601,
+        "vertical_ratio": 0.0,
+        "vehicle_type_a": "helicoptero",
+        "vehicle_type_b": "helicoptero",
+        "vehicle_pair": "helicoptero - helicoptero",
+        "severity_ratio": 0.0,
+        "is_nmac": false,
+        "is_mac": false,
+        "event_class": "lowc"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.499901845,
+          -23.4897117,
+          1005.84
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "simt": 54144.0,
+        "start_simt": 54125.0,
+        "end_simt": 54161.0,
+        "duration_s": 37.0,
+        "id_a": "HP100_0109",
+        "id_b": "HP100_0110",
+        "dist_h_m": 23.3869322820657,
+        "dist_v_m": 47.426198,
+        "horizontal_ratio": 0.012627933197659666,
+        "vertical_ratio": 0.3111955249343832,
+        "vehicle_type_a": "helicoptero",
+        "vehicle_type_b": "helicoptero",
+        "vehicle_pair": "helicoptero - helicoptero",
+        "severity_ratio": 0.012627933197659666,
+        "is_nmac": false,
+        "is_mac": false,
+        "event_class": "lowc"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.647673595,
+          -23.5279517,
+          916.7445170000001
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "simt": 55123.0,
+        "start_simt": 55072.0,
+        "end_simt": 55217.0,
+        "duration_s": 146.0,
+        "id_a": "HP100_0115",
+        "id_b": "HP100_0117",
+        "dist_h_m": 1466.4582400440586,
+        "dist_v_m": 0.0,
+        "horizontal_ratio": 0.791824103695496,
+        "vertical_ratio": 0.0,
+        "vehicle_type_a": "helicoptero",
+        "vehicle_type_b": "helicoptero",
+        "vehicle_pair": "helicoptero - helicoptero",
+        "severity_ratio": 0.0,
+        "is_nmac": false,
+        "is_mac": false,
+        "event_class": "lowc"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.721985545,
+          -23.601224430000002,
+          1021.08
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "simt": 55275.0,
+        "start_simt": 55275.0,
+        "end_simt": 55295.0,
+        "duration_s": 21.0,
+        "id_a": "HP100_0116",
+        "id_b": "HP100_0117",
+        "dist_h_m": 1816.6101688187027,
+        "dist_v_m": 29.534610000000043,
+        "horizontal_ratio": 0.9808910198805091,
+        "vertical_ratio": 0.19379665354330736,
+        "vehicle_type_a": "helicoptero",
+        "vehicle_type_b": "helicoptero",
+        "vehicle_pair": "helicoptero - helicoptero",
+        "severity_ratio": 0.19379665354330736,
+        "is_nmac": false,
+        "is_mac": false,
+        "event_class": "lowc"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.749959345,
+          -23.541707195,
+          991.0726950000001
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "simt": 59285.0,
+        "start_simt": 59285.0,
+        "end_simt": 59316.0,
+        "duration_s": 32.0,
+        "id_a": "HP100_0130",
+        "id_b": "HP100_0131",
+        "dist_h_m": 1833.897829489988,
+        "dist_v_m": 0.0,
+        "horizontal_ratio": 0.9902256098758034,
+        "vertical_ratio": 0.0,
+        "vehicle_type_a": "helicoptero",
+        "vehicle_type_b": "helicoptero",
+        "vehicle_pair": "helicoptero - helicoptero",
+        "severity_ratio": 0.0,
+        "is_nmac": false,
+        "is_mac": false,
+        "event_class": "lowc"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.51003896,
+          -23.492703985,
+          1005.84
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "simt": 60156.0,
+        "start_simt": 60156.0,
+        "end_simt": 60180.0,
+        "duration_s": 25.0,
+        "id_a": "HP100_0133",
+        "id_b": "HP100_0136",
+        "dist_h_m": 974.910542441203,
+        "dist_v_m": 0.0,
+        "horizontal_ratio": 0.5264095801518375,
+        "vertical_ratio": 0.0,
+        "vehicle_type_a": "helicoptero",
+        "vehicle_type_b": "helicoptero",
+        "vehicle_pair": "helicoptero - helicoptero",
+        "severity_ratio": 0.0,
+        "is_nmac": true,
+        "is_mac": false,
+        "event_class": "nmac"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.473327075,
+          -23.43993273,
+          750.1128
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "simt": 60648.0,
+        "start_simt": 60648.0,
+        "end_simt": 60680.0,
+        "duration_s": 33.0,
+        "id_a": "HP100_0136",
+        "id_b": "HP100_0137",
+        "dist_h_m": 1758.038945596989,
+        "dist_v_m": 30.480000000000018,
+        "horizontal_ratio": 0.9492650894152208,
+        "vertical_ratio": 0.20000000000000012,
+        "vehicle_type_a": "helicoptero",
+        "vehicle_type_b": "helicoptero",
+        "vehicle_pair": "helicoptero - helicoptero",
+        "severity_ratio": 0.20000000000000012,
+        "is_nmac": false,
+        "is_mac": false,
+        "event_class": "lowc"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.724853665,
+          -23.515342005,
+          990.6
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "simt": 60693.0,
+        "start_simt": 60693.0,
+        "end_simt": 60721.0,
+        "duration_s": 29.0,
+        "id_a": "HP100_0136",
+        "id_b": "HP100_0138",
+        "dist_h_m": 1841.1996774189383,
+        "dist_v_m": 30.479999999999905,
+        "horizontal_ratio": 0.9941682923428393,
+        "vertical_ratio": 0.19999999999999937,
+        "vehicle_type_a": "helicoptero",
+        "vehicle_type_b": "helicoptero",
+        "vehicle_pair": "helicoptero - helicoptero",
+        "severity_ratio": 0.19999999999999937,
+        "is_nmac": false,
+        "is_mac": false,
+        "event_class": "lowc"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.74536836,
+          -23.530221895,
+          1021.0799999999999
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "simt": 65129.0,
+        "start_simt": 65112.0,
+        "end_simt": 65146.0,
+        "duration_s": 35.0,
+        "id_a": "HP100_0154",
+        "id_b": "HP100_0155",
+        "dist_h_m": 200.71582145404253,
+        "dist_v_m": 91.44000000000005,
+        "horizontal_ratio": 0.10837787335531454,
+        "vertical_ratio": 0.6000000000000003,
+        "vehicle_type_a": "helicoptero",
+        "vehicle_type_b": "helicoptero",
+        "vehicle_pair": "helicoptero - helicoptero",
+        "severity_ratio": 0.10837787335531454,
+        "is_nmac": false,
+        "is_mac": false,
+        "event_class": "lowc"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.53959655,
+          -23.501307095,
+          960.12
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "simt": 65338.0,
+        "start_simt": 65338.0,
+        "end_simt": 65380.0,
+        "duration_s": 43.0,
+        "id_a": "HP100_0156",
+        "id_b": "HP100_0157",
+        "dist_h_m": 1801.857370743991,
+        "dist_v_m": 0.0,
+        "horizontal_ratio": 0.9729251461900599,
+        "vertical_ratio": 0.0,
+        "vehicle_type_a": "helicoptero",
+        "vehicle_type_b": "helicoptero",
+        "vehicle_pair": "helicoptero - helicoptero",
+        "severity_ratio": 0.0,
+        "is_nmac": true,
+        "is_mac": false,
+        "event_class": "nmac"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.676978375000004,
+          -23.557046890000002,
+          1005.84
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "simt": 66324.0,
+        "start_simt": 66324.0,
+        "end_simt": 66339.0,
+        "duration_s": 16.0,
+        "id_a": "HP100_0161",
+        "id_b": "HP100_0163",
+        "dist_h_m": 737.3150680207887,
+        "dist_v_m": 79.17311999999993,
+        "horizontal_ratio": 0.39811828726824444,
+        "vertical_ratio": 0.5195086614173223,
+        "vehicle_type_a": "helicoptero",
+        "vehicle_type_b": "helicoptero",
+        "vehicle_pair": "helicoptero - helicoptero",
+        "severity_ratio": 0.39811828726824444,
+        "is_nmac": false,
+        "is_mac": false,
+        "event_class": "lowc"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.679057935,
+          -23.58437038,
+          859.49856
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "simt": 66509.0,
+        "start_simt": 66507.0,
+        "end_simt": 66522.0,
+        "duration_s": 16.0,
+        "id_a": "HP100_0160",
+        "id_b": "HP100_0161",
+        "dist_h_m": 1622.2760989067856,
+        "dist_v_m": 19.99646699999994,
+        "horizontal_ratio": 0.8759590166883292,
+        "vertical_ratio": 0.13121041338582637,
+        "vehicle_type_a": "helicoptero",
+        "vehicle_type_b": "helicoptero",
+        "vehicle_pair": "helicoptero - helicoptero",
+        "severity_ratio": 0.13121041338582637,
+        "is_nmac": false,
+        "is_mac": false,
+        "event_class": "lowc"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.61185676,
+          -23.549220485,
+          999.0275895
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "simt": 66629.0,
+        "start_simt": 66629.0,
+        "end_simt": 66653.0,
+        "duration_s": 25.0,
+        "id_a": "HP100_0161",
+        "id_b": "HP100_0162",
+        "dist_h_m": 1839.411934145647,
+        "dist_v_m": 0.0,
+        "horizontal_ratio": 0.9932029881995934,
+        "vertical_ratio": 0.0,
+        "vehicle_type_a": "helicoptero",
+        "vehicle_type_b": "helicoptero",
+        "vehicle_pair": "helicoptero - helicoptero",
+        "severity_ratio": 0.0,
+        "is_nmac": false,
+        "is_mac": false,
+        "event_class": "lowc"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.55220763,
+          -23.514899534999998,
+          1005.84
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "simt": 66805.0,
+        "start_simt": 66779.0,
+        "end_simt": 66819.0,
+        "duration_s": 41.0,
+        "id_a": "HP100_0160",
+        "id_b": "HP100_0164",
+        "dist_h_m": 748.9045398749863,
+        "dist_v_m": 0.07358699999997498,
+        "horizontal_ratio": 0.4043761014443771,
+        "vertical_ratio": 0.0004828543307084972,
+        "vehicle_type_a": "helicoptero",
+        "vehicle_type_b": "helicoptero",
+        "vehicle_pair": "helicoptero - helicoptero",
+        "severity_ratio": 0.0004828543307084972,
+        "is_nmac": false,
+        "is_mac": false,
+        "event_class": "lowc"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.77046496,
+          -23.481734455,
+          975.3232065
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "simt": 66908.0,
+        "start_simt": 66908.0,
+        "end_simt": 66933.0,
+        "duration_s": 26.0,
+        "id_a": "HP100_0162",
+        "id_b": "HP100_0164",
+        "dist_h_m": 1815.3490171412138,
+        "dist_v_m": 0.0,
+        "horizontal_ratio": 0.9802100524520593,
+        "vertical_ratio": 0.0,
+        "vehicle_type_a": "helicoptero",
+        "vehicle_type_b": "helicoptero",
+        "vehicle_pair": "helicoptero - helicoptero",
+        "severity_ratio": 0.0,
+        "is_nmac": false,
+        "is_mac": false,
+        "event_class": "lowc"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.71035372,
+          -23.517360845,
+          975.36
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "simt": 68766.0,
+        "start_simt": 68713.0,
+        "end_simt": 68896.0,
+        "duration_s": 184.0,
+        "id_a": "HP100_0173",
+        "id_b": "HP100_0174",
+        "dist_h_m": 534.6380796950137,
+        "dist_v_m": 0.0,
+        "horizontal_ratio": 0.288681468517826,
+        "vertical_ratio": 0.0,
+        "vehicle_type_a": "helicoptero",
+        "vehicle_type_b": "helicoptero",
+        "vehicle_pair": "helicoptero - helicoptero",
+        "severity_ratio": 0.0,
+        "is_nmac": false,
+        "is_mac": false,
+        "event_class": "lowc"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.651832240000005,
+          -23.604031405,
+          1005.84
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "simt": 70310.0,
+        "start_simt": 70297.0,
+        "end_simt": 70330.0,
+        "duration_s": 34.0,
+        "id_a": "HP100_0184",
+        "id_b": "HP100_0185",
+        "dist_h_m": 946.766618146205,
+        "dist_v_m": 0.8898599999999988,
+        "horizontal_ratio": 0.5112130767528105,
+        "vertical_ratio": 0.005838976377952747,
+        "vehicle_type_a": "helicoptero",
+        "vehicle_type_b": "helicoptero",
+        "vehicle_pair": "helicoptero - helicoptero",
+        "severity_ratio": 0.005838976377952747,
+        "is_nmac": false,
+        "is_mac": false,
+        "event_class": "lowc"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.68947906,
+          -23.578793845,
+          863.87283
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "simt": 70726.0,
+        "start_simt": 70690.0,
+        "end_simt": 70729.0,
+        "duration_s": 40.0,
+        "id_a": "HP100_0183",
+        "id_b": "HP100_0184",
+        "dist_h_m": 551.004133534105,
+        "dist_v_m": 0.0,
+        "horizontal_ratio": 0.297518430633966,
+        "vertical_ratio": 0.0,
+        "vehicle_type_a": "helicoptero",
+        "vehicle_type_b": "helicoptero",
+        "vehicle_pair": "helicoptero - helicoptero",
+        "severity_ratio": 0.0,
+        "is_nmac": false,
+        "is_mac": false,
+        "event_class": "lowc"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.827174655,
+          -23.56555688,
+          790.0416
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "simt": 72496.0,
+        "start_simt": 72481.0,
+        "end_simt": 72682.0,
+        "duration_s": 202.0,
+        "id_a": "HP100_0193",
+        "id_b": "HP100_0194",
+        "dist_h_m": 559.1149151189979,
+        "dist_v_m": 0.0,
+        "horizontal_ratio": 0.3018979023320723,
+        "vertical_ratio": 0.0,
+        "vehicle_type_a": "helicoptero",
+        "vehicle_type_b": "helicoptero",
+        "vehicle_pair": "helicoptero - helicoptero",
+        "severity_ratio": 0.0,
+        "is_nmac": false,
+        "is_mac": false,
+        "event_class": "lowc"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.66893847,
+          -23.52586735,
+          975.36
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "simt": 72704.0,
+        "start_simt": 72704.0,
+        "end_simt": 72704.0,
+        "duration_s": 1.0,
+        "id_a": "HP100_0193",
+        "id_b": "HP100_0194",
+        "dist_h_m": 1039.8690996560636,
+        "dist_v_m": 145.131029,
+        "horizontal_ratio": 0.5614843950626693,
+        "vertical_ratio": 0.9523033398950131,
+        "vehicle_type_a": "helicoptero",
+        "vehicle_type_b": "helicoptero",
+        "vehicle_pair": "helicoptero - helicoptero",
+        "severity_ratio": 0.5614843950626693,
+        "is_nmac": false,
+        "is_mac": false,
+        "event_class": "lowc"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.77593259,
+          -23.47821587,
+          865.6551145000001
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "simt": 73996.0,
+        "start_simt": 73983.0,
+        "end_simt": 74016.0,
+        "duration_s": 34.0,
+        "id_a": "HP100_0201",
+        "id_b": "HP100_0203",
+        "dist_h_m": 1316.4803731546285,
+        "dist_v_m": 5.9968000000000075,
+        "horizontal_ratio": 0.7108425341007714,
+        "vertical_ratio": 0.039349081364829445,
+        "vehicle_type_a": "helicoptero",
+        "vehicle_type_b": "helicoptero",
+        "vehicle_pair": "helicoptero - helicoptero",
+        "severity_ratio": 0.039349081364829445,
+        "is_nmac": false,
+        "is_mac": false,
+        "event_class": "lowc"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.683680375,
+          -23.58427486,
+          842.7989500000001
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "simt": 73997.0,
+        "start_simt": 73993.0,
+        "end_simt": 74014.0,
+        "duration_s": 22.0,
+        "id_a": "HP100_0199",
+        "id_b": "HP100_0203",
+        "dist_h_m": 1565.1146640372049,
+        "dist_v_m": 3.250718000000006,
+        "horizontal_ratio": 0.8450943110352078,
+        "vertical_ratio": 0.02133017060367458,
+        "vehicle_type_a": "helicoptero",
+        "vehicle_type_b": "helicoptero",
+        "vehicle_pair": "helicoptero - helicoptero",
+        "severity_ratio": 0.02133017060367458,
+        "is_nmac": false,
+        "is_mac": false,
+        "event_class": "lowc"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.691427605,
+          -23.58019472,
+          853.971991
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "simt": 74006.0,
+        "start_simt": 73996.0,
+        "end_simt": 74014.0,
+        "duration_s": 19.0,
+        "id_a": "HP100_0199",
+        "id_b": "HP100_0201",
+        "dist_h_m": 1484.7472790168372,
+        "dist_v_m": 5.181600000000003,
+        "horizontal_ratio": 0.8016993947175147,
+        "vertical_ratio": 0.034000000000000016,
+        "vehicle_type_a": "helicoptero",
+        "vehicle_type_b": "helicoptero",
+        "vehicle_pair": "helicoptero - helicoptero",
+        "severity_ratio": 0.034000000000000016,
+        "is_nmac": false,
+        "is_mac": false,
+        "event_class": "lowc"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.685012175,
+          -23.579427615,
+          822.5028
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "simt": 74011.0,
+        "start_simt": 74002.0,
+        "end_simt": 74016.0,
+        "duration_s": 15.0,
+        "id_a": "HP100_0201",
+        "id_b": "HP100_0204",
+        "dist_h_m": 992.6286486614606,
+        "dist_v_m": 1.9898749999999836,
+        "horizontal_ratio": 0.5359765921498167,
+        "vertical_ratio": 0.01305692257217837,
+        "vehicle_type_a": "helicoptero",
+        "vehicle_type_b": "helicoptero",
+        "vehicle_pair": "helicoptero - helicoptero",
+        "severity_ratio": 0.01305692257217837,
+        "is_nmac": false,
+        "is_mac": false,
+        "event_class": "lowc"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.676407915,
+          -23.584860055,
+          820.9069375
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "simt": 74015.0,
+        "start_simt": 74015.0,
+        "end_simt": 74016.0,
+        "duration_s": 2.0,
+        "id_a": "HP100_0201",
+        "id_b": "HP100_0205",
+        "dist_h_m": 513.0535180795891,
+        "dist_v_m": 1.2192000000000007,
+        "horizontal_ratio": 0.27702673762396823,
+        "vertical_ratio": 0.008000000000000004,
+        "vehicle_type_a": "helicoptero",
+        "vehicle_type_b": "helicoptero",
+        "vehicle_pair": "helicoptero - helicoptero",
+        "severity_ratio": 0.008000000000000004,
+        "is_nmac": false,
+        "is_mac": false,
+        "event_class": "lowc"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.68121153,
+          -23.58883023,
+          820.5216
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "simt": 74015.0,
+        "start_simt": 74015.0,
+        "end_simt": 74025.0,
+        "duration_s": 11.0,
+        "id_a": "HP100_0204",
+        "id_b": "HP100_0205",
+        "dist_h_m": 1375.9832168349433,
+        "dist_v_m": 23.475554999999986,
+        "horizontal_ratio": 0.7429714993709197,
+        "vertical_ratio": 0.15403907480314952,
+        "vehicle_type_a": "helicoptero",
+        "vehicle_type_b": "helicoptero",
+        "vehicle_pair": "helicoptero - helicoptero",
+        "severity_ratio": 0.15403907480314952,
+        "is_nmac": false,
+        "is_mac": false,
+        "event_class": "lowc"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.676125665,
+          -23.586675800000002,
+          832.8689775
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "simt": 74026.0,
+        "start_simt": 74015.0,
+        "end_simt": 74026.0,
+        "duration_s": 12.0,
+        "id_a": "HP100_0203",
+        "id_b": "HP100_0205",
+        "dist_h_m": 1851.8908226450824,
+        "dist_v_m": 130.56035600000007,
+        "horizontal_ratio": 0.9999410489444289,
+        "vertical_ratio": 0.8566952493438325,
+        "vehicle_type_a": "helicoptero",
+        "vehicle_type_b": "helicoptero",
+        "vehicle_pair": "helicoptero - helicoptero",
+        "severity_ratio": 0.8566952493438325,
+        "is_nmac": false,
+        "is_mac": false,
+        "event_class": "lowc"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.69075617,
+          -23.582823985,
+          913.332386
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "simt": 74197.0,
+        "start_simt": 74197.0,
+        "end_simt": 74235.0,
+        "duration_s": 39.0,
+        "id_a": "HP100_0202",
+        "id_b": "HP100_0205",
+        "dist_h_m": 1828.1456852132615,
+        "dist_v_m": 0.0,
+        "horizontal_ratio": 0.987119700439126,
+        "vertical_ratio": 0.0,
+        "vehicle_type_a": "helicoptero",
+        "vehicle_type_b": "helicoptero",
+        "vehicle_pair": "helicoptero - helicoptero",
+        "severity_ratio": 0.0,
+        "is_nmac": false,
+        "is_mac": false,
+        "event_class": "lowc"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.744954935,
+          -23.532402965000003,
+          1005.84
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "simt": 74791.0,
+        "start_simt": 74786.0,
+        "end_simt": 74823.0,
+        "duration_s": 38.0,
+        "id_a": "HP100_0211",
+        "id_b": "HP100_0212",
+        "dist_h_m": 348.2852391148288,
+        "dist_v_m": 1.3320200000000568,
+        "horizontal_ratio": 0.1880589844032553,
+        "vertical_ratio": 0.008740288713911134,
+        "vehicle_type_a": "helicoptero",
+        "vehicle_type_b": "helicoptero",
+        "vehicle_pair": "helicoptero - helicoptero",
+        "severity_ratio": 0.008740288713911134,
+        "is_nmac": false,
+        "is_mac": false,
+        "event_class": "lowc"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.686066285,
+          -23.5885628,
+          817.41719
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "simt": 75038.0,
+        "start_simt": 75038.0,
+        "end_simt": 75076.0,
+        "duration_s": 39.0,
+        "id_a": "HP100_0215",
+        "id_b": "HP100_0216",
+        "dist_h_m": 1764.4291714176165,
+        "dist_v_m": 0.0,
+        "horizontal_ratio": 0.9527155353226872,
+        "vertical_ratio": 0.0,
+        "vehicle_type_a": "helicoptero",
+        "vehicle_type_b": "helicoptero",
+        "vehicle_pair": "helicoptero - helicoptero",
+        "severity_ratio": 0.0,
+        "is_nmac": true,
+        "is_mac": false,
+        "event_class": "nmac"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.65813491,
+          -23.58279112,
+          1005.84
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "simt": 75253.0,
+        "start_simt": 75253.0,
+        "end_simt": 75285.0,
+        "duration_s": 33.0,
+        "id_a": "HP100_0214",
+        "id_b": "HP100_0216",
+        "dist_h_m": 1835.9223278339546,
+        "dist_v_m": 0.0,
+        "horizontal_ratio": 0.9913187515302131,
+        "vertical_ratio": 0.0,
+        "vehicle_type_a": "helicoptero",
+        "vehicle_type_b": "helicoptero",
+        "vehicle_pair": "helicoptero - helicoptero",
+        "severity_ratio": 0.0,
+        "is_nmac": false,
+        "is_mac": false,
+        "event_class": "lowc"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.58038445,
+          -23.540006255,
+          1005.84
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "simt": 75279.0,
+        "start_simt": 75268.0,
+        "end_simt": 75293.0,
+        "duration_s": 26.0,
+        "id_a": "HP100_0215",
+        "id_b": "HP100_0217",
+        "dist_h_m": 523.6071996969767,
+        "dist_v_m": 0.0,
+        "horizontal_ratio": 0.28272526981478224,
+        "vertical_ratio": 0.0,
+        "vehicle_type_a": "helicoptero",
+        "vehicle_type_b": "helicoptero",
+        "vehicle_pair": "helicoptero - helicoptero",
+        "severity_ratio": 0.0,
+        "is_nmac": false,
+        "is_mac": false,
+        "event_class": "lowc"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.72681043,
+          -23.51412907,
+          975.36
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "simt": 75374.0,
+        "start_simt": 75374.0,
+        "end_simt": 75406.0,
+        "duration_s": 33.0,
+        "id_a": "HP100_0214",
+        "id_b": "HP100_0217",
+        "dist_h_m": 1738.2676910282864,
+        "dist_v_m": 0.0,
+        "horizontal_ratio": 0.9385894659979949,
+        "vertical_ratio": 0.0,
+        "vehicle_type_a": "helicoptero",
+        "vehicle_type_b": "helicoptero",
+        "vehicle_pair": "helicoptero - helicoptero",
+        "severity_ratio": 0.0,
+        "is_nmac": false,
+        "is_mac": false,
+        "event_class": "lowc"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.648763685000006,
+          -23.52939195,
+          944.88
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "simt": 75516.0,
+        "start_simt": 75516.0,
+        "end_simt": 75545.0,
+        "duration_s": 30.0,
+        "id_a": "HP100_0214",
+        "id_b": "HP100_0218",
+        "dist_h_m": 1742.150360981153,
+        "dist_v_m": 0.0,
+        "horizontal_ratio": 0.9406859400546183,
+        "vertical_ratio": 0.0,
+        "vehicle_type_a": "helicoptero",
+        "vehicle_type_b": "helicoptero",
+        "vehicle_pair": "helicoptero - helicoptero",
+        "severity_ratio": 0.0,
+        "is_nmac": false,
+        "is_mac": false,
+        "event_class": "lowc"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.739327095,
+          -23.51848692,
+          1005.84
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "simt": 75556.0,
+        "start_simt": 75556.0,
+        "end_simt": 75587.0,
+        "duration_s": 32.0,
+        "id_a": "HP100_0214",
+        "id_b": "HP100_0219",
+        "dist_h_m": 1833.2826589720792,
+        "dist_v_m": 30.479999999999905,
+        "horizontal_ratio": 0.9898934443693732,
+        "vertical_ratio": 0.19999999999999937,
+        "vehicle_type_a": "helicoptero",
+        "vehicle_type_b": "helicoptero",
+        "vehicle_pair": "helicoptero - helicoptero",
+        "severity_ratio": 0.19999999999999937,
+        "is_nmac": false,
+        "is_mac": false,
+        "event_class": "lowc"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.75216908,
+          -23.53168697,
+          1021.0799999999999
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "simt": 75774.0,
+        "start_simt": 75774.0,
+        "end_simt": 75883.0,
+        "duration_s": 110.0,
+        "id_a": "HP100_0219",
+        "id_b": "HP100_0221",
+        "dist_h_m": 1841.2939586518023,
+        "dist_v_m": 0.0,
+        "horizontal_ratio": 0.9942192001359623,
+        "vertical_ratio": 0.0,
+        "vehicle_type_a": "helicoptero",
+        "vehicle_type_b": "helicoptero",
+        "vehicle_pair": "helicoptero - helicoptero",
+        "severity_ratio": 0.0,
+        "is_nmac": false,
+        "is_mac": false,
+        "event_class": "lowc"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.61372475,
+          -23.548283205,
+          1005.84
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "simt": 75923.0,
+        "start_simt": 75923.0,
+        "end_simt": 75951.0,
+        "duration_s": 29.0,
+        "id_a": "HP100_0221",
+        "id_b": "HP100_0222",
+        "dist_h_m": 1832.1378698649448,
+        "dist_v_m": 0.0,
+        "horizontal_ratio": 0.989275307702454,
+        "vertical_ratio": 0.0,
+        "vehicle_type_a": "helicoptero",
+        "vehicle_type_b": "helicoptero",
+        "vehicle_pair": "helicoptero - helicoptero",
+        "severity_ratio": 0.0,
+        "is_nmac": false,
+        "is_mac": false,
+        "event_class": "lowc"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.52910356,
+          -23.498577055,
+          1005.84
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "simt": 76147.0,
+        "start_simt": 76142.0,
+        "end_simt": 76163.0,
+        "duration_s": 22.0,
+        "id_a": "HP100_0222",
+        "id_b": "HP100_0223",
+        "dist_h_m": 976.5481016938444,
+        "dist_v_m": 1.6573499999999513,
+        "horizontal_ratio": 0.527293791411363,
+        "vertical_ratio": 0.01087499999999968,
+        "vehicle_type_a": "helicoptero",
+        "vehicle_type_b": "helicoptero",
+        "vehicle_pair": "helicoptero - helicoptero",
+        "severity_ratio": 0.01087499999999968,
+        "is_nmac": true,
+        "is_mac": false,
+        "event_class": "nmac"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.665439989999996,
+          -23.525450505,
+          945.708675
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "simt": 76703.0,
+        "start_simt": 76658.0,
+        "end_simt": 76935.0,
+        "duration_s": 278.0,
+        "id_a": "HP100_0226",
+        "id_b": "HP100_0227",
+        "dist_h_m": 946.0252428198075,
+        "dist_v_m": 0.0,
+        "horizontal_ratio": 0.5108127661014079,
+        "vertical_ratio": 0.0,
+        "vehicle_type_a": "helicoptero",
+        "vehicle_type_b": "helicoptero",
+        "vehicle_pair": "helicoptero - helicoptero",
+        "severity_ratio": 0.0,
+        "is_nmac": false,
+        "is_mac": false,
+        "event_class": "lowc"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.714633715000005,
+          -23.608812325000002,
+          1021.08
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "simt": 77253.0,
+        "start_simt": 77209.0,
+        "end_simt": 77348.0,
+        "duration_s": 140.0,
+        "id_a": "HP100_0229",
+        "id_b": "HP100_0231",
+        "dist_h_m": 1591.1411388042523,
+        "dist_v_m": 0.0,
+        "horizontal_ratio": 0.8591474831556437,
+        "vertical_ratio": 0.0,
+        "vehicle_type_a": "helicoptero",
+        "vehicle_type_b": "helicoptero",
+        "vehicle_pair": "helicoptero - helicoptero",
+        "severity_ratio": 0.0,
+        "is_nmac": false,
+        "is_mac": false,
+        "event_class": "lowc"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.676346460000005,
+          -23.563404985,
+          1005.84
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "simt": 77279.0,
+        "start_simt": 77268.0,
+        "end_simt": 77279.0,
+        "duration_s": 12.0,
+        "id_a": "HP100_0229",
+        "id_b": "HP100_0233",
+        "dist_h_m": 1849.1075254604,
+        "dist_v_m": 78.70194000000004,
+        "horizontal_ratio": 0.9984381886935205,
+        "vertical_ratio": 0.5164169291338585,
+        "vehicle_type_a": "helicoptero",
+        "vehicle_type_b": "helicoptero",
+        "vehicle_pair": "helicoptero - helicoptero",
+        "severity_ratio": 0.5164169291338585,
+        "is_nmac": false,
+        "is_mac": false,
+        "event_class": "lowc"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.672295225,
+          -23.553791185,
+          966.48903
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "simt": 77296.0,
+        "start_simt": 77258.0,
+        "end_simt": 77306.0,
+        "duration_s": 49.0,
+        "id_a": "HP100_0232",
+        "id_b": "HP100_0233",
+        "dist_h_m": 1466.151722739659,
+        "dist_v_m": 0.3805399999999963,
+        "horizontal_ratio": 0.7916585975916085,
+        "vertical_ratio": 0.0024969816272965638,
+        "vehicle_type_a": "helicoptero",
+        "vehicle_type_b": "helicoptero",
+        "vehicle_pair": "helicoptero - helicoptero",
+        "severity_ratio": 0.0024969816272965638,
+        "is_nmac": false,
+        "is_mac": false,
+        "event_class": "lowc"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.67625534,
+          -23.555099615,
+          975.1697300000001
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "simt": 77310.0,
+        "start_simt": 77258.0,
+        "end_simt": 77389.0,
+        "duration_s": 132.0,
+        "id_a": "HP100_0231",
+        "id_b": "HP100_0233",
+        "dist_h_m": 1367.1613909418215,
+        "dist_v_m": 0.0,
+        "horizontal_ratio": 0.7382080944610268,
+        "vertical_ratio": 0.0,
+        "vehicle_type_a": "helicoptero",
+        "vehicle_type_b": "helicoptero",
+        "vehicle_pair": "helicoptero - helicoptero",
+        "severity_ratio": 0.0,
+        "is_nmac": false,
+        "is_mac": false,
+        "event_class": "lowc"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.67854705,
+          -23.553917215,
+          1005.84
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "simt": 77322.0,
+        "start_simt": 77257.0,
+        "end_simt": 77352.0,
+        "duration_s": 96.0,
+        "id_a": "HP100_0229",
+        "id_b": "HP100_0232",
+        "dist_h_m": 1156.1209530385324,
+        "dist_v_m": 0.0,
+        "horizontal_ratio": 0.6242553742108706,
+        "vertical_ratio": 0.0,
+        "vehicle_type_a": "helicoptero",
+        "vehicle_type_b": "helicoptero",
+        "vehicle_pair": "helicoptero - helicoptero",
+        "severity_ratio": 0.0,
+        "is_nmac": false,
+        "is_mac": false,
+        "event_class": "lowc"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.67316072,
+          -23.533452045,
+          975.36
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "simt": 77343.0,
+        "start_simt": 77343.0,
+        "end_simt": 77369.0,
+        "duration_s": 27.0,
+        "id_a": "HP100_0232",
+        "id_b": "HP100_0233",
+        "dist_h_m": 1850.6537491513413,
+        "dist_v_m": 30.480000000000018,
+        "horizontal_ratio": 0.9992730826951087,
+        "vertical_ratio": 0.20000000000000012,
+        "vehicle_type_a": "helicoptero",
+        "vehicle_type_b": "helicoptero",
+        "vehicle_pair": "helicoptero - helicoptero",
+        "severity_ratio": 0.20000000000000012,
+        "is_nmac": false,
+        "is_mac": false,
+        "event_class": "lowc"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.67449085,
+          -23.53826595,
+          990.6
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "simt": 77343.0,
+        "start_simt": 77263.0,
+        "end_simt": 77373.0,
+        "duration_s": 111.0,
+        "id_a": "HP100_0231",
+        "id_b": "HP100_0232",
+        "dist_h_m": 427.7672902435413,
+        "dist_v_m": 1.133786999999984,
+        "horizontal_ratio": 0.23097585866281928,
+        "vertical_ratio": 0.007439547244094382,
+        "vehicle_type_a": "helicoptero",
+        "vehicle_type_b": "helicoptero",
+        "vehicle_pair": "helicoptero - helicoptero",
+        "severity_ratio": 0.007439547244094382,
+        "is_nmac": false,
+        "is_mac": false,
+        "event_class": "lowc"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.67261276,
+          -23.532101915,
+          974.7931065
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "simt": 77960.0,
+        "start_simt": 77956.0,
+        "end_simt": 77977.0,
+        "duration_s": 22.0,
+        "id_a": "HP100_0236",
+        "id_b": "HP100_0238",
+        "dist_h_m": 1047.304319808045,
+        "dist_v_m": 2.2158130000000256,
+        "horizontal_ratio": 0.5654990927689227,
+        "vertical_ratio": 0.014539455380577595,
+        "vehicle_type_a": "helicoptero",
+        "vehicle_type_b": "helicoptero",
+        "vehicle_pair": "helicoptero - helicoptero",
+        "severity_ratio": 0.014539455380577595,
+        "is_nmac": false,
+        "is_mac": false,
+        "event_class": "lowc"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.669118055,
+          -23.52503879,
+          963.1897295
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "simt": 78291.0,
+        "start_simt": 78287.0,
+        "end_simt": 78314.0,
+        "duration_s": 28.0,
+        "id_a": "HP100_0239",
+        "id_b": "HP100_0240",
+        "dist_h_m": 1460.8209341061765,
+        "dist_v_m": 0.0,
+        "horizontal_ratio": 0.7887802020011753,
+        "vertical_ratio": 0.0,
+        "vehicle_type_a": "helicoptero",
+        "vehicle_type_b": "helicoptero",
+        "vehicle_pair": "helicoptero - helicoptero",
+        "severity_ratio": 0.0,
+        "is_nmac": false,
+        "is_mac": false,
+        "event_class": "lowc"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.67808939,
+          -23.525985900000002,
+          975.36
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "simt": 78784.0,
+        "start_simt": 78760.0,
+        "end_simt": 78824.0,
+        "duration_s": 65.0,
+        "id_a": "HP100_0241",
+        "id_b": "HP100_0244",
+        "dist_h_m": 989.4683400931453,
+        "dist_v_m": 0.0,
+        "horizontal_ratio": 0.5342701620373355,
+        "vertical_ratio": 0.0,
+        "vehicle_type_a": "helicoptero",
+        "vehicle_type_b": "helicoptero",
+        "vehicle_pair": "helicoptero - helicoptero",
+        "severity_ratio": 0.0,
+        "is_nmac": false,
+        "is_mac": false,
+        "event_class": "lowc"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.66679533,
+          -23.52748996,
+          944.88
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "simt": 78793.0,
+        "start_simt": 78783.0,
+        "end_simt": 78807.0,
+        "duration_s": 25.0,
+        "id_a": "HP100_0241",
+        "id_b": "HP100_0245",
+        "dist_h_m": 465.93305141452475,
+        "dist_v_m": 0.0,
+        "horizontal_ratio": 0.25158372106615806,
+        "vertical_ratio": 0.0,
+        "vehicle_type_a": "helicoptero",
+        "vehicle_type_b": "helicoptero",
+        "vehicle_pair": "helicoptero - helicoptero",
+        "severity_ratio": 0.0,
+        "is_nmac": true,
+        "is_mac": false,
+        "event_class": "nmac"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.65253588,
+          -23.527933545000003,
+          944.88
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "simt": 78794.0,
+        "start_simt": 78794.0,
+        "end_simt": 78818.0,
+        "duration_s": 25.0,
+        "id_a": "HP100_0244",
+        "id_b": "HP100_0245",
+        "dist_h_m": 1787.5635344944333,
+        "dist_v_m": 0.0,
+        "horizontal_ratio": 0.9652070920596292,
+        "vertical_ratio": 0.0,
+        "vehicle_type_a": "helicoptero",
+        "vehicle_type_b": "helicoptero",
+        "vehicle_pair": "helicoptero - helicoptero",
+        "severity_ratio": 0.0,
+        "is_nmac": true,
+        "is_mac": false,
+        "event_class": "nmac"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.65955405,
+          -23.527027095,
+          944.88
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "simt": 78859.0,
+        "start_simt": 78859.0,
+        "end_simt": 78883.0,
+        "duration_s": 25.0,
+        "id_a": "HP100_0242",
+        "id_b": "HP100_0245",
+        "dist_h_m": 1831.5465949140983,
+        "dist_v_m": 0.0,
+        "horizontal_ratio": 0.9889560447700314,
+        "vertical_ratio": 0.0,
+        "vehicle_type_a": "helicoptero",
+        "vehicle_type_b": "helicoptero",
+        "vehicle_pair": "helicoptero - helicoptero",
+        "severity_ratio": 0.0,
+        "is_nmac": false,
+        "is_mac": false,
+        "event_class": "lowc"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.712239215,
+          -23.516809979999998,
+          975.36
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "simt": 78910.0,
+        "start_simt": 78910.0,
+        "end_simt": 78934.0,
+        "duration_s": 25.0,
+        "id_a": "HP100_0241",
+        "id_b": "HP100_0243",
+        "dist_h_m": 1825.5258973866214,
+        "dist_v_m": 0.0,
+        "horizontal_ratio": 0.9857051281785213,
+        "vertical_ratio": 0.0,
+        "vehicle_type_a": "helicoptero",
+        "vehicle_type_b": "helicoptero",
+        "vehicle_pair": "helicoptero - helicoptero",
+        "severity_ratio": 0.0,
+        "is_nmac": false,
+        "is_mac": false,
+        "event_class": "lowc"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.568541554999996,
+          -23.53146486,
+          1005.84
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "simt": 78963.0,
+        "start_simt": 78943.0,
+        "end_simt": 78963.0,
+        "duration_s": 21.0,
+        "id_a": "HP100_0246",
+        "id_b": "HP100_0247",
+        "dist_h_m": 1838.0201504235008,
+        "dist_v_m": 113.97232799999995,
+        "horizontal_ratio": 0.9924514851098817,
+        "vertical_ratio": 0.7478499212598422,
+        "vehicle_type_a": "helicoptero",
+        "vehicle_type_b": "helicoptero",
+        "vehicle_pair": "helicoptero - helicoptero",
+        "severity_ratio": 0.7478499212598422,
+        "is_nmac": false,
+        "is_mac": false,
+        "event_class": "lowc"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.724224615,
+          -23.602483295,
+          1009.813836
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "simt": 78997.0,
+        "start_simt": 78997.0,
+        "end_simt": 79023.0,
+        "duration_s": 27.0,
+        "id_a": "HP100_0242",
+        "id_b": "HP100_0243",
+        "dist_h_m": 1811.0448536471,
+        "dist_v_m": 11.989665999999943,
+        "horizontal_ratio": 0.9778859900902267,
+        "vertical_ratio": 0.07867234908136445,
+        "vehicle_type_a": "helicoptero",
+        "vehicle_type_b": "helicoptero",
+        "vehicle_pair": "helicoptero - helicoptero",
+        "severity_ratio": 0.07867234908136445,
+        "is_nmac": false,
+        "is_mac": false,
+        "event_class": "lowc"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.625138275,
+          -23.539657285,
+          981.354833
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "simt": 79186.0,
+        "start_simt": 79161.0,
+        "end_simt": 79186.0,
+        "duration_s": 26.0,
+        "id_a": "HP100_0243",
+        "id_b": "HP100_0247",
+        "dist_h_m": 1763.3021078234929,
+        "dist_v_m": 7.175888999999984,
+        "horizontal_ratio": 0.9521069696671127,
+        "vertical_ratio": 0.04708588582677155,
+        "vehicle_type_a": "helicoptero",
+        "vehicle_type_b": "helicoptero",
+        "vehicle_pair": "helicoptero - helicoptero",
+        "severity_ratio": 0.04708588582677155,
+        "is_nmac": false,
+        "is_mac": false,
+        "event_class": "lowc"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.736224445000005,
+          -23.51140377,
+          978.9479445
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "simt": 79315.0,
+        "start_simt": 79300.0,
+        "end_simt": 79334.0,
+        "duration_s": 35.0,
+        "id_a": "HP100_0247",
+        "id_b": "HP100_0250",
+        "dist_h_m": 564.1168594883354,
+        "dist_v_m": 0.9827740000000631,
+        "horizontal_ratio": 0.30459873622480316,
+        "vertical_ratio": 0.006448648293963668,
+        "vehicle_type_a": "helicoptero",
+        "vehicle_type_b": "helicoptero",
+        "vehicle_pair": "helicoptero - helicoptero",
+        "severity_ratio": 0.006448648293963668,
+        "is_nmac": false,
+        "is_mac": false,
+        "event_class": "lowc"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.644759275,
+          -23.524931655,
+          880.986859
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "simt": 79722.0,
+        "start_simt": 79611.0,
+        "end_simt": 79880.0,
+        "duration_s": 270.0,
+        "id_a": "HP100_0251",
+        "id_b": "HP100_0252",
+        "dist_h_m": 1288.5592404543038,
+        "dist_v_m": 0.0,
+        "horizontal_ratio": 0.695766328539041,
+        "vertical_ratio": 0.0,
+        "vehicle_type_a": "helicoptero",
+        "vehicle_type_b": "helicoptero",
+        "vehicle_pair": "helicoptero - helicoptero",
+        "severity_ratio": 0.0,
+        "is_nmac": false,
+        "is_mac": false,
+        "event_class": "lowc"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.477990254999995,
+          -23.48202741,
+          1005.84
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "simt": 79922.0,
+        "start_simt": 79922.0,
+        "end_simt": 79990.0,
+        "duration_s": 69.0,
+        "id_a": "HP100_0251",
+        "id_b": "HP100_0252",
+        "dist_h_m": 1844.6787439474408,
+        "dist_v_m": 0.0,
+        "horizontal_ratio": 0.9960468379845793,
+        "vertical_ratio": 0.0,
+        "vehicle_type_a": "helicoptero",
+        "vehicle_type_b": "helicoptero",
+        "vehicle_pair": "helicoptero - helicoptero",
+        "severity_ratio": 0.0,
+        "is_nmac": false,
+        "is_mac": false,
+        "event_class": "lowc"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.57759099,
+          -23.53506186,
+          1005.84
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "simt": 80020.0,
+        "start_simt": 80016.0,
+        "end_simt": 80029.0,
+        "duration_s": 14.0,
+        "id_a": "HP100_0251",
+        "id_b": "HP100_0252",
+        "dist_h_m": 1769.277748821305,
+        "dist_v_m": 0.0,
+        "horizontal_ratio": 0.9553335576788904,
+        "vertical_ratio": 0.0,
+        "vehicle_type_a": "helicoptero",
+        "vehicle_type_b": "helicoptero",
+        "vehicle_pair": "helicoptero - helicoptero",
+        "severity_ratio": 0.0,
+        "is_nmac": false,
+        "is_mac": false,
+        "event_class": "lowc"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.64426084,
+          -23.53046858,
+          944.88
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "simt": 80161.0,
+        "start_simt": 80139.0,
+        "end_simt": 80213.0,
+        "duration_s": 75.0,
+        "id_a": "HP100_0251",
+        "id_b": "HP100_0252",
+        "dist_h_m": 1422.7112524435101,
+        "dist_v_m": 0.0,
+        "horizontal_ratio": 0.7682026201098867,
+        "vertical_ratio": 0.0,
+        "vehicle_type_a": "helicoptero",
+        "vehicle_type_b": "helicoptero",
+        "vehicle_pair": "helicoptero - helicoptero",
+        "severity_ratio": 0.0,
+        "is_nmac": false,
+        "is_mac": false,
+        "event_class": "lowc"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.750598405,
+          -23.520700575,
+          1036.32
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "simt": 80266.0,
+        "start_simt": 80231.0,
+        "end_simt": 80267.0,
+        "duration_s": 37.0,
+        "id_a": "HP100_0251",
+        "id_b": "HP100_0252",
+        "dist_h_m": 1817.1940668523143,
+        "dist_v_m": 0.0,
+        "horizontal_ratio": 0.981206299596282,
+        "vertical_ratio": 0.0,
+        "vehicle_type_a": "helicoptero",
+        "vehicle_type_b": "helicoptero",
+        "vehicle_pair": "helicoptero - helicoptero",
+        "severity_ratio": 0.0,
+        "is_nmac": false,
+        "is_mac": false,
+        "event_class": "lowc"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.810263355000004,
+          -23.521560035,
+          975.36
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "simt": 80317.0,
+        "start_simt": 80317.0,
+        "end_simt": 80343.0,
+        "duration_s": 27.0,
+        "id_a": "HP100_0251",
+        "id_b": "HP100_0252",
+        "dist_h_m": 1830.4566463935003,
+        "dist_v_m": 65.14711399999999,
+        "horizontal_ratio": 0.9883675196509181,
+        "vertical_ratio": 0.4274745013123359,
+        "vehicle_type_a": "helicoptero",
+        "vehicle_type_b": "helicoptero",
+        "vehicle_pair": "helicoptero - helicoptero",
+        "severity_ratio": 0.4274745013123359,
+        "is_nmac": false,
+        "is_mac": false,
+        "event_class": "lowc"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.81946122,
+          -23.554704649999998,
+          940.225586
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "simt": 80855.0,
+        "start_simt": 80851.0,
+        "end_simt": 80879.0,
+        "duration_s": 29.0,
+        "id_a": "HP100_0256",
+        "id_b": "HP100_0257",
+        "dist_h_m": 1136.0130137470376,
+        "dist_v_m": 0.0,
+        "horizontal_ratio": 0.6133979555869533,
+        "vertical_ratio": 0.0,
+        "vehicle_type_a": "helicoptero",
+        "vehicle_type_b": "helicoptero",
+        "vehicle_pair": "helicoptero - helicoptero",
+        "severity_ratio": 0.0,
+        "is_nmac": true,
+        "is_mac": false,
+        "event_class": "nmac"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.664368355,
+          -23.525648235,
+          944.88
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "simt": 80893.0,
+        "start_simt": 80880.0,
+        "end_simt": 80909.0,
+        "duration_s": 30.0,
+        "id_a": "HP100_0256",
+        "id_b": "HP100_0259",
+        "dist_h_m": 750.1483638650309,
+        "dist_v_m": 1.1767920000000913,
+        "horizontal_ratio": 0.4050477126701031,
+        "vertical_ratio": 0.007721732283465166,
+        "vehicle_type_a": "helicoptero",
+        "vehicle_type_b": "helicoptero",
+        "vehicle_pair": "helicoptero - helicoptero",
+        "severity_ratio": 0.007721732283465166,
+        "is_nmac": false,
+        "is_mac": false,
+        "event_class": "lowc"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.64368716,
+          -23.523484735,
+          854.9567509999999
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "simt": 81193.0,
+        "start_simt": 81185.0,
+        "end_simt": 81210.0,
+        "duration_s": 26.0,
+        "id_a": "HP100_0258",
+        "id_b": "HP100_0260",
+        "dist_h_m": 702.7321819525163,
+        "dist_v_m": 0.0,
+        "horizontal_ratio": 0.3794450226525466,
+        "vertical_ratio": 0.0,
+        "vehicle_type_a": "helicoptero",
+        "vehicle_type_b": "helicoptero",
+        "vehicle_pair": "helicoptero - helicoptero",
+        "severity_ratio": 0.0,
+        "is_nmac": true,
+        "is_mac": false,
+        "event_class": "nmac"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.630799325,
+          -23.536921865,
+          975.36
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "simt": 82093.0,
+        "start_simt": 82093.0,
+        "end_simt": 82282.0,
+        "duration_s": 190.0,
+        "id_a": "HP100_0264",
+        "id_b": "HP100_0265",
+        "dist_h_m": 1840.4702209634347,
+        "dist_v_m": 0.0,
+        "horizontal_ratio": 0.9937744173668654,
+        "vertical_ratio": 0.0,
+        "vehicle_type_a": "helicoptero",
+        "vehicle_type_b": "helicoptero",
+        "vehicle_pair": "helicoptero - helicoptero",
+        "severity_ratio": 0.0,
+        "is_nmac": true,
+        "is_mac": false,
+        "event_class": "nmac"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.573333995,
+          -23.533323914999997,
+          1005.84
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "simt": 82705.0,
+        "start_simt": 82705.0,
+        "end_simt": 82716.0,
+        "duration_s": 12.0,
+        "id_a": "HP100_0267",
+        "id_b": "HP100_0269",
+        "dist_h_m": 1816.1331738531183,
+        "dist_v_m": 87.89400400000011,
+        "horizontal_ratio": 0.9806334632036275,
+        "vertical_ratio": 0.5767323097112868,
+        "vehicle_type_a": "helicoptero",
+        "vehicle_type_b": "helicoptero",
+        "vehicle_pair": "helicoptero - helicoptero",
+        "severity_ratio": 0.5767323097112868,
+        "is_nmac": false,
+        "is_mac": false,
+        "event_class": "lowc"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.74733337,
+          -23.54488901,
+          985.608618
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "simt": 82714.0,
+        "start_simt": 82708.0,
+        "end_simt": 82782.0,
+        "duration_s": 75.0,
+        "id_a": "HP100_0269",
+        "id_b": "HP100_0270",
+        "dist_h_m": 1824.5227156902922,
+        "dist_v_m": 0.0,
+        "horizontal_ratio": 0.985163453396486,
+        "vertical_ratio": 0.0,
+        "vehicle_type_a": "helicoptero",
+        "vehicle_type_b": "helicoptero",
+        "vehicle_pair": "helicoptero - helicoptero",
+        "severity_ratio": 0.0,
+        "is_nmac": false,
+        "is_mac": false,
+        "event_class": "lowc"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.745492195,
+          -23.545968549999998,
+          1005.84
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "simt": 82716.0,
+        "start_simt": 82700.0,
+        "end_simt": 82716.0,
+        "duration_s": 17.0,
+        "id_a": "HP100_0267",
+        "id_b": "HP100_0270",
+        "dist_h_m": 319.9671231910415,
+        "dist_v_m": 150.32752400000004,
+        "horizontal_ratio": 0.17276842504915846,
+        "vertical_ratio": 0.9864010761154858,
+        "vehicle_type_a": "helicoptero",
+        "vehicle_type_b": "helicoptero",
+        "vehicle_pair": "helicoptero - helicoptero",
+        "severity_ratio": 0.17276842504915846,
+        "is_nmac": false,
+        "is_mac": false,
+        "event_class": "lowc"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.739410195000005,
+          -23.541649605,
+          930.676238
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "simt": 85431.0,
+        "start_simt": 85431.0,
+        "end_simt": 85631.0,
+        "duration_s": 201.0,
+        "id_a": "HP100_0276",
+        "id_b": "HP100_0277",
+        "dist_h_m": 1820.566765102139,
+        "dist_v_m": 0.0,
+        "horizontal_ratio": 0.9830274109622781,
+        "vertical_ratio": 0.0,
+        "vehicle_type_a": "helicoptero",
+        "vehicle_type_b": "helicoptero",
+        "vehicle_pair": "helicoptero - helicoptero",
+        "severity_ratio": 0.0,
+        "is_nmac": false,
+        "is_mac": false,
+        "event_class": "lowc"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.611917919999996,
+          -23.548076045000002,
+          1005.84
+        ]
+      }
+    }
+  ]
+}

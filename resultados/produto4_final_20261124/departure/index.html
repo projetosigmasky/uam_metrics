@@ -1,0 +1,283 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Indicadores de Desempenho UAM</title>
+  <link rel="stylesheet" href="assets/vendor/leaflet/leaflet.css" />
+  <link rel="stylesheet" href="assets/dashboard.css?v=9a2200ca50e7" />
+</head>
+<body>
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">RMSP / corredor aereo urbano</p>
+        <h1>Indicadores de Desempenho</h1>
+      </div>
+      <nav class="run-menu" aria-label="Rodadas publicadas de 06/11/2026">
+        <span class="run-menu-label">Rodada</span>
+        <a href="https://projetosigmasky.github.io/uam_metrics/" data-run-link="nominal">Nominal</a>
+        <a href="https://projetosigmasky.github.io/uam_metrics_departure/" data-run-link="departure">Atraso de partida</a>
+        <a href="https://projetosigmasky.github.io/uam_metrics_wind/" data-run-link="wind">Vento</a>
+        <a href="https://projetosigmasky.github.io/uam_metrics_blockage/" data-run-link="blockage">Bloqueio de espaço aéreo</a>
+      </nav>
+      <div class="topbar-controls">
+        <label id="day-filter">
+          <span>Grupo de cenários</span>
+          <select id="day-select"></select>
+        </label>
+        <label><span>Gestão do espaço aéreo</span><select id="corridor-select"></select></label>
+        <label><span>Gestão do tráfego</span><select id="management-select"></select></label>
+        <label><span>Condição operacional</span><select id="condition-select"></select></label>
+        <label><span>Demanda</span><select id="vertiports-select"></select></label>
+        <label><span>Critérios de separação</span><select id="separation-select"></select></label>
+        <label id="legacy-run-filter" hidden><span>Cenário</span><select id="run-select"></select></label>
+        <p id="scenario-selection" class="scenario-selection" role="status" aria-live="polite"></p>
+      </div>
+    </header>
+    <p id="protocol-data-note" class="protocol-note" hidden></p>
+
+    <nav class="kpa-tabs" role="tablist" aria-label="Áreas de desempenho">
+      <button type="button" role="tab" id="tab-maps" aria-controls="panel-maps" aria-selected="true" data-kpa-tab="maps">Visão geral</button>
+      <button type="button" role="tab" id="tab-safety" aria-controls="panel-safety" aria-selected="false" data-kpa-tab="safety">Segurança</button>
+      <button type="button" role="tab" id="tab-efficiency" aria-controls="panel-efficiency" aria-selected="false" data-kpa-tab="efficiency">Eficiência</button>
+      <button type="button" role="tab" id="tab-capacity" aria-controls="panel-capacity" aria-selected="false" data-kpa-tab="capacity">Capacidade</button>
+      <button type="button" role="tab" id="tab-predictability" aria-controls="panel-predictability" aria-selected="false" data-kpa-tab="predictability">Previsibilidade</button>
+      <button type="button" role="tab" id="tab-equity" aria-controls="panel-equity" aria-selected="false" data-kpa-tab="equity">Equidade</button>
+      <button type="button" role="tab" id="tab-resources" aria-controls="panel-resources" aria-selected="false" data-kpa-tab="resources">Explorar recursos</button>
+    </nav>
+    <p id="scenario-load-status" class="protocol-note" role="status" aria-live="polite" hidden></p>
+    <button id="scenario-load-retry" class="panel-button" type="button" hidden>Tentar carregar novamente</button>
+    <main id="dashboard-content">
+      <p id="replica-universe" data-kpi-context class="protocol-note" hidden></p>
+      <p data-kpi-context class="metric-hierarchy-note" hidden>Cada aba corresponde a uma área de desempenho (KPA). Os indicadores (KPIs) seguem o capítulo 3 do Produto III.</p>
+      <section id="panel-maps" data-kpa-panel="maps" role="tabpanel" aria-labelledby="tab-maps">
+        <div class="overview-heading">
+          <h2>Visão geral do cenário</h2>
+          <p>Veja o volume de voos simulados, a configuração selecionada e a rede de corredores. Use as demais abas para explorar os indicadores por área de desempenho.</p>
+        </div>
+        <div class="overview-summary" aria-live="polite">
+          <article class="metric">
+            <h3>Total de voos simulados</h3>
+            <strong id="overview-flight-total">—</strong>
+            <p id="overview-flight-detail"></p>
+          </article>
+          <article class="metric">
+            <h3 id="overview-scenario">Cenário selecionado</h3>
+            <dl id="overview-filters" class="overview-filters"></dl>
+          </article>
+        </div>
+        <section class="indicator-map" aria-labelledby="indicator-title-maps">
+          <h3 id="indicator-title-maps">Rede de corredores</h3>
+          <p>Rotas Especiais de Helicópteros (REH) e corredores UAM dedicados quando aplicáveis. O mapa de calor mostra a concentração de registros de posição nas réplicas do cenário.</p>
+          <label><input type="checkbox" id="overview-heat" checked /> Mostrar mapa de calor da ocupação</label>
+          <p id="indicator-status-maps" class="indicator-status" role="status"></p>
+          <div id="indicator-map-maps" class="indicator-map-canvas" aria-label="Rede de corredores"></div>
+          <ul id="indicator-legend-maps" class="indicator-legend" aria-label="Legenda do mapa"></ul>
+        </section>
+      </section>
+      <section id="panel-safety" data-kpa-panel="safety" role="tabpanel" aria-labelledby="tab-safety" hidden>
+        <h2>Segurança</h2>
+        <p id="map-replica-note" class="map-replica-note"></p>
+        <section class="indicator-map" aria-labelledby="indicator-title-safety">
+          <h3 id="indicator-title-safety">Mapa de eventos de risco</h3>
+          <p>Localização dos eventos na réplica ilustrativa. O filtro também se aplica à reprodução 3D.</p>
+          <div class="conflict-pair-filter" role="group" aria-label="Filtrar conflitos por combinação de veículos">
+          <span>Combinação:</span>
+          <button class="active" type="button" aria-pressed="true" data-conflict-pair="all">Todos</button>
+          <button type="button" aria-pressed="false" data-conflict-pair="evtol-evtol">eVTOL × eVTOL</button>
+          <button type="button" aria-pressed="false" data-conflict-pair="evtol-helicoptero">eVTOL × helicóptero</button>
+          <button type="button" aria-pressed="false" data-conflict-pair="helicoptero-helicoptero">Helicóptero × helicóptero</button>
+        </div>
+
+          <p id="indicator-status-safety" class="indicator-status" role="status"></p>
+          <div id="indicator-map-safety" class="indicator-map-canvas" aria-label="Mapa de eventos de risco"></div>
+          <ul id="indicator-legend-safety" class="indicator-legend" aria-label="Legenda do mapa"></ul>
+        </section>
+        <section class="viewer3d-section" aria-labelledby="viewer3d-title">
+        <div class="section-heading viewer3d-heading">
+          <div>
+            <p class="eyebrow">Espaço aéreo em três dimensões</p>
+            <h2 id="viewer3d-title">Trajetórias e conflitos ao longo da simulação</h2>
+          </div>
+          <p class="viewer3d-note" id="viewer3d-note">Plano-base a 2.621 pés MSL. Arraste para girar e use a roda para aproximar.</p>
+        </div>
+        <div class="viewer3d-controls" aria-label="Controles da visualização 3D">
+          <button id="viewer3d-play" type="button">Reproduzir</button>
+          <label class="viewer3d-timeline">
+            <span>Tempo <strong id="viewer3d-time-label">--:--:--</strong></span>
+            <input id="viewer3d-time" type="range" min="0" max="0" step="5" value="0" />
+          </label>
+          <label>
+            <span>Velocidade</span>
+            <select id="viewer3d-speed">
+              <option value="1">1×</option>
+              <option value="5">5×</option>
+              <option value="20" selected>20×</option>
+            </select>
+          </label>
+          <label>
+            <span>Exagero vertical</span>
+            <select id="viewer3d-vertical-scale">
+              <option value="1">1×</option>
+              <option value="5" selected>5×</option>
+              <option value="10">10×</option>
+            </select>
+          </label>
+          <button id="viewer3d-reset" type="button">Restaurar vista</button>
+        </div>
+        <div class="viewer3d-stage">
+          <canvas id="viewer3d-canvas" role="img" aria-label="Representação tridimensional animada das trajetórias de aeronaves"></canvas>
+          <div class="viewer3d-status" id="viewer3d-status" aria-live="polite">Carregando dados 3D…</div>
+          <div class="viewer3d-legend" aria-label="Legenda da visualização 3D">
+            <span><i class="viewer3d-dot evtol"></i>eVTOL</span>
+            <span><i class="viewer3d-dot helicopter"></i>Helicóptero</span>
+            <span><i class="viewer3d-dot lowc"></i>LoWC</span>
+            <span><i class="viewer3d-dot nmac"></i>NMAC</span>
+            <span><i class="viewer3d-dot mac"></i>MAC</span>
+          </div>
+        </div>
+      </section>
+
+        <label class="kpi-picker">Indicador nos cartões e gráficos <select id="select-kpi-safety"><option value="">Todos os indicadores</option></select></label>
+        <div class="metric-grid" id="kpis-safety"></div>
+        <section class="evtol-airport" aria-labelledby="evtol-airport-title">
+          <h3 id="evtol-airport-title">eVTOL × tráfego aeroportuário (FR24)</h3>
+          <p id="evtol-airport-note">Análise separada: somente eVTOLs contra o tráfego registrado dos aeroportos.</p>
+          <div class="metric-grid" id="evtol-airport-safety"></div>
+        </section>
+        <div id="charts-safety" class="charts"></div>
+      </section>
+      <section id="panel-efficiency" data-kpa-panel="efficiency" role="tabpanel" aria-labelledby="tab-efficiency" hidden>
+        <h2>Eficiência</h2>
+        <section class="indicator-map" aria-labelledby="indicator-title-efficiency">
+          <h3 id="indicator-title-efficiency">Rotas planejadas e trajetórias médias</h3>
+          <p>Compare o plano com a trajetória média dos voos associados à mesma rota. A cor indica a faixa de distância excedente média. Trechos compartilhados por várias trajetórias médias ficam mais intensos. Rotas com mais voos também recebem maior opacidade.</p>
+          <div class="indicator-controls"><label>Colorir por <select id="efficiency-map-metric"><option value="horizontal_excess_pct">Eficiência horizontal</option><option value="conformity_excess_pct">Conformidade com o plano</option></select></label><label><input type="checkbox" id="efficiency-map-planned" checked /> Rotas planejadas</label></div>
+          <fieldset id="efficiency-bands" class="indicator-controls"><legend>Distância excedente média</legend>
+            <label><input type="checkbox" id="efficiency-band-0" checked /> Até 5%</label>
+            <label><input type="checkbox" id="efficiency-band-1" checked /> Mais de 5 até 15%</label>
+            <label><input type="checkbox" id="efficiency-band-2" checked /> Mais de 15 até 30%</label>
+            <label><input type="checkbox" id="efficiency-band-3" checked /> Acima de 30%</label>
+          </fieldset>
+          <label>Intensidade das trajetórias <input type="range" id="efficiency-intensity" min="1" max="100" value="45" /></label>
+          <p id="indicator-status-efficiency" class="indicator-status" role="status"></p>
+          <div id="indicator-map-efficiency" class="indicator-map-canvas" aria-label="Rotas planejadas e trajetórias médias"></div>
+          <ul id="indicator-legend-efficiency" class="indicator-legend" aria-label="Legenda do mapa"></ul>
+        </section>
+        <label class="kpi-picker">Indicador nos cartões e gráficos <select id="select-kpi-efficiency"><option value="">Todos os indicadores</option></select></label>
+        <div class="metric-grid" id="kpis-efficiency"></div>
+        <div id="charts-efficiency" class="charts"></div>
+      </section>
+      <section id="panel-capacity" data-kpa-panel="capacity" role="tabpanel" aria-labelledby="tab-capacity" hidden>
+        <h2>Capacidade</h2>
+        <section class="indicator-map" aria-labelledby="indicator-title-capacity">
+          <h3 id="indicator-title-capacity">Carga nos waypoints e na quadrícula</h3>
+          <p>Selecione um recurso no mapa ou no ranking para ver suas métricas. Os waypoints usam o P95 observado em operações por hora. A malha analítica tem células de aproximadamente 5 km², alinhadas aos eixos norte–sul e leste–oeste, e conta voos distintos em janelas de 5 minutos. Na malha de Congonhas, a porcentagem indica em quantos dos instantes observados a célula atingiu ou ultrapassou seu limite de aeronaves simultâneas. Por exemplo, 5% corresponde a 5 de cada 100 instantes.</p>
+          <div class="indicator-controls"><label><input type="checkbox" id="capacity-map-waypoints" checked /> Waypoints com capacidade estimada</label><label><input type="checkbox" id="capacity-map-grid" checked /> Quadrícula analítica</label><label><input type="checkbox" id="capacity-map-circea" /> Congonhas · 18 quadrículas do simulador</label></div>
+          <fieldset id="capacity-bands" class="indicator-controls"><legend>Waypoints por P95 (operações/h)</legend>
+            <label><input type="checkbox" id="capacity-band-0" checked /> 0</label>
+            <label><input type="checkbox" id="capacity-band-1" checked /> 4</label>
+            <label><input type="checkbox" id="capacity-band-2" checked /> 8</label>
+            <label><input type="checkbox" id="capacity-band-3" checked /> 12 ou mais</label>
+          </fieldset>
+          <p id="indicator-status-capacity" class="indicator-status" role="status"></p>
+          <div id="indicator-map-capacity" class="indicator-map-canvas" aria-label="Carga nos waypoints e na quadrícula"></div>
+          <ul id="indicator-legend-capacity" class="indicator-legend" aria-label="Legenda do mapa"></ul>
+        </section>
+        <div id="capacity-details" aria-live="polite" hidden></div>
+        <div id="capacity-ranking" class="table-wrap"></div>
+      </section>
+      <section id="panel-predictability" data-kpa-panel="predictability" role="tabpanel" aria-labelledby="tab-predictability" hidden>
+        <h2>Previsibilidade</h2>
+        <section class="indicator-map" aria-labelledby="indicator-title-predictability">
+          <h3 id="indicator-title-predictability">Variabilidade do tempo de voo por par OD</h3>
+          <p>As linhas ligam a origem ao destino planejados. O intervalo interquartil (IQR) mede a amplitude da metade central dos tempos de voo. Valores maiores indicam menor previsibilidade.</p>
+          <div class="od-layout"><aside class="od-filters" aria-label="Filtros de pares OD">
+            <label>Medida<select id="predictability-map-metric"><option value="iqr_s">Intervalo interquartil</option><option value="std_s">Desvio padrão</option></select></label>
+            <label>Variabilidade<select id="predictability-band"><option value="all">Todas com estimativa</option><option value="0">Até 30 s</option><option value="1">Mais de 30 até 60 s</option><option value="2">Mais de 60 até 120 s</option><option value="3">Acima de 120 s</option><option value="missing">Sem estimativa</option></select></label>
+            <label>Voos por par<select id="predictability-minimum"><option value="1">Qualquer quantidade</option><option value="5">Pelo menos 5</option><option value="10">Pelo menos 10</option><option value="50">Pelo menos 50</option></select></label>
+            <label>Exibir<select id="predictability-limit"><option value="5">5 pares</option><option value="10">10 pares</option><option value="25">25 pares</option><option value="0">Todos</option></select></label>
+            <label>Par origem–destino<select id="predictability-pair"><option value="">Todos do recorte</option></select></label>
+            <small>Pares em ordem de variabilidade decrescente. Pares sem estimativa são ordenados por número de voos.</small>
+          </aside><div>
+          <p id="indicator-status-predictability" class="indicator-status" role="status"></p>
+          <div id="indicator-map-predictability" class="indicator-map-canvas" aria-label="Variabilidade do tempo de voo por par OD"></div>
+          <ul id="indicator-legend-predictability" class="indicator-legend" aria-label="Legenda do mapa"></ul>
+          </div></div>
+        </section>
+        <label class="kpi-picker">Indicador nos cartões e gráficos <select id="select-kpi-predictability"><option value="">Todos os indicadores</option></select></label>
+        <div class="metric-grid" id="kpis-predictability"></div>
+        <div id="charts-predictability" class="charts"></div>
+      </section>
+      <section id="panel-equity" data-kpa-panel="equity" role="tabpanel" aria-labelledby="tab-equity" hidden>
+        <h2>Equidade</h2>
+        <section class="indicator-map" aria-labelledby="indicator-title-equity">
+          <h3 id="indicator-title-equity">Pares origem–destino</h3>
+          <p>Os pares aparecem como contexto geográfico. A análise de equidade por atraso está indisponível.</p>
+          <div class="od-layout"><aside class="od-filters" aria-label="Filtros de pares OD">
+            <label>Voos por par<select id="equity-minimum"><option value="1">Qualquer quantidade</option><option value="5">Pelo menos 5</option><option value="10">Pelo menos 10</option><option value="50">Pelo menos 50</option></select></label>
+            <label>Exibir<select id="equity-limit"><option value="5">5 pares</option><option value="10">10 pares</option><option value="25">25 pares</option><option value="0">Todos</option></select></label>
+            <label>Par origem–destino<select id="equity-pair"><option value="">Todos do recorte</option></select></label>
+            <small>Pares em ordem de número de voos, do maior para o menor.</small>
+          </aside><div>
+          <p id="indicator-status-equity" class="indicator-status" role="status"></p>
+          <div id="indicator-map-equity" class="indicator-map-canvas" aria-label="Pares origem–destino"></div>
+          <ul id="indicator-legend-equity" class="indicator-legend" aria-label="Legenda do mapa"></ul>
+          </div></div>
+        </section>
+        <label class="kpi-picker">Indicador nos cartões e gráficos <select id="select-kpi-equity"><option value="">Todos os indicadores</option></select></label>
+        <div class="metric-grid" id="kpis-equity"></div>
+        <div id="charts-equity" class="charts"></div>
+      </section>
+      <section id="panel-resources" data-kpa-panel="resources" role="tabpanel" aria-labelledby="tab-resources" hidden>
+        <h2>Explorar recursos</h2>
+        <p>Inspecione os corredores, as junções e a densidade de registros de posição agregada entre réplicas.</p>
+        <section class="workspace">
+        <aside class="side-panel">
+          <div class="panel-section">
+            <h2>Camadas</h2>
+            <label><input type="checkbox" id="layer-official-reh" checked /> REH formal</label>
+            <label><input type="checkbox" id="layer-uam-corridors" checked /> Corredores UAM (projeção 2D)</label>
+            <label><input type="checkbox" id="layer-heat" /> Densidade (todas as réplicas)</label>
+            <label><input type="checkbox" id="layer-complexity" /> Cruzamentos UAM × REH (diagnóstico 3D)</label>
+            <label><input type="checkbox" id="layer-candidate-nodes" /> Junções UAM e REH</label>
+            <label><input type="checkbox" id="layer-conflicts" /> Eventos LoWC/NMAC</label>
+            <button class="panel-button" id="fit-map" type="button">Reenquadrar mapa</button>
+            <div class="map-summary" aria-live="polite">
+              <strong id="map-info-title">Mapa operacional</strong>
+              <p id="map-info-text">Densidade agregada das réplicas e rede de corredores.</p>
+            </div>
+          </div>
+        </aside>
+
+        <section class="map-stage" aria-label="Mapa georreferenciado">
+          <div id="map"></div>
+          <div class="map-info" aria-live="polite">
+            <div class="map-legend">
+              <span data-legend-layer="official-reh"><i class="legend-swatch legend-official-reh"></i>Rotas Especiais de Helicópteros (REH)</span>
+              <span data-legend-layer="uam-corridors"><i class="legend-swatch legend-uam-corridors"></i>Corredor UAM · projeção 2D</span>
+              <span data-legend-layer="heat"><i class="legend-swatch legend-heat"></i>Densidade</span>
+              <span data-legend-layer="complexity"><i class="legend-swatch legend-complexity"></i>Cruzamento UAM × REH 3D</span>
+              <span data-legend-layer="candidate-nodes"><i class="legend-swatch legend-uam-node"></i>Waypoint UAM nomeado</span>
+              <span data-legend-layer="candidate-nodes"><i class="legend-swatch legend-reh-node"></i>Fix REH nomeado</span>
+              <span data-legend-layer="conflicts" data-conflict="lowc"><i class="legend-swatch legend-lowc"></i>LoWC</span>
+              <span data-legend-layer="conflicts" data-conflict="nmac"><i class="legend-swatch legend-nmac"></i>NMAC</span>
+              <span data-legend-layer="conflicts" data-conflict="mac"><i class="legend-swatch legend-mac"></i>MAC</span>
+            </div>
+          </div>
+        </section>
+      </section>
+      </section>
+    </main>
+    <script src="assets/vendor/leaflet/leaflet.js"></script>
+    <script src="assets/vendor/leaflet/leaflet-heat.js"></script>
+    <script src="assets/candidate_nodes.js?v=maps-v1"></script>
+    <script src="assets/waypoint_rankings.js?v=maps-v1"></script>
+    <script src="assets/data_bundle.js?v=produto-iii-kpis"></script>
+    <script src="assets/metric_catalog.js?v=produto-iii-kpis"></script>
+    <script src="assets/scenario_catalog.js?v=produto-iii-kpis"></script>
+    <script src="assets/dashboard.js?v=10717f5cff63"></script>
+    <script src="assets/circea_model.js?v=cdb84f6afe57"></script>
+    <script src="assets/maps.js?v=35564c6cd5f1"></script>
+</body>
+</html>

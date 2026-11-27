@@ -1,0 +1,1365 @@
+// Spatial views restored from the previous dashboard; KPIs remain in their own tabs.
+Object.assign(state, {
+  map: null,
+  tracksLayer: null,
+  officialRehLayer: null,
+  uamProjectionLayer: null,
+  uamCenterlines: {type: "FeatureCollection", features: []},
+  plannedLayer: null,
+  heatLayer: null,
+  atdHotspotLayer: null,
+  complexityLayer: null,
+  candidateNodeLayer: null,
+  conflictLayer: null,
+  resourceHighlightLayer: null,
+  baseLayers: {},
+  overlayLayers: {},
+  lastTracks: null,
+  lastConflicts: null,
+  lastOfficialReh: null,
+  lastCapacity: null,
+  candidateNodes: window.__UAM_CANDIDATE_NODES__ || { type: "FeatureCollection", features: [] },
+  waypointRankings: window.__UAM_WAYPOINT_RANKINGS__ || [],
+  uamProjection: window.__UAM_CORRIDOR_PROJECTION__ || { type: "FeatureCollection", features: [] },
+  crossingCandidates: window.__UAM_CROSSINGS_3D__ || { type: "FeatureCollection", features: [] },
+  conflictPairFilter: "all"
+});
+const viewer3d = {
+  data: null,
+  conflicts: [],
+  macTimestampAvailable: false,
+  currentTime: 0,
+  playing: false,
+  speed: 20,
+  verticalScale: 5,
+  yaw: -0.65,
+  pitch: 0.58,
+  zoom: 1,
+  lastFrame: null,
+  animationFrame: null,
+  dragging: false,
+  pointerX: 0,
+  pointerY: 0,
+};
+
+function showMapUnavailable() {
+  const map = document.getElementById("map");
+  if (map) {
+    map.innerHTML = `
+      <div class="map-unavailable">
+        <strong>Mapa indisponivel</strong>
+        <span>O Leaflet externo nao foi carregado. Indicadores, tabelas e graficos continuam disponiveis.</span>
+      </div>`;
+  }
+}
+
+
+function initMap() {
+  state.map = L.map("map", {
+    preferCanvas: false,
+    zoomControl: true,
+    zoomSnap: 0.25,
+    wheelPxPerZoomLevel: 90,
+  }).setView([-23.5505, -46.6333], 10);
+
+  const heatPane = state.map.createPane("heatPane");
+  heatPane.style.zIndex = 360;
+  const routePane = state.map.createPane("routePane");
+  routePane.style.zIndex = 460;
+  const conflictPane = state.map.createPane("conflictPane");
+  conflictPane.style.zIndex = 560;
+
+  const positron = addCartoBasemap(state.map);
+  state.baseLayers = {"CARTO Positron": positron};
+}
+
+function addCartoBasemap(map) {
+  return L.tileLayer("https://basemaps.cartocdn.com/rastertiles/light_all/{z}/{x}/{y}{r}.png?key={apiKey}", {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
+    apiKey: "cb1_5cad_1_68678856722854692b947577", crossOrigin: true, maxNativeZoom: 19, maxZoom: 20, updateWhenIdle: true, keepBuffer: 4
+  }).addTo(map);
+}
+
+
+function toggleLayer(layerName, event) {
+  const layer = state[layerName];
+  if (!layer || !state.map) {
+    updateMapLegend();
+    return;
+  }
+  if (event.target.checked) {
+    layer.addTo(state.map);
+  } else {
+    state.map.removeLayer(layer);
+  }
+  updateMapLegend();
+}
+
+
+function bind3DControls() {
+  const canvas = document.getElementById("viewer3d-canvas");
+  if (!canvas) return;
+  const play = document.getElementById("viewer3d-play");
+  const timeline = document.getElementById("viewer3d-time");
+  play.addEventListener("click", () => {
+    if (!viewer3d.data) return;
+    if (viewer3d.currentTime >= viewer3d.data.sim_end_s) viewer3d.currentTime = viewer3d.data.sim_start_s;
+    if (viewer3d.animationFrame !== null) cancelAnimationFrame(viewer3d.animationFrame);
+    viewer3d.animationFrame = null;
+    viewer3d.playing = !viewer3d.playing;
+    viewer3d.lastFrame = null;
+    update3DControls();
+    if (viewer3d.playing) viewer3d.animationFrame = requestAnimationFrame(animate3D);
+  });
+  timeline.addEventListener("input", (event) => {
+    if (viewer3d.animationFrame !== null) cancelAnimationFrame(viewer3d.animationFrame);
+    viewer3d.animationFrame = null;
+    viewer3d.lastFrame = null;
+    viewer3d.playing = false;
+    viewer3d.currentTime = Number(event.target.value);
+    update3DControls();
+    draw3D();
+  });
+  document.getElementById("viewer3d-speed").addEventListener("change", (event) => {
+    viewer3d.speed = Number(event.target.value);
+  });
+  document.getElementById("viewer3d-vertical-scale").addEventListener("change", (event) => {
+    viewer3d.verticalScale = Number(event.target.value);
+    draw3D();
+  });
+  document.getElementById("viewer3d-reset").addEventListener("click", () => {
+    viewer3d.yaw = -0.65;
+    viewer3d.pitch = 0.58;
+    viewer3d.zoom = 1;
+    draw3D();
+  });
+  canvas.addEventListener("pointerdown", (event) => {
+    viewer3d.dragging = true;
+    viewer3d.pointerX = event.clientX;
+    viewer3d.pointerY = event.clientY;
+    canvas.setPointerCapture(event.pointerId);
+  });
+  canvas.addEventListener("pointermove", (event) => {
+    if (!viewer3d.dragging) return;
+    viewer3d.yaw += (event.clientX - viewer3d.pointerX) * 0.008;
+    viewer3d.pitch = Math.max(0.08, Math.min(1.35, viewer3d.pitch + (event.clientY - viewer3d.pointerY) * 0.006));
+    viewer3d.pointerX = event.clientX;
+    viewer3d.pointerY = event.clientY;
+    draw3D();
+  });
+  canvas.addEventListener("pointerup", () => { viewer3d.dragging = false; });
+  canvas.addEventListener("pointercancel", () => { viewer3d.dragging = false; });
+  canvas.addEventListener("wheel", (event) => {
+    event.preventDefault();
+    viewer3d.zoom = Math.max(0.55, Math.min(3, viewer3d.zoom * (event.deltaY > 0 ? 0.9 : 1.1)));
+    draw3D();
+  }, { passive: false });
+  if (window.ResizeObserver) new ResizeObserver(() => draw3D()).observe(canvas);
+}
+
+
+function render3DVisualization(data, conflicts) {
+  if (viewer3d.animationFrame !== null) cancelAnimationFrame(viewer3d.animationFrame);
+  viewer3d.animationFrame = null;
+  viewer3d.currentTime = 0;
+  viewer3d.dragging = false;
+  viewer3d.playing = false;
+  viewer3d.lastFrame = null;
+  viewer3d.data = data?.tracks?.length ? data : null;
+  viewer3d.conflicts = conflicts?.features || [];
+  viewer3d.macTimestampAvailable = Boolean(conflicts?.properties?.mac_timestamp_available);
+  if (!data?.tracks?.length) {
+    setText("viewer3d-status", "Sem trajetórias 3D para este cenário.");
+    setText("viewer3d-note", "Dados 3D indisponíveis para esta réplica.");
+    update3DControls();
+    draw3D();
+    return;
+  }
+  viewer3d.currentTime = data.sim_start_s;
+  setText(
+    "viewer3d-note",
+    `Plano-base a ${formatNumber(data.ground_plane_msl_ft, 0)} pés (${formatNumber(data.ground_plane_msl_m, 1)} m) MSL · janelas de ${data.sample_seconds} s.`
+  );
+  const timeline = document.getElementById("viewer3d-time");
+  timeline.min = data.sim_start_s;
+  timeline.max = data.sim_end_s;
+  timeline.step = data.sample_seconds;
+  timeline.value = viewer3d.currentTime;
+  update3DControls();
+  draw3D();
+}
+
+
+function animate3D(timestamp) {
+  if (!viewer3d.playing || !viewer3d.data) return;
+  if (viewer3d.lastFrame === null) viewer3d.lastFrame = timestamp;
+  const elapsed = (timestamp - viewer3d.lastFrame) / 1000;
+  const interval = viewer3d.data.sample_seconds;
+  const next = viewer3d.currentTime + elapsed * viewer3d.speed;
+  const aligned = viewer3d.data.sim_start_s + Math.floor((next - viewer3d.data.sim_start_s) / interval) * interval;
+  if (aligned > viewer3d.currentTime) {
+    viewer3d.currentTime = Math.min(aligned, viewer3d.data.sim_end_s);
+    viewer3d.lastFrame = timestamp;
+    update3DControls();
+    draw3D();
+  }
+  if (viewer3d.currentTime >= viewer3d.data.sim_end_s) {
+    viewer3d.playing = false;
+    update3DControls();
+    return;
+  }
+  viewer3d.animationFrame = requestAnimationFrame(animate3D);
+}
+
+
+function update3DControls() {
+  const play = document.getElementById("viewer3d-play");
+  const timeline = document.getElementById("viewer3d-time");
+  play.textContent = viewer3d.playing ? "Pausar" : "Reproduzir";
+  play.setAttribute("aria-pressed", String(viewer3d.playing));
+  play.disabled = !viewer3d.data;
+  timeline.disabled = !viewer3d.data;
+  if (viewer3d.data) timeline.value = viewer3d.currentTime;
+  setText("viewer3d-time-label", formatSimulationTime(viewer3d.currentTime));
+}
+
+
+function formatSimulationTime(seconds) {
+  const value = Math.max(0, Math.round(Number(seconds) || 0));
+  const hours = String(Math.floor(value / 3600)).padStart(2, "0");
+  const minutes = String(Math.floor((value % 3600) / 60)).padStart(2, "0");
+  const secs = String(value % 60).padStart(2, "0");
+  return `${hours}:${minutes}:${secs}`;
+}
+
+
+function conflictEventClass(feature) {
+  const properties = feature?.properties || feature || {};
+  if (properties.event_class === "mac" || properties.is_mac) return "mac";
+  if (properties.event_class === "nmac" || properties.is_nmac) return "nmac";
+  return "lowc";
+}
+
+
+function conflictEventLabel(feature) {
+  const eventClass = conflictEventClass(feature);
+  return eventClass === "mac" ? "MAC" : eventClass === "nmac" ? "NMAC" : "LoWC";
+}
+
+
+// Event classes use the categorical batlowS palette.
+function conflictEventColor(feature) {
+  const eventClass = conflictEventClass(feature);
+  return eventClass === "mac" ? "#215F61" : eventClass === "nmac" ? "#F19D6B" : "#818232";
+}
+
+
+function conflictPairKey(feature) {
+  const pair = String(feature?.properties?.vehicle_pair || "").toLowerCase();
+  const hasEvtol = pair.includes("evtol");
+  const helicopterCount = (pair.match(/helicoptero/g) || []).length;
+  if (hasEvtol && helicopterCount) return "evtol-helicoptero";
+  if (hasEvtol) return "evtol-evtol";
+  if (helicopterCount >= 2) return "helicoptero-helicoptero";
+  return "desconhecido";
+}
+
+
+function filteredConflictFeatures(features) {
+  if (state.conflictPairFilter === "all") return features || [];
+  return (features || []).filter((feature) => conflictPairKey(feature) === state.conflictPairFilter);
+}
+
+
+function filteredConflictCollection(conflicts) {
+  return {
+    ...(conflicts || emptyFeatureCollection()),
+    features: filteredConflictFeatures(conflicts?.features || []),
+  };
+}
+
+
+function bindConflictPairControls() {
+  document.querySelectorAll("[data-conflict-pair]").forEach((button) => {
+    button.addEventListener("click", () => {
+      state.conflictPairFilter = button.dataset.conflictPair;
+      document.querySelectorAll("[data-conflict-pair]").forEach((item) => {
+        const active = item.dataset.conflictPair === state.conflictPairFilter;
+        item.classList.toggle("active", active);
+        item.setAttribute("aria-pressed", String(active));
+      });
+      draw3D();
+      state.mapNeedsRender = true;
+      renderIndicatorMap(true);
+    });
+  });
+}
+
+
+function pointAtOrBefore(points, time) {
+  let low = 0;
+  let high = points.length - 1;
+  let result = -1;
+  while (low <= high) {
+    const middle = (low + high) >> 1;
+    if (points[middle][0] <= time) { result = middle; low = middle + 1; }
+    else high = middle - 1;
+  }
+  return result;
+}
+
+
+function draw3D() {
+  const canvas = document.getElementById("viewer3d-canvas");
+  if (!canvas) return;
+  const rect = canvas.getBoundingClientRect();
+  if (!rect.width || !rect.height) return;
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  const width = Math.round(rect.width * dpr);
+  const height = Math.round(rect.height * dpr);
+  if (canvas.width !== width || canvas.height !== height) { canvas.width = width; canvas.height = height; }
+  const ctx = canvas.getContext("2d");
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.clearRect(0, 0, rect.width, rect.height);
+  const data = viewer3d.data;
+  if (!data?.tracks?.length) return;
+
+  const bounds = data.bounds;
+  const centerLat = (bounds.min_lat + bounds.max_lat) / 2;
+  const centerLon = (bounds.min_lon + bounds.max_lon) / 2;
+  const metersLon = 111320 * Math.cos(centerLat * Math.PI / 180);
+  const rangeX = Math.max(1000, (bounds.max_lon - bounds.min_lon) * metersLon);
+  const rangeZ = Math.max(1000, (bounds.max_lat - bounds.min_lat) * 111320);
+  const minAlt = data.altitude_bounds_m[0];
+  const maxAlt = data.altitude_bounds_m[1];
+  const groundAlt = Number.isFinite(data.ground_plane_msl_m) ? data.ground_plane_msl_m : minAlt;
+  const cosY = Math.cos(viewer3d.yaw), sinY = Math.sin(viewer3d.yaw);
+  const cosP = Math.cos(viewer3d.pitch), sinP = Math.sin(viewer3d.pitch);
+  const verticalRange = Math.max(maxAlt, groundAlt) - Math.min(minAlt, groundAlt);
+  const scale = Math.min(rect.width / (rangeX * 1.35), rect.height / (rangeZ * 1.05 + Math.max(100, verticalRange) * viewer3d.verticalScale)) * viewer3d.zoom;
+  const originX = rect.width / 2;
+  const originY = rect.height * 0.61;
+  const project = (lon, lat, alt = groundAlt) => {
+    const x = (lon - centerLon) * metersLon;
+    const z = (lat - centerLat) * 111320;
+    const y = (alt - groundAlt) * viewer3d.verticalScale;
+    const xr = x * cosY - z * sinY;
+    const zr = x * sinY + z * cosY;
+    return { x: originX + xr * scale, y: originY - (y * cosP - zr * sinP) * scale, depth: y * sinP + zr * cosP };
+  };
+
+  draw3DGround(ctx, project, bounds, groundAlt, rect.width, data.ground_plane_msl_ft);
+  const markers = [];
+  let activeCount = 0;
+  for (const track of data.tracks) {
+    const color = track.vehicle_type === "evtol" ? "#22d3ee" : track.vehicle_type === "helicoptero" ? "#a3e635" : "#a78bfa";
+    draw3DLine(ctx, track.points, project, color, 0.11, 0, track.points.length - 1);
+    const index = pointAtOrBefore(track.points, viewer3d.currentTime);
+    if (index < 0 || viewer3d.currentTime - track.points[index][0] > data.sample_seconds) continue;
+    activeCount += 1;
+    draw3DLine(ctx, track.points, project, color, 0.82, Math.max(0, index - Math.ceil(120 / data.sample_seconds)), index);
+    const point = track.points[index];
+    const position = project(point[1], point[2], point[3]);
+    const previous = track.points[Math.max(0, index - 1)];
+    const previousPosition = project(previous[1], previous[2], previous[3]);
+    markers.push({
+      ...position,
+      color,
+      label: track.id,
+      vehicleType: track.vehicle_type,
+      angle: Math.atan2(position.y - previousPosition.y, position.x - previousPosition.x),
+    });
+  }
+  const activeConflicts = filteredConflictFeatures(viewer3d.conflicts).filter((feature) => {
+    const p = feature.properties;
+    return p.start_simt <= viewer3d.currentTime && p.end_simt >= viewer3d.currentTime;
+  });
+  for (const feature of activeConflicts) {
+    const coordinates = feature.geometry.coordinates;
+    markers.push({
+      ...project(coordinates[0], coordinates[1], coordinates[2] ?? groundAlt),
+      color: conflictEventColor(feature),
+      conflict: true,
+      eventClass: conflictEventClass(feature),
+    });
+  }
+  markers.sort((a, b) => a.depth - b.depth);
+  for (const marker of markers) {
+    if (marker.conflict) drawConflictSymbol(ctx, marker);
+    else drawAircraftSymbol(ctx, marker);
+  }
+  const activeCounts = { lowc: 0, nmac: 0, mac: 0 };
+  for (const feature of activeConflicts) activeCounts[conflictEventClass(feature)] += 1;
+  setText(
+    "viewer3d-status",
+    `${activeCount} aeronaves · ${activeCounts.lowc} LoWC fora de NMAC · ${activeCounts.nmac} NMAC · ${activeCounts.mac} MAC ativos · amostra de ${data.sample_seconds} s`
+  );
+}
+
+
+function drawConflictSymbol(ctx, marker) {
+  ctx.save();
+  ctx.translate(marker.x, marker.y);
+  ctx.strokeStyle = marker.color;
+  ctx.fillStyle = marker.color;
+  ctx.shadowBlur = 16;
+  ctx.shadowColor = marker.color;
+  ctx.lineWidth = 2.5;
+  ctx.beginPath();
+  ctx.arc(0, 0, marker.eventClass === "mac" ? 7 : 6, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.arc(0, 0, 2.5, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+}
+
+
+function drawAircraftSymbol(ctx, marker) {
+  ctx.save();
+  ctx.translate(marker.x, marker.y);
+  ctx.rotate(marker.angle || 0);
+  ctx.strokeStyle = marker.color;
+  ctx.fillStyle = marker.color;
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
+  ctx.shadowBlur = 5;
+  ctx.shadowColor = marker.color;
+  if (marker.vehicleType === "helicoptero") {
+    ctx.lineWidth = 1.6;
+    ctx.beginPath();
+    ctx.ellipse(0, 0, 5, 3, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(-4, 0); ctx.lineTo(-10, 0); ctx.lineTo(-12, -2);
+    ctx.moveTo(0, -7); ctx.lineTo(0, 7);
+    ctx.moveTo(-7, 0); ctx.lineTo(7, 0);
+    ctx.stroke();
+  } else {
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(7, 0); ctx.lineTo(-4, -3); ctx.lineTo(-7, 0); ctx.lineTo(-4, 3); ctx.closePath();
+    ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(-2, -6); ctx.lineTo(-2, 6);
+    ctx.moveTo(2, -6); ctx.lineTo(2, 6);
+    ctx.stroke();
+    for (const x of [-2, 2]) for (const y of [-6, 6]) {
+      ctx.beginPath(); ctx.arc(x, y, 1.8, 0, Math.PI * 2); ctx.stroke();
+    }
+  }
+  ctx.restore();
+}
+
+
+function draw3DLine(ctx, points, project, color, alpha, start, end) {
+  if (end <= start) return;
+  ctx.beginPath();
+  ctx.strokeStyle = color;
+  ctx.globalAlpha = alpha;
+  ctx.lineWidth = alpha > 0.5 ? 1.8 : 0.7;
+  for (let index = start; index <= end; index += 1) {
+    const point = points[index];
+    const projected = project(point[1], point[2], point[3]);
+    if (index === start) ctx.moveTo(projected.x, projected.y); else ctx.lineTo(projected.x, projected.y);
+  }
+  ctx.stroke();
+  ctx.globalAlpha = 1;
+}
+
+
+function draw3DGround(ctx, project, bounds, altitude, width, altitudeFt) {
+  ctx.strokeStyle = "rgba(107, 145, 180, 0.22)";
+  ctx.lineWidth = 1;
+  const divisions = width < 700 ? 5 : 8;
+  for (let index = 0; index <= divisions; index += 1) {
+    const ratio = index / divisions;
+    const lon = bounds.min_lon + (bounds.max_lon - bounds.min_lon) * ratio;
+    const lat = bounds.min_lat + (bounds.max_lat - bounds.min_lat) * ratio;
+    const a = project(lon, bounds.min_lat, altitude), b = project(lon, bounds.max_lat, altitude);
+    const c = project(bounds.min_lon, lat, altitude), d = project(bounds.max_lon, lat, altitude);
+    ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(c.x, c.y); ctx.lineTo(d.x, d.y); ctx.stroke();
+  }
+  const label = project(bounds.min_lon, bounds.max_lat, altitude);
+  ctx.fillStyle = "rgba(199, 215, 231, 0.82)";
+  ctx.font = "12px Inter, sans-serif";
+  ctx.fillText(`Plano-base ${Math.round(altitudeFt)} pés MSL`, label.x + 8, label.y - 8);
+}
+
+
+function waypointMetric(feature) {
+  const scenario = (state.runs[state.activeRunIndex] || state.runs[0])?.metadata?.scenario_key;
+  return state.waypointRankings.find(row => row.scenario === scenario && row.waypoint_id === feature.properties.resource_id && row.source_sha256 === feature.properties.source?.sha256 && row.analysis_method_version === feature.properties.analysis_method_version);
+}
+
+
+function waypointAltitude(p) {
+  return p.vertical_intervals_m?.length
+    ? p.vertical_intervals_m.map(([lo, hi]) => `${formatNumber(lo, 1)}–${formatNumber(hi, 1)} m MSL`).join("; ")
+    : "Altitude desconhecida/inválida: sem contagem 3D";
+}
+
+
+function waypointTooltip(feature) {
+  const p = feature.properties, [lon, lat] = feature.geometry.coordinates, metric = waypointMetric(feature);
+  return `${escapeHtml(p.label)} · ${p.network} · ${formatNumber(lat, 6)}, ${formatNumber(lon, 6)}<br>` +
+    `${waypointAltitude(p)}<br>P95: ${metric?.p95_throughput_per_hour == null ? "indisponível" : `${formatNumber(metric.p95_throughput_per_hour, 2)} ops/h`} · ${p.name_position_count} posições deste nome`;
+}
+
+
+function waypointSelectionDetails(p) {
+  if (p.network === "REH") return `Junção REH: ${p.network_degree} arestas distintas, conforme o critério original.<br>`;
+  const ref = p.reh_reference;
+  if (!ref) return "Referência REH indisponível.<br>";
+  const target = { type: "candidate_node", resource_id: ref.resource_id };
+  const referenceLabel = (state.candidateNodes.features || []).some(f => f.properties.resource_id === ref.resource_id)
+    ? `<button class="resource-map-link" data-map-target="${escapeHtml(JSON.stringify(target))}">${escapeHtml(ref.label)}</button>`
+    : `${escapeHtml(ref.label)} (fixo de referência fora da seleção de junções REH)`;
+  return `Junção UAM: ${p.network_degree} arestas físicas distintas; ${p.interior_route_ids.length} rotas com uso não terminal.<br>` +
+    `Referência REH: ${referenceLabel}` +
+    ` · ${formatNumber(ref.horizontal_distance_m, 1)} m · ${ref.match_method === "documented_alias" ? "alias documentado" : "nome normalizado equivalente"}. Vínculo de referência, sem fusão de recursos.<br>`;
+}
+
+
+function waypointDetails(feature) {
+  const p = feature.properties, metric = waypointMetric(feature);
+  const positions = (state.candidateNodes.features || []).filter(f => f.properties.name_group_id === p.name_group_id ||
+    JSON.stringify(f.geometry.coordinates) === JSON.stringify(feature.geometry.coordinates));
+  const links = positions.map(f => {
+    const q = f.properties, [lon, lat] = f.geometry.coordinates;
+    const target = { type: "candidate_node", resource_id: q.resource_id };
+    return `<li><button class="resource-map-link" data-map-target="${escapeHtml(JSON.stringify(target))}">${escapeHtml(q.label)} · ${formatNumber(lat, 6)}, ${formatNumber(lon, 6)} · ${waypointAltitude(q)}</button><br><small>${escapeHtml(q.resource_id)}</small></li>`;
+  }).join("");
+  return `<strong>${waypointTooltip(feature)}</strong><br>ID: ${escapeHtml(p.resource_id)}<br>` +
+    `Nomes originais: ${escapeHtml(p.original_names.join(", "))} · normalizado: ${escapeHtml(p.normalized_name)}<br>` +
+    waypointSelectionDetails(p) +
+    `THR médio: ${metric?.mean_throughput_per_hour == null ? "indisponível" : formatNumber(metric.mean_throughput_per_hour, 2) + " ops/h"}<br>` +
+    `Fonte: ${escapeHtml(p.source?.file || "indisponível")}<br><small>SHA256: ${escapeHtml(p.source?.sha256 || "—")}</small><br>` +
+    `Rotas/trechos: ${escapeHtml([...p.uam_route_labels, ...p.reh_labels].join(", "))}<br>` +
+    `${p.name_position_count} posições elegíveis de ${p.name_all_position_count || p.name_position_count} posições nomeadas indexadas por rede. Coordenadas, níveis e dimensões permanecem separados; nenhuma soma de P95. Marcadores não são deslocados. Posições no mesmo local 2D também estão abaixo.<ul>${links}</ul>`;
+}
+
+
+function occupancyHeat(heatmap) {
+  if (L.heatLayer) {
+    return L.heatLayer(heatmap, {
+      pane: "heatPane",
+      radius: 9,
+      blur: 10,
+      minOpacity: 0.08,
+      maxZoom: 14,
+      gradient: {
+        0.0: "#FDAC9E",
+        0.35: "#D29343",
+        0.7: "#3C6D56",
+        1.0: "#011959",
+      },
+    });
+  } else {
+    return L.layerGroup(
+      heatmap.map((point) =>
+        L.circleMarker([point[0], point[1]], {
+          interactive: false, radius: 3,
+          stroke: false,
+          fillOpacity: Math.max(0.08, point[2]),
+          fillColor: indicatorColor(point[2], [.175, .525, .85]),
+        })
+      )
+    );
+  }
+}
+
+function renderMapLayers(tracks, plannedRoutes, officialReh, conflicts, heatmap, capacity) {
+  if (!state.map || typeof window.L === "undefined") return;
+  state.lastTracks = tracks;
+  state.lastConflicts = conflicts;
+  state.lastOfficialReh = officialReh;
+  state.lastCapacity = capacity;
+  const visibleConflicts = filteredConflictCollection(conflicts);
+  const visibleTracks = emptyFeatureCollection();
+  clearLayer("tracksLayer");
+  clearLayer("officialRehLayer");
+  clearLayer("uamProjectionLayer");
+  clearLayer("plannedLayer");
+  clearLayer("heatLayer");
+  clearLayer("atdHotspotLayer");
+  clearLayer("complexityLayer");
+  clearLayer("candidateNodeLayer");
+  clearLayer("conflictLayer");
+  clearLayer("resourceHighlightLayer");
+
+  // Executed and planned paths are intentionally excluded from map rendering.
+  state.officialRehLayer = L.geoJSON(officialReh || emptyFeatureCollection(), {
+    pane: "routePane",
+    style: (feature) => ({
+      className: "official-reh-feature",
+      color: feature.properties.route_type === "Obrig" ? "#075985" : "#0f766e",
+      fillColor: feature.properties.route_type === "Obrig" ? "#38bdf8" : "#5eead4",
+      opacity: 0.82,
+      fillOpacity: 0.12,
+      weight: 1.5,
+    }),
+    onEachFeature: (feature, layer) => {
+      const p = feature.properties || {};
+      layer.bindTooltip(`${escapeHtml(p.label)} - ${escapeHtml(p.route_type || "REH")}`, { sticky: true });
+      layer.bindPopup(
+        `<strong>${escapeHtml(p.label)}</strong><br>` +
+          `Tipo ${escapeHtml(p.route_type || "nao informado")} / classe ${escapeHtml(p.airspace_class || "nao informada")}<br>` +
+          `Semilargura ${formatNumber(p.semi_width_m, 0)} m` +
+          (p.fix_a_name || p.fix_b_name
+            ? `<br>${escapeHtml(p.fix_a_name || "-")} -> ${escapeHtml(p.fix_b_name || "-")}`
+            : "") +
+          (p.altitude_min_ft != null || p.altitude_max_ft != null
+            ? `<br>Altitude ${formatNumber(p.altitude_min_ft, 0)}-${formatNumber(p.altitude_max_ft, 0)} ft`
+            : p.altitude_compulsory_ft != null
+              ? `<br>Altitude compulsoria ${formatNumber(p.altitude_compulsory_ft, 0)} ft`
+              : "") +
+          (p.source_identifier ? `<br>Fonte ${escapeHtml(p.source_identifier)}` : "")
+      );
+    },
+  });
+
+  const uamArea = L.geoJSON(state.uamProjection, {
+    pane: "routePane",
+    style: () => ({
+      color: "#be185d",
+      fillColor: "#f472b6",
+      opacity: 0.9,
+      fillOpacity: 0.13,
+      weight: 1.7,
+      // Dissolved area: no repeated OD boundaries.
+    }),
+    onEachFeature: (feature, layer) => {
+      const p = feature.properties || {};
+      layer.bindTooltip(`${escapeHtml(p.label || "Corredor UAM")} · projeção 2D`, { sticky: true });
+      layer.bindPopup(
+        `<strong>${escapeHtml(p.label || "Corredor UAM")}</strong><br>` +
+        `Projeção horizontal do corredor 3D<br>` +
+        `Área consolidada de ${formatNumber(p.source_route_count || 0)} rotas; a projeção não implica conexão entre altitudes.<br>` +
+        `Altitude do eixo ${formatNumber(p.altitude_min_m, 0)}–${formatNumber(p.altitude_max_m, 0)} m MSL`
+      );
+    },
+  });
+
+  const uamAxes = L.geoJSON(state.uamCenterlines, {
+    pane: "routePane", interactive: false,
+    style: {color: "#9d174d", weight: 1, opacity: .45},
+  });
+  state.uamProjectionLayer = L.layerGroup([uamArea, uamAxes]);
+
+  const conflictMarkers = L.geoJSON(visibleConflicts, {
+    pane: "conflictPane",
+    pointToLayer: (feature, latlng) =>
+      L.circleMarker(latlng, {
+        radius: 11,
+        color: conflictEventColor(feature),
+        weight: 3,
+        fillColor: conflictEventColor(feature),
+        fillOpacity: 0.94,
+      }),
+    onEachFeature: (feature, layer) => {
+      const p = feature.properties;
+      layer.bindTooltip(`${conflictEventLabel(feature)} ${escapeHtml(p.id_a)} / ${escapeHtml(p.id_b)}`, {
+        sticky: true,
+      });
+      layer.bindPopup(
+        `<strong>Evento ${conflictEventLabel(feature)}</strong><br>` +
+          `${escapeHtml(p.id_a)} / ${escapeHtml(p.id_b)}<br>` +
+          `${formatNumber(p.dist_h_m, 1)} m horizontal / ${formatNumber(p.dist_v_m, 1)} m vertical<br>` +
+          `${escapeHtml(p.vehicle_pair || "tipos desconhecidos")}<br>` +
+          `t = ${formatNumber(p.simt, 0)} s`
+      );
+    },
+  });
+
+  const conflictPulse = L.geoJSON(visibleConflicts, {
+    interactive: false,
+    pane: "conflictPane",
+    pointToLayer: (feature, latlng) =>
+      L.circleMarker(latlng, {
+        radius: 22,
+        color: conflictEventColor(feature),
+        weight: 2,
+        fillColor: conflictEventColor(feature),
+        fillOpacity: 0.12,
+        opacity: 0.45,
+      }),
+  });
+  state.conflictLayer = L.layerGroup([conflictPulse, conflictMarkers]);
+
+
+  state.heatLayer = occupancyHeat(heatmap);
+
+  state.complexityLayer = L.geoJSON(crossingCollection(capacity), {
+    pane: "conflictPane",
+    pointToLayer: (_feature, latlng) =>
+      L.circleMarker(latlng, {
+        radius: 7,
+        color: "#581c87",
+        weight: 2,
+        fillColor: "#a855f7",
+        fillOpacity: 0.88,
+      }),
+    onEachFeature: (feature, layer) => {
+      const p = feature.properties || {};
+      layer.bindTooltip(`${escapeHtml(p.label || "Cruzamento UAM × REH")} · ${formatNumber(p.altitude_m, 0)} m MSL`, {
+        sticky: true,
+      });
+      layer.bindPopup(
+        `<strong>${escapeHtml(p.label || "Cruzamento UAM × REH")}</strong><br>` +
+          `Corredor UAM: ${escapeHtml((p.uam_route_labels || []).join(", "))}<br>` +
+          `REH: ${escapeHtml((p.reh_labels || []).join(", "))}<br>` +
+          `Altitude de interseção: ${formatNumber(p.altitude_m, 1)} m MSL<br>` +
+          `Diagnóstico geométrico separado; não é recurso de capacidade neste modo.`
+      );
+    },
+  });
+
+  state.candidateNodeLayer = L.geoJSON(state.candidateNodes, {
+    pane: "conflictPane",
+    pointToLayer: (feature, latlng) => {
+      const reh = feature.properties?.criterion === "reh_named_waypoint";
+      return L.circleMarker(latlng, {
+        radius: 6, color: reh ? "#92400e" : "#0e7490", weight: 2,
+        fillColor: reh ? "#f59e0b" : "#22d3ee", fillOpacity: 0.9,
+      });
+    },
+    onEachFeature: (feature, layer) => {
+      layer.bindTooltip(waypointTooltip(feature), { sticky: true });
+      layer.bindPopup(waypointDetails(feature), { maxWidth: 520, maxHeight: 360 });
+    }
+  });
+
+  applyCheckedLayer("layer-heat", state.heatLayer);
+  applyCheckedLayer("layer-official-reh", state.officialRehLayer);
+  applyCheckedLayer("layer-uam-corridors", state.uamProjectionLayer);
+  applyCheckedLayer("layer-complexity", state.complexityLayer);
+  applyCheckedLayer("layer-candidate-nodes", state.candidateNodeLayer);
+  applyCheckedLayer("layer-conflicts", state.conflictLayer);
+
+  fitMapToOperationalArea(visibleTracks, visibleConflicts);
+  updateMapInfo(tracks, visibleTracks, plannedRoutes, officialReh, visibleConflicts, heatmap, capacity);
+}
+
+
+function fitMapToOperationalArea(tracks, conflicts) {
+  if (!state.map || typeof window.L === "undefined") return;
+  if (!tracks || !conflicts) {
+    state.map.invalidateSize(true);
+    state.map.setView([-23.5505, -46.6333], 10);
+    return;
+  }
+
+  const bounds = L.latLngBounds([]);
+  const run = state.runs[state.activeRunIndex];
+  for (const [lat, lon] of run?.heatmap || []) bounds.extend([lat, lon]);
+  const operationalBounds = run?.dashboard?.summary?.bounds;
+  if (operationalBounds) {
+    bounds.extend([operationalBounds.min_lat, operationalBounds.min_lon]);
+    bounds.extend([operationalBounds.max_lat, operationalBounds.max_lon]);
+  }
+  for (const feature of conflicts.features || []) {
+    const coordinate = feature.geometry?.coordinates;
+    if (coordinate) bounds.extend([coordinate[1], coordinate[0]]);
+  }
+  if (document.getElementById("layer-uam-corridors")?.checked) {
+    for (const feature of state.uamProjection.features || []) {
+      for (const ring of feature.geometry?.coordinates || []) {
+        for (const [lon, lat] of ring) bounds.extend([lat, lon]);
+      }
+    }
+  }
+
+  state.map.invalidateSize(true);
+  if (bounds.isValid()) {
+    state.map.fitBounds(bounds.pad(0.18), {
+      animate: false,
+      maxZoom: 11,
+      paddingTopLeft: [16, 16],
+      paddingBottomRight: [16, 16],
+    });
+  } else {
+    state.map.setView([-23.5505, -46.6333], 10);
+  }
+
+  requestAnimationFrame(() => {
+    state.map.invalidateSize(true);
+    if (bounds.isValid()) {
+      state.map.fitBounds(bounds.pad(0.18), {
+        animate: false,
+        maxZoom: 11,
+        paddingTopLeft: [16, 16],
+        paddingBottomRight: [16, 16],
+      });
+    }
+  });
+}
+
+
+function updateMapLegend() {
+  const volume = document.getElementById("trajectory-volume-filter")?.value || "all";
+  const classes = new Set((state.lastConflicts?.features || []).map(conflictEventClass));
+  let visible = 0;
+  document.querySelectorAll(".map-legend [data-legend-layer]").forEach((item) => {
+    const layer = item.dataset.legendLayer;
+    const control = document.getElementById(`layer-${layer}`);
+    const checked = Boolean(control?.checked && !control.disabled);
+    const showVolume = !item.dataset.volume || volume === "all" || item.dataset.volume === volume;
+    const showConflict = !item.dataset.conflict || classes.has(item.dataset.conflict);
+    item.hidden = !(checked && showVolume && showConflict);
+    if (!item.hidden) visible += 1;
+  });
+  const panel = document.querySelector(".map-info");
+  if (panel) panel.hidden = visible === 0;
+}
+
+
+function crossingCollection(capacity) {
+  return capacity?.complexity?.geometry_dimension === "3D"
+    ? capacity.complexity.crossings || emptyFeatureCollection()
+    : emptyFeatureCollection();
+}
+
+
+function highlightMapResource(target) {
+  if (!state.map || typeof window.L === "undefined" || !target) return;
+  if (["trajectory_group", "od_pair"].includes(target.type)) return;
+  activateKpa("maps");
+  clearLayer("resourceHighlightLayer");
+  let geojson = emptyFeatureCollection();
+  if (target.type === "od_pair" && target.coordinates?.length === 2) {
+    geojson = {
+      type: "FeatureCollection",
+      features: [{ type: "Feature", properties: {}, geometry: { type: "LineString", coordinates: target.coordinates } }],
+    };
+  } else if (target.type === "trajectory_group") {
+    geojson = {
+      ...(state.lastTracks || emptyFeatureCollection()),
+      features: (state.lastTracks?.features || []).filter(
+        (feature) => feature.properties?.trajectory_group === target.resource_id
+      ),
+    };
+  } else if (target.type === "reh_segment") {
+    geojson = {
+      ...(state.lastOfficialReh || emptyFeatureCollection()),
+      features: (state.lastOfficialReh?.features || []).filter(
+        (feature) => feature.properties?.resource_id === target.resource_id
+      ),
+    };
+  } else if (target.type === "crossing_waypoint") {
+    const matchingFeatures = (crossingCollection(state.lastCapacity).features || []).filter(
+      (feature) => feature.properties?.resource_id === target.resource_id
+    );
+    geojson = {
+      type: "FeatureCollection",
+      features: matchingFeatures.length
+        ? matchingFeatures
+        : target.coordinates?.length === 2
+          ? [{ type: "Feature", properties: { resource_id: target.resource_id }, geometry: { type: "Point", coordinates: target.coordinates } }]
+          : [],
+    };
+  } else if (target.type === "candidate_node") {
+    geojson = {
+      type: "FeatureCollection",
+      features: (state.candidateNodes.features || []).filter(
+        (feature) => feature.properties?.resource_id === target.resource_id
+      ),
+    };
+  }
+  state.resourceHighlightLayer = L.geoJSON(geojson, {
+    pane: "conflictPane",
+    style: { color: "#db2777", fillColor: "#f472b6", fillOpacity: 0.34, weight: 7, opacity: 1 },
+    pointToLayer: (_feature, latlng) => L.circleMarker(latlng, {
+      pane: "conflictPane", radius: 13, color: "#831843", fillColor: "#f472b6", weight: 4, fillOpacity: 0.92,
+    }),
+    onEachFeature: (feature, layer) => {
+      if (feature.properties?.name_group_id) layer.bindPopup(waypointDetails(feature), { maxWidth: 520, maxHeight: 360 });
+    },
+  }).addTo(state.map);
+  const bounds = state.resourceHighlightLayer.getBounds();
+  if (bounds.isValid()) state.map.fitBounds(bounds.pad(0.35), { maxZoom: 15, animate: false });
+  state.resourceHighlightLayer.eachLayer(layer => { if (layer.getPopup()) layer.openPopup(); });
+  document.querySelector("#map")?.scrollIntoView({ behavior: "smooth", block: "center" });
+}
+
+
+function clearLayer(layerName) {
+  const layer = state[layerName];
+  if (layer && state.map && state.map.hasLayer(layer)) {
+    state.map.removeLayer(layer);
+  }
+  state[layerName] = null;
+}
+
+
+function applyCheckedLayer(controlId, layer) {
+  if (state.map && document.getElementById(controlId)?.checked && !document.getElementById(controlId)?.disabled && layer) {
+    layer.addTo(state.map);
+  }
+}
+
+
+function emptyFeatureCollection() {
+  return { type: "FeatureCollection", features: [] };
+}
+
+
+function updateMapInfo() {
+  setText("map-info-title", "Mapa operacional");
+  setText("map-info-text", "Ative as camadas e clique nos eventos ou nós para inspecionar sua localização.");
+  updateMapLegend();
+}
+
+function initMaps() {
+  bind3DControls();
+  bindConflictPairControls();
+  document.getElementById("capacity-map-circea").addEventListener("change", () => renderIndicatorMap(true));
+  document.querySelectorAll(".od-filters").forEach(filters => {
+    filters.addEventListener("change", () => renderIndicatorMap(true));
+  });
+  for (const id of ["overview-heat", "efficiency-bands", "capacity-bands", "efficiency-map-metric", "efficiency-map-planned", "capacity-map-waypoints", "capacity-map-grid"]) {
+    document.getElementById(id).addEventListener("change", () => renderIndicatorMap(true));
+  }
+  document.getElementById("efficiency-intensity").addEventListener("input", () => {
+    const view = indicatorViews.get("efficiency");
+    if (view?.tracks) view.tracks.setStyle(view.trackStyle);
+  });
+  for (const [id, layer] of [
+    ["official-reh", "officialRehLayer"], ["uam-corridors", "uamProjectionLayer"],
+    ["heat", "heatLayer"],
+    ["complexity", "complexityLayer"], ["candidate-nodes", "candidateNodeLayer"],
+    ["conflicts", "conflictLayer"]
+  ]) document.getElementById(`layer-${id}`).addEventListener("change", event => toggleLayer(layer, event));
+  document.getElementById("fit-map").addEventListener("click", () => fitMapToOperationalArea(state.lastTracks, state.lastConflicts));
+  document.addEventListener("click", event => {
+    const button = event.target.closest("[data-map-target]");
+    if (button) highlightMapResource(JSON.parse(button.dataset.mapTarget));
+  });
+  if (typeof window.L !== "undefined") initMap();
+  else showMapUnavailable();
+}
+
+function updateMapsVisibility() {
+  if (state.activeKpa !== "resources") requestAnimationFrame(() => renderIndicatorMap());
+  if (state.activeKpa === "resources") {
+    requestAnimationFrame(() => {
+      if (state.activeKpa !== "resources") return;
+      state.map?.invalidateSize(true);
+      const run = state.mapRun;
+      if (state.mapNeedsRender && run) {
+        renderMapLayers(run.tracks || emptyFeatureCollection(), run.planned_routes || emptyFeatureCollection(), run.official_reh || emptyFeatureCollection(), run.conflicts || emptyFeatureCollection(), run.heatmap || [], run.dashboard.capacity);
+        state.mapNeedsRender = false;
+      }
+    });
+  }
+  if (state.activeKpa === "safety") {
+    requestAnimationFrame(() => { if (state.activeKpa === "safety") draw3D(); });
+  } else {
+    if (viewer3d.animationFrame !== null) cancelAnimationFrame(viewer3d.animationFrame);
+    viewer3d.animationFrame = null;
+    viewer3d.playing = false;
+    viewer3d.lastFrame = null;
+    update3DControls();
+  }
+}
+
+function renderMaps(run) {
+  const dedicated = (runDimensions(run)?.airspace || run.metadata?.airspace) === "dedicated_uam" || /^C2(?:\.|$)/.test(run.metadata?.scenario_key || "");
+  for (const id of ["layer-uam-corridors", "layer-complexity"]) {
+    const control = document.getElementById(id);
+    control.disabled = !dedicated;
+    control.title = dedicated ? "" : "Este cenário utiliza a rede REH compartilhada.";
+  }
+  state.uamProjection = run.uam_projection || emptyFeatureCollection();
+  state.uamCenterlines = run.uam_centerlines || emptyFeatureCollection();
+  state.candidateNodes = run.candidate_nodes || window.__UAM_CANDIDATE_NODES__ || emptyFeatureCollection();
+  if (run.metadata?.scenario_key === "C0") {
+    state.uamProjection = emptyFeatureCollection();
+    state.uamCenterlines = emptyFeatureCollection();
+    state.candidateNodes = {...state.candidateNodes, features: state.candidateNodes.features.filter(feature => feature.properties?.network === "REH")};
+    state.conflictPairFilter = "all";
+  }
+  document.querySelectorAll("[data-conflict-pair]").forEach(button => {
+    button.disabled = run.metadata?.scenario_key === "C0" && button.dataset.conflictPair.includes("evtol");
+    const active = button.dataset.conflictPair === state.conflictPairFilter;
+    button.classList.toggle("active", active);
+    button.setAttribute("aria-pressed", String(active));
+  });
+  const replica = run.metadata?.replica;
+  setText("map-replica-note", `Os eventos e a reprodução 3D usam uma réplica ilustrativa${replica == null ? "" : ` (r${String(replica).padStart(3, "0")})`}.`);
+  for (const view of indicatorViews.values()) {
+    if (view.heat) view.map.removeLayer(view.heat);
+    view.heat = null;
+    view.tracks = null;
+    view.context.clearLayers();
+    view.data.clearLayers();
+    view.rendered = false;
+  }
+  state.mapRun = run;
+  state.mapNeedsRender = true;
+  render3DVisualization(run.trajectory_3d, run.conflicts);
+  updateMapsVisibility();
+}
+
+const indicatorViews = new Map();
+// Batlow (inverted), Scientific colour maps 9, Fabio Crameri, MIT.
+// Larger values are darker against the light basemap.
+const indicatorColors = ["#FDAC9E", "#D29343", "#3C6D56", "#011959"];
+const unavailableColor = "#64748b";
+
+function indicatorColor(value, thresholds) {
+  if (!Number.isFinite(value)) return unavailableColor;
+  return indicatorColors[indicatorBand(value, thresholds)];
+}
+
+function indicatorBand(value, thresholds) {
+  const index = thresholds.findIndex(limit => value <= limit);
+  return index < 0 ? thresholds.length : index;
+}
+
+function indicatorLegend(id, items) {
+  document.getElementById(`indicator-legend-${id}`).innerHTML = items.map(([color, label]) =>
+    `<li><i style="background:${color}"></i>${escapeHtml(label)}</li>`).join("");
+}
+
+function indicatorMap(id) {
+  if (indicatorViews.has(id)) return indicatorViews.get(id);
+  const map = L.map(`indicator-map-${id}`, {scrollWheelZoom: false}).setView([-23.5505, -46.6333], 10);
+  addCartoBasemap(map);
+  const entry = {map, context: L.featureGroup().addTo(map), data: L.featureGroup().addTo(map), rendered: false};
+  indicatorViews.set(id, entry);
+  return entry;
+}
+
+function bindCapacityResources(view, resources) {
+  const details = document.getElementById("capacity-details");
+  const ranking = document.getElementById("capacity-ranking");
+  details.hidden = true;
+  details.replaceChildren();
+  const select = (resource, centerMap) => {
+    if (view.selectedResource) view.selectedResource.layer.setStyle(view.selectedResource.style);
+    const {layer, label, center, type, metrics} = resource;
+    const style = {weight: layer.options.weight, color: layer.options.color, fillColor: layer.options.fillColor || layer.options.color};
+    view.selectedResource = {layer, style};
+    layer.setStyle({...style, color: "#172033", weight: 4});
+    if (centerMap) {
+      view.map.setView(center, Math.max(view.map.getZoom(), 13), {animate: false});
+      view.map.getContainer().scrollIntoView({block: "center"});
+    }
+    layer.openTooltip();
+    details.innerHTML = `<h3>${escapeHtml(type)} · ${escapeHtml(label)}</h3><div class="metric-grid">${metrics.map(([title, value, unit]) =>
+      `<article class="metric"><h4>${escapeHtml(title)}</h4><strong>${escapeHtml(displayValue(value, unit))}</strong></article>`).join("")}</div>`;
+    details.hidden = false;
+  };
+  view.selectedResource = null;
+  for (const resource of resources) resource.layer.on("click", () => select(resource, false));
+  const groups = [["Waypoint", "Waypoints por capacidade de referência (P95)"], ["Quadrícula", "Quadrículas por pico de voos"]];
+  ranking.replaceChildren();
+  for (const [type, title] of groups) {
+    const top = resources.filter(resource => resource.type === type)
+      .sort((a, b) => b.score - a.score || a.label.localeCompare(b.label, "pt-BR")).slice(0, 5);
+    if (!top.length) continue;
+    const table = document.createElement("table");
+    table.className = "comparison-table";
+    table.innerHTML = `<caption>${title} · Top 5</caption><thead><tr><th scope="col">Recurso</th><th scope="col">${type === "Waypoint" ? "P95 (ops/h)" : "Pico (voos/5 min)"}</th></tr></thead><tbody>${top.map(resource =>
+      `<tr><td><button type="button" class="resource-map-link">${escapeHtml(resource.label)}</button></td><td>${formatNumber(resource.score, 2)}</td></tr>`).join("")}</tbody>`;
+    table.querySelectorAll("button").forEach((button, i) => button.addEventListener("click", () => select(top[i], true)));
+    ranking.append(table);
+  }
+}
+
+function selectOdFeatures(id, features, metric, resetPair) {
+  const control = key => document.getElementById(`${id}-${key}`);
+  const minimum = Number(control("minimum").value);
+  const predictability = id === "predictability";
+  const band = predictability ? control("band").value : "";
+  const eligible = features.filter(({properties: p}) => {
+    if (p.flights < minimum) return false;
+    if (!predictability) return true;
+    const value = p[metric];
+    if (band === "missing") return !Number.isFinite(value);
+    if (!Number.isFinite(value)) return false;
+    return band === "all" || Number(band) === [30, 60, 120, Infinity].findIndex(limit => value <= limit);
+  }).sort((a, b) => {
+    const key = predictability && band !== "missing" ? metric : "flights";
+    return b.properties[key] - a.properties[key] || a.properties.od_id.localeCompare(b.properties.od_id);
+  });
+  const picker = control("pair");
+  const selected = resetPair ? "" : picker.value;
+  picker.replaceChildren(new Option("Todos do recorte", ""));
+  for (const {properties: p} of eligible) picker.add(new Option(`${p.od_id} · ${p.flights} voos`, p.od_id));
+  if (eligible.some(f => f.properties.od_id === selected)) picker.value = selected;
+  const limit = control("limit");
+  limit.disabled = Boolean(picker.value);
+  const visible = picker.value ? eligible.filter(f => f.properties.od_id === picker.value) :
+    eligible.slice(0, Number(limit.value) || eligible.length);
+  return {visible, count: eligible.length};
+}
+
+// Older publications contain only coarse aggregated peaks and one sampled replay.
+const sampledGrids = new WeakMap();
+function sampledCapacityGrid(run) {
+  if (sampledGrids.has(run)) return sampledGrids.get(run);
+  const replay = run.trajectory_3d;
+  if (!replay?.tracks?.length) return null;
+  const dy = Math.sqrt(5) / 6371 * 180 / Math.PI;
+  const dx = dy / Math.cos(23.55 * Math.PI / 180);
+  const windows = Math.floor((replay.sim_end_s - replay.sim_start_s) / 300);
+  const cells = new Map();
+  for (const track of replay.tracks) {
+    const visited = new Set();
+    for (const [time, lon, lat] of track.points) {
+      const windowIndex = Math.floor((time - replay.sim_start_s) / 300);
+      if (windowIndex < 0 || windowIndex >= windows) continue;
+      const row = Math.floor(lat / dy), col = Math.floor(lon / dx);
+      const key = `${row},${col}`;
+      const visit = `${key},${windowIndex}`;
+      if (visited.has(visit)) continue;
+      visited.add(visit);
+      if (!cells.has(key)) cells.set(key, {row, col, counts: new Map()});
+      const counts = cells.get(key).counts;
+      counts.set(windowIndex, (counts.get(windowIndex) || 0) + 1);
+    }
+  }
+  const grid = {lat_step: dy, lon_step: dx, replicas: 1, sampled: true,
+    cells: Array.from(cells.values(), ({row, col, counts}) => [row, col, Math.max(...counts.values())])};
+  sampledGrids.set(run, grid);
+  return grid;
+}
+
+function drawCirceaGrid(view, run, layers, legend, messages) {
+  const model = window.CIRCEA_MODEL;
+  const full = layers.circea_occupancy;
+  const data = full || model?.sampled_runs[run.data_token];
+  const resources = [];
+  if (!model) {
+    messages.push("Geometria das quadrículas indisponível.");
+    return resources;
+  }
+  const replica = run.metadata?.replica;
+  const source = full ? `${full.replicas} réplicas · uma observação por segundo com registro` :
+    data ? `Réplica ilustrativa ${replica ?? ""} · amostragem de ${data.step} s` : "";
+  messages.push("18 quadrículas do simulador. Os limites internos aproximam o desenho da CIRCEA 100-116. Todas as altitudes simuladas.");
+  if (data) messages.push(`${source}. Cada cor mostra a fração dos instantes com registros em que a ocupação simultânea da célula alcançou ou excedeu o limite nominal.`);
+  else messages.push("Ocupação indisponível para este cenário.");
+  for (const feature of model.grid.features) {
+    const {resource_id: label, capacity} = feature.properties;
+    const cell = data?.cells[label];
+    const pct = cell && data.observations > 0 ? 100 * cell.at_limit / data.observations : null;
+    const fillColor = indicatorColor(pct, [0, 5, 20]);
+    const layer = L.polygon(L.GeoJSON.coordsToLatLngs(feature.geometry.coordinates, 1), {
+      color: "#334155", weight: 1.5, fillColor, fillOpacity: .72
+    }).addTo(view.data);
+    layer.bindTooltip(`${escapeHtml(label)} · ${escapeHtml(displayValue(pct, "%"))} dos instantes no limite ou acima<br>Limite: ${capacity} aeronave(s)`);
+    resources.push({type: "Quadrícula do simulador", label, layer, center: layer.getBounds().getCenter(),
+      metrics: [["Tempo observado no limite ou acima", pct, "%"], ["Limite de referência do simulador", capacity, "aeronave(s)"],
+        ["Ocupação máxima observada", cell?.peak, "aeronave(s)"], ["Instantes no limite ou acima", cell?.at_limit, "amostras"],
+        ["Total de instantes observados", data?.observations, "amostras"]]});
+  }
+  if (data?.observations > 0) ["0%", ">0 a 5%", ">5 a 20%", "Acima de 20%"].forEach((label, i) => legend.push([indicatorColors[i], `${label} dos instantes no limite ou acima`]));
+  else legend.push([unavailableColor, "Sem observações"]);
+  return resources;
+}
+
+function renderIndicatorMap(refresh = false) {
+  const id = state.activeKpa;
+  const run = state.mapRun;
+  const node = document.getElementById(`indicator-map-${id}`);
+  if (!node || !run || document.getElementById("dashboard-content").hidden) return;
+  if (!window.L) {
+    setText(`indicator-status-${id}`, "Mapa indisponível neste navegador.");
+    return;
+  }
+  const view = indicatorMap(id);
+  view.map.invalidateSize();
+  const firstRender = !view.rendered;
+  if (!firstRender && !refresh) return;
+  const backdrop = id === "maps";
+  if (firstRender) {
+    view.context.clearLayers();
+    const route = (data, color) => L.geoJSON(data || emptyFeatureCollection(), {
+      interactive: false, style: {color, weight: backdrop ? 2 : 1, opacity: backdrop ? .9 : .32, fillOpacity: backdrop ? .16 : .04}
+    }).addTo(view.context);
+    if (id !== "predictability" && id !== "equity") {
+      route(run.official_reh, "#036985");
+      route(state.uamProjection, "#be185d");
+      route(state.uamCenterlines, "#be185d");
+    }
+  }
+  view.data.clearLayers();
+
+  const layers = run.indicator_maps?.schema_version === 1 ? run.indicator_maps : {};
+  const legend = [];
+  const messages = [];
+  const draw = (collection, options) => L.geoJSON(collection || emptyFeatureCollection(), options).addTo(view.data);
+  const present = collection => collection?.features?.length > 0;
+  const scale = labels => labels.forEach((label, i) => legend.push([indicatorColors[i], label]));
+  const percent = value => displayValue(value, "%");
+  const seconds = value => displayValue(value, "s");
+
+  if (id === "maps") {
+    if (view.heat) view.map.removeLayer(view.heat);
+    view.heat = null;
+    if (document.getElementById("overview-heat").checked) {
+      if (run.heatmap?.length) {
+        view.heat = occupancyHeat(run.heatmap).addTo(view.map);
+        view.context.bringToFront();
+        legend.push(["linear-gradient(90deg,#FDAC9E,#D29343,#3C6D56,#011959)", "Densidade de posições · menor → maior"]);
+      } else messages.push("Sem registros de posição para o mapa de calor.");
+    }
+    legend.push(["#036985", "Rede REH"]);
+    if (present(state.uamProjection) || present(state.uamCenterlines)) legend.push(["#be185d", "Corredores UAM"]);
+    if (!view.context.getBounds().isValid()) messages.push("Sem geometria de corredores para este cenário.");
+  }
+  if (id === "safety") {
+    const events = filteredConflictCollection(run.conflicts);
+    draw(events, {
+      pointToLayer: (feature, latlng) => L.circleMarker(latlng, {
+        radius: 5, color: conflictEventColor(feature), fillOpacity: .75, weight: 2
+      }),
+      onEachFeature: (feature, layer) => layer.bindTooltip(
+        `${conflictEventLabel(feature)} · ${escapeHtml(feature.properties.id_a)} × ${escapeHtml(feature.properties.id_b)}`)
+    });
+    for (const type of ["lowc", "nmac", "mac"]) {
+      const example = events.features.find(feature => conflictEventClass(feature) === type);
+      if (example) legend.push([conflictEventColor(example), conflictEventLabel(example)]);
+    }
+    if (!events.features.length) messages.push(run.conflicts ? "Nenhum evento para esta seleção na réplica ilustrativa." : "Dados de eventos indisponíveis.");
+  }
+  if (id === "efficiency") {
+    const planned = document.getElementById("efficiency-map-planned").checked;
+    const metric = document.getElementById("efficiency-map-metric").value;
+    const selected = feature => Number.isFinite(feature.properties[metric]) &&
+      document.getElementById(`efficiency-band-${indicatorBand(feature.properties[metric], [5, 15, 30])}`).checked;
+    view.tracks = null;
+    if (planned && layers.planned_routes?.features.some(selected)) {
+      draw(layers.planned_routes, {filter: selected, style: {color: "#475569", weight: 5, dashArray: "6 6", opacity: .35},
+        onEachFeature: (feature, layer) => layer.bindTooltip(`${escapeHtml(feature.properties.route_id)} · rota planejada`)});
+      legend.push(["#475569", "Traçado planejado (tracejado)"]);
+    }
+    if (present(layers.mean_tracks)) {
+      const maxFlights = layers.mean_tracks.features.reduce((max, f) => Math.max(max, f.properties.flights), 1);
+      view.trackStyle = ({properties: p}) => ({
+        color: indicatorColor(p[metric], [5, 15, 30]), weight: 4,
+        opacity: .05 + Number(document.getElementById("efficiency-intensity").value) / 100 *
+          (.18 + .65 * Math.sqrt(p.flights / maxFlights))
+      });
+      view.tracks = draw(layers.mean_tracks, {filter: selected, style: view.trackStyle,
+        onEachFeature: ({properties: p}, layer) => layer.bindTooltip(
+          `${escapeHtml(p.route_id)} · ${formatNumber(p.flights)} voos<br>Excesso horizontal: ${percent(p.horizontal_excess_pct)}<br>Excesso sobre o plano: ${percent(p.conformity_excess_pct)}`)});
+      const count = view.tracks.getLayers().length;
+      messages.push(`${count} de ${layers.mean_tracks.features.length} trajetórias médias nas faixas selecionadas.`);
+      ["Até 5%", ">5 a 15%", ">15 a 30%", "Acima de 30%"].forEach((label, i) => {
+        if (document.getElementById(`efficiency-band-${i}`).checked) legend.push([indicatorColors[i], label]);
+      });
+    } else messages.push(layers.mean_tracks ? "Nenhum voo com cobertura suficiente para comparar plano e execução." : "Trajetórias médias disponíveis após reprocessar os STATELOGs.");
+  }
+  const circea = id === "capacity" && document.getElementById("capacity-map-circea").checked;
+  if (id === "capacity") {
+    for (const key of ["waypoints", "grid"]) document.getElementById(`capacity-map-${key}`).disabled = circea;
+    document.getElementById("capacity-bands").disabled = circea || !document.getElementById("capacity-map-waypoints").checked;
+    if (circea) view.map.removeLayer(view.context);
+    else if (!view.map.hasLayer(view.context)) view.context.addTo(view.map);
+  }
+  if (circea) {
+    bindCapacityResources(view, drawCirceaGrid(view, run, layers, legend, messages));
+  } else if (id === "capacity") {
+    const resources = [];
+    if (document.getElementById("capacity-map-grid").checked) {
+      const grid = layers.capacity_grid?.lat_step ? layers.capacity_grid : sampledCapacityGrid(run);
+      if (grid?.cells?.length) {
+        messages.push(grid.sampled ? `Picos na réplica ilustrativa, com posições a cada ${run.trajectory_3d.sample_seconds} s.` :
+          `Média dos picos de ${grid.replicas} réplicas com janelas completas.`);
+        for (const [lat, lon, peak] of grid.cells) {
+          const {lat_step: dy, lon_step: dx} = grid;
+          const layer = L.rectangle([[lat * dy, lon * dx], [(lat + 1) * dy, (lon + 1) * dx]], {
+            color: indicatorColor(peak, [1, 2, 4]), fillOpacity: .5, weight: 1
+          }).bindTooltip(`${grid.sampled ? "Pico na réplica ilustrativa" : "Média dos picos"}: ${formatNumber(peak, 2)} voos/5 min<br>${formatNumber(grid.replicas)} réplicas`).addTo(view.data);
+          const center = layer.getBounds().getCenter();
+          resources.push({type: "Quadrícula", label: `Célula ${formatNumber(center.lat, 3)}°, ${formatNumber(center.lng, 3)}°`,
+            center, layer, score: peak, unit: "voos/5 min",
+            metrics: [[grid.sampled ? "Pico na réplica ilustrativa" : "Média dos picos por réplica", peak, "voos/5 min"], ["Réplicas com janela completa", grid.replicas, "réplicas"]]});
+        }
+        scale(["Célula: até 1 voo/5 min", "Célula: >1 a 2", "Célula: >2 a 4", "Célula: acima de 4"]);
+      } else messages.push(grid ? "Sem janelas completas com registros para a quadrícula." : "Quadrícula disponível após reprocessar os STATELOGs.");
+    }
+    if (document.getElementById("capacity-map-waypoints").checked) {
+      let count = 0;
+      for (const feature of state.candidateNodes.features || []) {
+        if (feature.properties.capacity_eligible === false) continue;
+        const ranking = waypointMetric(feature);
+        if (!Number.isFinite(ranking?.capacity_reference_per_hour) || !(ranking.mean_operations_per_replica > 0)) continue;
+        const band = indicatorBand(ranking.capacity_reference_per_hour, [0, 4, 8]);
+        if (!document.getElementById(`capacity-band-${band}`).checked) continue;
+        const [lon, lat] = feature.geometry.coordinates;
+        const layer = L.circleMarker([lat, lon], {radius: 6, color: "#172033", weight: 1.5,
+          fillColor: indicatorColors[band], fillOpacity: 1
+        }).bindTooltip(`${escapeHtml(feature.properties.label)} · ${displayValue(ranking.capacity_reference_per_hour, "ops/h")} (P95)`).addTo(view.data);
+        resources.push({type: "Waypoint", label: feature.properties.label, center: layer.getLatLng(), layer,
+          score: ranking.capacity_reference_per_hour, unit: "ops/h",
+          metrics: [["Capacidade de referência (P95)", ranking.capacity_reference_per_hour, "ops/h"],
+            ["Média dos picos por réplica", ranking.mean_peak_throughput_per_hour, "ops/h"],
+            ["Throughput médio", ranking.mean_throughput_per_hour, "ops/h"]]});
+        count++;
+      }
+      ["0", "4", "8", "12 ou mais"].forEach((label, i) => {
+        if (document.getElementById(`capacity-band-${i}`).checked) legend.push([indicatorColors[i], `Waypoint: ${label} ops/h`]);
+      });
+      if (!count) messages.push("Nenhum waypoint com estimativa nas faixas selecionadas.");
+    }
+    bindCapacityResources(view, resources);
+  }
+  if (id === "predictability" || id === "equity") {
+    const predictability = id === "predictability";
+    const metric = document.getElementById("predictability-map-metric").value;
+    const features = layers.od_pairs?.features || [];
+    const {visible, count} = selectOdFeatures(id, features, metric, firstRender);
+    if (features.length) {
+      messages.push(`${visible.length} de ${count} pares do recorte no mapa · ${features.length} pares no cenário.`);
+      draw({type: "FeatureCollection", features: visible}, {
+        style: ({properties: p}) => ({color: predictability ? indicatorColor(p[metric], [30, 60, 120]) : unavailableColor,
+          weight: 3, opacity: .84, dashArray: predictability && p[metric] == null ? "5 5" : null}),
+        onEachFeature: ({properties: p, geometry}, layer) => {
+          const [olon, olat] = geometry.coordinates[0];
+          const [dlon, dlat] = geometry.coordinates.at(-1);
+          const endpoints = `${formatNumber(olat, 4)}, ${formatNumber(olon, 4)} → ${formatNumber(dlat, 4)}, ${formatNumber(dlon, 4)}`;
+          layer.bindTooltip(`${escapeHtml(p.od_id)} · ${formatNumber(p.flights)} voos<br>${endpoints}` +
+            (predictability ? `<br>IQR: ${seconds(p.iqr_s)}<br>Desvio padrão: ${seconds(p.std_s)}` : ""));
+        }
+      });
+      if (predictability) {
+        if (visible.some(f => Number.isFinite(f.properties[metric]))) scale(["Até 30 s", ">30 a 60 s", ">60 a 120 s", "Acima de 120 s"]);
+        if (visible.some(feature => feature.properties[metric] == null)) legend.push([unavailableColor, "Menos de dois voos"]);
+      } else legend.push([unavailableColor, "Par OD"]);
+    } else messages.push(layers.od_pairs ? "Sem pares OD observados com cobertura suficiente." : "Pares OD disponíveis após reprocessar os STATELOGs.");
+  }
+
+  setText(`indicator-status-${id}`, messages.join(" "));
+  indicatorLegend(id, legend);
+  if (firstRender || (id === "capacity" && Boolean(view.circea) !== circea) || (refresh && ["predictability", "equity"].includes(id))) {
+    const dataBounds = view.data.getBounds();
+    const bounds = dataBounds.isValid() ? dataBounds : view.context.getBounds();
+    if (bounds.isValid()) view.map.fitBounds(bounds.pad(.12), {animate: false, maxZoom: 12});
+    else view.map.setView([-23.5505, -46.6333], 10);
+  }
+  view.circea = circea;
+  view.rendered = true;
+}
+
+/* Scientific colour maps 9, Copyright (c) 2026 Fabio Crameri.
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE. */
